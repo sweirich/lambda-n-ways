@@ -17,7 +17,7 @@ This makes it possible to use the native substitution of Haskell.
 
 > nfh :: HOAS -> HOAS
 > nfh e@(HVar _) = e
-> nfh (HLam b) = HLam (\ x -> nfh (b x))
+> nfh (HLam b) = HLam (nfh . b)
 > nfh (HApp f a) =
 >     case whnf f of
 >         HLam b -> nfh (b a)
@@ -45,7 +45,7 @@ are encountered.
 
 Convert back from higher order abstract syntax.  Do this by inventing
 a new variable at each lambda.  For simplicity we just start the variable
-numbering at 1000 rather than finding the free variables of the term
+numbering at 1000 rather than finding the free variables of the term.
 
 > toLC :: HOAS -> LC SId
 > toLC = to 1000
