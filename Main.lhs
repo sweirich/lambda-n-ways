@@ -1,6 +1,8 @@
 > import Lambda
 > import IdInt
 > import Simple
+> import Unique
+> import HOAS
 
 > main :: IO ()
 > main = interact $ (++ "\n") . show . Simple.nf . toIdInt . f . read
