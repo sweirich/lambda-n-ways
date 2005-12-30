@@ -5,12 +5,11 @@ using a naive version of substitution.
 > import Data.List(union, (\\))
 > import Lambda
 > import IdInt
-> import Debug.Trace
 
-> type SId = Id
+> type SId = IdInt
 
 The normal form is computed by repeatedly performing
-substitution (beta reduction) of the leftmost redex.
+substitution (beta reduction) on the leftmost redex.
 
 > nf :: LC SId -> LC SId
 > nf e@(Var _) = e
@@ -52,8 +51,8 @@ is not in use locally.
 Get a variable which is not in the given set.
 
 > newId :: [SId] -> SId
-> newId vs = head ([ Id ("x" ++ show i) | i <- [0::Int .. ] ] \\ vs)
-> --newId vs = head ([ IdInt i | i <- [0::Int .. ] ] \\ vs)
+> --newId vs = head ([ Id ("x" ++ show i) | i <- [0::Int .. ] ] \\ vs)
+> newId vs = head ([ IdInt i | i <- [0::Int .. ] ] \\ vs)
 
 Compute the free variables of an expression.
 
