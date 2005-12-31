@@ -4,6 +4,7 @@
 > import Simple
 > import Unique
 > import HOAS
+> import DeBruijn
 
 > main :: IO ()
 > main = interactArgs $
@@ -12,6 +13,7 @@
 >         f e = e
 >         myNF ["U"] = Unique.nf
 >         myNF ["H"] = HOAS.nf
+>         myNF ["D"] = DeBruijn.nf
 >         myNF  _    = Simple.nf
 
 Strip away Ada style comments.
@@ -35,3 +37,13 @@ Timing, Sharp PC-MM20 (1GHz Efficeon CPU), for timing.lam
 Simple.nf	 38s
 Unique.nf	494s
 HOAS.nf		  1s
+
+       29
+      212
+        0.4
+
+-O2
+       16
+       94
+        0.27
+       24
