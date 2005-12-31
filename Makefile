@@ -15,6 +15,9 @@ lambda.dvi:	lambda.tex $(TEXFILES)
 lambda.ps:	lambda.dvi
 	dvips -t A4 lambda.dvi -o lambda.ps
 
+lambda.pdf:	lambda.tex $(TEXFILES)
+	pdflatex lambda.tex; pdflatex lambda.tex
+
 .PHONY: timing
 timing:	LC
 	time ./LC S < timing.lam
@@ -23,4 +26,4 @@ timing:	LC
 
 .PHONY:	clean
 clean:
-	rm -f *.hi *.o LC lambda.ps lambda.dvi lambda.log lambda.aux $(TEXFILES)
+	rm -f *.hi *.o LC lambda.pdf lambda.ps lambda.dvi lambda.log lambda.aux $(TEXFILES)
