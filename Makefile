@@ -23,6 +23,7 @@ timing:	LC
 	time ./LC S < timing.lam
 	time ./LC U < timing.lam
 	time ./LC H < timing.lam
+	time ./LC D < timing.lam
 
 .PHONY:	clean
 clean:
