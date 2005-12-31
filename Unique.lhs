@@ -3,7 +3,6 @@ using Barendregt's variable convention, i.e., all bound
 variables are unique.
 
 > module Unique(nf) where
-> import List(union, (\\))
 > import Lambda
 > import qualified Data.Map as M
 > import Control.Monad.State
@@ -101,11 +100,3 @@ all free variables and the lambdas are added as they are encountered.
 > getVar v = do
 >     (_, m) <- get
 >     return $ m M.! v
-
-Compute free variables of a term.
-
-> freeVars :: LC SId -> [SId]
-> freeVars (Var v) = [v]
-> freeVars (Lam v e) = freeVars e \\ [v]
-> freeVars (App f a) = freeVars f `union` freeVars a
-

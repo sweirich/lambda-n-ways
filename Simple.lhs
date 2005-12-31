@@ -54,17 +54,3 @@ Get a variable which is not in the given set.
 > --newId vs = head ([ Id ("x" ++ show i) | i <- [0::Int .. ] ] \\ vs)
 > newId vs = head ([ IdInt i | i <- [0::Int .. ] ] \\ vs)
 
-Compute the free variables of an expression.
-
-> freeVars :: LC SId -> [SId]
-> freeVars (Var v) = [v]
-> freeVars (Lam v e) = freeVars e \\ [v]
-> freeVars (App f a) = freeVars f `union` freeVars a
-
-Compute all variables in an expression.
-
-> allVars :: LC SId -> [SId]
-> allVars (Var v) = [v]
-> allVars (Lam _ e) = allVars e
-> allVars (App f a) = allVars f `union` allVars a
-
