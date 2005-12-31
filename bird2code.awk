@@ -3,11 +3,11 @@
 
 /^>/ {
   print "\\begin{code}"
-  sub(/^> /,"")
+  sub(/^> ?/,"")
   print
   rc = getline
   while(($0 ~ /^>/) && (rc > 0)) {
-    sub(/^> /,"")
+    sub(/^> ?/,"")
     print
     rc = getline
   }
