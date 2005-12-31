@@ -25,7 +25,7 @@ by negative numbers.
 >         DLam b -> nfd (subst 0 a b)
 >         f' -> DApp (nfd f') (nfd a)
 
-Compute the head normal form.
+Compute the weak head normal form.
 
 > whnf :: DB -> DB
 > whnf e@(DVar _) = e

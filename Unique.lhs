@@ -32,7 +32,7 @@ Normalization is run in a State monad with the next free variable.
 >         Lam x b -> subst x a b >>= nf'
 >         _ -> liftM2 App (nf' f') (nf' a)
 
-Compute the head normal form.
+Compute the weak head normal form.
 
 > whnf :: LC SId -> N (LC SId)
 > whnf e@(Var _) = return e

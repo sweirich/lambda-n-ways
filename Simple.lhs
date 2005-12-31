@@ -19,7 +19,7 @@ substitution (beta reduction) on the leftmost redex.
 >         Lam x b -> nf (subst x a b)
 >         f' -> App (nf f') (nf a)
 
-Compute the head normal form.
+Compute the weak head normal form.
 
 > whnf :: LC SId -> LC SId
 > whnf e@(Var _) = e

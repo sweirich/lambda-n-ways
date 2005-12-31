@@ -23,7 +23,7 @@ This makes it possible to use the native substitution of Haskell.
 >         HLam b -> nfh (b a)
 >         f' -> HApp (nfh f') (nfh a)
 
-Compute the head normal form.
+Compute the weak head normal form.
 
 > whnf :: HOAS -> HOAS
 > whnf e@(HVar _) = e
