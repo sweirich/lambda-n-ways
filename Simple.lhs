@@ -9,7 +9,13 @@ using a naive version of substitution.
 > type SId = IdInt
 
 The normal form is computed by repeatedly performing
-substitution (beta reduction) on the leftmost redex.
+substitution ($\beta$-reduction) on the leftmost redex.
+Variables and abstractions are easy, but in the case of
+an application we must compute the function to see if
+it is an abstraction.  The function cannot be computed
+with the {\tt nf} function since it could perform
+non-leftmost reductions.  Instead we use the {\tt whnf}
+function.
 
 > nf :: LC SId -> LC SId
 > nf e@(Var _) = e
@@ -29,10 +35,22 @@ Compute the weak head normal form.
 >         Lam x b -> whnf (subst x a b)
 >         f' -> App f' a
 
-Substitution is done in the way it is often described.
-When a name clash is detected we alpha convert the offending
-lambda bound variable.  We find a new name by picking one that
-is not in use locally.
+Substitution has only one interesting case, the abstraction.
+For abstraction there are three cases:
+if the bound variable, {\tt v}, is equal to the variable we
+are replacing, {\tt x}, then we are done,
+if the bound variable is in set set of free variables
+of the substituted expression then there would be
+an accidental capture and we rename it,
+otherwise the substitution just continues.
+
+How should the new variable be picked when doing the
+renaming?  The new variable must not be in the set of
+free variables of {\tt s} since this would case another
+accidental capture, nor must it be among the free variables
+of {\tt e'} since this could cause another accidental
+capture.  Conservatively, we avoid all variables occuring
+in the original {\tt b} to fulfillthe second requirement.
 
 > subst :: SId -> LC SId -> LC SId -> LC SId
 > subst x s b = sub b
