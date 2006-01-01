@@ -18,9 +18,9 @@ Normalization is run in a State monad with the next free variable.
 
 > nf :: LC SId -> LC SId
 > nf e = evalState (nf' e') i
->   where (e', (i, _)) = runState (unique e) (0, M.empty)
+>   where (e', (i, _)) = runState (unique e) (firstBoundId, M.empty)
 
-> type N a = State Int a
+> type N a = State IdInt a
 
 > nf' :: LC SId -> N (LC SId)
 > nf' e@(Var _) = return e
@@ -44,7 +44,7 @@ Compute the weak head normal form.
 
 Substitution proceeds by cloning the term that is inserted
 at every place it is put.
-XXX No need to clone lambda free terms.
+(XXX No need to clone lambda free terms.)
 
 > subst :: SId -> LC SId -> LC SId -> N (LC SId)
 > subst x s b = sub b
@@ -62,41 +62,32 @@ Create a fresh variable.
 > newVar :: N SId
 > newVar = do
 >     i <- get
->     put (i+1)
->     return $ IdInt i
-
-To make all variables unique we first find the free variables
-and add them to the translation map, then we convert the term
-using a new variable for each lambda.
-
-> type U a = State (Int, M.Map SId SId) a
-
-> unique :: LC SId -> U (LC SId)
-> unique e = do
->     mapM_ addVar (freeVars e)
->     uniq e
+>     put (succ i)
+>     return i
 
 Do the actual translation of the term to unique variables.
+We keep mapping of old variable names to new variable name.
+Free variables are just left alone since they are already
+uniquely named.
 
-> uniq :: LC SId -> U (LC SId)
-> uniq (Var v) = liftM Var (getVar v)
-> uniq (Lam v e) = liftM2 Lam (addVar v) (uniq e)
-> uniq (App f a) = liftM2 App (uniq f) (uniq a)
+> type U a = State (IdInt, M.Map SId SId) a
+
+> unique :: LC SId -> U (LC SId)
+> unique (Var v) = liftM Var (getVar v)
+> unique (Lam v e) = liftM2 Lam (addVar v) (unique e)
+> unique (App f a) = liftM2 App (unique f) (unique a)
 
 Add a variable to the mapping.
 
 > addVar :: SId -> U SId
 > addVar v = do
 >    (i, m) <- get
->    let ii = IdInt i
->    put (i+1, M.insert v ii m)
->    return ii
+>    put (succ i, M.insert v i m)
+>    return i
 
 Find an existing variable in the mapping.
-This cannot fail, since the mapping starts out with
-all free variables and the lambdas are added as they are encountered.
 
 > getVar :: SId -> U SId
 > getVar v = do
 >     (_, m) <- get
->     return $ m M.! v
+>     return $ maybe v id (M.lookup v m)

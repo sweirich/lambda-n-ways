@@ -71,5 +71,5 @@ Do this simply by generating all variables and picking the
 first not in the given set.
 
 > newId :: [SId] -> SId
-> newId vs = head ([ IdInt i | i <- [0::Int .. ] ] \\ vs)
+> newId vs = head ([firstBoundId .. ] \\ vs)
 
