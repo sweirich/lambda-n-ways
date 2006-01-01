@@ -3,8 +3,8 @@ calculus together with a parser and a printer for it.
 It also exports a simple type if identifiers that parse and
 print in a nice way.
 
-> module Lambda(LC(..), Id(..)) where
-> import Data.List(span)
+> module Lambda(LC(..), freeVars, allVars, Id(..)) where
+> import Data.List(span, union, (\\))
 > import Data.Char(isAlphaNum)
 > import Text.PrettyPrint.HughesPJ(Doc, renderStyle, style, text,
 >            (<>), (<+>), parens)
@@ -14,6 +14,20 @@ The LC type of lambda term is parametrized over the type of the variables.
 It has constructors for variables, lambda abstraction, and application.
 
 > data LC v = Var v | Lam v (LC v) | App (LC v) (LC v)
+
+Compute the free variables of an expression.
+
+> freeVars :: (Eq v) => LC v -> [v]
+> freeVars (Var v) = [v]
+> freeVars (Lam v e) = freeVars e \\ [v]
+> freeVars (App f a) = freeVars f `union` freeVars a
+
+Compute all variables in an expression.
+
+> allVars :: (Eq v) => LC v -> [v]
+> allVars (Var v) = [v]
+> allVars (Lam _ e) = allVars e
+> allVars (App f a) = allVars f `union` allVars a
 
 The Read instance for the LC type reads lambda term with the normal
 syntax.
@@ -99,3 +113,4 @@ Identifiers print and parse without any adornment.
 >         case span isAlphaNum s of
 >         ("", _) -> []
 >         (i, s') -> [(Id i, s')]
+

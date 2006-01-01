@@ -46,17 +46,3 @@ If the variable is in the map the use it, otherwise add it.
 > conv (Lam v e) = liftM2 Lam (convVar v) (conv e)
 > conv (App f a) = liftM2 App (conv f) (conv a)
 
-Compute the free variables of an expression.
-
-> freeVars :: LC IdInt -> [IdInt]
-> freeVars (Var v) = [v]
-> freeVars (Lam v e) = freeVars e \\ [v]
-> freeVars (App f a) = freeVars f `union` freeVars a
-
-Compute all variables in an expression.
-
-> allVars :: LC IdInt -> [IdInt]
-> allVars (Var v) = [v]
-> allVars (Lam _ e) = allVars e
-> allVars (App f a) = allVars f `union` allVars a
-
