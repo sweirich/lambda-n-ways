@@ -6,15 +6,13 @@ using de Bruijn indicies.
 > import Lambda
 > import IdInt
 
-> type SId = IdInt
-
 Variables are represented by their binding depth, i.e., how many
 lambdas out the binding lambda is.  Free variables are represented
 by negative numbers.
 
 > data DB = DVar Int | DLam DB | DApp DB DB
 
-> nf :: LC SId -> LC SId
+> nf :: LC IdInt -> LC IdInt
 > nf = fromDB . nfd . toDB
 
 > nfd :: DB -> DB
@@ -35,16 +33,16 @@ Compute the weak head normal form.
 >         DLam b -> whnf (subst 0 a b)
 >         f' -> DApp f' a
 
-> fromDB :: DB -> LC SId
-> fromDB e = from 2000 e
->   where from n (DVar i) | i < 0 = Var (IdInt (-i))
->                         | otherwise = Var (IdInt (n-i-1))
->         from n (DLam b) = Lam (IdInt n) (from (n+1) b)
+> fromDB :: DB -> LC IdInt
+> fromDB = from firstBoundId
+>   where from (IdInt n) (DVar i) | i < 0 = Var (IdInt i)
+>                                 | otherwise = Var (IdInt (n-i-1))
+>         from n (DLam b) = Lam n (from (succ n) b)
 >         from n (DApp f a) = App (from n f) (from n a)
 
-> toDB :: LC SId -> DB
-> toDB e = to [] e
->   where to vs (Var v@(IdInt i)) = maybe (DVar (-i)) DVar (elemIndex v vs)
+> toDB :: LC IdInt -> DB
+> toDB = to []
+>   where to vs (Var v@(IdInt i)) = maybe (DVar i) DVar (elemIndex v vs)
 >         to vs (Lam x b) = DLam (to (x:vs) b)
 >         to vs (App f a) = DApp (to vs f) (to vs a)
 

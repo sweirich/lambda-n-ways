@@ -8,11 +8,9 @@ This makes it possible to use the native substitution of Haskell.
 > import IdInt
 
 
-> type SId = IdInt
->
-> data HOAS = HVar SId | HLam (HOAS -> HOAS) | HApp HOAS HOAS
+> data HOAS = HVar IdInt | HLam (HOAS -> HOAS) | HApp HOAS HOAS
 
-> nf :: LC SId -> LC SId
+> nf :: LC IdInt -> LC IdInt
 > nf = toLC . nfh . fromLC
 
 > nfh :: HOAS -> HOAS
@@ -37,18 +35,17 @@ Convert to higher order abstract syntax.  Do this by keeping
 a mapping of the bound variables and translating them as they
 are encountered.
 
-> fromLC :: LC SId -> HOAS
+> fromLC :: LC IdInt -> HOAS
 > fromLC = from M.empty
 >   where from m (Var v) = maybe (HVar v) id (M.lookup v m)
 >         from m (Lam v e) = HLam $ \ x -> from (M.insert v x m) e
 >         from m (App f a) = HApp (from m f) (from m a)
 
 Convert back from higher order abstract syntax.  Do this by inventing
-a new variable at each lambda.  For simplicity we just start the variable
-numbering at 1000 rather than finding the free variables of the term.
+a new variable at each lambda.
 
-> toLC :: HOAS -> LC SId
-> toLC = to 1000
+> toLC :: HOAS -> LC IdInt
+> toLC = to firstBoundId
 >   where to _ (HVar v) = Var v
->         to n (HLam b) = Lam i (to (n+1) (b (HVar i))) where i = IdInt n
+>         to n (HLam b) = Lam n (to (succ n) (b (HVar n)))
 >         to n (HApp f a) = App (to n f) (to n a)

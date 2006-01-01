@@ -8,21 +8,19 @@ variables are unique.
 > import Control.Monad.State
 > import IdInt
 
-> type SId = IdInt
-
 The first step is to make all variables unique.
 Then normal form is computed by repeatedly performing
 substitution (beta reduction) on the leftmost redex.
 Normalization is run in a State monad with the next free variable.
 
 
-> nf :: LC SId -> LC SId
+> nf :: LC IdInt -> LC IdInt
 > nf e = evalState (nf' e') i
 >   where (e', (i, _)) = runState (unique e) (firstBoundId, M.empty)
 
 > type N a = State IdInt a
 
-> nf' :: LC SId -> N (LC SId)
+> nf' :: LC IdInt -> N (LC IdInt)
 > nf' e@(Var _) = return e
 > nf' (Lam x e) = liftM (Lam x) (nf' e)
 > nf' (App f a) = do
@@ -33,7 +31,7 @@ Normalization is run in a State monad with the next free variable.
 
 Compute the weak head normal form.
 
-> whnf :: LC SId -> N (LC SId)
+> whnf :: LC IdInt -> N (LC IdInt)
 > whnf e@(Var _) = return e
 > whnf e@(Lam _ _) = return e
 > whnf (App f a) = do
@@ -46,7 +44,7 @@ Substitution proceeds by cloning the term that is inserted
 at every place it is put.
 (XXX No need to clone lambda free terms.)
 
-> subst :: SId -> LC SId -> LC SId -> N (LC SId)
+> subst :: IdInt -> LC IdInt -> LC IdInt -> N (LC IdInt)
 > subst x s b = sub b
 >  where sub e@(Var v) | v == x = clone M.empty s
 >                      | otherwise = return e
@@ -59,7 +57,7 @@ at every place it is put.
 
 Create a fresh variable.
 
-> newVar :: N SId
+> newVar :: N IdInt
 > newVar = do
 >     i <- get
 >     put (succ i)
@@ -70,16 +68,16 @@ We keep mapping of old variable names to new variable name.
 Free variables are just left alone since they are already
 uniquely named.
 
-> type U a = State (IdInt, M.Map SId SId) a
+> type U a = State (IdInt, M.Map IdInt IdInt) a
 
-> unique :: LC SId -> U (LC SId)
+> unique :: LC IdInt -> U (LC IdInt)
 > unique (Var v) = liftM Var (getVar v)
 > unique (Lam v e) = liftM2 Lam (addVar v) (unique e)
 > unique (App f a) = liftM2 App (unique f) (unique a)
 
 Add a variable to the mapping.
 
-> addVar :: SId -> U SId
+> addVar :: IdInt -> U IdInt
 > addVar v = do
 >    (i, m) <- get
 >    put (succ i, M.insert v i m)
@@ -87,7 +85,7 @@ Add a variable to the mapping.
 
 Find an existing variable in the mapping.
 
-> getVar :: SId -> U SId
+> getVar :: IdInt -> U IdInt
 > getVar v = do
 >     (_, m) <- get
 >     return $ maybe v id (M.lookup v m)

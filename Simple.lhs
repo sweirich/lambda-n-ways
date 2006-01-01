@@ -6,8 +6,6 @@ using a naive version of substitution.
 > import Lambda
 > import IdInt
 
-> type SId = IdInt
-
 The normal form is computed by repeatedly performing
 substitution ($\beta$-reduction) on the leftmost redex.
 Variables and abstractions are easy, but in the case of
@@ -17,7 +15,7 @@ with the {\tt nf} function since it could perform
 non-leftmost reductions.  Instead we use the {\tt whnf}
 function.
 
-> nf :: LC SId -> LC SId
+> nf :: LC IdInt -> LC IdInt
 > nf e@(Var _) = e
 > nf (Lam x e) = Lam x (nf e)
 > nf (App f a) =
@@ -27,7 +25,7 @@ function.
 
 Compute the weak head normal form.
 
-> whnf :: LC SId -> LC SId
+> whnf :: LC IdInt -> LC IdInt
 > whnf e@(Var _) = e
 > whnf e@(Lam _ _) = e
 > whnf (App f a) =
@@ -52,7 +50,7 @@ of {\tt e'} since this could cause another accidental
 capture.  Conservatively, we avoid all variables occuring
 in the original {\tt b} to fulfillthe second requirement.
 
-> subst :: SId -> LC SId -> LC SId -> LC SId
+> subst :: IdInt -> LC IdInt -> LC IdInt -> LC IdInt
 > subst x s b = sub b
 >  where sub e@(Var v) | v == x = s
 >                      | otherwise = e
@@ -70,6 +68,6 @@ Get a variable which is not in the given set.
 Do this simply by generating all variables and picking the
 first not in the given set.
 
-> newId :: [SId] -> SId
+> newId :: [IdInt] -> IdInt
 > newId vs = head ([firstBoundId .. ] \\ vs)
 
