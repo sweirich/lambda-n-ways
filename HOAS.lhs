@@ -7,11 +7,22 @@ This makes it possible to use the native substitution of Haskell.
 > import Lambda
 > import IdInt
 
+With higher order abstract syntax the abstraction in the implemented
+language is represented by an abstraction in the implementation
+language.
+We still need tp represent variables for free variables and during
+conversion.
 
 > data HOAS = HVar IdInt | HLam (HOAS -> HOAS) | HApp HOAS HOAS
 
+To compute the normal for, first convert to HOAS, compute, and
+convert back.
+
 > nf :: LC IdInt -> LC IdInt
 > nf = toLC . nfh . fromLC
+
+The substitution step for HOAS is simply a Haskell application since we
+use a Haskell function to represent the abstraction.
 
 > nfh :: HOAS -> HOAS
 > nfh e@(HVar _) = e
