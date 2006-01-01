@@ -67,8 +67,9 @@ in the original {\tt b} to fulfillthe second requirement.
 >        vs = fvs `union` allVars b
 
 Get a variable which is not in the given set.
+Do this simply by generating all variables and picking the
+first not in the given set.
 
 > newId :: [SId] -> SId
-> --newId vs = head ([ Id ("x" ++ show i) | i <- [0::Int .. ] ] \\ vs)
 > newId vs = head ([ IdInt i | i <- [0::Int .. ] ] \\ vs)
 
