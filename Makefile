@@ -7,16 +7,19 @@ TEXFILES = DeBruijn.tex HOAS.tex IdInt.tex Lambda.tex Main.tex Simple.tex Unique
 
 
 LC:	*.lhs
-	ghc -O2 -Wall --make Main.lhs -o LC
+	$(GHC) -O2 -Wall --make Main.lhs -o LC
 
-lambda.dvi:	lambda.tex $(TEXFILES)
-	latex lambda.tex; latex lambda.tex
+CMain:	*.lhs *.hs
+	$(GHC) -Wall --make CMain.hs -o CMain
 
-lambda.ps:	lambda.dvi
-	dvips -t A4 lambda.dvi -o lambda.ps
+top.dvi:	top.tex $(TEXFILES)
+	latex top.tex; latex top.tex
 
-lambda.pdf:	lambda.tex $(TEXFILES)
-	pdflatex lambda.tex; pdflatex lambda.tex
+top.ps:	top.dvi
+	dvips -t A4 top.dvi -o top.ps
+
+top.pdf:	top.tex $(TEXFILES)
+	pdflatex top.tex; pdflatex top.tex
 
 .PHONY: timing
 timing:	LC
@@ -27,4 +30,4 @@ timing:	LC
 
 .PHONY:	clean
 clean:
-	rm -f *.hi *.o LC lambda.pdf lambda.ps lambda.dvi lambda.log lambda.aux $(TEXFILES)
+	rm -f *.hi *.o LC top.pdf top.ps top.dvi top.log top.aux $(TEXFILES)
