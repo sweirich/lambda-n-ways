@@ -1,3 +1,6 @@
+GHC = ghc
+#GHC = /usr/local/bin/ghc
+
 TEXFILES = DeBruijn.tex HOAS.tex IdInt.tex Lambda.tex Main.tex Simple.tex Unique.tex
 
 .SUFFIXES : .lhs .tex
