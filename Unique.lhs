@@ -42,7 +42,8 @@ Compute the weak head normal form.
 
 Substitution proceeds by cloning the term that is inserted
 at every place it is put.
-(XXX No need to clone lambda free terms.)
+
+(TODO: No need to clone $\lambda$-free terms.)
 
 > subst :: IdInt -> LC IdInt -> LC IdInt -> N (LC IdInt)
 > subst x s b = sub b

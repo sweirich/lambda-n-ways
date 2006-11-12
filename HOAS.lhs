@@ -1,5 +1,5 @@
 The HOAS module implements the Normal Form function by
-using Higher Order Abstract Syntax for the lambda expressions.
+using Higher Order Abstract Syntax for the $\lambda$-expressions.
 This makes it possible to use the native substitution of Haskell.
 
 > module HOAS(nf) where
@@ -10,12 +10,12 @@ This makes it possible to use the native substitution of Haskell.
 With higher order abstract syntax the abstraction in the implemented
 language is represented by an abstraction in the implementation
 language.
-We still need tp represent variables for free variables and during
+We still need to represent variables for free variables and also during
 conversion.
 
 > data HOAS = HVar IdInt | HLam (HOAS -> HOAS) | HApp HOAS HOAS
 
-To compute the normal for, first convert to HOAS, compute, and
+To compute the normal form, first convert to HOAS, compute, and
 convert back.
 
 > nf :: LC IdInt -> LC IdInt
@@ -53,7 +53,7 @@ are encountered.
 >         from m (App f a) = HApp (from m f) (from m a)
 
 Convert back from higher order abstract syntax.  Do this by inventing
-a new variable at each lambda.
+a new variable at each $\lambda$.
 
 > toLC :: HOAS -> LC IdInt
 > toLC = to firstBoundId

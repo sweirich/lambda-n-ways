@@ -1,5 +1,5 @@
-The Lambda module implements a simple abtract syntax for lambda
-calculus together with a parser and a printer for it.
+The Lambda module implements a simple abstract syntax for
+$\lambda$-calculus together with a parser and a printer for it.
 It also exports a simple type if identifiers that parse and
 print in a nice way.
 
@@ -10,8 +10,8 @@ print in a nice way.
 >            (<>), (<+>), parens)
 > import Text.ParserCombinators.ReadP
 
-The LC type of lambda term is parametrized over the type of the variables.
-It has constructors for variables, lambda abstraction, and application.
+The LC type of $\lambda$ term is parametrized over the type of the variables.
+It has constructors for variables, $\lambda$-abstraction, and application.
 
 > data LC v = Var v | Lam v (LC v) | App (LC v) (LC v)
 
@@ -29,13 +29,13 @@ Compute all variables in an expression.
 > allVars (Lam _ e) = allVars e
 > allVars (App f a) = allVars f `union` allVars a
 
-The Read instance for the LC type reads lambda term with the normal
+The Read instance for the LC type reads $\lambda$ term with the normal
 syntax.
 
 > instance (Read v) => Read (LC v) where
 >     readsPrec _ = readP_to_S pLC
 
-A ReadP parser for lambda expressions.
+A ReadP parser for $\lambda$-expressions.
 
 > pLC, pLCAtom, pLCVar, pLCLam, pLCApp :: (Read v) => ReadP (LC v)
 > pLC = pLCLam +++ pLCApp +++ pLCLet
@@ -58,7 +58,7 @@ A ReadP parser for lambda expressions.
 > pLCAtom = pLCVar +++ (do schar '('; e <- pLC; schar ')'; return e)
 
 To make expressions a little easier to read we also allow let expression
-as a syntactic sugar for lambda and application.
+as a syntactic sugar for $\lambda$ and application.
 
 > pLCLet :: (Read v) => ReadP (LC v)
 > pLCLet = do
@@ -84,7 +84,7 @@ as a syntactic sugar for lambda and application.
 > pVar :: (Read v) => ReadP v
 > pVar = do skipSpaces; readS_to_P (readsPrec 9)
 
-Pretty print lambda expressions when shown.
+Pretty print $\lambda$-expressions when shown.
 
 > instance (Show v) => Show (LC v) where
 >     show = renderStyle style . ppLC 0

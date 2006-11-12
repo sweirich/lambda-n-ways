@@ -1,4 +1,4 @@
-A fast type of identifiers, Ints, for lambda expressions.
+A fast type of identifiers, Ints, for $\lambda$-expressions.
 
 > module IdInt(IdInt(..), firstBoundId, toIdInt) where
 > import Data.Map as M
@@ -27,7 +27,7 @@ are free variables.
 
 Any variable type can be converted to IdInt if we can just build
 a table of them.
-The conversion assign a different Int to each different original
+The conversion assigns a different Int to each different original
 identifier.
 Free variables in the expression are translated into negative numbers
 so they are easily distinguished later.

@@ -7,7 +7,7 @@ using de Bruijn indicies.
 > import IdInt
 
 Variables are represented by their binding depth, i.e., how many
-lambdas out the binding lambda is.  Free variables are represented
+$\lambda$s out the binding $\lambda$ is.  Free variables are represented
 by negative numbers.
 
 > data DB = DVar Int | DLam DB | DApp DB DB

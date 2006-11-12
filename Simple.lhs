@@ -1,5 +1,5 @@
 The Simple module implements the Normal Form function by
-using a naive version of substitution.
+using a na\"{i}ve version of substitution.
 
 > module Simple(nf) where
 > import Data.List(union, (\\))
@@ -23,7 +23,9 @@ function.
 >         Lam x b -> nf (subst x a b)
 >         f' -> App (nf f') (nf a)
 
-Compute the weak head normal form.
+Compute the weak head normal form.  It is similar to computing the normal form,
+but it does not reduce under $\lambda$, nor does it touch an application
+that is not a $\beta$-redex.
 
 > whnf :: LC IdInt -> LC IdInt
 > whnf e@(Var _) = e
@@ -48,7 +50,7 @@ free variables of {\tt s} since this would case another
 accidental capture, nor must it be among the free variables
 of {\tt e'} since this could cause another accidental
 capture.  Conservatively, we avoid all variables occuring
-in the original {\tt b} to fulfillthe second requirement.
+in the original {\tt b} to fulfill the second requirement.
 
 > subst :: IdInt -> LC IdInt -> LC IdInt -> LC IdInt
 > subst x s b = sub b
