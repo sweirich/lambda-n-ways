@@ -16,34 +16,24 @@
 >         myNF ["D"] = DeBruijn.nf
 >         myNF ["S"] = Simple.nf
 
-Strip away Ada style comments.
+Timing in seconds on a MacBook processing the file {\tt timing.lam}.
 
-> stripComments :: String -> String
-> stripComments "" = ""
-> stripComments ('-':'-':cs) = skip cs
->   where skip "" = ""
->         skip s@('\n':_) = stripComments s
->         skip (_:s) = skip s
-> stripComments (c:cs) = c : stripComments cs
+\begin{center}
+\begin{tabular}{|l|r@{.}l|}
+\hline
+Simple.nf	& 8&3  \\
+Unique.nf	& 26&6 \\
+HOAS.nf		& 0&13 \\
+DeBruijn.nf     & 41&1 \\
+\hline
+\end{tabular}
+\end{center}
 
-Like `interact', but also pass program arguments.
+The $\lambda$-expression in {\tt timing.lam} computes
+``{\tt factorial 6 == sum [1..37] + 17}'', but using Church numerals.
 
-> interactArgs :: ([String] -> String -> String) -> IO ()
-> interactArgs f = do
->     args <- getArgs
->     interact (f args)
+\section{Conclusions}
+This test is too small to draw any deep conclusions, but higher order
+syntax looks very good.  Furthermore, doing the simplest thing is not
+necessarily bad.
 
-Timing, Sharp PC-MM20 (1GHz Efficeon CPU), for timing.lam
-Simple.nf	 38s
-Unique.nf	494s
-HOAS.nf		  1s
-
-       29
-      212
-        0.4
-
--O2
-       16
-       94
-        0.27
-       24
