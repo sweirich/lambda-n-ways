@@ -1,4 +1,4 @@
-> import System(getArgs)
+> import Misc
 > import Lambda
 > import IdInt
 > import Simple
@@ -9,12 +9,12 @@
 > main :: IO ()
 > main = interactArgs $
 >         \ args -> (++ "\n") . show . myNF args . toIdInt . f . read . stripComments
->   where f :: LC Id -> LC Id
+>   where f :: LC Id -> LC Id  -- just to force the type
 >         f e = e
 >         myNF ["U"] = Unique.nf
 >         myNF ["H"] = HOAS.nf
 >         myNF ["D"] = DeBruijn.nf
->         myNF  _    = Simple.nf
+>         myNF ["S"] = Simple.nf
 
 Strip away Ada style comments.
 

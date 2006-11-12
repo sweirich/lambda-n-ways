@@ -14,6 +14,7 @@ The LC type of $\lambda$ term is parametrized over the type of the variables.
 It has constructors for variables, $\lambda$-abstraction, and application.
 
 > data LC v = Var v | Lam v (LC v) | App (LC v) (LC v)
+>    deriving (Eq)
 
 Compute the free variables of an expression.
 
