@@ -5,6 +5,7 @@
 > import Unique
 > import HOAS
 > import DeBruijn
+> import DeBruijnC
 
 > main :: IO ()
 > main = interactArgs $
@@ -14,6 +15,7 @@
 >         myNF ["U"] = Unique.nf
 >         myNF ["H"] = HOAS.nf
 >         myNF ["D"] = DeBruijn.nf
+>         myNF ["C"] = DeBruijnC.nf
 >         myNF ["S"] = Simple.nf
 
 Timing in seconds on a MacBook processing the file {\tt timing.lam}.
@@ -25,6 +27,7 @@ Simple.nf	& 8&3  \\
 Unique.nf	& 26&6 \\
 HOAS.nf		& 0&13 \\
 DeBruijn.nf     & 41&1 \\
+DeBruijnEnv.nf  & 41&1 \\
 \hline
 \end{tabular}
 \end{center}
