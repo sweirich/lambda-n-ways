@@ -35,7 +35,7 @@ The $\lambda$-expression in {\tt timing.lam} computes
 \mbox{}\\
 \mbox{}\\
 {\tt timing.lam:}
-\begin{code}
+\begin{verbatim}
 let False = \f.\t.f;
     True = \f.\t.t;
     if = \b.\t.\f.b f t;
@@ -62,7 +62,7 @@ let False = \f.\t.f;
     n703 = sumto n37;
     n720 = fac n6
 in  eqnat n720 (add n703 n17)
-\end{code}
+\end{verbatim}
 
 \section{Conclusions}
 This test is too small to draw any deep conclusions, but higher order
