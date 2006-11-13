@@ -10,7 +10,7 @@ Variables are represented by their binding depth, i.e., how many
 $\lambda$s out the binding $\lambda$ is.  Free variables are represented
 by negative numbers.
 
-> data DB = DVar Int | DLam DB | DApp DB DB
+> data DB = DVar !Int | DLam DB | DApp DB DB
 
 > nf :: LC IdInt -> LC IdInt
 > nf = fromDB . nfd . toDB
