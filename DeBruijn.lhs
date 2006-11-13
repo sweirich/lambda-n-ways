@@ -40,7 +40,7 @@ so the free variables refer to the correct binders.
 
 > subst :: Int -> DB -> DB -> DB
 > subst o s v@(DVar i) | i == o = adjust 0 s
->                      | i >  o = DVar $! (i-1)
+>                      | i >  o = DVar (i-1)
 >                      | otherwise = v
 >   where adjust n e@(DVar j) | j >= n = DVar (j+o)
 >                             | otherwise = e
