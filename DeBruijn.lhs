@@ -2,7 +2,7 @@ The DeBruijn module implements the Normal Form function by
 using de Bruijn indicies.
 
 > module DeBruijn(nf) where
-> import List(elemIndex)
+> import Data.List(elemIndex)
 > import Lambda
 > import IdInt
 

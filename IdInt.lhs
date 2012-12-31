@@ -34,8 +34,8 @@ so they are easily distinguished later.
 
 > toIdInt :: (Ord v) => LC v -> LC IdInt
 > toIdInt e = evalState (conv e) (0, fvmap)
->   where fvmap = foldr (\ (v, i) m -> insert v (IdInt (-i)) m) empty
->                       (zip (freeVars e) [1..])
+>   where fvmap = Prelude.foldr (\ (v, i) m -> insert v (IdInt (-i)) m) empty
+>                               (zip (freeVars e) [1..])
 
 The state monad has the next unused Int and a mapping of identifiers to IdInt.
 

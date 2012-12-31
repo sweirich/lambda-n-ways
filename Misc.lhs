@@ -1,5 +1,5 @@
 > module Misc(stripComments, interactArgs) where
-> import System(getArgs)
+> import System.Environment(getArgs)
 
 Strip away Ada style comments.
 
