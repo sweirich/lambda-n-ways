@@ -1,3 +1,11 @@
 *.hi
 *.o
 LC
+DeBruijn.tex
+HOAS.tex
+IdInt.tex
+Lambda.tex
+Main.tex
+Simple.tex
+Unique.tex
+top.aux
