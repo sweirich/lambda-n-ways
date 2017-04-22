@@ -1,6 +1,6 @@
 The Lambda module implements a simple abstract syntax for
 $\lambda$-calculus together with a parser and a printer for it.
-It also exports a simple type if identifiers that parse and
+It also exports a simple type of identifiers that parse and
 print in a nice way.
 
 > module Lambda(LC(..), freeVars, allVars, Id(..)) where
