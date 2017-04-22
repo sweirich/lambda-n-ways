@@ -1,21 +1,16 @@
 GHC = ghc
-#GHC = /usr/local/bin/ghc
 
 TEXFILES = DeBruijn.tex HOAS.tex IdInt.tex Lambda.tex Main.tex Simple.tex Unique.tex
 
-.SUFFIXES : .lhs .tex
+.SUFFIXES: .lhs .tex
 
-.lhs.tex :
+.lhs.tex:
 	awk -f bird2code.awk $< > $*.tex
-
 
 LC:	*.lhs
 	$(GHC) -O2 -Wall --make Main.lhs -o LC
 
-CMain:	*.lhs *.hs
-	$(GHC) -Wall --make CMain.hs -o CMain
-
-top.dvi:	top.tex $(TEXFILES)
+top.dvi: top.tex $(TEXFILES)
 	latex top.tex; latex top.tex
 
 top.ps:	top.dvi
