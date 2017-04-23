@@ -46,9 +46,9 @@ A ReadP parser for $\lambda$-expressions.
 >     return $ Var v
 >
 > pLCLam = do
->     schar '\\'
+>     _ <- schar '\\'
 >     v <- pVar
->     schar '.'
+>     _ <- schar '.'
 >     e <- pLC
 >     return $ Lam v e
 >
@@ -56,7 +56,7 @@ A ReadP parser for $\lambda$-expressions.
 >     es <- many1 pLCAtom
 >     return $ foldl1 App es
 >
-> pLCAtom = pLCVar +++ (do schar '('; e <- pLC; schar ')'; return e)
+> pLCAtom = pLCVar +++ (do _ <- schar '('; e <- pLC; _ <- schar ')'; return e)
 
 To make expressions a little easier to read we also allow let expression
 as a syntactic sugar for $\lambda$ and application.
@@ -66,12 +66,12 @@ as a syntactic sugar for $\lambda$ and application.
 >     let lcLet (x,e) b = App (Lam x b) e
 >         pDef = do
 >           v <- pVar
->           schar '='
+>           _ <- schar '='
 >           e <- pLC
 >           return (v, e)
->     sstring "let"
+>     _ <- sstring "let"
 >     bs <- sepBy pDef (schar ';')
->     sstring "in"
+>     _ <- sstring "in"
 >     e <- pLC
 >     return $ foldr lcLet e bs
 
@@ -114,4 +114,3 @@ Identifiers print and parse without any adornment.
 >         case span isAlphaNum s of
 >         ("", _) -> []
 >         (i, s') -> [(Id i, s')]
-
