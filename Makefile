@@ -11,13 +11,13 @@ LC:	*.lhs
 	$(GHC) -package mtl -O2 -Wall --make Main.lhs -o LC
 
 top.dvi: top.tex $(TEXFILES)
-	latex top.tex; latex top.tex
+	latex top.tex && latex top.tex
 
 top.ps:	top.dvi
 	dvips -t A4 top.dvi -o top.ps
 
-top.pdf:	top.tex $(TEXFILES)
-	pdflatex top.tex; pdflatex top.tex
+top.pdf: top.tex $(TEXFILES)
+	pdflatex top.tex && pdflatex top.tex
 
 .PHONY: timing
 timing:	LC
