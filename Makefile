@@ -8,7 +8,8 @@ TEXFILES = DeBruijn.tex HOAS.tex IdInt.tex Lambda.tex Main.tex Simple.tex Unique
 	awk -f bird2code.awk $< > $*.tex
 
 LC:	*.lhs
-	$(GHC) -package mtl -O2 -Wall --make Main.lhs -o LC
+#	$(GHC) -package mtl -O2 -Wall --make Main.lhs -o LC
+	stack build --copy-bins --local-bin-path .
 
 top.dvi: top.tex $(TEXFILES)
 	latex top.tex && latex top.tex

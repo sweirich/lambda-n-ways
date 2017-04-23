@@ -1,0 +1,24 @@
+name: lambda-calculus-cooked-four-ways
+github: steshaw/lennart-lambda
+
+ghc-options:
+  - -Wall
+  - -O2
+
+executables:
+  LC:
+    main: Main.lhs
+    other-modules:
+      - DeBruijn
+      - DeBruijnC
+      - HOAS
+      - IdInt
+      - Lambda
+      - Misc
+      - Simple
+      - Unique
+    dependencies:
+      - base
+      - containers
+      - mtl
+      - pretty

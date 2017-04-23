@@ -71,4 +71,3 @@ in  eqnat n720 (add n703 n17)
 This test is too small to draw any deep conclusions, but higher order
 syntax looks very good.  Furthermore, doing the simplest thing is not
 necessarily bad.
-
