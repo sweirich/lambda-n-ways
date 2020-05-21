@@ -16,7 +16,6 @@
 
 > import Unbound.LocallyNameless
 
-
 > data Exp = Var (Name Exp)
 >          | Lam (Bind (Name Exp) Exp)
 >         | App Exp Exp
@@ -72,9 +71,9 @@ Convert from LC type to DB type (try to do this in linear time??)
 > toDB :: L.LC IdInt -> Exp
 > toDB = to
 >   where to :: L.LC IdInt -> Exp
->         to (L.Var (IdInt v))   = Var (s2n (show v))
->         to (L.Lam (IdInt x) b) = Lam (bind (s2n (show x)) (to b))
->         to (L.App f a)         = App (to f)(to a)
+>         to (L.Var v)   = Var (i2n v)
+>         to (L.Lam x b) = Lam (bind (i2n x) (to b))
+>         to (L.App f a) = App (to f)(to a)
 >
 
 
@@ -87,9 +86,11 @@ Convert back from deBruijn to the LC type.
 > i2n (IdInt x) = s2n (show x)
 
 > fromDB :: Exp -> L.LC IdInt
-> fromDB = from firstBoundId
->   where from :: IdInt -> Exp -> L.LC IdInt
->         from _ (Var n)   = L.Var (n2i n)
->         from n (Lam b)   = L.Lam n (from (succ n) (substBind b (Var (i2n n))))
->         from n (App f a) = L.App (from n f) (from n a) 
+> fromDB = runFreshM . from 
+>   where from :: Exp -> FreshM (L.LC IdInt)
+>         from (Var n)   = return $ L.Var (n2i n)
+>         from (Lam b)   = do
+>             (x,a) <- unbind b
+>             L.Lam (n2i x) <$> from a
+>         from (App f a) = L.App <$> from f <*> from a 
 
