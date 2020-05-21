@@ -21,6 +21,11 @@ convert back.
 > nf :: LC IdInt -> LC IdInt
 > nf = toLC . nfh . fromLC
 
+> aeq :: LC IdInt -> LC IdInt -> Bool
+> aeq x y = aeq' (fromLC x) (fromLC y)
+
+> aeq' x y = undefined
+
 The substitution step for HOAS is simply a Haskell application since we
 use a Haskell function to represent the abstraction.
 

@@ -36,11 +36,12 @@ executable LC
       Unbound
   ghc-options: -Wall -O2 -funfolding-use-threshold=16
   build-depends:
-      base
-    , containers
-    , mtl
-    , pretty
-    , bound
-    , unbound
-    , criterion
+                    base
+                , bound
+                , containers
+                , criterion
+                , deepseq >= 1.4.4.0
+                , mtl
+                , pretty
+                , unbound
   default-language: Haskell2010

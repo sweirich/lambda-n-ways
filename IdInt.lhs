@@ -1,14 +1,16 @@
 A fast type of identifiers, Ints, for $\lambda$-expressions.
 
+> {-# LANGUAGE DeriveGeneric #-}
 > module IdInt(IdInt(..), firstBoundId, toIdInt) where
 > import Data.Map as M
 > import Control.Monad.State
+> import GHC.Generics
 > import Lambda
 
 An IdInt is just another name for an Int.
 
 > newtype IdInt = IdInt Int
->     deriving (Eq, Ord)
+>     deriving (Eq, Ord, Generic)
 >
 > firstBoundId :: IdInt
 > firstBoundId = IdInt 0

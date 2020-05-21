@@ -11,3 +11,5 @@ Main.tex
 Simple.tex
 Unique.tex
 top.aux
+dist-newstyle/
+stack.yaml.lock

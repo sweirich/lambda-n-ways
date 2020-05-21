@@ -1,8 +1,10 @@
+
 The Lambda module implements a simple abstract syntax for
 $\lambda$-calculus together with a parser and a printer for it.
 It also exports a simple type of identifiers that parse and
 print in a nice way.
 
+> {-# LANGUAGE DeriveGeneric #-}
 > module Lambda(LC(..), freeVars, allVars, Id(..)) where
 > import Data.List(union, (\\))
 > import Data.Char(isAlphaNum)
@@ -10,12 +12,13 @@ print in a nice way.
 >            (<+>), parens)
 > import qualified Text.PrettyPrint.HughesPJ as PP
 > import Text.ParserCombinators.ReadP
+> import GHC.Generics
 
 The LC type of $\lambda$ term is parametrized over the type of the variables.
 It has constructors for variables, $\lambda$-abstraction, and application.
 
 > data LC v = Var v | Lam v (LC v) | App (LC v) (LC v)
->    deriving (Eq)
+>    deriving (Eq, Generic)
 
 Compute the free variables of an expression.
 

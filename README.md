@@ -66,7 +66,9 @@ substitution using a single pathological case: computing the normal form of
 
      make timing
 	 
-## Latest results	 
+## Latest results
+
+See [bench.html](bench.html)
 
 Ranked by user time
 

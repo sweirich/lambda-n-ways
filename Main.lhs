@@ -11,36 +11,53 @@
 > import BoundDB
 > import Unbound
 > import DeBruijnScoped
+>
+> import Criterion.Main
+> import Control.DeepSeq
+
+> instance NFData a => NFData (LC a)
+> instance NFData IdInt
+
+> nfs :: [(String, LC IdInt -> LC IdInt)]
+> nfs = [("Simple", Simple.nf), 
+>         ("Unique", Unique.nf), 
+>         ("HOAS", HOAS.nf), 
+>         ("DB", DeBruijn.nf), 
+>         ("DB_C", DeBruijnC.nf), 
+>         ("DB_P", DeBruijnPar.nf), 
+>         ("DB_B", DeBruijnParB.nf), 
+>         ("Bound", BoundDB.nf), 
+>         ("Unbound", Unbound.nf), 
+>         ("Scoped", DeBruijnScoped.nf)]
+>
+> aeqs :: [(String, LC IdInt -> LC IdInt -> Bool)]
+> aeqs = [ -- ("Simple", Simple.aeq), 
+>         ("Unique", Unique.aeq), 
+>         ("HOAS", HOAS.aeq), 
+>         ("DB", DeBruijn.aeq), 
+>         ("DB_C", DeBruijnC.aeq), 
+>         ("DB_P", DeBruijnPar.aeq), 
+>         ("DB_B", DeBruijnParB.aeq), 
+>         ("Bound", BoundDB.aeq), 
+>         ("Unbound", Unbound.aeq), 
+>         ("Scoped", DeBruijnScoped.aeq)]
+
+> getTerm :: IO (LC Id)
+> getTerm = do
+>   contents <- readFile "timing.lam"
+>   return $ read (stripComments contents)
+
 
 > main :: IO ()
-> main = interactArgs $
->         \ args -> (++ "\n") . show . myNF args . toIdInt . f . read . stripComments
->   where f :: LC Id -> LC Id  -- just to force the type
->         f e = e
->         myNF ["Simple"] = Simple.nf
->         myNF ["Unique"] = Unique.nf
->         myNF ["HOAS"] = HOAS.nf
->         myNF ["DB"]   = DeBruijn.nf
->         myNF ["DB_C"] = DeBruijnC.nf
->         myNF ["DB_P"] = DeBruijnPar.nf
->         myNF ["DB_B"] = DeBruijnParB.nf
->         myNF ["Bound"] = BoundDB.nf
->         myNF ["Unbound"] = Unbound.nf
->         myNF ["Scoped"] = DeBruijnScoped.nf
+> main = do
+>   tm <- getTerm
+>   let myNF g = g (toIdInt tm)
+>   defaultMain [
+>      bgroup "nf" $ map (\(n,f) -> bench n $ Criterion.Main.nf myNF f) nfs
+>      ]
+>
+> 
 
-Timing in seconds on a MacBook processing the file {\tt timing.lam}.
-
-\begin{center}
-\begin{tabular}{|l|r@{.}l|}
-\hline
-Simple.nf	& 8&3  \\
-Unique.nf	& 26&6 \\
-HOAS.nf		& 0&13 \\
-DeBruijn.nf     & 41&1 \\
-DeBruijnEnv.nf  & 41&1 \\
-\hline
-\end{tabular}
-\end{center}
 
 The $\lambda$-expression in {\tt timing.lam} computes
 ``{\tt factorial 6 == sum [1..37] + 17}'', but using Church numerals.
@@ -77,7 +94,3 @@ let False = \f.\t.f;
 in  eqnat n720 (add n703 n17)
 \end{verbatim}
 
-\section{Conclusions}
-This test is too small to draw any deep conclusions, but higher order
-syntax looks very good.  Furthermore, doing the simplest thing is not
-necessarily bad.

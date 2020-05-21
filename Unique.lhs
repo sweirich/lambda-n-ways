@@ -90,3 +90,4 @@ Find an existing variable in the mapping.
 > getVar v = do
 >     (_, m) <- get
 >     return $ maybe v id (M.lookup v m)
+
