@@ -53,6 +53,17 @@ substitution using a single pathological case: computing the normal form of
 	 
 ## Latest results	 
 
+Ranked by user time
+
+	DB_C   0m0.003s  (doesn't implement substitution)
+	DB_B   0m0.010s
+	Bound  0m0.028s
+	HOAS   0m0.033s
+	DB_P   0m0.856s
+	Simple 0m2.383s
+	DB     0m3.585s
+	Unique 0m9.905s
+
 MacBook Pro, 13-inch, Early 2015, 16 GB, Under macOS Catalina 10.15.4
 
 	time ./LC Simple < timing.lam
