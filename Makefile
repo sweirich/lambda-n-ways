@@ -31,6 +31,7 @@ timing:	LC
 	time ./LC DB_B < timing.lam
 	time ./LC Bound < timing.lam
 	time ./LC Unbound < timing.lam
+	time ./LC Scoped < timing.lam
 
 .PHONY:	clean
 clean:

@@ -10,7 +10,7 @@
 > import DeBruijnParB
 > import BoundDB
 > import Unbound
-
+> import DeBruijnScoped
 
 > main :: IO ()
 > main = interactArgs $
@@ -26,6 +26,7 @@
 >         myNF ["DB_B"] = DeBruijnParB.nf
 >         myNF ["Bound"] = BoundDB.nf
 >         myNF ["Unbound"] = Unbound.nf
+>         myNF ["Scoped"] = DeBruijnScoped.nf
 
 Timing in seconds on a MacBook processing the file {\tt timing.lam}.
 

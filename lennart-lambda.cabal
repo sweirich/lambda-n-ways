@@ -23,6 +23,8 @@ executable LC
       DeBruijnC
       DeBruijnPar
       DeBruijnParB
+      SubstScoped
+      DeBruijnScoped
       Subst
       HOAS
       IdInt
@@ -40,4 +42,5 @@ executable LC
     , pretty
     , bound
     , unbound
+    , criterion
   default-language: Haskell2010

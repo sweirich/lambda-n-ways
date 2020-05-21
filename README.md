@@ -9,21 +9,26 @@ substitution using a single pathological case: computing the normal form of
 # Original four:
 
 - Simple
+
   Naive substitution. Renames variables to avoid capture
   
 - Unique
+
   Maintains the invariant that all bound variables are unique
   
 - HOAS
+
   Higher-order abstract synatax (uses Haskell functions for lambda calculus
   functions)
 
 - Debruijn
+
   DeBruijn indices that shifts during substitution.
 
 # Contributed by Bertram Felgenhauer 
 
-- DeBruijnC
+- DeBruijnC [DB_C]
+
   (This version doesn't really count because there is no definition 
   of substitution. But it is the fastest!)
   DeBruijn indices without substitutions. Adds a "closure" form to the
@@ -31,20 +36,29 @@ substitution using a single pathological case: computing the normal form of
 
 # Added by SCW
 
-- DeBruijnPar
+- DeBruijnPar [DB_P]
+
   Parallel substitution version (with reified substs). Based on
   https://github.com/sweirich/challenge/blob/master/debruijn/debruijn1.md
 
-- DeBruijnParB
+- DeBruijnParB [DB_B]
+
   Above, but caches a substitution in terms.
-  Also provides general purpose library in [Subst](Subst.hs)
+  Uses general purpose library in [Subst](Subst.hs)
   Optimized version described here
   https://github.com/sweirich/challenge/tree/master/debruijn
 
-- BoundDB
+- DeBruijnScoped [DB_S]
+
+  Above, but uses a GADT to enforce that the syntax is well-scoped.
+
+- BoundDB 
+
   Uses Kmett's [bound](https://hackage.haskell.org/package/bound) library
+  (Note: maybe there is a faster way to convert from named to bound representation.)
 
 - Unbound
+
   Uses the [unbound](https://hackage.haskell.org/package/unbound) library
 
 
