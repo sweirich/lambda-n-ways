@@ -1,0 +1,43 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.33.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 86e559d14a59a55b7ed0344ba1fa1a93d8d6e9a3c27022bcd8ae32d8d9fb4f04
+
+name:           lennart-lambda
+version:        0.0.0
+homepage:       https://github.com/steshaw/lennart-lambda#readme
+bug-reports:    https://github.com/steshaw/lennart-lambda/issues
+build-type:     Simple
+
+source-repository head
+  type: git
+  location: https://github.com/sweirich/lennart-lambda
+
+executable LC
+  main-is: Main.lhs
+  other-modules:
+      DeBruijn
+      DeBruijnC
+      DeBruijnPar
+      DeBruijnParB
+      Subst
+      HOAS
+      IdInt
+      Lambda
+      Misc
+      Simple
+      Unique
+      BoundDB
+      Unbound
+  ghc-options: -Wall -O2 -funfolding-use-threshold=16
+  build-depends:
+      base
+    , containers
+    , mtl
+    , pretty
+    , bound
+    , unbound
+  default-language: Haskell2010

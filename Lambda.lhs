@@ -4,10 +4,11 @@ It also exports a simple type of identifiers that parse and
 print in a nice way.
 
 > module Lambda(LC(..), freeVars, allVars, Id(..)) where
-> import Data.List(span, union, (\\))
+> import Data.List(union, (\\))
 > import Data.Char(isAlphaNum)
 > import Text.PrettyPrint.HughesPJ(Doc, renderStyle, style, text,
->            (<>), (<+>), parens)
+>            (<+>), parens)
+> import qualified Text.PrettyPrint.HughesPJ as PP
 > import Text.ParserCombinators.ReadP
 
 The LC type of $\lambda$ term is parametrized over the type of the variables.
@@ -92,7 +93,7 @@ Pretty print $\lambda$-expressions when shown.
 >
 > ppLC :: (Show v) => Int -> LC v -> Doc
 > ppLC _ (Var v) = text $ show v
-> ppLC p (Lam v e) = pparens (p>0) $ text ("\\" ++ show v ++ ".") <> ppLC 0 e
+> ppLC p (Lam v e) = pparens (p>0) $ text ("\\" ++ show v ++ ".") PP.<> ppLC 0 e
 > ppLC p (App f a) = pparens (p>1) $ ppLC 1 f <+> ppLC 2 a
 
 > pparens :: Bool -> Doc -> Doc

@@ -6,17 +6,26 @@
 > import HOAS
 > import DeBruijn
 > import DeBruijnC
+> import DeBruijnPar
+> import DeBruijnParB
+> import BoundDB
+> import Unbound
+
 
 > main :: IO ()
 > main = interactArgs $
 >         \ args -> (++ "\n") . show . myNF args . toIdInt . f . read . stripComments
 >   where f :: LC Id -> LC Id  -- just to force the type
 >         f e = e
->         myNF ["U"] = Unique.nf
->         myNF ["H"] = HOAS.nf
->         myNF ["D"] = DeBruijn.nf
->         myNF ["C"] = DeBruijnC.nf
->         myNF ["S"] = Simple.nf
+>         myNF ["Simple"] = Simple.nf
+>         myNF ["Unique"] = Unique.nf
+>         myNF ["HOAS"] = HOAS.nf
+>         myNF ["DB"]   = DeBruijn.nf
+>         myNF ["DB_C"] = DeBruijnC.nf
+>         myNF ["DB_P"] = DeBruijnPar.nf
+>         myNF ["DB_B"] = DeBruijnParB.nf
+>         myNF ["Bound"] = BoundDB.nf
+>         myNF ["Unbound"] = Unbound.nf
 
 Timing in seconds on a MacBook processing the file {\tt timing.lam}.
 

@@ -22,11 +22,15 @@ top.pdf: top.tex $(TEXFILES)
 
 .PHONY: timing
 timing:	LC
-	time ./LC S < timing.lam
-	time ./LC U < timing.lam
-	time ./LC H < timing.lam
-	time ./LC D < timing.lam
-	time ./LC C < timing.lam
+	time ./LC Simple < timing.lam
+	time ./LC Unique < timing.lam
+	time ./LC HOAS < timing.lam
+	time ./LC DB < timing.lam
+	time ./LC DB_C < timing.lam
+	time ./LC DB_P < timing.lam
+	time ./LC DB_B < timing.lam
+	time ./LC Bound < timing.lam
+	time ./LC Unbound < timing.lam
 
 .PHONY:	clean
 clean:
