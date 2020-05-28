@@ -1,10 +1,11 @@
 The DeBruijn module implements the Normal Form function by
 using de Bruijn indicies.
 
-> module DeBruijnPar(nf) where
+> module DeBruijnPar(nf,aeq,nfd,aeqd,toDB,fromDB) where
 > import Data.List(elemIndex)
 > import Lambda
 > import IdInt
+> import Control.DeepSeq
 
 Variables are represented by their binding depth, i.e., how many
 $\lambda$s out the binding $\lambda$ is.  Free variables are represented
@@ -21,7 +22,22 @@ none: user	0m4.180s
 2,3,4:
 
 > -- 4 
-> data DB = DVar !Int | DLam !DB | DApp !DB !DB
+> data DB = DVar {-# unpack #-} !Int | DLam !DB
+>         | DApp !DB  !DB
+>   deriving (Eq)
+>
+> instance NFData DB where
+>    rnf (DVar i) = rnf i
+>    rnf (DLam d) = rnf d
+>    rnf (DApp a b) = rnf a `seq` rnf b
+
+
+> aeq :: LC IdInt -> LC IdInt -> Bool
+> aeq x y = aeqd (toDB x) (toDB y)
+
+> aeqd :: DB -> DB -> Bool
+> aeqd = (==)
+
 
 > nf :: LC IdInt -> LC IdInt
 > nf = fromDB . nfd . toDB

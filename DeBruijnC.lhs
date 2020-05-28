@@ -6,17 +6,30 @@
  - Author: Bertram Felgenhauer <int-e@gmx.de>
  -}
 
-module DeBruijnC (nf) where
+module DeBruijnC (nf,aeq,nfd,fromLC,toLC) where
 
 import Lambda
 import IdInt
 import Data.List
+import Control.DeepSeq
 
 data DB v = DFree v              -- free variable
           | DBound Int           -- bound variable, uses de Bruijn index
           | DLam (DB v)          -- lambda abstraction (unbound)
           | DApp (DB v) (DB v)   -- application
           | DCont (DB v) [DB v]  -- lambda abstraction (bound to a context)
+   deriving (Eq)
+
+instance NFData a => NFData (DB a) where
+   rnf (DFree i) = rnf i
+   rnf (DBound i) = rnf i
+   rnf (DLam d) = rnf d
+   rnf (DApp a b) = rnf a `seq` rnf b
+   rnf (DCont x y) = rnf x `seq` rnf y
+
+
+nfd :: DB IdInt -> DB IdInt
+nfd = dbnf []
 
 -- Reduce DB expression to normal form.
 dbnf :: [DB v] -> (DB v) -> (DB v)
@@ -29,6 +42,17 @@ dbnf ctx (DApp t s) = let t' = dbnf ctx t
                           DCont t'' ctx' -> dbnf (s':ctx') t''
                           _              -> DApp t' s'
 dbnf   _ (DCont _ _) = error "dbnf: cound DCont"
+
+aeq :: LC IdInt -> LC IdInt -> Bool
+aeq x y = aeqd (fromLC [] x) (fromLC [] y)
+
+aeqd :: DB IdInt -> DB IdInt -> Bool
+aeqd (DFree v1) (DFree v2) = v1 == v2
+aeqd (DBound i1) (DBound i2) = i1 == i2
+aeqd (DApp a1 a2) (DApp b1 b2) = a1 == b1 && a2 == b2
+aeqd (DCont _ _) (DCont _ _) = error "found DCont in aeqd"
+aeqd _ _ = False
+
 
 -- wrapper
 nf :: LC IdInt -> LC IdInt

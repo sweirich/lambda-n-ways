@@ -1,6 +1,5 @@
 
 
-
 > {-# LANGUAGE UndecidableInstances #-}
 > {-# LANGUAGE FlexibleInstances #-}
 > {-# LANGUAGE MultiParamTypeClasses #-}
@@ -8,51 +7,69 @@
 > {-# LANGUAGE DeriveFoldable #-}
 > {-# LANGUAGE DeriveTraversable #-}
 > {-# LANGUAGE TemplateHaskell #-}
-> module Unbound(nf) where
+> module Unbound(nf,Unbound.aeq, aeqd, fromDB, toDB, nfu) where
 > import qualified Lambda as L
 > import IdInt
 >
 > import Control.Monad
+> import qualified Control.DeepSeq as DS
 
-> import Unbound.LocallyNameless
+> import Unbound.LocallyNameless as U
 
-> data Exp = Var (Name Exp)
->          | Lam (Bind (Name Exp) Exp)
->         | App Exp Exp
->  deriving Show
+> data Exp = Var (U.Name Exp)
+>          | Lam (U.Bind (U.Name Exp) Exp)
+>          | App Exp Exp
+>  deriving (Show)
+>
+> instance DS.NFData Exp where
+>    rnf (Var n)     = ()
+>    rnf (Lam bnd)   = () -- DS.rnf bnd
+>    rnf (App e1 e2) = DS.rnf e1 `seq` DS.rnf e2
 
 -- Use RepLib to derive representation types
 
-> $(derive [''Exp])
+> $(U.derive [''Exp])
 
 -- | With representation types, tbe default implementation of Alpha
 -- provides alpha-equivalence and free variable calculation.
 
-> instance Alpha Exp
+> aeq :: L.LC IdInt -> L.LC IdInt -> Bool
+> aeq x y = U.aeq (toDB x) (toDB y)
+
+> fromLC :: L.LC IdInt -> Exp
+> fromLC = toDB
+> 
+> aeqd :: Exp -> Exp -> Bool
+> aeqd = U.aeq
+
+> instance U.Alpha Exp
 
 -- | The subst class uses generic programming to implement capture
 -- avoiding substitution. It just needs to know where the variables
 -- are.
 
-> instance Subst Exp Exp where
->   isvar (Var x) = Just (SubstName x)
+> instance U.Subst Exp Exp where
+>   isvar (Var x) = Just (U.SubstName x)
 >   isvar _       = Nothing
 
 
+> nfu :: Exp -> Exp
+> nfu = runFreshM . nfd
+
 > nf :: L.LC IdInt -> L.LC IdInt
-> nf = fromDB . runFreshM .  nfd . toDB
+> nf = fromDB . nfu . toDB
 
 Computing the normal form proceeds as usual.
 
 > nfd :: Exp -> FreshM Exp
 > nfd e@(Var _) = return e
 > nfd (Lam e)   =
->   do (x, e') <- unbind e
+>   do (x, e') <- U.unbind e
 >      e1 <- nfd e'
->      return $ Lam (bind x e1)
+>      return $ Lam (U.bind x e1)
 > nfd (App f a) =
 >     case whnf f of
->         Lam b -> nfd (substBind b a)
+>         Lam b -> nfd (U.substBind b a)
 >         f' -> App <$> nfd f' <*> nfd a
 
 Compute the weak head normal form.

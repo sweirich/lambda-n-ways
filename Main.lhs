@@ -1,3 +1,9 @@
+> {-# LANGUAGE ExistentialQuantification #-}
+> {-# LANGUAGE BangPatterns #-}
+> {-# LANGUAGE RecordWildCards #-}
+> 
+> module Main where
+> 
 > import Misc
 > import Lambda
 > import IdInt
@@ -14,9 +20,56 @@
 >
 > import Criterion.Main
 > import Control.DeepSeq
+>
+>
+> data LamImpl =
+>   forall a. NFData a =>
+>       LamImpl
+>          { impl_name   :: String ,
+>            impl_fromLC :: LC IdInt -> a ,
+>            impl_toLC   :: a -> LC IdInt,
+>            impl_nf :: a -> a,
+>            impl_aeq    :: Maybe (a -> a -> Bool)
+>          }
+>
+> data Bench =
+>   forall a. Bench String (a -> ()) a
+> 
+> impls :: [LamImpl]
+> impls = [ LamImpl "Simple" id id Simple.nf (Just Simple.aeq)
+>         , LamImpl "Unique" id id Unique.nf (Just Unique.aeq)
+>         , LamImpl "HOAS"   HOAS.fromLC HOAS.toLC HOAS.nfh Nothing
+>         , LamImpl "DB" DeBruijn.toDB DeBruijn.fromDB DeBruijn.nfd (Just (==))
+>         , LamImpl "DB_C" (DeBruijnC.fromLC [])
+>                          (DeBruijnC.toLC 0)
+>                           DeBruijnC.nfd (Just (==))
+>         , LamImpl "DB_P" DeBruijnPar.toDB DeBruijnPar.fromDB DeBruijnPar.nfd
+>                          (Just (==))
+>         , LamImpl "DB_B" DeBruijnParB.toDB DeBruijnParB.fromDB DeBruijnParB.nfd
+>                          (Just (==))
+>         , LamImpl "Bound" BoundDB.toDB BoundDB.fromDB BoundDB.nfd
+>                          (Just (==))
+> --        , LamImpl "Unbound" Unbound.toDB Unbound.fromDB Unbound.nfu
+> --                         (Just Unbound.aeqd)
+>         , LamImpl "Scoped"
+>                          DeBruijnScoped.toDB DeBruijnScoped.fromDB DeBruijnScoped.nfd
+>                          (Just (==))
+>         ]
 
-> instance NFData a => NFData (LC a)
-> instance NFData IdInt
+> nf_bs :: LC IdInt -> [Bench]
+> nf_bs lc = map impl2nf impls where
+>   impl2nf (LamImpl {..}) =
+>     let! tm = force (impl_fromLC lc) in
+>     Bench impl_name (rnf . impl_nf) tm
+
+> aeq_bs :: LC IdInt -> LC IdInt -> [Bench]
+> aeq_bs lc1 lc2 = map impl2nf impls where
+>   impl2nf (LamImpl {..}) =
+>     let! tm1 = force (impl_fromLC lc1) in
+>     let! tm2 = force (impl_fromLC lc2) in
+>     let  a   = case impl_aeq of { Just f -> f ; Nothing -> \x y -> True } in
+>     Bench impl_name (\(x,y) -> rnf (a x y)) (tm1,tm2)
+
 
 > nfs :: [(String, LC IdInt -> LC IdInt)]
 > nfs = [("Simple", Simple.nf), 
@@ -31,9 +84,9 @@
 >         ("Scoped", DeBruijnScoped.nf)]
 >
 > aeqs :: [(String, LC IdInt -> LC IdInt -> Bool)]
-> aeqs = [ -- ("Simple", Simple.aeq), 
+> aeqs = [ ("Simple", Simple.aeq), 
 >         ("Unique", Unique.aeq), 
->         ("HOAS", HOAS.aeq), 
+>         -- ("HOAS", HOAS.aeq),  -- No good definition
 >         ("DB", DeBruijn.aeq), 
 >         ("DB_C", DeBruijnC.aeq), 
 >         ("DB_P", DeBruijnPar.aeq), 
@@ -51,10 +104,17 @@
 > main :: IO ()
 > main = do
 >   tm <- getTerm
->   let myNF g = g (toIdInt tm)
+>   let tm1 = toIdInt tm
+>   return $! rnf tm1
+>   let tm2 = toIdInt (toUnique tm1)
+>   return $! rnf tm2
+>   let! nfs = nf_bs tm1
+>   let! aeqs = aeq_bs tm1 tm2
+>   let runBench (Bench n f x) = bench n $ Criterion.Main.nf f x
 >   defaultMain [
->      bgroup "nf" $ map (\(n,f) -> bench n $ Criterion.Main.nf myNF f) nfs
->      ]
+>      bgroup "nf" $ map runBench nfs
+>    , bgroup "aeq" $ map runBench aeqs
+>    ]
 >
 > 
 

@@ -8,11 +8,12 @@ It uses parallel substitutions and explcit substitutions stored in the term.
 > {-# LANGUAGE TypeFamilies #-}
 > {-# LANGUAGE TypeOperators #-}
 > {-# LANGUAGE UndecidableInstances #-}
-> module DeBruijnScoped(nf) where
+> module DeBruijnScoped(nf,aeq, toDB, fromDB, nfd) where
 > import Data.List(elemIndex)
 > import Lambda
 > import IdInt
 > import SubstScoped
+> import Control.DeepSeq
 
 > import Text.PrettyPrint.HughesPJ(Doc, renderStyle, style, text,
 >            (<+>), parens)
@@ -32,6 +33,12 @@ the sub to be suspended (and perhaps optimized).
 >   DLam :: !(Bind DB n) -> DB n
 >   DApp :: !(DB n) -> !(DB n) -> DB n
 
+> instance NFData (DB a) where
+>    rnf (DVar i) = rnf i
+>    rnf (DLam d) = rnf d
+>    rnf (DApp a b) = rnf a `seq` rnf b
+
+
 Alpha equivalence requires pushing delayed substitutions into the terms
 
 > instance Eq (DB n) where
@@ -40,6 +47,11 @@ Alpha equivalence requires pushing delayed substitutions into the terms
 >    DApp x1 x2 == DApp y1 y2 = x1 == x2 && y1 == y2
 >    _ == _           = False
 
+> aeq :: LC IdInt -> LC IdInt -> Bool
+> aeq x y = aeqd (toDB x) (toDB y)
+
+> aeqd :: DB n -> DB n -> Bool
+> aeqd = (==)
 
 > nf :: LC IdInt -> LC IdInt
 > nf = fromDB . nfd . toDB

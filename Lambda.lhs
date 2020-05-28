@@ -13,12 +13,15 @@ print in a nice way.
 > import qualified Text.PrettyPrint.HughesPJ as PP
 > import Text.ParserCombinators.ReadP
 > import GHC.Generics
+> import Control.DeepSeq
 
 The LC type of $\lambda$ term is parametrized over the type of the variables.
 It has constructors for variables, $\lambda$-abstraction, and application.
 
 > data LC v = Var v | Lam v (LC v) | App (LC v) (LC v)
 >    deriving (Eq, Generic)
+>
+> instance NFData a => NFData (LC a)
 
 Compute the free variables of an expression.
 

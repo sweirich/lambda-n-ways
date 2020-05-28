@@ -24,11 +24,12 @@ NONE:   user	0m6.655s
 1,3,4,5,6: user	0m0.010s
 user	0m0.009s
 
-> module DeBruijnParB(nf) where
+> module DeBruijnParB(nf,aeq,aeqd,toDB,fromDB,nfd) where
 > import Data.List(elemIndex)
 > import Lambda
 > import IdInt
 > import Subst
+> import Control.DeepSeq
 
 > import Text.PrettyPrint.HughesPJ(Doc, renderStyle, style, text,
 >            (<+>), parens)
@@ -43,6 +44,12 @@ the sub to be suspended (and perhaps optimized).
 
 > -- 5 -- make fields strict
 > data DB = DVar !Int | DLam !(Bind DB) | DApp !DB !DB
+>
+> instance NFData DB where
+>    rnf (DVar i) = rnf i
+>    rnf (DLam d) = rnf d
+>    rnf (DApp a b) = rnf a `seq` rnf b
+
 
 Alpha equivalence requires pushing delayed substitutions into the terms
 
@@ -51,6 +58,13 @@ Alpha equivalence requires pushing delayed substitutions into the terms
 >    DLam x == DLam y = x == y
 >    DApp x1 x2 == DApp y1 y2 = x1 == x2 && y1 == y2
 >    _ == _           = False
+
+
+> aeq :: LC IdInt -> LC IdInt -> Bool
+> aeq x y = aeqd (toDB x) (toDB y)
+
+> aeqd :: DB -> DB -> Bool
+> aeqd = (==)
 
 
 > nf :: LC IdInt -> LC IdInt

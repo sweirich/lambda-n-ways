@@ -6,9 +6,12 @@ This is a general purpose library for defining substitution for debruijn indices
 > {-# LANGUAGE TypeFamilies #-}
 > {-# LANGUAGE TypeOperators #-}
 > {-# LANGUAGE UndecidableInstances #-}
+> {-# LANGUAGE QuantifiedConstraints #-}
+> 
 > module SubstScoped where
 >
 > import Data.Kind (Type)
+> import Control.DeepSeq
 
 > ------------------------------------
 
@@ -125,3 +128,18 @@ This is a general purpose library for defining substitution for debruijn indices
 > {-# INLINABLE comp #-}
 
 
+> instance (forall n. NFData (a n)) => NFData (Sub a m1 m2) where
+>   rnf (Inc i) = rnf i
+>   rnf (Cons t ts) = rnf t `seq` rnf ts
+>   rnf (s1 :<> s2) = rnf s1 `seq` rnf s2
+
+> instance (forall n. NFData (a n)) => NFData (Bind a m) where
+>   rnf (Bind s a) = rnf s `seq` rnf a
+
+> instance NFData (Idx a) where
+>   rnf FZ = ()
+>   rnf (FS s) = rnf s
+
+> instance NFData (SNat a) where
+>   rnf SZ = ()
+>   rnf (SS s) = rnf s

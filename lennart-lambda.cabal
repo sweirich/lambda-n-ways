@@ -43,5 +43,5 @@ executable LC
                 , deepseq >= 1.4.4.0
                 , mtl
                 , pretty
-                , unbound
+                , unbound >= 0.5.1
   default-language: Haskell2010

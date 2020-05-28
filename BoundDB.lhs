@@ -1,21 +1,19 @@
 The DeBruijn module implements the Normal Form function by
 using de Bruijn indicies.
 
+> {-# LANGUAGE DeriveGeneric #-}
 > {-# LANGUAGE DeriveFunctor #-}
 > {-# LANGUAGE DeriveFoldable #-}
 > {-# LANGUAGE DeriveTraversable #-}
 > {-# LANGUAGE TemplateHaskell #-}
-> module BoundDB(nf) where
-> import Data.List(elemIndex)
+> module BoundDB(nf,aeq,toDB,fromDB,nfd) where
 > import Lambda
 > import IdInt
 >
-> import Control.Applicative
 > import Control.Monad
-> import Data.Functor.Classes
-> import Data.Foldable
-> import Data.Traversable
-> import Data.Functor.Classes
+> import GHC.Generics
+> import Control.DeepSeq
+
 > 
 > import Bound
 
@@ -24,7 +22,9 @@ $\lambda$s out the binding $\lambda$ is.  Free variables are represented
 by negative numbers.
 
 > data DB a = DVar a | DLam (Scope () DB a) | DApp (DB a) (DB a)
->   deriving (Functor, Foldable, Traversable)
+>   deriving (Functor, Foldable, Traversable, Generic)
+
+> instance NFData a => NFData (DB a)
 
 > instance Applicative DB where
 >   pure = DVar
@@ -36,6 +36,13 @@ by negative numbers.
 >   DApp x y >>= f = DApp (x >>= f) (y >>= f)
 >   DLam x   >>= f = DLam (x >>>= f)
 
+> aeq :: LC IdInt -> LC IdInt -> Bool
+> aeq x y = (toDB x) == (toDB y)
+>
+> instance Eq a => Eq (DB a) where
+>    (DVar x)== (DVar y) = x == y
+>    (DLam s1) == (DLam s2) = (fromScope s1) == (fromScope s2)
+>    (DApp a1 a2) == (DApp b1 b2) = a1 == b1 && a2 == b2
 
 > nf :: LC IdInt -> LC IdInt
 > nf = fromDB . nfd . toDB
@@ -79,3 +86,5 @@ Convert back from deBruijn to the LC type.
 >         from   _ (DVar v) = Var v
 >         from n (DLam b) = Lam n (from (succ n) (instantiate1 (DVar n) b))
 >         from n (DApp f a) = App (from n f) (from n a) 
+
+

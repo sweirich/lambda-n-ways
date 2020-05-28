@@ -5,12 +5,15 @@ A fast type of identifiers, Ints, for $\lambda$-expressions.
 > import Data.Map as M
 > import Control.Monad.State
 > import GHC.Generics
+> import Control.DeepSeq
 > import Lambda
 
 An IdInt is just another name for an Int.
 
 > newtype IdInt = IdInt Int
 >     deriving (Eq, Ord, Generic)
+>
+> instance NFData IdInt
 >
 > firstBoundId :: IdInt
 > firstBoundId = IdInt 0

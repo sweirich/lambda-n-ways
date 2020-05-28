@@ -2,8 +2,11 @@ This is a general purpose library for defining substitution for debruijn indices
 
 
 > module Subst where
+>
+> import Control.DeepSeq
 
 > data Bind a = Bind !(Sub a) !a
+
 
 > bind :: a -> Bind a
 > bind x = Bind (Inc 0) x
@@ -76,3 +79,12 @@ This is a general purpose library for defining substitution for debruijn indices
 > instance SubstC a => Monoid (Sub a) where
 >   mempty  = nil
 >   mappend = comp
+
+> instance NFData a => NFData (Sub a) where
+>   rnf (Inc i) = rnf i
+>   rnf (Cons t ts) = rnf t `seq` rnf ts
+>   rnf (s1 :<> s2) = rnf s1 `seq` rnf s2
+
+> instance NFData a => NFData (Bind a) where
+>   rnf (Bind s a) = rnf s `seq` rnf a
+

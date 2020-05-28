@@ -2,21 +2,25 @@ The Unique module implements the Normal Form function by
 using Barendregt's variable convention, i.e., all bound
 variables are unique.
 
-> module Unique(nf) where
+> module Unique(nf,Unique.aeq, toUnique) where
 > import Lambda
 > import qualified Data.Map as M
 > import Control.Monad.State
 > import IdInt
+> import Simple(aeq)
 
 The first step is to make all variables unique.
 Then normal form is computed by repeatedly performing
 substitution (beta reduction) on the leftmost redex.
 Normalization is run in a State monad with the next free variable.
 
-
 > nf :: LC IdInt -> LC IdInt
 > nf e = evalState (nf' e') i
 >   where (e', (i, _)) = runState (unique e) (firstBoundId, M.empty)
+
+> toUnique :: LC IdInt -> LC IdInt
+> toUnique e = e'
+>   where (e', _) = runState (unique e) (firstBoundId, M.empty)
 
 > type N a = State IdInt a
 
@@ -27,7 +31,7 @@ Normalization is run in a State monad with the next free variable.
 >     f' <- whnf f
 >     case f' of
 >         Lam x b -> subst x a b >>= nf'
->         _ -> liftM2 App (nf' f') (nf' a)
+>         _ -> App <$> nf' f' <*> nf' a
 
 Compute the weak head normal form.
 
@@ -55,6 +59,8 @@ at every place it is put.
 >        clone m e@(Var v) = return $ maybe e Var (M.lookup v m)
 >        clone m (Lam v e) = do v' <- newVar; liftM (Lam v') (clone (M.insert v v' m) e)
 >        clone m (App f a) = liftM2 App (clone m f) (clone m a)
+>
+
 
 Create a fresh variable.
 
@@ -72,7 +78,7 @@ uniquely named.
 > type U a = State (IdInt, M.Map IdInt IdInt) a
 
 > unique :: LC IdInt -> U (LC IdInt)
-> unique (Var v) = liftM Var (getVar v)
+> unique (Var v)   = liftM Var (getVar v)
 > unique (Lam v e) = liftM2 Lam (addVar v) (unique e)
 > unique (App f a) = liftM2 App (unique f) (unique a)
 
@@ -90,4 +96,9 @@ Find an existing variable in the mapping.
 > getVar v = do
 >     (_, m) <- get
 >     return $ maybe v id (M.lookup v m)
+
+The same definition as in `Simple`
+
+> aeq :: LC IdInt -> LC IdInt -> Bool
+> aeq = Simple.aeq
 
