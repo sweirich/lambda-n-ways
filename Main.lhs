@@ -13,47 +13,62 @@
 > import DeBruijn
 > import DeBruijnC
 > import DeBruijnPar
+> import DeBruijnParF
 > import DeBruijnParB
 > import BoundDB
-> import Unbound
+> --import Unbound
 > import DeBruijnScoped
+> import Core.Nf
 >
 > import Criterion.Main
 > import Control.DeepSeq
 >
->
+
+Every lambda calculus implementation must have 
+a way to convret to and from the "raw string" representation, 
+a way to compute the normal form, and a way to determine
+alpha-equivalence.
+
+
 > data LamImpl =
 >   forall a. NFData a =>
 >       LamImpl
 >          { impl_name   :: String ,
 >            impl_fromLC :: LC IdInt -> a ,
 >            impl_toLC   :: a -> LC IdInt,
->            impl_nf :: a -> a,
->            impl_aeq    :: Maybe (a -> a -> Bool)
+>            impl_nf     :: a -> a,
+>            impl_aeq    :: a -> a -> Bool
 >          }
->
+ 
+
+
 > data Bench =
 >   forall a. Bench String (a -> ()) a
-> 
+
+
+
 > impls :: [LamImpl]
-> impls = [ LamImpl "Simple" id id Simple.nf (Just Simple.aeq)
->         , LamImpl "Unique" id id Unique.nf (Just Unique.aeq)
->         , LamImpl "HOAS"   HOAS.fromLC HOAS.toLC HOAS.nfh Nothing
->         , LamImpl "DB" DeBruijn.toDB DeBruijn.fromDB DeBruijn.nfd (Just (==))
->         , LamImpl "DB_C" (DeBruijnC.fromLC [])
->                          (DeBruijnC.toLC 0)
->                           DeBruijnC.nfd (Just (==))
->         , LamImpl "DB_P" DeBruijnPar.toDB DeBruijnPar.fromDB DeBruijnPar.nfd
->                          (Just (==))
+> impls = [ 
+>           LamImpl "Core" id id Core.Nf.nf Simple.aeq
+>         , LamImpl "DB_C" (DeBruijnC.fromLC []) (DeBruijnC.toLC 0) DeBruijnC.nfd (==)
 >         , LamImpl "DB_B" DeBruijnParB.toDB DeBruijnParB.fromDB DeBruijnParB.nfd
->                          (Just (==))
->         , LamImpl "Bound" BoundDB.toDB BoundDB.fromDB BoundDB.nfd
->                          (Just (==))
-> --        , LamImpl "Unbound" Unbound.toDB Unbound.fromDB Unbound.nfu
-> --                         (Just Unbound.aeqd)
+>                          (==)
 >         , LamImpl "Scoped"
 >                          DeBruijnScoped.toDB DeBruijnScoped.fromDB DeBruijnScoped.nfd
->                          (Just (==))
+>                          (==)
+>         , LamImpl "HOAS"   HOAS.fromLC HOAS.toLC HOAS.nfh 
+>            (\x y -> Simple.aeq (HOAS.toLC x) (HOAS.toLC y))
+>         , LamImpl "DB_P" DeBruijnPar.toDB DeBruijnPar.fromDB DeBruijnPar.nfd
+>                          (==)
+>         , LamImpl "DB_F" DeBruijnParF.toDB DeBruijnParF.fromDB DeBruijnParF.nfd
+>                          (==)
+>         , LamImpl "Bound" BoundDB.toDB BoundDB.fromDB BoundDB.nfd
+>                          (==)
+>         , LamImpl "Simple" id id Simple.nf Simple.aeq
+>         , LamImpl "DB" DeBruijn.toDB DeBruijn.fromDB DeBruijn.nfd (==)
+> --       , LamImpl "Unique" id id Unique.nf Unique.aeq
+> --        , LamImpl "Unbound" Unbound.toDB Unbound.fromDB Unbound.nfu
+> --                         Unbound.aeqd
 >         ]
 
 > nf_bs :: LC IdInt -> [Bench]
@@ -67,33 +82,8 @@
 >   impl2nf (LamImpl {..}) =
 >     let! tm1 = force (impl_fromLC lc1) in
 >     let! tm2 = force (impl_fromLC lc2) in
->     let  a   = case impl_aeq of { Just f -> f ; Nothing -> \x y -> True } in
->     Bench impl_name (\(x,y) -> rnf (a x y)) (tm1,tm2)
+>     Bench impl_name (\(x,y) -> rnf (impl_aeq x y)) (tm1,tm2)
 
-
-> nfs :: [(String, LC IdInt -> LC IdInt)]
-> nfs = [("Simple", Simple.nf), 
->         ("Unique", Unique.nf), 
->         ("HOAS", HOAS.nf), 
->         ("DB", DeBruijn.nf), 
->         ("DB_C", DeBruijnC.nf), 
->         ("DB_P", DeBruijnPar.nf), 
->         ("DB_B", DeBruijnParB.nf), 
->         ("Bound", BoundDB.nf), 
->         ("Unbound", Unbound.nf), 
->         ("Scoped", DeBruijnScoped.nf)]
->
-> aeqs :: [(String, LC IdInt -> LC IdInt -> Bool)]
-> aeqs = [ ("Simple", Simple.aeq), 
->         ("Unique", Unique.aeq), 
->         -- ("HOAS", HOAS.aeq),  -- No good definition
->         ("DB", DeBruijn.aeq), 
->         ("DB_C", DeBruijnC.aeq), 
->         ("DB_P", DeBruijnPar.aeq), 
->         ("DB_B", DeBruijnParB.aeq), 
->         ("Bound", BoundDB.aeq), 
->         ("Unbound", Unbound.aeq), 
->         ("Scoped", DeBruijnScoped.aeq)]
 
 > getTerm :: IO (LC Id)
 > getTerm = do
@@ -111,9 +101,10 @@
 >   let! nfs = nf_bs tm1
 >   let! aeqs = aeq_bs tm1 tm2
 >   let runBench (Bench n f x) = bench n $ Criterion.Main.nf f x
+>   putStrLn $ show (Core.Nf.nf tm1)
 >   defaultMain [
 >      bgroup "nf" $ map runBench nfs
->    , bgroup "aeq" $ map runBench aeqs
+>    --, bgroup "aeq" $ map runBench aeqs
 >    ]
 >
 > 

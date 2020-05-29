@@ -36,6 +36,10 @@ substitution using a single pathological case: computing the normal form of
 
 # Added by SCW
 
+- DeBruijnParF [DB_F]
+  
+  Parallel substitution version, representing substitutions as functions. 
+
 - DeBruijnPar [DB_P]
 
   Parallel substitution version (with reified substs). Based on
@@ -61,6 +65,12 @@ substitution using a single pathological case: computing the normal form of
 
   Uses the [unbound](https://hackage.haskell.org/package/unbound) library
 
+- Core.Nf
+
+  Uses the FV and Substitution functions ripped out of GHC Core (HEAD 5/28/20)
+  Like DB_C, uses a delayed substitution (e.g. environment) during normalization. 
+  Does not add any explicit substitutions to the term.
+  Uses Data.IntMap instead of lists to keep track of the substitution. 
 
 ## Running the microbenchmark
 
