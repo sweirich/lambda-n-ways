@@ -1,0 +1,7 @@
+# 14.27
+resolver: lts-15.14
+packages:
+- '.'
+extra-deps: 
+flags: {}
+extra-package-dbs: []
