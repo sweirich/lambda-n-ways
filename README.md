@@ -1,12 +1,21 @@
-This is a fork of Lennart Augustsson's lambda-calculus cooked four ways. 
+# Lambda-Calculus cooked **n**-ways
+
+This repository is a simple demonstration of various ways to implement
+variable binding in Haskell.
 
 It "benchmarks" several different representations of variable binding and
-substitution using a single pathological case: computing the normal form of
-`factorial 6 == sum [1..37] + 17` encoded using Church numerals.
+substitution in the untyped lambda calculus using a single pathological case:
+computing the normal form of `factorial 6 == sum [1..37] + 17` encoded using
+Church numerals. (Spoiler alert, these terms are not equal, so the normal form
+is the Church encoding of false).
+
+This is derived from Lennart Augustsson's unpublished draft paper
+"Lambda-calculus Cooked Four Ways".
+
 
 ## Contents
 
-# Original four:
+1. Original four from Lennart Augustsson's paper:
 
 - Simple
 
@@ -25,7 +34,7 @@ substitution using a single pathological case: computing the normal form of
 
   DeBruijn indices that shifts during substitution.
 
-# Contributed by Bertram Felgenhauer 
+2. Contributed by Bertram Felgenhauer 
 
 - DeBruijnC [DB_C]
 
@@ -34,7 +43,7 @@ substitution using a single pathological case: computing the normal form of
   DeBruijn indices without substitutions. Adds a "closure" form to the
   language and uses an environment during normalization.
 
-# Added by SCW
+3. Added by SCW
 
 - DeBruijnParF [DB_F]
   
@@ -47,30 +56,31 @@ substitution using a single pathological case: computing the normal form of
 
 - DeBruijnParB [DB_B]
 
-  Above, but caches a substitution in terms.
-  Uses general purpose library in [Subst](Subst.hs)
+  Parallel substitution version with reified substs, but caches a substitution in terms.
+  Uses general the purpose library in [Subst](Subst.hs)
   Optimized version described here
   https://github.com/sweirich/challenge/tree/master/debruijn
 
 - DeBruijnScoped [DB_S]
 
-  Above, but uses a GADT to enforce that the syntax is well-scoped.
+  Above, but also uses a GADT to enforce that the syntax is well-scoped.
 
 - BoundDB 
 
   Uses Kmett's [bound](https://hackage.haskell.org/package/bound) library
-  (Note: maybe there is a faster way to convert from named to bound representation.)
+  (Note: maybe there is a faster way to convert from named to bound representation?)
 
 - Unbound
 
   Uses the [unbound](https://hackage.haskell.org/package/unbound) library
 
-- Core.Nf
+- Core
 
   Uses the FV and Substitution functions ripped out of GHC Core (HEAD 5/28/20)
   Like DB_C, uses a delayed substitution (e.g. environment) during normalization. 
   Does not add any explicit substitutions to the term.
   Uses Data.IntMap instead of lists to keep track of the substitution. 
+  
 
 ## Running the microbenchmark
 
@@ -78,74 +88,11 @@ substitution using a single pathological case: computing the normal form of
 	 
 ## Latest results
 
-See [bench.html](bench.html)
+See [nf_bench.html](nf_bench.html) and See [aeq_bench.html](aeq_bench.html)
+or the [raw results](output.txt).
 
-Ranked by user time
+## References
 
-	DB_C    0m0.003s  (doesn't implement substitution)
-	DB_B    0m0.010s
-	Bound   0m0.025s
-	HOAS    0m0.029s
-	DB_P    0m0.852s
-	Simple  0m2.316s
-	DB      0m3.354s
-	Unbound 0m8.932s  (ouch!)
-	Unique  0m9.905s
 
-MacBook Pro, 13-inch, Early 2015, 16 GB, Under macOS Catalina 10.15.4
-
-	 time ./LC Simple < timing.lam
-	 \x44.\x43.x43
-
-	 real	0m2.664s
-	 user	0m2.316s
-	 sys	0m0.025s
-	 time ./LC Unique < timing.lam
-	 \x13663534.\x13663535.x13663535
-
-	 real	0m9.119s
-	 user	0m9.017s
-	 sys	0m0.062s
-	 time ./LC HOAS < timing.lam
-	 \x0.\x1.x1
-
-	 real	0m0.046s
-	 user	0m0.029s
-	 sys	0m0.008s
-	 time ./LC DB < timing.lam
-	 \x0.\x1.x1
-
-	 real	0m3.698s
-	 user	0m3.354s
-	 sys	0m0.312s
-	 time ./LC DB_C < timing.lam
-	 \x0.\x1.x1
-
-	 real	0m0.021s
-	 user	0m0.003s
-	 sys	0m0.005s
-	 time ./LC DB_P < timing.lam
-	 \x0.\x1.x1
-
-	 real	0m0.870s
-	 user	0m0.852s
-	 sys	0m0.011s
-	 time ./LC DB_B < timing.lam
-	 \x0.\x1.x1
-
-	 real	0m0.019s
-	 user	0m0.010s
-	 sys	0m0.004s
-	 time ./LC Bound < timing.lam
-	 \x0.\x1.x1
-
-	 real	0m0.041s
-	 user	0m0.025s
-	 sys	0m0.007s
-	 time ./LC Unbound < timing.lam
-	 \x0.\x1.x1
-
-	 real	0m9.964s
-	 user	0m8.932s
-	 sys	0m0.991s
-
+- https://www.schoolofhaskell.com/user/edwardk/bound
+- https://gitlab.haskell.org/ghc/ghc

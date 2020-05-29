@@ -1,0 +1,70 @@
+benchmarking aeq/DB_C
+time                 780.2 ns   (772.8 ns .. 790.3 ns)
+                     0.999 R²   (0.998 R² .. 1.000 R²)
+mean                 796.3 ns   (788.7 ns .. 805.3 ns)
+std dev              28.45 ns   (23.14 ns .. 38.94 ns)
+variance introduced by outliers: 50% (severely inflated)
+
+benchmarking aeq/DB_B
+time                 38.53 ns   (37.16 ns .. 39.81 ns)
+                     0.995 R²   (0.993 R² .. 0.998 R²)
+mean                 36.87 ns   (36.39 ns .. 37.55 ns)
+std dev              1.934 ns   (1.363 ns .. 2.671 ns)
+variance introduced by outliers: 74% (severely inflated)
+
+benchmarking aeq/Scoped
+time                 40.30 ns   (38.93 ns .. 41.21 ns)
+                     0.996 R²   (0.996 R² .. 0.997 R²)
+mean                 38.81 ns   (38.37 ns .. 39.61 ns)
+std dev              1.911 ns   (1.412 ns .. 2.405 ns)
+variance introduced by outliers: 71% (severely inflated)
+
+benchmarking aeq/Bound
+time                 180.3 μs   (175.5 μs .. 186.1 μs)
+                     0.995 R²   (0.993 R² .. 0.997 R²)
+mean                 176.2 μs   (173.6 μs .. 179.4 μs)
+std dev              9.248 μs   (6.561 μs .. 11.33 μs)
+variance introduced by outliers: 52% (severely inflated)
+
+benchmarking aeq/HOAS
+time                 18.17 μs   (17.94 μs .. 18.57 μs)
+                     0.997 R²   (0.995 R² .. 0.998 R²)
+mean                 18.42 μs   (18.14 μs .. 18.76 μs)
+std dev              1.026 μs   (820.1 ns .. 1.191 μs)
+variance introduced by outliers: 64% (severely inflated)
+
+benchmarking aeq/DB_F
+time                 608.5 ns   (605.4 ns .. 613.8 ns)
+                     0.999 R²   (0.998 R² .. 0.999 R²)
+mean                 632.5 ns   (621.5 ns .. 644.8 ns)
+std dev              40.29 ns   (34.28 ns .. 44.14 ns)
+variance introduced by outliers: 77% (severely inflated)
+
+benchmarking aeq/Simple
+time                 1.403 μs   (1.388 μs .. 1.422 μs)
+                     0.998 R²   (0.997 R² .. 0.999 R²)
+mean                 1.473 μs   (1.445 μs .. 1.497 μs)
+std dev              88.04 ns   (83.76 ns .. 94.37 ns)
+variance introduced by outliers: 73% (severely inflated)
+
+benchmarking aeq/DB
+time                 615.4 ns   (609.6 ns .. 623.1 ns)
+                     0.999 R²   (0.998 R² .. 0.999 R²)
+mean                 636.2 ns   (627.2 ns .. 648.6 ns)
+std dev              37.07 ns   (31.31 ns .. 42.91 ns)
+variance introduced by outliers: 74% (severely inflated)
+
+benchmarking aeq/Unbound
+time                 10.09 μs   (9.764 μs .. 10.43 μs)
+                     0.994 R²   (0.993 R² .. 0.996 R²)
+mean                 10.54 μs   (10.30 μs .. 10.80 μs)
+std dev              875.9 ns   (735.0 ns .. 1.204 μs)
+variance introduced by outliers: 81% (severely inflated)
+
+benchmarking aeq/Unique
+time                 1.441 μs   (1.414 μs .. 1.481 μs)
+                     0.995 R²   (0.993 R² .. 0.998 R²)
+mean                 1.439 μs   (1.414 μs .. 1.477 μs)
+std dev              98.05 ns   (77.92 ns .. 115.3 ns)
+variance introduced by outliers: 78% (severely inflated)
+

@@ -19,7 +19,7 @@ Some of the other hair in this code is to be able to use a
 Haskell).
 -}
 
-{-# LANGUAGE BangPatterns, MagicHash #-}
+{-# LANGUAGE BangPatterns #-}
 
 module Core.Unique (
         -- * Main data types

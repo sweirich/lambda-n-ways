@@ -6,6 +6,7 @@ using de Bruijn indicies.
 > {-# LANGUAGE DeriveFoldable #-}
 > {-# LANGUAGE DeriveTraversable #-}
 > {-# LANGUAGE TemplateHaskell #-}
+> {-# LANGUAGE StandaloneDeriving #-}
 > module BoundDB(nf,aeq,toDB,fromDB,nfd) where
 > import Lambda
 > import IdInt
@@ -13,7 +14,8 @@ using de Bruijn indicies.
 > import Control.Monad
 > import GHC.Generics
 > import Control.DeepSeq
-
+> import Data.Functor.Classes
+> import Data.Eq.Deriving (deriveEq1)      --  from the deriving-comapt
 > 
 > import Bound
 
@@ -25,6 +27,9 @@ by negative numbers.
 >   deriving (Functor, Foldable, Traversable, Generic)
 
 > instance NFData a => NFData (DB a)
+> deriving instance Eq a => (Eq (DB a))
+>
+> deriveEq1 ''DB
 
 > instance Applicative DB where
 >   pure = DVar
@@ -39,10 +44,12 @@ by negative numbers.
 > aeq :: LC IdInt -> LC IdInt -> Bool
 > aeq x y = (toDB x) == (toDB y)
 >
-> instance Eq a => Eq (DB a) where
->    (DVar x)== (DVar y) = x == y
->    (DLam s1) == (DLam s2) = (fromScope s1) == (fromScope s2)
->    (DApp a1 a2) == (DApp b1 b2) = a1 == b1 && a2 == b2
+> {-
+> instance Eq1 DB where
+>    liftEq f (DVar x) (DVar y) = x == y
+>    liftEq f (DLam s1) (DLam s2) = s1 == s2
+>    liftEq f (DApp a1 a2) (DApp b1 b2) = liftEq f a1 b1 && liftEq f a2 b2
+> -}
 
 > nf :: LC IdInt -> LC IdInt
 > nf = fromDB . nfd . toDB

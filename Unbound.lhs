@@ -26,12 +26,12 @@
 >    rnf (Lam bnd)   = () -- DS.rnf bnd
 >    rnf (App e1 e2) = DS.rnf e1 `seq` DS.rnf e2
 
--- Use RepLib to derive representation types
+Use RepLib to derive representation types
 
 > $(U.derive [''Exp])
 
--- | With representation types, tbe default implementation of Alpha
--- provides alpha-equivalence and free variable calculation.
+With representation types, the default implementation of Alpha
+provides alpha-equivalence and free variable calculation.
 
 > aeq :: L.LC IdInt -> L.LC IdInt -> Bool
 > aeq x y = U.aeq (toDB x) (toDB y)

@@ -55,18 +55,21 @@ capture.  Conservatively, we avoid all variables occuring
 in the original {\tt b} to fulfill the second requirement.
 
 > subst :: IdInt -> LC IdInt -> LC IdInt -> LC IdInt
-> subst x s b = sub b
->  where sub e@(Var v) | v == x = s
+> subst x s b = sub vs0 b
+>  where sub _ e@(Var v) | v == x = s
 >                      | otherwise = e
->        sub e@(Lam v e') | v == x = e
->                         | v `elem` fvs = Lam v' (sub e'')
->                         | otherwise = Lam v (sub e')
+>        sub vs e@(Lam v e') | v == x = e
+>                            | v `elem` fvs = Lam v' (sub (v':vs) e'')
+>                            | otherwise = Lam v (sub (v:vs) e')
 >                             where v' = newId vs
 >                                   e'' = subst v (Var v') e'
->        sub (App f a) = App (sub f) (sub a)
+>        sub vs (App f a) = App (sub vs f) (sub vs a)
 >
 >        fvs = freeVars s
->        vs = fvs `union` allVars b
+>        vs0 = fvs `union` allVars b
+
+(Note: updated according to Kmett's blog post
+ https://www.schoolofhaskell.com/user/edwardk/bound.)
 
 Get a variable which is not in the given set.
 Do this simply by generating all variables and picking the

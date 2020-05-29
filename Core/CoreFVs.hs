@@ -239,8 +239,8 @@ addBndr bndr fv fv_cand in_scope acc
         --      (not just Ids; coercion variables too!)
      FV.delFV bndr fv) fv_cand in_scope acc
 
-addBndrs :: [CoreBndr] -> FV -> FV
-addBndrs bndrs fv = foldr addBndr fv bndrs
+--addBndrs :: [CoreBndr] -> FV -> FV
+--addBndrs bndrs fv = foldr addBndr fv bndrs
 
 expr_fvs :: CoreExpr -> FV
 expr_fvs (LC.Var var) fv_cand in_scope acc = FV.unitFV var fv_cand in_scope acc

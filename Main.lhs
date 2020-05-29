@@ -8,17 +8,17 @@
 > import Lambda
 > import IdInt
 > import Simple
+> import SimpleB
 > import Unique
 > import HOAS
 > import DeBruijn
 > import DeBruijnC
-> import DeBruijnPar
 > import DeBruijnParF
 > import DeBruijnParB
 > import BoundDB
-> --import Unbound
+> import Unbound
 > import DeBruijnScoped
-> import Core.Nf
+> -- import Core.Nf
 >
 > import Criterion.Main
 > import Control.DeepSeq
@@ -49,26 +49,24 @@ alpha-equivalence.
 
 > impls :: [LamImpl]
 > impls = [ 
->           LamImpl "Core" id id Core.Nf.nf Simple.aeq
+>           LamImpl "DB_B" DeBruijnParB.toDB DeBruijnParB.fromDB DeBruijnParB.nfd (==)
+>         , LamImpl "Scoped" DeBruijnScoped.toDB DeBruijnScoped.fromDB DeBruijnScoped.nfd (==)
 >         , LamImpl "DB_C" (DeBruijnC.fromLC []) (DeBruijnC.toLC 0) DeBruijnC.nfd (==)
->         , LamImpl "DB_B" DeBruijnParB.toDB DeBruijnParB.fromDB DeBruijnParB.nfd
->                          (==)
->         , LamImpl "Scoped"
->                          DeBruijnScoped.toDB DeBruijnScoped.fromDB DeBruijnScoped.nfd
+>         , LamImpl "Bound" BoundDB.toDB BoundDB.fromDB BoundDB.nfd
 >                          (==)
 >         , LamImpl "HOAS"   HOAS.fromLC HOAS.toLC HOAS.nfh 
 >            (\x y -> Simple.aeq (HOAS.toLC x) (HOAS.toLC y))
->         , LamImpl "DB_P" DeBruijnPar.toDB DeBruijnPar.fromDB DeBruijnPar.nfd
->                          (==)
 >         , LamImpl "DB_F" DeBruijnParF.toDB DeBruijnParF.fromDB DeBruijnParF.nfd
 >                          (==)
->         , LamImpl "Bound" BoundDB.toDB BoundDB.fromDB BoundDB.nfd
->                          (==)
+> --        , LamImpl "DB_P" DeBruijnPar.toDB DeBruijnPar.fromDB DeBruijnPar.nfd
+> --                         (==)
+> --        , LamImpl "SimpleB" SimpleB.toExp SimpleB.fromExp SimpleB.nfd SimpleB.aeqd
 >         , LamImpl "Simple" id id Simple.nf Simple.aeq
 >         , LamImpl "DB" DeBruijn.toDB DeBruijn.fromDB DeBruijn.nfd (==)
-> --       , LamImpl "Unique" id id Unique.nf Unique.aeq
-> --        , LamImpl "Unbound" Unbound.toDB Unbound.fromDB Unbound.nfu
-> --                         Unbound.aeqd
+>         , LamImpl "Unbound" Unbound.toDB Unbound.fromDB Unbound.nfu
+>                          Unbound.aeqd
+>         , LamImpl "Unique" id id Unique.nf Unique.aeq
+> --      , LamImpl "Core" id id Core.Nf.nf Simple.aeq
 >         ]
 
 > nf_bs :: LC IdInt -> [Bench]
@@ -101,10 +99,9 @@ alpha-equivalence.
 >   let! nfs = nf_bs tm1
 >   let! aeqs = aeq_bs tm1 tm2
 >   let runBench (Bench n f x) = bench n $ Criterion.Main.nf f x
->   putStrLn $ show (Core.Nf.nf tm1)
 >   defaultMain [
 >      bgroup "nf" $ map runBench nfs
->    --, bgroup "aeq" $ map runBench aeqs
+>    , bgroup "aeq" $ map runBench aeqs
 >    ]
 >
 > 
