@@ -61,7 +61,7 @@ This is derived from Lennart Augustsson's unpublished draft paper
   Optimized version described here
   https://github.com/sweirich/challenge/tree/master/debruijn
 
-- DeBruijnScoped [DB_S]
+- DeBruijnScoped [Scoped]
 
   Above, but also uses a GADT to enforce that the syntax is well-scoped.
 
@@ -73,6 +73,11 @@ This is derived from Lennart Augustsson's unpublished draft paper
 - Unbound
 
   Uses the [unbound](https://hackage.haskell.org/package/unbound) library
+  
+- SimpleB
+
+  Optimizes the "simple" approach by caching the substitution and free variable set 
+  at binders. Not at all simple. Took a long time to get this one correct.
 
 - Core
 
@@ -81,6 +86,7 @@ This is derived from Lennart Augustsson's unpublished draft paper
   Does not add any explicit substitutions to the term.
   Uses Data.IntMap instead of lists to keep track of the substitution. 
   
+  Currently doesn't work.
 
 ## Running the microbenchmark
 
@@ -92,7 +98,6 @@ See [nf_bench.html](nf_bench.html) and See [aeq_bench.html](aeq_bench.html)
 or the [raw results](output.txt).
 
 ## References
-
 
 - https://www.schoolofhaskell.com/user/edwardk/bound
 - https://gitlab.haskell.org/ghc/ghc
