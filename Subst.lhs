@@ -57,7 +57,7 @@ This is a general purpose library for defining substitution for debruijn indices
 
 
 > single :: SubstC a => a -> Sub a
-> single t = Cons t (Inc 0)
+> single t = Cons t nil
 > {-# INLINABLE single #-}
 
 

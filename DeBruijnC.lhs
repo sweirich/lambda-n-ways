@@ -19,7 +19,7 @@
 
 
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-module DeBruijnC (nf,aeq,nfd,fromLC,toLC) where
+module DeBruijnC (nf,DeBruijnC.aeq,nfd,fromLC,toLC) where
 
 import Lambda
 import IdInt
@@ -47,7 +47,7 @@ nfd = dbnf []
 newtype Thunk v = Thunk ([Thunk v],DB v) deriving (Eq,NFData)
 force :: Thunk v -> DB v
 force (Thunk (ctx, a)) = dbnf ctx a
-thunk :: [Thunk v] -> DV v -> Thunk v
+thunk :: [Thunk v] -> DB v -> Thunk v
 thunk ctx s = Thunk (ctx, s)
 
 -- Reduce DB expression to normal form.
@@ -97,3 +97,4 @@ fromLC vs (Lam v t) = DLam $ fromLC (v:vs) t
 fromLC vs (App l r) = DApp (fromLC vs l) (fromLC vs r)
 
 \end{code}
+

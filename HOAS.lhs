@@ -7,6 +7,7 @@ This makes it possible to use the native substitution of Haskell.
 > import Lambda
 > import IdInt
 > import Control.DeepSeq
+> import Data.Maybe(fromMaybe)
 
 With higher order abstract syntax the abstraction in the implemented
 language is represented by an abstraction in the implementation
@@ -54,7 +55,7 @@ are encountered.
 
 > fromLC :: LC IdInt -> HOAS
 > fromLC = from M.empty
->   where from m (Var v) = maybe (HVar v) id (M.lookup v m)
+>   where from m (Var v)  = fromMaybe (HVar v) (M.lookup v m)
 >         from m (Lam v e) = HLam $ \ x -> from (M.insert v x m) e
 >         from m (App f a) = HApp (from m f) (from m a)
 
@@ -63,6 +64,6 @@ a new variable at each $\lambda$.
 
 > toLC :: HOAS -> LC IdInt
 > toLC = to firstBoundId
->   where to _ (HVar v) = Var v
->         to n (HLam b) = Lam n (to (succ n) (b (HVar n)))
+>   where to _ (HVar v)   = Var v
+>         to n (HLam b)   = Lam n (to (succ n) (b (HVar n)))
 >         to n (HApp f a) = App (to n f) (to n a)

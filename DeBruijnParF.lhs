@@ -1,7 +1,7 @@
 The DeBruijn module implements the Normal Form function by
 using de Bruijn indicies.
 
-> module DeBruijnParF(nf,aeq,nfd,aeqd,toDB,fromDB) where
+> module DeBruijnParF(nf,DeBruijnParF.aeq,nfd,aeqd,toDB,fromDB,nfi) where
 > import Data.List(elemIndex)
 > import Lambda
 > import IdInt
@@ -62,6 +62,34 @@ Compute the weak head normal form.
 >         DLam b -> whnf (subst (single a) b)
 >         f' -> DApp f' a
 
+
+Bounded versions
+
+> instantiate :: DB -> DB -> DB
+> instantiate b a = subst (single a) b
+
+> nfi :: Int -> DB -> Maybe DB
+> nfi 0 e = Nothing
+> nfi n e@(DVar _) = return e
+> nfi n (DLam b) = DLam <$> nfi (n-1) b
+> nfi n (DApp f a) = do
+>     f' <- whnfi (n-1) f 
+>     case f' of
+>         DLam b -> nfi (n-1) (instantiate b a)
+>         _ -> DApp <$> nfi n f' <*> nfi n a
+
+> whnfi :: Int -> DB -> Maybe DB
+> whnfi 0 e = Nothing
+> whnfi n e@(DVar _) = return e
+> whnfi n e@(DLam _) = return e
+> whnfi n (DApp f a) = do
+>     f' <- whnfi (n-1) f 
+>     case whnf f' of
+>         DLam b -> whnfi (n-1) (instantiate b a)
+>         _ -> return $ DApp f' a
+
+
+
 Substitution needs to adjust the inserted expression
 so the free variables refer to the correct binders.
 
@@ -70,15 +98,7 @@ so the free variables refer to the correct binders.
 
 > applySub :: Sub -> Int -> DB
 > {-# INLINE applySub #-}
-> applySub (Sub f) x = f x 
-> {-
-> applySub (Inc y) x = DVar (y + x)
-> applySub (Cons t ts) x
->    | x < 0     = DVar x
->    | x == 0    = t
->    | otherwise = applySub ts (x - 1)
-> applySub (s1 :<> s2) x = subst s2 (applySub s1 x)
-> -}
+> applySub (Sub f) = f  
 
 > lift :: Sub -> Sub
 > {-# INLINE lift #-}
@@ -111,34 +131,6 @@ so the free variables refer to the correct binders.
 >   s1 <> s2  = Sub $ \ x ->  subst s2 (applySub s1 x)
 
 
-prop_IdL s =
-  (Inc Z :∘ s) === s 
-  
-prop_ShiftCons n t s =
-  (Inc (S n) :∘ (t :· s)) === (Inc n :∘ s) 
-
-prop_IdR s =
-  (s :∘ Inc Z) === s
-
-prop_Ass s1 s2 s3 =
-  ((s1 :∘ s2) :∘ s3) === (s1  :∘ (s2 :∘ s3))
-
-prop_Map t s1 s2 =
-  ((t :· s1) :∘ s2) === ((subst s2 t) :· (s1 :∘ s2))
-
-> {-
-> instance Semigroup Sub where
->   -- smart constructor for composition
->   Inc k1 <> Inc k2  = Inc (k1 + k2)
->   Inc 0  <> s       = s
->   Inc n  <> Cons _ s
->           | n > 0 = Inc (n - 1) <> s
->   s      <> Inc 0   = s
->   (s1 :<> s2) <> s3 = s1 <> (s2 <> s3)
->   (Cons t s1) <> s2 = Cons (subst s2 t) (s1 <> s2)
->   s1 <> s2 = s1 :<> s2
-> -}
-
 Convert to deBruijn indicies.  Do this by keeping a list of the bound
 variable so the depth can be found of all variables.  Do not touch
 free variables.
@@ -153,7 +145,8 @@ Convert back from deBruijn to the LC type.
 
 > fromDB :: DB -> LC IdInt
 > fromDB = from firstBoundId
->   where from (IdInt n) (DVar i) | i < 0 = Var (IdInt i)
+>   where from (IdInt n) (DVar i) | i < 0     = Var (IdInt i)
+>                                 | i >= n    = Var (IdInt i)
 >                                 | otherwise = Var (IdInt (n-i-1))
 >         from n (DLam b) = Lam n (from (succ n) b)
 >         from n (DApp f a) = App (from n f) (from n a)

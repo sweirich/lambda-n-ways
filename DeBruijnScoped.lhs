@@ -8,7 +8,7 @@ It uses parallel substitutions and explcit substitutions stored in the term.
 > {-# LANGUAGE TypeFamilies #-}
 > {-# LANGUAGE TypeOperators #-}
 > {-# LANGUAGE UndecidableInstances #-}
-> module DeBruijnScoped(nf,aeq, toDB, fromDB, nfd) where
+> module DeBruijnScoped(nf,DeBruijnScoped.aeq, toDB, fromDB, nfd, nfi) where
 > import Data.List(elemIndex)
 > import Lambda
 > import IdInt
@@ -76,6 +76,28 @@ Compute the weak head normal form. Should never return a delayed substitution at
 >         DLam b -> whnf (instantiate b a)
 >         f' -> DApp f' a
 
+
+> nfi :: Int -> DB n -> Maybe (DB n)
+> nfi 0 e = Nothing
+> nfi n e@(DVar _) = return e
+> nfi n (DLam b) = DLam . bind <$> nfi (n-1) (unbind b)
+> nfi n (DApp f a) = do
+>     f' <- whnfi (n-1) f 
+>     case f' of
+>         DLam b -> nfi (n-1) (instantiate b a)
+>         _ -> DApp <$> nfi n f' <*> nfi n a
+
+> whnfi :: Int -> DB n -> Maybe (DB n)
+> whnfi 0 e = Nothing
+> whnfi n e@(DVar _) = return e
+> whnfi n e@(DLam _) = return e
+> whnfi n (DApp f a) = do
+>     f' <- whnfi (n-1) f 
+>     case whnf f' of
+>         DLam b -> whnfi (n-1) (instantiate b a)
+>         _ -> return $ DApp f' a
+
+
 Substitution needs to adjust the inserted expression
 so the free variables refer to the correct binders.
 
@@ -102,7 +124,7 @@ variable so the depth can be found of all variables.
 >              b' = to ((v,FZ):mapSnd FS vs) b
 >         to vs (App f a) = DApp (to vs f) (to vs a)
 
-Convert back from deBruijn to the LC type.
+Convert back from deBruijn to the LC type. Note, all variables must be in scope.
 
 > fromDB :: DB n -> LC IdInt
 > fromDB = from []

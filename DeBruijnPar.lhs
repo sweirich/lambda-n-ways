@@ -1,7 +1,7 @@
 The DeBruijn module implements the Normal Form function by
 using de Bruijn indicies.
 
-> module DeBruijnPar(nf,aeq,nfd,aeqd,toDB,fromDB) where
+> module DeBruijnPar(nf,DeBruijnPar.aeq,nfd,aeqd,toDB,fromDB) where
 > import Data.List(elemIndex)
 > import Lambda
 > import IdInt
@@ -129,6 +129,7 @@ Convert back from deBruijn to the LC type.
 > fromDB :: DB -> LC IdInt
 > fromDB = from firstBoundId
 >   where from (IdInt n) (DVar i) | i < 0 = Var (IdInt i)
+>                                 | i >= n = Var (IdInt i)
 >                                 | otherwise = Var (IdInt (n-i-1))
 >         from n (DLam b) = Lam n (from (succ n) b)
 >         from n (DApp f a) = App (from n f) (from n a)

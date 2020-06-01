@@ -1,5 +1,10 @@
-> module SimpleB(nf,aeq,aeqd,toExp,fromExp,nfd) where
-> import Data.List(elemIndex)
+This module is trying to make a "delayed" substitution version of the "Simple" implementation. 
+
+> {-# LANGUAGE MultiParamTypeClasses #-}
+> {-# LANGUAGE FlexibleInstances #-}
+> {-# LANGUAGE UndecidableInstances #-}
+> {-# LANGUAGE ScopedTypeVariables #-}
+> module SimpleB(nf,aeq,aeqd,toExp,fromExp,nfd,nfi) where
 > import qualified Lambda as LC
 > import IdInt
 > import Control.DeepSeq
@@ -8,125 +13,210 @@
 > import Text.PrettyPrint.HughesPJ(Doc, renderStyle, style, text,
 >            (<+>), parens)
 > import qualified Text.PrettyPrint.HughesPJ as PP
+> import Debug.Trace
 
 Get a variable which is not in the given set.
 
-> newId :: S.Set IdInt -> IdInt
+> newId :: (Atom v) => S.Set v -> v
 > newId vs = case S.lookupMax vs of
->               Just (IdInt x) -> IdInt (x+1)
->               Nothing        -> IdInt 0
+>               Just v   -> succ v
+>               Nothing  -> toEnum 0
 
+
+> class (Enum v, Ord v, Show v) => Atom v 
+> instance Atom IdInt
+
+
+A class of types that can calculate free variables and
+substitute. 
+
+
+> class Atom v => FreeVars v e where
+>   freeVars :: e -> S.Set v
+>   boundVars :: e -> S.Set v
+
+> class (Atom v, Show a) => Subst v a e where
+>   subst    :: Sub v a -> e -> e
+>
+> class Atom v => Var v e where
+>   var      :: v -> e
+
+-------------------------------------------------------------------
+
+In this implementation we cache substitutions and fv sets at binders. That
+means that we don't need to recalculate them and that we can combine
+substitutions together.
+
+
+> data Bind v e = Bind { bind_subst :: Sub v e,
+>                        bind_fvs   :: S.Set v,
+>                        bind_bvs   :: S.Set v,
+>                        bind_var   :: v,
+>                        bind_body  :: e }
 
 Invariants:
 
-1. The variable v will not capture any free variables in the range of the
-     stored substitution in the binder. If this could occur, we need to alpha
-     vary x to be a fresh variable.
-2. The variable v is not a member of the free variables stored in the binding.
+1. bind_fvs is cached freeVars of e, minus v
 
-> data Bind v e = Bind (Sub v e) (S.Set v) v e
+2. bind_bvs is cached boundVars of e
 
-> bind :: IdInt -> Exp -> Bind IdInt Exp
-> bind v a = Bind emptySub (S.delete v (freeVars a)) v  a
+3. The domain of the bind_subst is a subset of bind_fvs
+
+3. The freeVars of the bind_subst do not include v (i.e. no capture).
+   (If this would happen when constructing a bind, we will freshen v to v'
+   and extend the substitution with v -> v', in the case that v is free in e.)
+
+> validBind :: (Ord v, FreeVars v e) => Bind v e -> Bool
+> validBind b@Bind{} =
+>    bind_fvs b == S.delete (bind_var b) (freeVars  (bind_body b)) &&
+>    -- bind_bvs b == boundVars (bind_body b) &&
+>    M.keysSet (bind_subst b) `S.isSubsetOf` bind_fvs b &&
+>    bind_var b `notElem` freeVars (bind_subst b)
+> 
+
+> bind :: FreeVars v e => v -> e -> Bind v e
+> bind v a = Bind emptySub (S.delete v (freeVars a)) (boundVars a) v a
 > {-# INLINABLE bind #-}
 
-> unbind :: Bind IdInt Exp -> (IdInt, Exp)
-> unbind (Bind s _fv x a) = (x,subst s a)
+> unbind :: Subst v e e => Bind v e -> (v, e)
+> unbind (Bind s _fv _bv x a) = (x,subst s a)
 > {-# INLINABLE unbind #-}
 
-> instantiate :: Bind IdInt Exp -> Exp -> Exp
-> instantiate (Bind s _fv x a) b = subst (comp s (singleSub x b)) a
+> instantiate :: (Show v, Show e, Subst v e e) => Bind v e -> e -> e
+> instantiate (Bind s _fv _bv x a) b =
+>      subst (comp s (singleSub x b)) a
 > {-# INLINABLE instantiate #-}
 
 
-> freeVarsBind :: Bind IdInt Exp -> S.Set IdInt
-> freeVarsBind (Bind s fv _ _) = freeVarsSub s <> fv
+> instance (FreeVars v e) => FreeVars v (Bind v e) where
+>   freeVars (Bind s fv _ _ _) = freeVars s <> (fv S.\\ M.keysSet s)
+>   boundVars (Bind s _ bv x _) = boundVars s <> bv <> S.singleton x
+>
+> instance (Var v e, FreeVars v e, Subst v e e, Show v, Show e) => Subst v e (Bind v e) where 
+>   subst s2 b@(Bind s1 fv bv x e)
+>        | M.null s2     = b
+>        | M.member x s2 = {- trace ("Removing " ++ show x ++ " from " ++ show s2
+>                          ++ "\n when substituting into \\" ++ show x ++ "." ++ show (subst s1 e)) $ -}
+>                          subst (M.delete x s2) b
+>        | x `elem` fv2 =  {- trace ("alpha-varying " ++ "\\" ++ show x ++ "." ++ show (subst s1 e)
+>                                ++ "\n with freeVars " ++ show (freeVars b :: S.Set v)
+>                                ++ "\n when substituting with s2' " ++ show s2'
+>                                ++ "\n result is " ++ "\\ " ++ show y ++ "." ++ show (subst s' e)
+>                                ++ "\n s1  was " ++ show s1
+>                                ++ "\n fv  was " ++ show fv
+>                                ++ "\n e   was " ++ show e
+>                                ++ "\n fv2 was " ++ show fv2
+>                                ++ "\n s   is  " ++ show s
+>                                ++ "\n s'  is  " ++ show s'
+>                                ++ "\n vs  is  " ++ show vs
+>                                ++ "\n valid is " ++ show (validBind (Bind s' fv bv y e))) $  -}
+>                          Bind s' fv bv y e
+>        | otherwise     = {- trace ("NO alpha-vary for " ++ "\\" ++ show x ++ "." ++ show (subst s1 e)
+>                                ++ "\n with freeVars " ++ show (freeVars b :: S.Set v)
+>                                ++ "\n when substituting with s2 " ++ show s2
+>                                ++ "\n result is " ++ "\\" ++ show x ++ "." ++ show (subst s1s2' e)
+>                                ++ "\n fv  was " ++ show fv
+>                                ++ "\n e   was " ++ show e
+>                                ++ "\n s1  was " ++ show s1
+>                                ++ "\n s1s2' is " ++ show s1s2'
+>                                ++ "\n fv2 was " ++ show fv2
+>                                ++ "\n valid is " ++ show (validBind (Bind s1s2' fv bv x e))) $  -}
+>                          Bind s1s2' fv bv x e
+>     where fv1 = freeVars s1
+>           fv2 = freeVars s2'
+>           vs  = fv `S.union` fv2 `S.union`
+>                 M.keysSet s2 `S.union` fv1 `S.union` M.keysSet s1
+>           y   = newId vs
 
-> freeVarsSub :: Sub IdInt Exp -> S.Set IdInt
-> freeVarsSub = foldMap freeVars
-
-
-Here we want to push the substitution `s2` through the binder for `x`.
-1. what if x is in the dom of s2? then 
-
-> substBind :: Sub IdInt Exp -> Bind IdInt Exp -> Bind IdInt Exp
-> substBind s2 b@(Bind s1 fv x e)
->   | M.null s2     = b
->   | M.member x s2 = substBind (M.delete x s2) b
->   | x `elem` freeVarsSub s2  =
->     let fv1 = freeVarsSub s1
->         fv2 = freeVarsSub s2
->         y   = newId (fv `S.union` fv2 `S.union` M.keysSet s2 `S.union` fv1 `S.union` M.keysSet s1)
->         s   = singleSub y (Var x) `comp` s1 `comp` s2
->     in
->         Bind s fv y e
->   | True = Bind (comp s1 s2) fv x e
-> {-# INLINABLE substBind #-}
-
+>           s   = singleSub x (var y) `comp` s1 `comp` s2
+>           s'  = M.filterWithKey (\v _ -> v == x || v `elem` fv) s
+>           s2' = M.filterWithKey (\v _ -> v `elem` freeVars b) s2
+>           s1s2 = s1 `comp` s2
+>           s1s2' = M.filterWithKey (\v _ -> v `elem` fv) s1s2
 
 > instance (NFData x, NFData a) => NFData (Bind x a) where
->     rnf (Bind s f x a) = rnf s `seq` rnf f `seq` rnf x `seq` rnf a
-
-
-
+>     rnf (Bind s f b x a) = rnf s `seq` rnf f `seq` rnf b `seq` rnf x `seq` rnf a
 
 -------------------------------------------------------------------
 
 > type Sub = M.Map
  
-> emptySub :: Sub x e
+> emptySub :: Sub v e
 > emptySub = M.empty
 
-> singleSub :: x -> e -> Sub x e
+> singleSub :: v -> e -> Sub v e
 > singleSub = M.singleton
 
-> comp :: Sub IdInt Exp -> Sub IdInt Exp -> Sub IdInt Exp
-> comp s1 s2 = M.map (subst s1) s2 <> s1
+> comp :: (Subst v e e) => Sub v e -> Sub v e -> Sub v e
+> comp s1 s2
+>   | null s1   = s2
+>   | null s2   = s1
+>  -- union is left biased. We want the value from s1 if there is also a definition in s2
+>   | otherwise = subst s2 s1 <> s2
 
 
-> applySub :: Sub IdInt Exp -> IdInt -> Exp
-> applySub s x = M.findWithDefault (Var x) x s
+> instance FreeVars v e => FreeVars v (Sub v e) where
+>   freeVars    = foldMap freeVars
+>   boundVars   = foldMap boundVars
 
+> instance Subst v a e => Subst v a (Sub v e) where
+>   subst s2 s1 = M.map (subst s2) s1
 
 
 -------------------------------------------------------------------
 
-> data Exp = Var !IdInt | Lam !(Bind IdInt Exp) | App !Exp !Exp
+> instance Atom v => FreeVars v v where
+>    freeVars = S.singleton
+>    boundVars _ = S.empty
+
+
+-------------------------------------------------------------------
+
+> data Exp v = Var !v | Lam !(Bind v (Exp v)) | App !(Exp v) !(Exp v)
 >
-> instance NFData Exp where
+> instance NFData v => NFData (Exp v) where
 >    rnf (Var i) = rnf i
 >    rnf (Lam d) = rnf d
 >    rnf (App a b) = rnf a `seq` rnf b
 
 
-> freeVars :: Exp -> S.Set IdInt
-> freeVars (Var v)   = S.singleton v
-> freeVars (Lam b)   = freeVarsBind b
-> freeVars (App f a) = freeVars f `S.union` freeVars a
+> instance Atom v => Var v (Exp v) where
+>    var = Var
 
-> subst :: Sub IdInt Exp -> Exp -> Exp
-> subst s (Var i)   = applySub s i
-> subst s (Lam b)   = Lam (substBind s b)
-> subst s (App f a) = App (subst s f) (subst s a) 
+> instance Atom v => FreeVars v (Exp v) where
+>   freeVars (Var v)   = freeVars v
+>   freeVars (Lam b)   = freeVars b
+>   freeVars (App f a) = freeVars f `S.union` freeVars a
+
+>   boundVars (Var v)   = S.empty
+>   boundVars (Lam b)   = boundVars b
+>   boundVars (App f a) = boundVars f `S.union` boundVars a
+
+
+
+> instance Atom v => Subst v (Exp v) (Exp v) where
+>   subst s (Var x)    = M.findWithDefault (Var x) x s
+>   subst s (Lam b)    = Lam (subst s b)
+>   subst s (App f a)  = App (subst s f) (subst s a) 
 
 -------------------------------------------------------------------
 
-> aeq :: LC.LC IdInt -> LC.LC IdInt -> Bool
+> aeq :: Atom v => LC.LC v -> LC.LC v -> Bool
 > aeq x y = aeqd (toExp x) (toExp y)
 
 
-> nf :: LC.LC IdInt -> LC.LC IdInt
+> nf :: Atom v => LC.LC v -> LC.LC v
 > nf = fromExp . nfd . toExp
 
 Alpha-equivalence
 
-> aeqBind :: Bind IdInt Exp -> Bind IdInt Exp -> Bool
-> aeqBind (Bind s1 f1 x1 b1) e2@(Bind s2 f2 x2 b2)
+> aeqBind :: Atom v => Bind v (Exp v) -> Bind v (Exp v) -> Bool
+> aeqBind (Bind s1 _f1 _bv1 x1 b1) e2@(Bind s2 _f2 _bv2 x2 b2)
 >   | x1 == x2 = aeqd (subst s1 b1) (subst s2 b2)
->   | x1 `elem` freeVarsBind e2 = False
+>   | x1 `elem` freeVars e2 = False
 >   | otherwise = aeqd (subst s1 b1) (subst (singleSub x2 (Var x1) `comp` s2) b2)
 
-> aeqd :: Exp -> Exp -> Bool
+> aeqd :: Atom v =>Exp v -> Exp v -> Bool
 > aeqd (Var v1)    (Var v2)    = v1 == v2
 > aeqd (Lam e1)    (Lam e2)    = aeqBind e1 e2
 > aeqd (App a1 a2) (App b1 b2) = aeqd a1 b1 && aeqd a2 b2
@@ -135,17 +225,22 @@ Alpha-equivalence
 
 Computing the normal form proceeds as usual. 
 
-> nfd :: Exp -> Exp
+> nfd :: Atom v => Exp v -> Exp v
 > nfd e@(Var _) = e
-> nfd (Lam b) = Lam (bind x (nfd a)) where (x,a) = unbind b
+> nfd (Lam b) = 
+>   --trace ("nf of " ++ show (Lam b) ++ " is " ++ show b') $
+>   b'
+>      where (x,a) = unbind b
+>            b'    = Lam (bind x (nfd a))
 > nfd (App f a) =
+>     -- trace ("whnf " ++ show f ++ " is " ++ show (whnf f)) $
 >     case whnf f of
 >         Lam b -> nfd (instantiate b a)
 >         f' -> App (nfd f') (nfd a)
 
 Compute the weak head normal form. 
 
-> whnf :: Exp -> Exp
+> whnf :: Atom v => Exp v -> Exp v
 > whnf e@(Var _) = e
 > whnf e@(Lam _) = e
 > whnf (App f a) =
@@ -155,7 +250,29 @@ Compute the weak head normal form.
 
 ---------------------------------------------------------
 
-> toExp :: LC.LC IdInt -> Exp
+> nfi :: Atom v => Int -> Exp v -> Maybe (Exp v)
+> nfi 0 _e = Nothing
+> nfi _n e@(Var _) = return  e
+> nfi n (Lam b) = Lam . bind x <$> nfi (n-1) a where (x,a) = unbind b
+> nfi n (App f a) = do
+>     f' <- whnfi (n - 1) f 
+>     case f' of
+>         Lam b -> nfi (n-1) (instantiate b a)
+>         _ -> App <$> nfi (n-1) f' <*> nfi (n-1) a
+
+> whnfi :: Atom v => Int -> Exp v -> Maybe (Exp v)
+> whnfi 0 _e = Nothing 
+> whnfi _n e@(Var _) = return e
+> whnfi _n e@(Lam _) = return e
+> whnfi n (App f a) = do
+>     f' <- whnfi (n - 1) f 
+>     case f' of
+>         Lam b -> whnfi (n - 1) (instantiate b a)
+>         _ -> return $ App f' a
+
+---------------------------------------------------------
+
+> toExp :: Atom v => LC.LC v -> Exp v
 > toExp = to
 >   where to (LC.Var v)   = Var v
 >         to (LC.Lam x b) = Lam (bind x (to b))
@@ -163,7 +280,7 @@ Compute the weak head normal form.
 
 Convert back from deBruijn to the LC type.
 
-> fromExp :: Exp -> LC.LC IdInt
+> fromExp :: Atom v => Exp v -> LC.LC v
 > fromExp = from 
 >   where from (Var i)   = LC.Var i
 >         from (Lam b)   = LC.Lam x (from a)
@@ -172,14 +289,14 @@ Convert back from deBruijn to the LC type.
 
 ---------------------------------------------------------
 
-> instance Show Exp where
+> instance (Atom v, Show v) => Show (Exp v) where
 >     show = renderStyle style . ppExp 0
 
 
-> ppExp :: Int -> Exp -> Doc
-> ppExp _ (Var v)   = text $ "x" ++ show v
-> ppExp p (Lam b)   = pparens (p>0) $ text ("\\") PP.<> text ("x"++show x) PP.<> text "."
->                                       PP.<> ppExp 0 a where (IdInt x,a) = unbind b
+> ppExp :: (Atom v, Show v) => Int -> Exp v -> Doc
+> ppExp _ (Var v)   = text $ show v
+> ppExp p (Lam b)   = pparens (p>0) $ text "\\" <> text (show x) <> text "."
+>                                       <> ppExp 0 a where (x,a) = unbind b
 > ppExp p (App f a) = pparens (p>1) $ ppExp 1 f <+> ppExp 2 a
 
 

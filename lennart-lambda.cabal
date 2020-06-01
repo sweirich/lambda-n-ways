@@ -47,7 +47,7 @@ executable LC
       Core.UniqDFM
       Core.UniqSet
       Core.Nf
-  ghc-options: -Wall -O2 -funfolding-use-threshold=16
+  ghc-options:  -O2 -funfolding-use-threshold=16
   build-depends:
                   base >= 4.13
                 , bound
@@ -59,4 +59,5 @@ executable LC
                 , RepLib >= 0.5.4.2
                 , unbound >= 0.5.1.3
                 , deriving-compat
+                , QuickCheck >= 2.13.2
   default-language: Haskell2010

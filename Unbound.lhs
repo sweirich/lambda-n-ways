@@ -97,7 +97,7 @@ Convert from LC type to DB type (try to do this in linear time??)
 Convert back from deBruijn to the LC type.
 
 > n2i :: Name Exp -> IdInt
-> n2i n = (IdInt (fromInteger (name2Integer n)))
+> n2i n = IdInt (fromInteger (name2Integer n))
 >
 > i2n :: IdInt -> Name Exp
 > i2n (IdInt x) = s2n (show x)

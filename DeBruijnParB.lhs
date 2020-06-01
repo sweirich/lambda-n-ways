@@ -24,7 +24,7 @@ NONE:   user	0m6.655s
 1,3,4,5,6: user	0m0.010s
 user	0m0.009s
 
-> module DeBruijnParB(nf,aeq,aeqd,toDB,fromDB,nfd) where
+> module DeBruijnParB(nf,DeBruijnParB.aeq,toDB,fromDB,nfd,nfi) where
 > import Data.List(elemIndex)
 > import Lambda
 > import IdInt
@@ -61,10 +61,7 @@ Alpha equivalence requires pushing delayed substitutions into the terms
 
 
 > aeq :: LC IdInt -> LC IdInt -> Bool
-> aeq x y = aeqd (toDB x) (toDB y)
-
-> aeqd :: DB -> DB -> Bool
-> aeqd = (==)
+> aeq x y = toDB x == toDB y
 
 
 > nf :: LC IdInt -> LC IdInt
@@ -90,6 +87,30 @@ Compute the weak head normal form. Should never return a delayed substitution at
 >         DLam b -> whnf (instantiate b a)
 >         f' -> DApp f' a
 
+
+Bounded versions
+
+> nfi :: Int -> DB -> Maybe DB
+> nfi 0 e = Nothing
+> nfi n e@(DVar _) = return e
+> nfi n (DLam b) = DLam . bind <$> nfi (n-1) (unbind b)
+> nfi n (DApp f a) = do
+>     f' <- whnfi (n-1) f 
+>     case f' of
+>         DLam b -> nfi (n-1) (instantiate b a)
+>         _ -> DApp <$> nfi n f' <*> nfi n a
+
+> whnfi :: Int -> DB -> Maybe DB
+> whnfi 0 e = Nothing
+> whnfi n e@(DVar _) = return e
+> whnfi n e@(DLam _) = return e
+> whnfi n (DApp f a) = do
+>     f' <- whnfi (n-1) f 
+>     case whnf f' of
+>         DLam b -> whnfi (n-1) (instantiate b a)
+>         _ -> return $ DApp f' a
+
+
 Substitution needs to adjust the inserted expression
 so the free variables refer to the correct binders.
 
@@ -100,7 +121,7 @@ so the free variables refer to the correct binders.
 >   {-# SPECIALIZE subst :: Sub DB -> DB -> DB #-}
 >   -- 3 -- subst (Inc 0) e    = e   -- can discard an identity substitution
 >   subst s (DVar i)   = applySub s i
->   subst s (DLam b) = DLam (substBind s b)
+>   subst s (DLam b)   = DLam (substBind s b)
 >   subst s (DApp f a) = DApp (subst s f) (subst s a) 
 
 
@@ -119,7 +140,8 @@ Convert back from deBruijn to the LC type.
 
 > fromDB :: DB -> LC IdInt
 > fromDB = from firstBoundId
->   where from (IdInt n) (DVar i) | i < 0 = Var (IdInt i)
+>   where from (IdInt n) (DVar i) | i < 0     = Var (IdInt i)
+>                                 | i >= n    = Var (IdInt i)
 >                                 | otherwise = Var (IdInt (n-i-1))
 >         from n (DLam b)   = Lam n (from (succ n) (unbind b))
 >         from n (DApp f a) = App (from n f) (from n a)
@@ -132,7 +154,7 @@ Convert back from deBruijn to the LC type.
 
 > ppLC :: Int -> DB -> Doc
 > ppLC _ (DVar v)   = text $ "x" ++ show v
-> ppLC p (DLam b) = pparens (p>0) $ text ("\\.") PP.<> ppLC 0 (unbind b)
+> ppLC p (DLam b) = pparens (p>0) $ text "\\." PP.<> ppLC 0 (unbind b)
 > ppLC p (DApp f a) = pparens (p>1) $ ppLC 1 f <+> ppLC 2 a
 
 

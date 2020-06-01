@@ -1,7 +1,7 @@
 The DeBruijn module implements the Normal Form function by
 using de Bruijn indicies.
 
-> module DeBruijn(nf,aeq, toDB, fromDB, nfd) where
+> module DeBruijn(nf,DeBruijn.aeq, toDB, fromDB, nfd, nfi) where
 > import Data.List(elemIndex)
 > import Lambda
 > import IdInt
@@ -20,8 +20,7 @@ by negative numbers.
 >    rnf (DApp a b) = rnf a `seq` rnf b
 
 > aeq :: LC IdInt -> LC IdInt -> Bool
-> aeq x y = (toDB x) == (toDB y)
-
+> aeq x y = toDB x == toDB y
 
 > nf :: LC IdInt -> LC IdInt
 > nf = fromDB . nfd . toDB
@@ -45,6 +44,34 @@ Compute the weak head normal form.
 >     case whnf f of
 >         DLam b -> whnf (subst 0 a b)
 >         f' -> DApp f' a
+
+
+Bounded versions
+
+> instantiate :: DB -> DB -> DB
+> instantiate b a = subst 0 a b
+
+> nfi :: Int -> DB -> Maybe DB
+> nfi 0 e = Nothing
+> nfi n e@(DVar _) = return e
+> nfi n (DLam b) = DLam <$> nfi (n-1) b
+> nfi n (DApp f a) = do
+>     f' <- whnfi (n-1) f 
+>     case f' of
+>         DLam b -> nfi (n-1) (instantiate b a)
+>         _ -> DApp <$> nfi n f' <*> nfi n a
+
+> whnfi :: Int -> DB -> Maybe DB
+> whnfi 0 e = Nothing
+> whnfi n e@(DVar _) = return e
+> whnfi n e@(DLam _) = return e
+> whnfi n (DApp f a) = do
+>     f' <- whnfi (n-1) f 
+>     case whnf f' of
+>         DLam b -> whnfi (n-1) (instantiate b a)
+>         _ -> return $ DApp f' a
+
+
 
 Substitution needs to adjust the inserted expression
 so the free variables refer to the correct binders.
@@ -74,7 +101,8 @@ Convert back from deBruijn to the LC type.
 
 > fromDB :: DB -> LC IdInt
 > fromDB = from firstBoundId
->   where from (IdInt n) (DVar i) | i < 0 = Var (IdInt i)
+>   where from (IdInt n) (DVar i) | i < 0     = Var (IdInt i)
+>                                 | i >= n    = Var (IdInt i)
 >                                 | otherwise = Var (IdInt (n-i-1))
 >         from n (DLam b) = Lam n (from (succ n) b)
 >         from n (DApp f a) = App (from n f) (from n a)
