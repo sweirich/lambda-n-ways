@@ -23,7 +23,7 @@ top.pdf: top.tex $(TEXFILES)
 .PHONY: timing
 timing:	LC
 	stack run -- --output nf_bench.html --match prefix "nf/"  > output.txt
-	stack run -- --output aeq_bench.html --match prefix "aeq/" > output.txt
+	stack run -- --output aeq_bench.html --match prefix "aeq/" >> output.txt
 
 
 #	time ./LC Simple < timing.lam

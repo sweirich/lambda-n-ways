@@ -6,10 +6,8 @@ It uses parallel substitutions and explcit substitutions stored in the term.
 > {-# LANGUAGE GADTs #-}
 > {-# LANGUAGE DataKinds #-}
 > {-# LANGUAGE TypeFamilies #-}
-> {-# LANGUAGE TypeOperators #-}
 > {-# LANGUAGE UndecidableInstances #-}
 > module DeBruijnScoped(nf,DeBruijnScoped.aeq, toDB, fromDB, nfd, nfi) where
-> import Data.List(elemIndex)
 > import Lambda
 > import IdInt
 > import SubstScoped
@@ -105,7 +103,6 @@ so the free variables refer to the correct binders.
 > instance SubstC DB where
 >   var = DVar
 >
->   {-# SPECIALIZE subst :: Sub DB n m -> DB n -> DB m #-}
 >   -- 3 -- subst (Inc 0) e    = e   -- can discard an identity substitution
 >   subst s (DVar i)   = applyS s i
 >   subst s (DLam b)   = DLam (substBind s b)
@@ -136,7 +133,7 @@ Convert back from deBruijn to the LC type. Note, all variables must be in scope.
 
 > next :: [(Idx n, IdInt)] -> (IdInt, [(Idx (S n), IdInt)])
 > next [] = (firstBoundId, [(FZ, firstBoundId)])
-> next ((n, i):rest) = (succ i, (FZ, succ i): mapFst FS rest)
+> next ((_n, i):rest) = (succ i, (FZ, succ i): mapFst FS rest)
 
 > mapFst :: (a -> b) -> [(a,c)] -> [(b,c)]
 > mapFst f = map (\ (v,i) -> (f v, i))

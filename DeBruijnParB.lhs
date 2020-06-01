@@ -118,7 +118,6 @@ so the free variables refer to the correct binders.
 > instance SubstC DB where
 >   var = DVar
 >
->   {-# SPECIALIZE subst :: Sub DB -> DB -> DB #-}
 >   -- 3 -- subst (Inc 0) e    = e   -- can discard an identity substitution
 >   subst s (DVar i)   = applySub s i
 >   subst s (DLam b)   = DLam (substBind s b)
