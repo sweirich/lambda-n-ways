@@ -24,6 +24,7 @@
 > import Test.QuickCheck
 > import Core.Nf
 >
+> import Control.Monad
 > import Criterion.Main
 > import Control.DeepSeq
 
@@ -45,6 +46,20 @@
 >         , Unique.impl
 >         , Core.Nf.impl
 >         ]
+
+
+
+> -- test the correctness against the DeBruijn implementation
+> correctness :: IO ()
+> correctness = do
+>   tm <- getTerm
+>   let tm1 = toIdInt tm
+>   let test_impl LambdaImpl{..} = do
+>         let result = (impl_toLC . impl_nf . impl_fromLC ) tm1 
+>         if Lambda.aeq lambda_false result then return ()
+>           else putStrLn $ "FAILED: " ++ impl_name ++ " returned " ++ show result
+>   forM_ impls test_impl
+
 
 > -- | Benchmarks for timing conversion from named representation to internal representation
 > conv_bs :: LC IdInt -> [Bench]
@@ -99,9 +114,15 @@
 >       eqMaybe Unique.aeq (DeBruijn.fromDB <$> DeBruijn.nfi 1000 (DeBruijn.toDB x)) (f 1000 x)
 
 > infixl 5 @@
+> (@@) :: LC IdInt -> LC IdInt -> LC IdInt
 > a @@ b  = App a b
+> lam :: Int -> LC IdInt -> LC IdInt
 > lam i b = Lam (IdInt i) b
+> var :: Int -> LC IdInt
 > var i   = Var (IdInt i)
+>
+> lambda_false :: LC IdInt
+> lambda_false = lam 0 (lam 1 (var 1))
 
 -- test case that demonstrates the issue with renaming with a bound variable
 -- the simplifications to t2 and t3 below do not demonstrate the bug, only t1
@@ -161,6 +182,7 @@
 >   let! nfs = nf_bs tm1
 >   let! aeqs = aeq_bs tm1 tm2
 >   let runBench (Bench n f x) = bench n $ Criterion.Main.nf f x
+>   correctness 
 >   defaultMain [
 >      bgroup "conv" $ map runBench convs
 >    , bgroup "nf"   $ map runBench nfs
