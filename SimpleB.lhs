@@ -4,24 +4,31 @@ This module is trying to make a "delayed" substitution version of the "Simple" i
 > {-# LANGUAGE FlexibleInstances #-}
 > {-# LANGUAGE UndecidableInstances #-}
 > {-# LANGUAGE ScopedTypeVariables #-}
-> module SimpleB(nf,aeq,aeqd,toExp,fromExp,nfd,nfi) where
+> module SimpleB(nf,aeq,aeqd,toExp,fromExp,nfd,nfi, impl) where
 > import qualified Lambda as LC
-> import IdInt
+> import IdInt 
 > import Control.DeepSeq
-> --import qualified Data.Map.Strict as M
-> --import qualified Data.Set as S
 > import Text.PrettyPrint.HughesPJ(Doc, renderStyle, style, text,
 >            (<+>), parens)
-> import Debug.Trace
-> import Data.Coerce
+> import qualified IdInt.Set as S
+> import qualified IdInt.Map as M
+>
+> import Impl
 
+> impl :: LambdaImpl
+> impl = LambdaImpl {
+>            impl_name   = "SimpleB"
+>          , impl_fromLC = toExp
+>          , impl_toLC   = fromExp
+>          , impl_nf     = nfd
+>          , impl_nfi    = nfi
+>          , impl_aeq    = aeqd
+>       }
 
-> import Data.IntSet as S
-> import Data.IntMap as M
+> type VarSet = S.IdIntSet
 
-> type VarSet = S.IntSet
 > lookupMax :: VarSet -> Maybe IdInt
-> lookupMax vs = if S.null vs then Nothing else Just $ coerce (S.findMax vs)
+> lookupMax vs = if S.null vs then Nothing else Just $ S.findMax vs
 >   
 
 Get a variable which is not in the given set.
@@ -30,10 +37,6 @@ Get a variable which is not in the given set.
 > newId vs = case SimpleB.lookupMax vs of
 >               Just v   -> succ v
 >               Nothing  -> toEnum 0
-
-
-> class (Enum v, Ord v, Show v) => Atom v 
-> instance Atom IdInt
 
 
 A class of types that can calculate free variables and
@@ -58,7 +61,7 @@ substitutions together.
 
 > data Bind e = Bind { bind_subst :: !(Sub e),
 >                      bind_fvs   :: !(VarSet),
->                      bind_var   :: !Int,
+>                      bind_var   :: !IdInt,
 >                      bind_body  :: !e }
 
 Invariants:
@@ -81,11 +84,11 @@ Invariants:
 > 
 
 > bind :: FreeVars e => IdInt -> e -> Bind e
-> bind v a = Bind emptySub (S.delete (coerce v) (freeVars a)) (coerce v) a
+> bind v a = Bind emptySub (S.delete v (freeVars a)) v a
 > {-# INLINABLE bind #-}
 
 > unbind :: Subst e e => Bind e -> (IdInt, e)
-> unbind (Bind s _fv x a) = (coerce x,subst s a)
+> unbind (Bind s _fv x a) = (x,subst s a)
 > {-# INLINABLE unbind #-}
 
 > instantiate :: (Show e, Subst e e) => Bind e -> e -> e
@@ -116,7 +119,7 @@ Invariants:
 >                            s  = singleSub x (var y) `comp` s1 `comp` s2'
 >                            s' = M.restrictKeys s (fv `S.union` S.singleton x)
 >                          in
->                            Bind s' fv (coerce y) e
+>                            Bind s' fv y e
 > 
 >        -- just compose the substitutions
 >        | otherwise     = let
@@ -126,20 +129,20 @@ Invariants:
 >                            Bind s1s2' fv x e
 >     where fv1 = freeVars s1
 >           fv2 = freeVars s2'
->           s2' = M.restrictKeys s2 (freeVars b)
+>           s2' = M.restrictKeys s2 (freeVars b) 
 
 > instance (NFData a) => NFData (Bind a) where
 >     rnf (Bind s f x a) = rnf s `seq` rnf f `seq` rnf x `seq` rnf a
 
 -------------------------------------------------------------------
-
-> type Sub = M.IntMap
+ 
+> type Sub = M.IdIntMap
  
 > emptySub :: Sub e
 > emptySub = M.empty
 > {-# INLINABLE emptySub #-}
  
-> singleSub :: Int -> e -> Sub e
+> singleSub :: IdInt -> e -> Sub e
 > singleSub = M.singleton
 > {-# INLINABLE singleSub #-}
 
@@ -155,13 +158,13 @@ Invariants:
 >   freeVars    = foldMap freeVars
 
 > instance Subst a e => Subst a (Sub e) where
->   subst s2 s1 = M.map (subst s2) s1
+>   subst s2 s1 = fmap (subst s2) s1
 
 
 -------------------------------------------------------------------
 
 > instance FreeVars IdInt where
->    freeVars = coerce S.singleton
+>    freeVars = S.singleton
 
 -------------------------------------------------------------------
 
@@ -174,7 +177,7 @@ Invariants:
 
 
 > instance Var Exp where
->    var = Var
+>    var = Var 
 
 > instance FreeVars Exp where
 >   freeVars (Var v)   = freeVars v
@@ -182,7 +185,7 @@ Invariants:
 >   freeVars (App f a) = freeVars f `S.union` freeVars a
 
 > instance Subst Exp Exp where
->   subst s (Var x)    = M.findWithDefault (Var x) (coerce x) s
+>   subst s (Var x)    = M.findWithDefault (Var x) x s
 >   subst s (Lam b)    = Lam (subst s b)
 >   subst s (App f a)  = App (subst s f) (subst s a) 
 
@@ -201,7 +204,7 @@ Alpha-equivalence
 > aeqBind (Bind s1 _f1 x1 b1) e2@(Bind s2 _f2 x2 b2)
 >   | x1 == x2 = aeqd (subst s1 b1) (subst s2 b2)
 >   | x1 `S.member` freeVars e2 = False
->   | otherwise = aeqd (subst s1 b1) (subst (singleSub x2 (Var (coerce x1)) `comp` s2) b2)
+>   | otherwise = aeqd (subst s1 b1) (subst (singleSub x2 (Var x1) `comp` s2) b2)
 
 > aeqd :: Exp -> Exp -> Bool
 > aeqd (Var v1)    (Var v2)    = v1 == v2

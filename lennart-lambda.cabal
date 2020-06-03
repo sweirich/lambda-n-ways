@@ -30,12 +30,16 @@ executable LC
       Subst
       HOAS
       IdInt
+      IdInt.Map
+      IdInt.Set
+      Impl
       Lambda
       Misc
       Simple
       Unique
       BoundDB
       Unbound
+      UnboundGenerics
       Core.Core
       Core.Unique
       Core.FV
@@ -60,4 +64,5 @@ executable LC
                 , unbound >= 0.5.1.3
                 , deriving-compat
                 , QuickCheck >= 2.13.2
+                , unbound-generics >= 0.4.1
   default-language: Haskell2010

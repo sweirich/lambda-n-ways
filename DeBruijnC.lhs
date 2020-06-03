@@ -13,25 +13,35 @@
 -- substituted may then need to be normalized many times.
 -- Therefore, I have delayed the normalization of the argument by "thunking" it before
 -- adding to the context.
-
--- One may argue that it is an *advantage* of this version that it can save work this way.
--- That is true, but it also comes with a cost of 
-
+-- In the end, this still isn't the same normalization function as it doesn't continue inside
+-- lambda-expressions.
 
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-module DeBruijnC (nf,DeBruijnC.aeq,nfd,fromLC,toLC) where
+module DeBruijnC (nf,DeBruijnC.aeq,nfd,fromLC,toLC, impl) where
 
 import Lambda
 import IdInt
 import Data.List
 import Control.DeepSeq hiding (force)
 
+import Impl
+impl :: LambdaImpl
+impl = LambdaImpl {
+            impl_name   = "DB_C"
+          , impl_fromLC = fromLC []
+          , impl_toLC   = toLC 0
+          , impl_nf     = nfd
+          , impl_nfi    = error "nfi unimplementd for DeBruijnC"
+          , impl_aeq    = \_ _ -> False
+       }
+
+
 data DB v = DFree v              -- free variable
           | DBound Int           -- bound variable, uses de Bruijn index
           | DLam (DB v)          -- lambda abstraction (unbound)
           | DApp (DB v) (DB v)   -- application
           | DCont (DB v) [Thunk v]  -- lambda abstraction (bound to a context)
-   deriving (Eq)
+          deriving (Eq)
 
 instance NFData a => NFData (DB a) where
    rnf (DFree i) = rnf i
@@ -39,7 +49,6 @@ instance NFData a => NFData (DB a) where
    rnf (DLam d) = rnf d
    rnf (DApp a b) = rnf a `seq` rnf b
    rnf (DCont x y) = rnf x `seq` rnf y
-
 
 nfd :: DB IdInt -> DB IdInt
 nfd = dbnf []
@@ -51,7 +60,7 @@ thunk :: [Thunk v] -> DB v -> Thunk v
 thunk ctx s = Thunk (ctx, s)
 
 -- Reduce DB expression to normal form.
-dbnf :: [Thunk v] -> (DB v) -> (DB v)
+dbnf :: [Thunk v] -> DB v -> DB v
 dbnf   _ (DFree v)  = DFree v
 dbnf ctx (DBound i) = force (ctx !! i)
 dbnf ctx (DLam t)   = DCont t ctx

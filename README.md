@@ -5,9 +5,9 @@ variable binding in Haskell.
 
 It "benchmarks" several different representations of variable binding and
 substitution in the untyped lambda calculus using a single pathological case:
-computing the normal form of `factorial 6 == sum [1..37] + 17` encoded using
-Church numerals. (Spoiler alert, these terms are not equal, so the normal form
-is the Church encoding of false).
+computing the normal form of `factorial 6 == sum [1..37] + 17`. (Spoiler
+alert, these terms are not equal, so the normal form is the encoding of
+false).
 
 This is derived from Lennart Augustsson's unpublished draft paper
 "Lambda-calculus Cooked Four Ways".
@@ -88,10 +88,40 @@ This is derived from Lennart Augustsson's unpublished draft paper
   
   Currently doesn't work.
 
+## Normalization microbenchmark
+
+The microbenchmark used here is full normalization of the lambda-calculus
+term: `factorial 6 == sum [1..37] + 17` represented with a Scott-encoding of
+the datatypes. See [timing.lam](timing.lam) for the definition of this term.
+
+By full normalization, we mean computing the following partial function that 
+repeatedly performs beta-reduction on the leftmost redex.
+
+      nf x         = x
+      nf (\x.e)    = \x. nf e
+      nf (e1 e2)   = nf ({e2/x}e1')         when whnf e1 = \x.e1'
+                    (nf (whnf e1)) (nf e2)       otherwise
+
+      whnf x       = x
+      whnf (\x.e)  = \x.e
+      whnf (e1 e2) = whnf ({e2/x} e1') when whnf e1 = \x.e1'
+                    (whnf e1) e2            otherwise
+
+Note: the goal of this operation is to benchmark the *substitution* function,
+written above as {e2/x}e1.  As a result, even though some lambda calulus
+implementations may support more efficient ways of computing the normal form
+of a term (i.e. by normalizing e2 at most once) we are not interested in
+enabling that computation. Instead, we want the computation to be as close to the 
+implementation above as possible.
+
+Because this function is partial (not all lambda-calculus terms have normal
+forms), each implementation also should support a "fueled" version of the `nf`
+and `whnf` functions (called `nfi` and `whnfi`, respectively).
+
 ## Running the microbenchmark
 
      make timing
-	 
+
 ## Latest results
 
 See [nf_bench.html](nf_bench.html) and See [aeq_bench.html](aeq_bench.html)

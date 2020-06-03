@@ -7,7 +7,7 @@ It uses parallel substitutions and explcit substitutions stored in the term.
 > {-# LANGUAGE DataKinds #-}
 > {-# LANGUAGE TypeFamilies #-}
 > {-# LANGUAGE UndecidableInstances #-}
-> module DeBruijnScoped(nf,DeBruijnScoped.aeq, toDB, fromDB, nfd, nfi) where
+> module DeBruijnScoped(nf,DeBruijnScoped.aeq, toDB, fromDB, nfd, nfi, impl) where
 > import Lambda
 > import IdInt
 > import SubstScoped
@@ -17,6 +17,18 @@ It uses parallel substitutions and explcit substitutions stored in the term.
 >            (<+>), parens)
 > import qualified Text.PrettyPrint.HughesPJ as PP
 > import Data.Maybe(fromJust)
+
+> import Impl
+> impl :: LambdaImpl
+> impl = LambdaImpl {
+>             impl_name   = "Scoped"
+>           , impl_fromLC = toDB
+>           , impl_toLC   = fromDB
+>           , impl_nf     = nfd
+>           , impl_nfi    = nfi
+>           , impl_aeq    = (==)
+>        }
+
 
 Variables are represented by their binding depth, i.e., how many
 $\lambda$s out the binding $\lambda$ is.  Free variables are represented

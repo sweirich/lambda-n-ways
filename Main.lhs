@@ -7,83 +7,62 @@
 > import Misc
 > import Lambda
 > import IdInt
+> import Impl
+
 > import Simple
 > import SimpleB
 > import Unique
 > import HOAS
 > import DeBruijn
-> import DeBruijnC
+> -- import DeBruijnC
 > import DeBruijnParF
 > import DeBruijnParB
 > import BoundDB
 > import Unbound
+> import UnboundGenerics
 > import DeBruijnScoped
 > import Test.QuickCheck
-> -- import Core.Nf
+> import Core.Nf
 >
 > import Criterion.Main
 > import Control.DeepSeq
->
-
-Every lambda calculus implementation must have 
-a way to convret to and from the "raw string" representation, 
-a way to compute the normal form, and a way to determine
-alpha-equivalence.
-
-
-> data LamImpl =
->   forall a. NFData a =>
->       LamImpl
->          { impl_name   :: String ,
->            impl_fromLC :: LC IdInt -> a ,
->            impl_toLC   :: a -> LC IdInt,
->            impl_nf     :: a -> a,
->            impl_aeq    :: a -> a -> Bool,
->            impl_nfi    :: Int -> a -> Maybe a
->          }
- 
-
 
 > data Bench =
 >   forall a. Bench String (a -> ()) a
 
 
-> impls :: [LamImpl]
-> impls = [ 
->           LamImpl "DB_B" DeBruijnParB.toDB DeBruijnParB.fromDB DeBruijnParB.nfd (==)
->                          DeBruijnParB.nfi
->         , LamImpl "Scoped" DeBruijnScoped.toDB DeBruijnScoped.fromDB DeBruijnScoped.nfd (==)
->                          DeBruijnScoped.nfi
->         , LamImpl "DB_C" (DeBruijnC.fromLC []) (DeBruijnC.toLC 0) DeBruijnC.nfd (==)
->                          (\x y -> Nothing)
->         , LamImpl "Bound" BoundDB.toDB BoundDB.fromDB BoundDB.nfd
->                          (==) (\x y -> Nothing)
->         , LamImpl "HOAS"   HOAS.fromLC HOAS.toLC HOAS.nfh 
->            (\x y -> Lambda.aeq (HOAS.toLC x) (HOAS.toLC y))
->                          (\x y -> Nothing)
->         , LamImpl "DB_F" DeBruijnParF.toDB DeBruijnParF.fromDB DeBruijnParF.nfd
->                          (==) DeBruijnParF.nfi
-> --        , LamImpl "DB_P" DeBruijnPar.toDB DeBruijnPar.fromDB DeBruijnPar.nfd
-> --                         (==)
->         , LamImpl "SimpleB" SimpleB.toExp SimpleB.fromExp SimpleB.nfd SimpleB.aeqd
->                            SimpleB.nfi
-> {-        , LamImpl "Simple" id id Simple.nf Lambda.aeq Simple.nfi
->         , LamImpl "DB" DeBruijn.toDB DeBruijn.fromDB DeBruijn.nfd (==) DeBruijn.nfi
->         , LamImpl "Unbound" Unbound.toDB Unbound.fromDB Unbound.nfu
->                          Unbound.aeqd (\x y -> Nothing)
->         , LamImpl "Unique" id id Unique.nf Unique.aeq (\x y -> Nothing)
-> --      , LamImpl "Core" id id Core.Nf.nf Lambda.aeq -}
+> impls :: [LambdaImpl]
+> impls = [ DeBruijnParB.impl
+>         , DeBruijnScoped.impl
+>         , BoundDB.impl
+>         , HOAS.impl
+>         , SimpleB.impl
+>         , DeBruijnParF.impl
+>         , Simple.impl 
+>         , DeBruijn.impl
+>         , UnboundGenerics.impl 
+>         , Unbound.impl
+>         , Unique.impl
+>         , Core.Nf.impl
 >         ]
 
+> -- | Benchmarks for timing conversion from named representation to internal representation
+> conv_bs :: LC IdInt -> [Bench]
+> conv_bs lc = map impl2nf impls where
+>   impl2nf LambdaImpl {..} =
+>     Bench impl_name (rnf . impl_fromLC) lc
+
+
+> -- | Benchmarks for timing normal form calculation
 > nf_bs :: LC IdInt -> [Bench]
 > nf_bs lc = map impl2nf impls where
->   impl2nf LamImpl {..} =
+>   impl2nf LambdaImpl {..} =
 >     let! tm = force (impl_fromLC lc) in
 >     Bench impl_name (rnf . impl_nf) tm
 
 > aeq_bs :: LC IdInt -> LC IdInt -> [Bench]
 > aeq_bs lc1 lc2 = map impl2aeq impls where
->   impl2aeq LamImpl {..} =
+>   impl2aeq LambdaImpl {..} =
 >     let! tm1 = force (impl_fromLC lc1) in
 >     let! tm2 = force (impl_fromLC lc2) in
 >     Bench impl_name (\(x,y) -> rnf (impl_aeq x y)) (tm1,tm2)
@@ -95,8 +74,8 @@ alpha-equivalence.
 >   return $ read (stripComments contents)
 
 
-> prop_rt :: LamImpl -> LC IdInt -> Bool
-> prop_rt LamImpl{..} x = impl_toLC (impl_fromLC x) `Lambda.aeq` x
+> prop_rt :: LambdaImpl -> LC IdInt -> Bool
+> prop_rt LambdaImpl{..} x = impl_toLC (impl_fromLC x) `Lambda.aeq` x
 
 > prop_aeq :: Property
 > prop_aeq = forAllShrink IdInt.genScoped IdInt.shrinkScoped $ \x ->
@@ -107,8 +86,8 @@ alpha-equivalence.
 
 > eqMaybe :: (a -> a -> Bool) -> Maybe a -> Maybe a -> Property
 > eqMaybe f (Just x) (Just y) = classify True "aeq" (f x y)
-> eqMaybe _f Nothing Nothing = property True
-> eqMaybe _ _ _ = property False
+> eqMaybe _f _ _ = property True
+
 
 > prop_sameNF :: (Int -> LC IdInt -> Maybe (LC IdInt)) -> Int -> LC IdInt ->  Property
 > prop_sameNF f i x = eqMaybe Lambda.aeq (Simple.nfi i x) (f i x)
@@ -119,10 +98,6 @@ alpha-equivalence.
 > prop_closedNF f = forAllShrink IdInt.genScoped IdInt.shrinkScoped $ \x ->
 >       eqMaybe Unique.aeq (DeBruijn.fromDB <$> DeBruijn.nfi 1000 (DeBruijn.toDB x)) (f 1000 x)
 
-
-> prop_unique :: LC IdInt -> Bool
-> prop_unique x = Unique.aeq x (Unique.toUnique x)
-
 > infixl 5 @@
 > a @@ b  = App a b
 > lam i b = Lam (IdInt i) b
@@ -131,7 +106,6 @@ alpha-equivalence.
 -- test case that demonstrates the issue with renaming with a bound variable
 -- the simplifications to t2 and t3 below do not demonstrate the bug, only t1
 -- note how x3 is already in scope, 
-
 
 > t1 :: LC IdInt
 > t1 = lam 0 (lam 1 (lam 2 (lam 3 (lam 4
@@ -157,6 +131,8 @@ alpha-equivalence.
 \x0.\x1.\x2.\x3.\x4.\x1.\x2.(\x3.x2) (x1 x3)
 
 
+
+
 > t3 = lam 0 (lam 1 (lam 2 (lam 3 (lam 4
 >          (lam 1 (lam 2 ((lam 3 (var 2)) @@ (var 1 @@ var 3))))))))
 
@@ -168,7 +144,10 @@ alpha-equivalence.
 >        @@
 >        (lam 1 (lam 2 ( (lam 3 (lam 4 (var 1))) @@ (lam 3 (var 3 @@ var 2))))))))))
 
+-- Counterexample for Core
 
+> t5 :: LC IdInt
+> t5 = lam 0 (lam 1 (lam 2 (lam 3 (lam 4 (lam 1 (lam 2 (lam 3 (lam 4 (lam 5 (var 1 @@ var 3))))))))))
 
 
 > main :: IO ()
@@ -176,21 +155,23 @@ alpha-equivalence.
 >   tm <- getTerm
 >   let tm1 = toIdInt tm
 >   return $! rnf tm1
->   let tm2 = toIdInt (toUnique tm1)
+>   let tm2 = toIdInt (fromUnique (toUnique tm1))
 >   return $! rnf tm2
+>   let! convs = conv_bs tm1
 >   let! nfs = nf_bs tm1
 >   let! aeqs = aeq_bs tm1 tm2
 >   let runBench (Bench n f x) = bench n $ Criterion.Main.nf f x
 >   defaultMain [
->      bgroup "nf" $ map runBench nfs
->    , bgroup "aeq" $ map runBench aeqs
+>      bgroup "conv" $ map runBench convs
+>    , bgroup "nf"   $ map runBench nfs
+>    , bgroup "aeq"  $ map runBench aeqs
 >    ]
 >
 > 
 
 
 The $\lambda$-expression in {\tt timing.lam} computes
-``{\tt factorial 6 == sum [1..37] + 17}'', but using Church numerals.
+``{\tt factorial 6 == sum [1..37] + 17`factorial 6 == sum [1..37] + 17}'', but using Church numerals.
 
 \mbox{}\\
 \mbox{}\\

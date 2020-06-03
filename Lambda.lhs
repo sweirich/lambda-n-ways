@@ -5,7 +5,8 @@ It also exports a simple type of identifiers that parse and
 print in a nice way.
 
 > {-# LANGUAGE DeriveGeneric #-}
-> module Lambda(LC(..), freeVars, allVars, Id(..),aeq) where
+> {-# LANGUAGE ScopedTypeVariables #-}
+> module Lambda(LC(..), freeVars, allVars, Id(..), aeq, genScoped, shrinkScoped, prop_roundTrip) where
 > import Data.List(union, (\\))
 > import Data.Char(isAlphaNum)
 > import Text.PrettyPrint.HughesPJ(Doc, renderStyle, style, text,
@@ -36,7 +37,7 @@ Compute the free variables of an expression.
 > freeVars (Lam v e) = freeVars e \\ [v]
 > freeVars (App f a) = freeVars f `union` freeVars a
 
-Compute all variables in an expression.
+Compute *all* variables in an expression.
 
 > allVars :: (Eq v) => LC v -> [v]
 > allVars (Var v) = [v]
@@ -77,6 +78,8 @@ left.
 >     aeqd m a1 b1 && aeqd m a2 b2
 >   aeqd _ _ _ = False
 
+
+---------------------------- Read/Show -------------------------------------
 
 The Read instance for the LC type reads $\lambda$ term with the normal
 syntax.
@@ -163,6 +166,21 @@ Identifiers print and parse without any adornment.
 >         ("", _) -> []
 >         (i, s') -> [(Id i, s')]
 
+> instance Arbitrary Id where
+>    arbitrary = Id  <$> genSafeString
+
+> genSafeChar :: Gen Char
+> genSafeChar = elements ['a'..'z']
+
+> genSafeString :: Gen String
+> genSafeString = listOf1 genSafeChar
+
+Round trip property for parsing / pp
+
+> prop_roundTrip :: LC Id -> Bool
+> prop_roundTrip x = read (show x) == x
+
+> ----------------------- Arbitrary instances -----------------------------------
 
 > instance Arbitrary v => Arbitrary (LC v) where
 >   arbitrary = sized gen where
@@ -179,3 +197,42 @@ Identifiers print and parse without any adornment.
 >                        [ App e1 e2' | e2' <- shrink e2] 
 
 
+
+Generate an arbitrary *well-scoped* lambda calculus term
+
+
+> genScoped :: forall v. (Enum v, Arbitrary v) => Gen (LC v)
+> genScoped = lams <$> sized (gen vars) where
+> 
+>     vars :: [v]
+>     vars = take 5 [(toEnum 0) ..]
+> 
+>     lams :: LC v -> LC v
+>     lams body = foldr Lam body vars
+> 
+>     gen :: [v] -> Int -> Gen (LC v)
+>     gen xs n | not (null xs) && n <= 1 = var
+>              | null xs                 = oneof [lam,app]
+>              | otherwise               = oneof [var,lam,lam,app]
+>        where
+>           n'  = n `div` 2
+>           lam = do let x = succ (head xs)
+>                    Lam x <$> gen (x:xs) n'
+>           app = App <$> gen xs n' <*> gen xs n'
+>           var = Var <$> elements xs
+>     
+
+> shrinkScoped :: forall v. (Enum v, Eq v) => LC v -> [LC v]
+> shrinkScoped e = lams <$> s (peel e) where
+>    vars = take 5 [(toEnum 0) ..]
+> 
+>    lams :: LC v -> LC v
+>    lams body = foldr Lam body vars
+> 
+>    peel (Lam _ (Lam _ (Lam _ (Lam _ (Lam _ e1))))) = e1
+>    peel _ = error "start with 5 lambda-bound variables"
+>
+>    s :: LC v -> [LC v]
+>    s (Lam v e) = [e | v `notElem` freeVars e ]
+>    s (Var _x)  = []
+>    s (App e1 e2) = e1 : e2 : [App e1 e2' | e2' <- s e2] ++ [App e1' e2 | e1' <- s e1]

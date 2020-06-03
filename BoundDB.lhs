@@ -3,18 +3,29 @@ using de Bruijn indicies.
 
 > {-# LANGUAGE DeriveGeneric #-}
 > {-# LANGUAGE DeriveTraversable #-}
-> {-# LANGUAGE TemplateHaskell #-}
 > {-# LANGUAGE StandaloneDeriving #-}
-> module BoundDB(nf,BoundDB.aeq,toDB,fromDB,nfd) where
+> module BoundDB(nf,BoundDB.aeq,toDB,fromDB,nfd, impl) where
 > import Lambda
 > import IdInt
->
+> import Data.Functor.Classes (Eq1(..))
+
 > import Control.Monad
 > import GHC.Generics hiding (to,from)
 > import Control.DeepSeq
-> import Data.Eq.Deriving (deriveEq1)      --  from deriving-comapt
 > 
 > import Bound
+
+> import Impl
+> impl :: LambdaImpl
+> impl = LambdaImpl {
+>            impl_name   = "Bound"
+>          , impl_fromLC = toDB
+>          , impl_toLC   = fromDB
+>          , impl_nf     = nfd
+>          , impl_nfi    = error "nfi unimplemented for BoundDB"
+>          , impl_aeq    = (==)
+>       }
+
 
 Variables are represented by their binding depth, i.e., how many
 $\lambda$s out the binding $\lambda$ is.  Free variables are represented
@@ -26,7 +37,11 @@ by negative numbers.
 > instance NFData a => NFData (DB a)
 > deriving instance Eq a => (Eq (DB a))
 >
-> deriveEq1 ''DB
+> instance Eq1 DB where
+>   liftEq f (DVar x) (DVar y) = f x y
+>   liftEq f (DLam s1) (DLam s2) = liftEq f s1 s2
+>   liftEq f (DApp a1 b1) (DApp a2 b2) = liftEq f a1 a2 && liftEq f b1 b2
+>   liftEq _ _ _ = False
 
 > instance Applicative DB where
 >   pure = DVar

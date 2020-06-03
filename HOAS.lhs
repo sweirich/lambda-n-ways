@@ -2,17 +2,30 @@ The HOAS module implements the Normal Form function by
 using Higher Order Abstract Syntax for the $\lambda$-expressions.
 This makes it possible to use the native substitution of Haskell.
 
-> module HOAS(nf,nfh,fromLC,toLC) where
+> module HOAS(nf,nfh,fromLC,toLC, impl) where
 > import qualified Data.Map as M
 > import Lambda
 > import IdInt
 > import Control.DeepSeq
 > import Data.Maybe(fromMaybe)
 
+
+> import Impl
+> impl :: LambdaImpl
+> impl = LambdaImpl {
+>            impl_name   = "HOAS"
+>          , impl_fromLC = fromLC
+>          , impl_toLC   = toLC
+>          , impl_nf     = nfh
+>          , impl_nfi    = error "cannot implement nfi for HOAS"
+>          , impl_aeq    = \x y -> Lambda.aeq (HOAS.toLC x) (HOAS.toLC y)
+>       }
+
+
 With higher order abstract syntax the abstraction in the implemented
 language is represented by an abstraction in the implementation
 language.
-We still need to represent variables for free variables and also during
+W e still need to represent variables for free variables and also during
 conversion.
 
 > data HOAS = HVar IdInt | HLam (HOAS -> HOAS) | HApp HOAS HOAS

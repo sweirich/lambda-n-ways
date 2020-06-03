@@ -1,11 +1,23 @@
 The DeBruijn module implements the Normal Form function by
 using de Bruijn indicies.
 
-> module DeBruijn(nf,DeBruijn.aeq, toDB, fromDB, nfd, nfi) where
+> module DeBruijn(nf,DeBruijn.aeq, toDB, fromDB, nfd, nfi, impl) where
 > import Data.List(elemIndex)
 > import Lambda
 > import IdInt
 > import Control.DeepSeq
+
+> import Impl
+> impl :: LambdaImpl
+> impl = LambdaImpl {
+>             impl_name   = "DB"
+>           , impl_fromLC = toDB
+>           , impl_toLC   = fromDB
+>           , impl_nf     = nfd
+>           , impl_nfi    = nfi
+>           , impl_aeq    = (==)
+>        }
+
 
 Variables are represented by their binding depth, i.e., how many
 $\lambda$s out the binding $\lambda$ is.  Free variables are represented

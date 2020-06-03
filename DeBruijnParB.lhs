@@ -24,7 +24,7 @@ NONE:   user	0m6.655s
 1,3,4,5,6: user	0m0.010s
 user	0m0.009s
 
-> module DeBruijnParB(nf,DeBruijnParB.aeq,toDB,fromDB,nfd,nfi) where
+> module DeBruijnParB(nf,DeBruijnParB.aeq,toDB,fromDB,nfd,nfi, impl) where
 > import Data.List(elemIndex)
 > import Lambda
 > import IdInt
@@ -34,6 +34,18 @@ user	0m0.009s
 > import Text.PrettyPrint.HughesPJ(Doc, renderStyle, style, text,
 >            (<+>), parens)
 > import qualified Text.PrettyPrint.HughesPJ as PP
+
+> import Impl
+> impl :: LambdaImpl
+> impl = LambdaImpl {
+>             impl_name   = "DB_B"
+>           , impl_fromLC = toDB
+>           , impl_toLC   = fromDB
+>           , impl_nf     = nfd
+>           , impl_nfi    = nfi
+>           , impl_aeq    = (==)
+>        }
+
 
 Variables are represented by their binding depth, i.e., how many
 $\lambda$s out the binding $\lambda$ is.  Free variables are represented

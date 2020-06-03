@@ -1,11 +1,23 @@
 The Simple module implements the Normal Form function by
-using a na\"{i}ve version of substitution.
+using a na\"{i}ve version of substitution. In otherwords, this version
+alpha-renames bound variables during substitution if they would ever
+capture a free variable.
 
-> module Simple(nf,nfi) where
+> module Simple(nf,nfi,impl) where
 > import Data.List(union, (\\))
 > import Lambda
-> import IdInt
+> import IdInt  
+> import Impl
 
+> impl :: LambdaImpl
+> impl = LambdaImpl {
+>             impl_name   = "Simple"
+>           , impl_fromLC = id
+>           , impl_toLC   = id
+>           , impl_nf     = nf
+>           , impl_nfi    = nfi
+>           , impl_aeq    = Lambda.aeq
+>        }
 
 The normal form is computed by repeatedly performing
 substitution ($\beta$-reduction) on the leftmost redex.
@@ -22,7 +34,23 @@ function.
 > nf (App f a) =
 >     case whnf f of
 >         Lam x b -> nf (subst x a b)
->         f' -> App (nf f') (nf a)
+>         f'      -> App (nf f') (nf a)
+
+
+Compute the weak head normal form.  It is similar to computing the normal form,
+but it does not reduce under $\lambda$, nor does it touch an application
+that is not a $\beta$-redex.
+
+> whnf :: LC IdInt -> LC IdInt
+> whnf e@(Var _)   = e
+> whnf e@(Lam _ _) = e
+> whnf (App f a) =
+>     case whnf f of
+>         Lam x b -> whnf (subst x a b)
+>         f' -> App f' a
+
+
+For testing, we can add a "fueled" version
 
 > nfi :: Int -> LC IdInt -> Maybe (LC IdInt)
 > nfi 0 _e = Nothing
@@ -33,20 +61,6 @@ function.
 >     case f' of
 >         Lam x b -> nfi (n-1) (subst x a b)
 >         _ -> App <$> nfi (n-1) f' <*> nfi (n-1) a
-
-
-
-Compute the weak head normal form.  It is similar to computing the normal form,
-but it does not reduce under $\lambda$, nor does it touch an application
-that is not a $\beta$-redex.
-
-> whnf :: LC IdInt -> LC IdInt
-> whnf e@(Var _) = e
-> whnf e@(Lam _ _) = e
-> whnf (App f a) =
->     case whnf f of
->         Lam x b -> whnf (subst x a b)
->         f' -> App f' a
 
 
 > whnfi :: Int -> LC IdInt -> Maybe (LC IdInt)
@@ -91,7 +105,7 @@ in the original {\tt b} to fulfill the second requirement.
 >        fvs = freeVars s
 >        vs0 = fvs `union` allVars b
 
-(Note: updated according to Kmett's blog post
+(Note: this code was updated according to Kmett's blog post
  https://www.schoolofhaskell.com/user/edwardk/bound.)
 
 Get a variable which is not in the given set.
