@@ -54,16 +54,19 @@ library
       Core.Nf
   ghc-options:  -O2 -funfolding-use-threshold=16
   build-depends:
-                  base >= 4.13
+                        base >= 4.13
+                , QuickCheck >= 2.13.2
+                , RepLib >= 0.5.4.2
                 , bound
                 , containers
                 , deepseq >= 1.4.4.0
+                , deriving-compat
                 , mtl
                 , pretty
-                , RepLib >= 0.5.4.2
+                , tasty >= 1.2.3
+                , tasty-hunit >= 0.10.0.2
+                , tasty-quickcheck >= 0.10.1.1
                 , unbound >= 0.5.1.3
-                , deriving-compat
-                , QuickCheck >= 2.13.2
                 , unbound-generics >= 0.4.1
   default-language: Haskell2010
 
@@ -71,19 +74,22 @@ executable LC
   hs-source-dirs: bench
   main-is: Main.lhs
   default-language: Haskell2010
-  build-depends: lennart-lambda
-                , base >= 4.13
-                , bound
-                , containers
-                , criterion
-                , deepseq >= 1.4.4.0
-                , mtl
-                , pretty
-                , RepLib >= 0.5.4.2
-                , unbound >= 0.5.1.3
-                , deriving-compat
-                , QuickCheck >= 2.13.2
-                , unbound-generics >= 0.4.1
+  build-depends: QuickCheck >= 2.13.2
+               , RepLib >= 0.5.4.2
+               , base >= 4.13
+               , bound
+               , containers
+               , criterion
+               , deepseq >= 1.4.4.0
+               , deriving-compat
+               , lennart-lambda
+               , mtl
+               , pretty
+               , tasty >= 1.2.3
+               , tasty-hunit >= 0.10.0.2
+               , tasty-quickcheck >= 0.10.1.1
+               , unbound >= 0.5.1.3
+               , unbound-generics >= 0.4.1
 
 test-suite test-timing
   default-language: Haskell2010
@@ -91,8 +97,11 @@ test-suite test-timing
   main-is: Main.hs
   type:    exitcode-stdio-1.0
   build-depends:
-      base >= 4.13
-    , tasty >= 0.7 
-    , tasty-hunit
-    , tasty-quickcheck
-    , lennart-lambda
+                        base >= 4.13
+                , lennart-lambda
+                , tasty >= 0.7
+                , tasty >= 1.2.3
+                , tasty-hunit
+                , tasty-hunit >= 0.10.0.2
+                , tasty-quickcheck
+                , tasty-quickcheck >= 0.10.1.1
