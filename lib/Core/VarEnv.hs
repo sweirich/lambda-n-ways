@@ -478,6 +478,7 @@ minusVarEnv      = minusUFM
 plusVarEnv       = plusUFM
 plusVarEnvList   = plusUFMList
 lookupVarEnv     = lookupUFM
+{-# INLINABLE lookupVarEnv #-}
 filterVarEnv     = filterUFM
 lookupWithDefaultVarEnv = lookupWithDefaultUFM
 mapVarEnv        = mapUFM

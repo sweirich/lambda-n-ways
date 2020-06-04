@@ -153,6 +153,7 @@ isEmptyUniqSet (UniqSet s) = isNullUFM s
 
 lookupUniqSet :: Uniquable a => UniqSet b -> a -> Maybe b
 lookupUniqSet (UniqSet s) k = lookupUFM s k
+{-# INLINABLE lookupUniqSet #-}
 
 lookupUniqSet_Directly :: UniqSet a -> Unique -> Maybe a
 lookupUniqSet_Directly (UniqSet s) k = lookupUFM_Directly s k

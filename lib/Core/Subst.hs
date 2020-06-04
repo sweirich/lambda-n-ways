@@ -141,6 +141,7 @@ lookupIdSubst doc (Subst in_scope ids) v
   | Just v' <- lookupInScope in_scope v = LC.Var v'
         -- Vital! See Note [Extending the Subst]
   | otherwise = LC.Var v
+{-# INLINABLE lookupIdSubst #-}
 
 
 delBndr :: Subst -> Var -> Subst

@@ -132,7 +132,7 @@ isEmptyVarSet   = isEmptyUniqSet
 mkVarSet        = mkUniqSet
 lookupVarSet_Directly = lookupUniqSet_Directly
 lookupVarSet    = lookupUniqSet
-
+{-# INLINABLE lookupVarSet #-}                   
 sizeVarSet      = sizeUniqSet
 filterVarSet    = filterUniqSet
 delVarSetByKey  = delOneFromUniqSet_Directly

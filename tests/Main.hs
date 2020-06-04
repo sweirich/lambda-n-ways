@@ -10,11 +10,18 @@ import System.Exit (exitFailure)
 import Control.Monad
 import Test.QuickCheck
 
+import qualified DeBruijn
+
 import Test.Tasty
 import Test.Tasty.QuickCheck as QC 
 import Test.Tasty.HUnit
 
+-- reference version of LC IdInt alpha-equivalence
+-- convert to DB indices and use (==)
 
+ref_aeq :: LC IdInt -> LC IdInt -> Bool
+ref_aeq x y = case DeBruijn.impl of
+  LambdaImpl {..} -> impl_aeq (impl_fromLC x) (impl_fromLC y)
  
 getTerm :: IO (LC Id)
 getTerm = do

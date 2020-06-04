@@ -19,11 +19,13 @@ This is derived from Lennart Augustsson's unpublished draft paper
 
 - Simple
 
-  Naive substitution. Renames variables to avoid capture
+  Most direct and traditional implementation based on variable names.
+  Renames bound variables to avoid capture.
   
 - Unique
 
-  Maintains the invariant that all bound variables are unique
+  Maintains the invariant that all bound variables are unique. Needs to 
+  freshens the binders of terms being substituted to maintain this invariant.
   
 - HOAS
 
@@ -32,14 +34,12 @@ This is derived from Lennart Augustsson's unpublished draft paper
 
 - Debruijn
 
-  DeBruijn indices that shifts during substitution.
+  DeBruijn indices that shift during substitution.
 
 2. Contributed by Bertram Felgenhauer 
 
 - DeBruijnC [DB_C]
 
-  (This version doesn't really count because there is no definition 
-  of substitution. But it is the fastest!)
   DeBruijn indices without substitutions. Adds a "closure" form to the
   language and uses an environment during normalization.
 
@@ -67,8 +67,7 @@ This is derived from Lennart Augustsson's unpublished draft paper
 
 - BoundDB 
 
-  Uses Kmett's [bound](https://hackage.haskell.org/package/bound) library
-  (Note: maybe there is a faster way to convert from named to bound representation?)
+  Uses Kmett's [bound](https://hackage.haskell.org/package/bound) library.
 
 - Unbound
 
@@ -81,12 +80,11 @@ This is derived from Lennart Augustsson's unpublished draft paper
 
 - Core
 
-  Uses the FV and Substitution functions ripped out of GHC Core (HEAD 5/28/20)
-  Like DB_C, uses a delayed substitution (e.g. environment) during normalization. 
+  Uses the FV and Substitution functions ripped out of GHC Core (HEAD as of 5/28/20)
+  Like DB_C, this file uses a delayed substitution (e.g. environment) during normalization. 
   Does not add any explicit substitutions to the term.
   Uses Data.IntMap instead of lists to keep track of the substitution. 
   
-  Currently doesn't work.
 
 ## Normalization microbenchmark
 

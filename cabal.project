@@ -1,5 +1,8 @@
 packages:
   ../replib/RepLib/
   ../replib/Unbound/
-  .
+  ../lennart-lambda/
+
+
+
 

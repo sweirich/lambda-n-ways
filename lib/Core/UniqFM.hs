@@ -276,6 +276,7 @@ elemUFM_Directly u (UFM m) = M.member (getKey u) m
 
 lookupUFM :: Uniquable key => UniqFM elt -> key -> Maybe elt
 lookupUFM (UFM m) k = M.lookup (getKey $ getUnique k) m
+{-# INLINABLE lookupUFM #-}
 
 -- when you've got the Unique already
 lookupUFM_Directly :: UniqFM elt -> Unique -> Maybe elt
