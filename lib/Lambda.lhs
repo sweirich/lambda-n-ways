@@ -15,11 +15,11 @@ print in a nice way.
 > import Text.ParserCombinators.ReadP
 > import GHC.Generics
 > import Control.DeepSeq
-> import Test.QuickCheck
+
 > import qualified Data.Map as M
 > import Data.Map (Map)
 >
-
+> import Test.QuickCheck
 
 
 The LC type of $\lambda$ term is parametrized over the type of the variables.

@@ -15,7 +15,7 @@ import Test.Tasty.QuickCheck as QC
 import Test.Tasty.HUnit
 
 
-
+ 
 getTerm :: IO (LC Id)
 getTerm = do
   contents <- readFile "timing.lam"

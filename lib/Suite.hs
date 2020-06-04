@@ -1,5 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
-module Suite(impls) where
+module Suite where
 
 import Lambda
 import IdInt
@@ -38,7 +38,7 @@ impls = [ DeBruijnParB.impl
 
 --------------------------------------------------------------
 --------------------------------------------------------------
-
+  
 
 
 infixl 5 @@
@@ -65,7 +65,8 @@ prop_aeq = forAllShrink IdInt.genScoped IdInt.shrinkScoped $ \x ->
        let eq = Lambda.aeq x y in
        classify eq "aeq" $ eq == (DeBruijn.toDB x == DeBruijn.toDB y)
 
-
+-- | Ok if either times out too early. But if they both finish, it should
+-- be with the same answer
 eqMaybe :: (a -> a -> Bool) -> Maybe a -> Maybe a -> Property
 eqMaybe f (Just x) (Just y) = classify True "aeq" (f x y)
 eqMaybe _f _ _ = property True
@@ -74,8 +75,14 @@ eqMaybe _f _ _ = property True
 prop_sameNF :: (Int -> LC IdInt -> Maybe (LC IdInt)) -> Int -> LC IdInt ->  Property
 prop_sameNF f i x = eqMaybe Lambda.aeq (Simple.nfi i x) (f i x)
 
+
+lc_nfi :: LambdaImpl -> Int -> LC IdInt -> Maybe (LC IdInt)
+lc_nfi LambdaImpl{..} i x =
+  impl_toLC <$>  impl_nfi i (impl_fromLC x)
+
+
 -- NOTE: need "fueled" version of normalization 
 -- NOTE: hard to shrink and stay well-closed
-prop_closedNF :: (Int -> LC IdInt -> Maybe (LC IdInt)) -> Property
-prop_closedNF f = forAllShrink IdInt.genScoped IdInt.shrinkScoped $ \x ->
-      eqMaybe Unique.aeq (DeBruijn.fromDB <$> DeBruijn.nfi 1000 (DeBruijn.toDB x)) (f 1000 x)
+prop_closedNF :: LambdaImpl -> Property
+prop_closedNF impl = forAllShrink IdInt.genScoped IdInt.shrinkScoped $ \x ->
+      eqMaybe Unique.aeq (lc_nfi DeBruijn.impl 1000 x) (lc_nfi impl 1000 x)

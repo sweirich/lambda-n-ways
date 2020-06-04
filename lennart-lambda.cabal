@@ -99,6 +99,7 @@ test-suite test-timing
   build-depends:
                         base >= 4.13
                 , lennart-lambda
+                , QuickCheck >= 2.13.2
                 , tasty >= 0.7
                 , tasty >= 1.2.3
                 , tasty-hunit
