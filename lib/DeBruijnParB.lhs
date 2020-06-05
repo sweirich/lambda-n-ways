@@ -68,7 +68,7 @@ Alpha equivalence requires pushing delayed substitutions into the terms
 > instance Eq DB where
 >    DVar x == DVar y = x == y
 >    DLam x == DLam y = x == y
->    DApp x1 x2 == DApp y1 y2 = x1 == x2 && y1 == y2
+>    DApp x1 x2 == DApp y1 y2 = x1 == y1 && x2 == y2
 >    _ == _           = False
 
 

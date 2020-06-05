@@ -11,38 +11,68 @@ import Control.Monad
 import Test.QuickCheck
 
 import qualified DeBruijn
+import qualified Unique
 
+import Test.QuickCheck
 import Test.Tasty
 import Test.Tasty.QuickCheck as QC 
 import Test.Tasty.HUnit
 
--- reference version of LC IdInt alpha-equivalence
+-- | reference version of LC IdInt alpha-equivalence
 -- convert to DB indices and use (==)
-
 ref_aeq :: LC IdInt -> LC IdInt -> Bool
 ref_aeq x y = case DeBruijn.impl of
   LambdaImpl {..} -> impl_aeq (impl_fromLC x) (impl_fromLC y)
- 
+
+aeq :: LambdaImpl -> LC IdInt -> LC IdInt -> Bool
+aeq LambdaImpl{..} x y = x' `impl_aeq` y' where
+    x' = impl_fromLC x
+    y' = impl_fromLC y
+
+
+
+prop_aeqScoped :: LambdaImpl -> Property
+prop_aeqScoped LambdaImpl{..} = withMaxSuccess 1000 $ forAllShrink IdInt.genScoped IdInt.shrinkScoped  $ \x -> 
+  let x' = impl_fromLC x
+      y' = impl_fromLC y
+      y  = Unique.fromUnique (Unique.toUnique x)
+  in property (x' `impl_aeq` y') 
+
+
+prop_aeq :: LambdaImpl -> Property
+prop_aeq LambdaImpl{..} = withMaxSuccess 1000 $ forAll arbitrary  $ \x -> 
+  let x' = impl_fromLC x
+      y' = impl_fromLC y
+      y  = Unique.fromUnique (Unique.toUnique x)
+  in property (x' `impl_aeq` y') 
+  
+
+aeqQCs :: TestTree
+aeqQCs = testGroup "AEQ unit tests" (map f impls) where
+  f i = testProperty (impl_name i) (Main.prop_aeqScoped i) 
+
+-- Unit tests from the benchmark (normalizing the giant lambda term)  
 getTerm :: IO (LC Id)
 getTerm = do
   contents <- readFile "timing.lam"
   return $ read (stripComments contents)
- 
+
+nfUnitTests :: IO TestTree
+nfUnitTests = do
+  tm <- getTerm
+  let tm1 = toIdInt tm
+  let test_impl LambdaImpl{..} = do
+         let result = (impl_toLC . impl_nf . impl_fromLC ) tm1 
+         assertBool ("nf produced: " ++ show result) (Lambda.aeq lambda_false result)
+  return $ testGroup "NF Unit Tests" $
+    map (\i -> testCase (impl_name i) $ test_impl i) impls 
 
 -- test the correctness by normalizing the benchmarking term
 -- should produce result equal to false
 main :: IO ()
 main = do
-   tm <- getTerm
-   let tm1 = toIdInt tm
-   let test_impl LambdaImpl{..} = do
-         let result = (impl_toLC . impl_nf . impl_fromLC ) tm1 
-         if Lambda.aeq lambda_false result then return ()
-           else do
-             putStrLn $ "FAILED: " ++ impl_name ++ " returned " ++ show result
-             exitFailure
-   forM_ impls test_impl
-
+  nfTests <- nfUnitTests
+  defaultMain $ testGroup "tests" [aeqQCs, nfTests]
 
 
 {-

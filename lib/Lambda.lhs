@@ -58,6 +58,11 @@ left.
 >   | Just y <- M.lookup x m2 =  y
 >   | otherwise = x
 >
+> applyPermLC :: Ord v => Perm v -> LC v -> LC v
+> applyPermLC m (Var x)   = Var (applyPerm m x)
+> applyPermLC m (Lam x e) = Lam (applyPerm m x) (applyPermLC m e)
+> applyPermLC m (App t u) = App (applyPermLC m t) (applyPermLC m u)
+
 > emptyPerm :: Perm v
 > emptyPerm = (M.empty, M.empty)
 > 
@@ -67,16 +72,18 @@ left.
 > lookupVar :: Ord v => Map v v -> v -> v
 > lookupVar m x = M.findWithDefault x x m 
 
+> -- inefficient version
 > aeq :: Ord v => LC v -> LC v -> Bool
-> aeq = aeqd emptyPerm where
->   aeqd m (Var v1) (Var v2) = v1 == applyPerm m v2  
->   aeqd m (Lam v1 e1) (Lam v2 e2)
->     | v1 == applyPerm m v2 = aeqd m e1 e2
->     | v1 `elem` freeVars (Lam v2 e2)   = False
->     | otherwise = aeqd (extendPerm m v1 v2) e1 e2
->   aeqd m (App a1 a2) (App b1 b2) =
->     aeqd m a1 b1 && aeqd m a2 b2
->   aeqd _ _ _ = False
+> aeq = aeqd where
+>   aeqd (Var v1) (Var v2) = v1 == v2
+>   aeqd (Lam v1 e1) (Lam v2 e2)
+>     | v1 == v2 = aeqd e1 e2
+>     | v1 `elem` freeVars (Lam v2 e2)  = False
+>     | otherwise = aeqd e1 (applyPermLC p e2) where
+>          p = (extendPerm emptyPerm v1 v2)
+>   aeqd (App a1 a2) (App b1 b2) =
+>     aeqd a1 b1 && aeqd a2 b2
+>   aeqd _ _ = False
 
 
 ---------------------------- Read/Show -------------------------------------

@@ -59,12 +59,6 @@ lambda_false = lam 0 (lam 1 (var 1))
 prop_rt :: LambdaImpl -> LC IdInt -> Bool
 prop_rt LambdaImpl{..} x = impl_toLC (impl_fromLC x) `Lambda.aeq` x
 
-prop_aeq :: Property
-prop_aeq = forAllShrink IdInt.genScoped IdInt.shrinkScoped $ \x ->
-   forAllShrink IdInt.genScoped IdInt.shrinkScoped $ \y ->
-       let eq = Lambda.aeq x y in
-       classify eq "aeq" $ eq == (DeBruijn.toDB x == DeBruijn.toDB y)
-
 -- | Ok if either times out too early. But if they both finish, it should
 -- be with the same answer
 eqMaybe :: (a -> a -> Bool) -> Maybe a -> Maybe a -> Property
