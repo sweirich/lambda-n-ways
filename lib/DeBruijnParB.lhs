@@ -136,6 +136,15 @@ so the free variables refer to the correct binders.
 >   subst s (DApp f a) = DApp (subst s f) (subst s a) 
 
 
+> {-# SPECIALIZE applySub :: Sub DB -> Int -> DB #-}
+> {-# SPECIALIZE nil :: Sub DB #-}
+> {-# SPECIALIZE lift :: Sub DB -> Sub DB #-}
+> {-# SPECIALIZE single :: DB -> Sub DB #-}
+> {-# SPECIALIZE comp :: Sub DB -> Sub DB -> Sub DB #-}
+> {-# SPECIALIZE unbind :: Bind DB -> DB #-}
+> {-# SPECIALIZE instantiate :: Bind DB -> DB -> DB #-}
+> {-# SPECIALIZE substBind :: Sub DB -> Bind DB -> Bind DB #-}
+
 
 Convert to deBruijn indicies.  Do this by keeping a list of the bound
 variable so the depth can be found of all variables.  Do not touch

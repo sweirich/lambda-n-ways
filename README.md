@@ -85,6 +85,10 @@ This is derived from Lennart Augustsson's unpublished draft paper
   Does not add any explicit substitutions to the term.
   Uses Data.IntMap instead of lists to keep track of the substitution. 
   
+- NominalG
+
+  Uses nominal package & generic programming
+  
 
 ## Normalization microbenchmark
 

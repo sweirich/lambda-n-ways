@@ -65,7 +65,7 @@ This is a general purpose library for defining substitution for debruijn indices
 > comp :: SubstC a => Sub a -> Sub a -> Sub a
 > comp (Inc k1) (Inc k2)  = Inc (k1 + k2)
 > comp (Inc 0) s       = s
-> comp (Inc n) (Cons t s)
+> comp (Inc n) (Cons _t s)
 >           | n > 0 = comp (Inc (n - 1)) s
 > comp s (Inc 0)   = s
 > comp (s1 :<> s2) s3 = comp s1 (comp s2 s3)

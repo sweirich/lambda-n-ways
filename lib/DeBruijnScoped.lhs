@@ -135,10 +135,14 @@ variable so the depth can be found of all variables.
 
 Convert back from deBruijn to the LC type. Note, all variables must be in scope.
 
+
+
 > fromDB :: DB n -> LC IdInt
 > fromDB = from []
 >   where from :: [(Idx n, IdInt)] -> DB n -> LC IdInt
->         from vs (DVar v)   = Var  (fromJust (lookup v vs))
+>         from vs (DVar v)
+>            | toInt v >= 0 && toInt v < length vs = Var (fromJust (lookup v vs))
+>            | otherwise               = Var (IdInt (toInt v))
 >         from vs (DLam b)   = Lam n (from vs' (unbind b)) where
 >                (n,vs') = next vs
 >         from vs (DApp f a) = App (from vs f) (from vs a) 

@@ -45,6 +45,10 @@ This is a general purpose library for defining substitution for debruijn indices
 >    show FZ = "FZ"
 >    show (FS n) = "(FS " ++ show n ++ ")"
 
+> toInt :: Idx n -> Int
+> toInt FZ     = 0
+> toInt (FS n) = 1 + toInt n
+
 
 > shift :: SNat m -> Idx n -> Idx (Plus m n)
 > shift SZ x = x

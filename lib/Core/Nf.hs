@@ -68,7 +68,7 @@ nf2 expr = go init_subst expr where
             s' = extendIdSubst is x (go s a)
         f' -> App f' (go s a)
 
-  -- INVARIANT: the subst s has been applied to the entire term
+  -- INVARIANT: the subst s has been applied to the entire RESULT term
   whnf :: Subst -> LC IdInt -> LC IdInt
   whnf s e@(Var v)   = lookupIdSubst ("whnf") s v
   whnf s e@(Lam x b) = Lam y (substExpr "whnf" s' b) where

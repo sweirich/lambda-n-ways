@@ -18,6 +18,7 @@ import Unbound
 import UnboundGenerics
 import DeBruijnScoped
 import Core.Nf
+import NominalG
 
 import Test.QuickCheck
 
@@ -33,7 +34,8 @@ impls = [ DeBruijnParB.impl
         , UnboundGenerics.impl 
         , Unbound.impl
         , Unique.impl
-        , Core.Nf.impl
+        , Core.Nf.impl 
+        -- , NominalG.impl -- generally too slow (12s vs. <1 s for everything else)
         ]
 
 --------------------------------------------------------------

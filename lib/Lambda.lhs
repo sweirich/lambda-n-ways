@@ -6,7 +6,8 @@ print in a nice way.
 
 > {-# LANGUAGE DeriveGeneric #-}
 > {-# LANGUAGE ScopedTypeVariables #-}
-> module Lambda(LC(..), freeVars, allVars, Id(..), aeq, genScoped, shrinkScoped, prop_roundTrip) where
+> module Lambda(LC(..), freeVars, allVars, Id(..), aeq, genScoped, shrinkScoped,
+> prop_roundTrip, genScopedLam, maxBindingDepth, depth) where
 > import Data.List(union, (\\))
 > import Data.Char(isAlphaNum)
 > import Text.PrettyPrint.HughesPJ(Doc, renderStyle, style, text,
@@ -189,6 +190,8 @@ Round trip property for parsing / pp
 
 > ----------------------- Arbitrary instances -----------------------------------
 
+Generate an arbitrary *well-scoped* lambda calculus term
+
 > instance Arbitrary v => Arbitrary (LC v) where
 >   arbitrary = sized gen where
 >     
@@ -220,7 +223,7 @@ Generate an arbitrary *well-scoped* lambda calculus term
 >     gen :: [v] -> Int -> Gen (LC v)
 >     gen xs n | not (null xs) && n <= 1 = var
 >              | null xs                 = oneof [lam,app]
->              | otherwise               = oneof [var,lam,lam,app]
+>              | otherwise               = oneof [var,lam,app]
 >        where
 >           n'  = n `div` 2
 >           lam = do let x = succ (head xs)
@@ -243,3 +246,40 @@ Generate an arbitrary *well-scoped* lambda calculus term
 >    s (Lam v e) = [e | v `notElem` freeVars e ]
 >    s (Var _x)  = []
 >    s (App e1 e2) = e1 : e2 : [App e1 e2' | e2' <- s e2] ++ [App e1' e2 | e1' <- s e1]
+
+
+Lambda nodes don't decrease the size and the lam constructor is chosen more frequently.
+Will produce terms with a bigger nesting depth and more lambda reductions
+
+> genScopedLam :: forall v. (Enum v, Arbitrary v) => Gen (LC v)
+> genScopedLam = lams <$> sized (gen vars) where
+> 
+>     vars :: [v]
+>     vars = take 5 [(toEnum 0) ..]
+> 
+>     lams :: LC v -> LC v
+>     lams body = foldr Lam body vars
+> 
+>     gen :: [v] -> Int -> Gen (LC v)
+>     gen xs n | not (null xs) && n <= 1 = var
+>              | null xs                 = oneof [lam,app]
+>              | otherwise               = oneof [var,lam,lam,lam,app]
+>        where
+>           n'  = n `div` 2
+>           lam = do let x = succ (head xs)
+>                    Lam x <$> gen (x:xs) n
+>           app = App <$> gen xs n' <*> gen xs n'
+>           var = Var <$> elements xs
+
+
+> maxBindingDepth :: LC v -> Int
+> maxBindingDepth = go where
+>  go (Var _v) = 0
+>  go (Lam _v t) = 1 + go t
+>  go (App t s) = max (go t) (go s)
+
+> depth :: LC v -> Int
+> depth = go where
+>  go (Var _v) = 0
+>  go (Lam _v t) = 1 + go t
+>  go (App t s) = 1 + max (go t) (go s)

@@ -57,6 +57,29 @@ getTerm = do
   contents <- readFile "timing.lam"
   return $ read (stripComments contents)
 
+-- Random tests 
+getRandomTerms :: IO ([LC IdInt], [LC IdInt])
+getRandomTerms = do
+   contents <- readFile "random.lam"
+   let ss = lines (stripComments contents)
+   let inputs = map (toIdInt . (read :: String -> LC Id)) ss
+   contents <- readFile "random.nf2.lam"
+   let ss = lines (stripComments contents)
+   let outputs = map (toIdInt . (read :: String -> LC Id)) ss
+   return (inputs, outputs)
+
+nfRandomTests :: IO TestTree
+nfRandomTests = do
+  (inputs, outputs) <- getRandomTerms
+  let test_impl :: LambdaImpl -> LC IdInt -> LC IdInt -> TestTree
+      test_impl LambdaImpl{..} tm1 tm2 = do
+         let result = (impl_toLC . impl_nf . impl_fromLC ) tm1 
+         testCase "" (assertBool ("nf produced: " ++ show result) (Lambda.aeq tm2 result))
+  return $ testGroup "NF Unit Tests" $
+    map (\i -> testGroup (impl_name i) $ zipWith (test_impl i) inputs outputs) impls 
+
+
+
 nfUnitTests :: IO TestTree
 nfUnitTests = do
   tm <- getTerm
@@ -72,7 +95,8 @@ nfUnitTests = do
 main :: IO ()
 main = do
   nfTests <- nfUnitTests
-  defaultMain $ testGroup "tests" [aeqQCs, nfTests]
+  nfRandomTests <- nfRandomTests
+  defaultMain $ testGroup "tests" [nfRandomTests] -- aeqQCs, nfTests
 
 
 {-

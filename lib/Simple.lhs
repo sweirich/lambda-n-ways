@@ -1,16 +1,21 @@
+
 The Simple module implements the Normal Form function by
 using a na\"{i}ve version of substitution. In otherwords, this version
 alpha-renames bound variables during substitution if they would ever
 capture a free variable.
 
-> module Simple(nf,nfi,impl) where
+> {-# LANGUAGE FlexibleContexts #-}
+> module Simple(nf,nfi,impl,iNf,St(..)) where
 > import Data.List(union, (\\))
 > import Lambda
 > import IdInt  
 > import Impl
+>
+> import Control.Monad.State
+> import Control.Monad.Except
 
 > impl :: LambdaImpl
-> impl = LambdaImpl {
+> impl = LambdaImpl { 
 >             impl_name   = "Simple"
 >           , impl_fromLC = id
 >           , impl_toLC   = id
@@ -72,6 +77,51 @@ For testing, we can add a "fueled" version
 >     case f' of
 >         Lam x b -> whnfi (n - 1) (subst x a b)
 >         _ -> return $ App f' a
+
+
+For testing, we can add a "fueled" version. We can also count
+the number of beta reductions
+
+> data St = St { numSubsts :: Int, tmsIn :: [LC IdInt] }
+ 
+> iSubst :: MonadState St m => IdInt -> LC IdInt -> LC IdInt -> m (LC IdInt)
+> iSubst x a b = do
+>   s <- get
+>   put (s { numSubsts = numSubsts s + 1 } { tmsIn = a : tmsIn s })
+>   return (subst x a b)
+
+> type M a = StateT St (Either String) a
+
+> iNf :: Int -> LC IdInt -> Maybe (LC IdInt, St)
+> iNf i z = hush $ runStateT (nfm i z :: M (LC IdInt)) (St 0 [])
+
+> hush :: Either a b -> Maybe b
+> hush = either (const Nothing) Just
+
+
+> nfm :: (MonadState St m, MonadError String m) => Int -> LC IdInt -> m (LC IdInt)
+> nfm 0 _e         = throwError "timeout"
+> nfm _n e@(Var _) = return  e
+> nfm n (Lam x e) = Lam x <$> nfm (n-1) e
+> nfm n (App f a) = do
+>     f' <- whnfm (n - 1) f 
+>     case f' of
+>         Lam x b -> do b' <- iSubst x a b
+>                       nfm (n-1) b'
+>         _ -> App <$> nfm (n-1) f' <*> nfm (n-1) a
+
+
+> whnfm :: (MonadState St m, MonadError String m) => Int -> LC IdInt -> m (LC IdInt)
+> whnfm 0 _e = throwError "timeout"
+> whnfm _n e@(Var _) = return e
+> whnfm _n e@(Lam _ _) = return e
+> whnfm n (App f a) = do
+>     f' <- whnfm (n - 1) f 
+>     case f' of
+>         Lam x b -> do b' <- iSubst x a b
+>                       whnfm (n - 1) b'
+>         _ -> return $ App f' a
+
 
 
 Substitution has only one interesting case, the abstraction.
