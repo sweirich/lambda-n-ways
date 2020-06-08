@@ -133,23 +133,23 @@ variable so the depth can be found of all variables.
 >              b' = to ((v,FZ):mapSnd FS vs) b
 >         to vs (App f a) = DApp (to vs f) (to vs a)
 
-Convert back from deBruijn to the LC type. Note, all variables must be in scope.
-
+Convert back from deBruijn to the LC type. 
 
 
 > fromDB :: DB n -> LC IdInt
-> fromDB = from []
->   where from :: [(Idx n, IdInt)] -> DB n -> LC IdInt
->         from vs (DVar v)
->            | toInt v >= 0 && toInt v < length vs = Var (fromJust (lookup v vs))
->            | otherwise               = Var (IdInt (toInt v))
->         from vs (DLam b)   = Lam n (from vs' (unbind b)) where
->                (n,vs') = next vs
->         from vs (DApp f a) = App (from vs f) (from vs a) 
+> fromDB = from firstBoundId
+>   where from :: IdInt -> DB n -> LC IdInt
+>         from (IdInt n) (DVar i) | toInt i < 0     = Var (IdInt $ toInt i)
+>                                 | toInt i >= n    = Var (IdInt $ toInt i)
+>                                 | otherwise = Var (IdInt (n-(toInt i)-1))
+>         from n (DLam b)   = Lam n (from (succ n) (unbind b))
+>         from n (DApp f a) = App (from n f) (from n a)
+
+
 
 > next :: [(Idx n, IdInt)] -> (IdInt, [(Idx (S n), IdInt)])
-> next [] = (firstBoundId, [(FZ, firstBoundId)])
-> next ((_n, i):rest) = (succ i, (FZ, succ i): mapFst FS rest)
+> next []             = (firstBoundId, [(FZ, firstBoundId)])
+> next ((_n, i):rest) = (succ i,        (FZ, succ i): mapFst FS rest)
 
 > mapFst :: (a -> b) -> [(a,c)] -> [(b,c)]
 > mapFst f = map (\ (v,i) -> (f v, i))
