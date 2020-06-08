@@ -18,7 +18,7 @@ impl = LambdaImpl {
              impl_name   = "Core"
            , impl_fromLC = id
            , impl_toLC   = id 
-           , impl_nf     = nf2
+           , impl_nf     = nf
            , impl_nfi    = nfi
            , impl_aeq    = LC.aeq
         }
@@ -50,7 +50,8 @@ nf expr = go init_subst expr where
             s' = extendIdSubst s x (go s a)
         f' -> App f' (go s a)
 
--- This is a closer version than `nf` but it is even slower
+-- This is a closer version than `nf` but it is even slower??
+-- But sometimes it doesn't always reduce everyting.
 nf2 :: LC IdInt -> LC IdInt
 nf2 expr = go init_subst expr where
   init_subst = mkEmptySubst (mkInScopeSet (exprFreeVars expr))
@@ -63,7 +64,7 @@ nf2 expr = go init_subst expr where
   go s (App f a) = 
       case whnf s f of 
         Lam x b -> go s' b where
-            -- need a new subst as we have "appled" the current one already
+            -- need a new subst as we have "applied" the current one already
             is = mkEmptySubst (substInScope s)
             s' = extendIdSubst is x (go s a)
         f' -> App f' (go s a)

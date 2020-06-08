@@ -82,8 +82,8 @@ db_aeq :: LC IdInt -> LC IdInt -> Bool
 db_aeq t1 t2 = DeBruijn.toDB t1 == DeBruijn.toDB t2
 
 
-nfQC :: LambdaImpl -> LC IdInt -> Property
-nfQC LambdaImpl{..} tm1 = do
+nfQC :: LambdaImpl -> Property
+nfQC LambdaImpl{..} = forAllShrink genScopedLam shrinkScoped $ \tm1 -> do
    let result = (impl_toLC . impl_nf . impl_fromLC ) tm1
    let tm2    = (DeBruijn.fromDB (DeBruijn.nfd (DeBruijn.toDB tm1)))
    property (db_aeq tm2 result)
