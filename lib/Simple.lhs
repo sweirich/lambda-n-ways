@@ -153,7 +153,8 @@ in the original {\tt b} to fulfill the second requirement.
 >        sub vs (App f a) = App (sub vs f) (sub vs a)
 >
 >        fvs = freeVars s
->        vs0 = fvs `union` allVars b `union` [x]
+>        vs0 = fvs `union` allVars b
+>               `union` [x] -- make sure we don't rename v' to variable we are sub'ing for
 
 (Note: this code was updated according to Kmett's blog post
  https://www.schoolofhaskell.com/user/edwardk/bound.)
