@@ -74,12 +74,19 @@ nfRandomTests = do
   let test_impl :: LambdaImpl -> LC IdInt -> LC IdInt -> TestTree
       test_impl LambdaImpl{..} tm1 tm2 = do
          let result = (impl_toLC . impl_nf . impl_fromLC ) tm1 
-         testCase "" (assertBool ("nf produced: " ++ show result ++ "\nshould be:   " ++ show tm2) (db_aeq tm2 result))
+         testCase "" (assertBool ("orig tm:     " ++ show tm1 ++ "\nnf produced: " ++ show result ++ "\nshould be:   " ++ show tm2) (db_aeq tm2 result))
   return $ testGroup "NF Unit Tests" $
     map (\i -> testGroup (impl_name i) $ zipWith (test_impl i) inputs outputs) impls 
 
 db_aeq :: LC IdInt -> LC IdInt -> Bool
 db_aeq t1 t2 = DeBruijn.toDB t1 == DeBruijn.toDB t2
+
+
+nfQC :: LambdaImpl -> LC IdInt -> Property
+nfQC LambdaImpl{..} tm1 = do
+   let result = (impl_toLC . impl_nf . impl_fromLC ) tm1
+   let tm2    = (DeBruijn.fromDB (DeBruijn.nfd (DeBruijn.toDB tm1)))
+   property (db_aeq tm2 result)
 
 
 nfUnitTests :: IO TestTree

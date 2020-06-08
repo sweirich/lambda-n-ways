@@ -5,7 +5,7 @@ alpha-renames bound variables during substitution if they would ever
 capture a free variable.
 
 > {-# LANGUAGE FlexibleContexts #-}
-> module Simple(nf,nfi,impl,iNf,St(..)) where
+> module Simple(nf,whnf,nfi,impl,iNf,St(..),subst) where
 > import Data.List(union, (\\))
 > import Lambda
 > import IdInt  
@@ -153,7 +153,7 @@ in the original {\tt b} to fulfill the second requirement.
 >        sub vs (App f a) = App (sub vs f) (sub vs a)
 >
 >        fvs = freeVars s
->        vs0 = fvs `union` allVars b
+>        vs0 = fvs `union` allVars b `union` [x]
 
 (Note: this code was updated according to Kmett's blog post
  https://www.schoolofhaskell.com/user/edwardk/bound.)
