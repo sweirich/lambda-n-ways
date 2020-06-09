@@ -84,7 +84,7 @@ This is a general purpose library for defining substitution for debruijn indices
 
 > data Sub (a :: Nat -> Type) (n :: Nat) (m :: Nat) where
 >    Inc   :: !(SNat m) -> Sub a n (Plus m n)              --  increment by m
->    Cons  :: !(a m) -> !(Sub a n m) -> Sub a (S n) m       --  extend a substitution (like cons)
+>    Cons  :: (a m) -> !(Sub a n m) -> Sub a (S n) m        --  extend a substitution (like cons)
 >    (:<>) :: !(Sub a m n) -> !(Sub a n p) -> Sub a m p     --  compose substitutions
 
 > infixr :<>    -- like usual composition  (.)

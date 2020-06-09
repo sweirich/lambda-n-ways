@@ -1,15 +1,13 @@
 This is a general purpose library for defining substitution for debruijn indices
 
-
 > module Subst where
 >
 > import Control.DeepSeq
 
-> data Bind a = Bind !(Sub a) !a
-
+> data Bind a = Bind !(Sub a) !a deriving (Show)
 
 > bind :: a -> Bind a
-> bind x = Bind (Inc 0) x
+> bind = Bind (Inc 0)
 > {-# INLINABLE bind #-}
 
 > unbind :: SubstC a => Bind a -> a
@@ -21,7 +19,7 @@ This is a general purpose library for defining substitution for debruijn indices
 > {-# INLINABLE instantiate #-}
 
 > substBind :: SubstC a => Sub a -> Bind a -> Bind a
->   -- use comp instead of :<>
+>   -- NOTE: use comp instead of :<>
 > substBind s2 (Bind s1 e) = Bind (comp s1 (lift s2)) e
 > {-# INLINABLE substBind #-}
 
@@ -29,9 +27,12 @@ This is a general purpose library for defining substitution for debruijn indices
 >    (Bind s1 x) == (Bind s2 y) = subst s1 x == subst s2 y
 
 > -- 4 -- make all fields strict
+> -- NOTE: do *not* make first argument of Cons strict. See lams/regression1.lam
 > data Sub a = Inc !Int
->       | Cons !a !(Sub a)
+>       | Cons a !(Sub a)
 >       | !(Sub a) :<> !(Sub a)
+>    deriving Show
+> 
 >
 > class SubstC a where
 >    var   :: Int -> a
@@ -42,7 +43,7 @@ This is a general purpose library for defining substitution for debruijn indices
 > applySub (Cons t ts) x
 >            | x > 0     = applySub ts (x - 1) 
 >            | x == 0    = t
->            | x < 0     = var x 
+>            | otherwise = var x 
 > applySub (s1 :<> s2) x = subst s2 (applySub s1 x)
 > {-# INLINABLE applySub #-}
 
@@ -50,6 +51,8 @@ This is a general purpose library for defining substitution for debruijn indices
 > nil :: SubstC a => Sub a
 > nil = Inc 0
 > {-# INLINABLE nil #-}
+
+NOTE: adding a smart constructor in lift really slows things down!
 
 > lift :: SubstC a => Sub a -> Sub a
 > lift s   = Cons (var 0) (s :<> Inc 1)

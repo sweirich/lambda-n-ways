@@ -18,84 +18,107 @@ import Test.Tasty
 import Test.Tasty.QuickCheck as QC 
 import Test.Tasty.HUnit
 
--- | reference version of LC IdInt alpha-equivalence
+
+-- | Reference version of aeq
 -- convert to DB indices and use (==)
-ref_aeq :: LC IdInt -> LC IdInt -> Bool
-ref_aeq x y = case DeBruijn.impl of
-  LambdaImpl {..} -> impl_aeq (impl_fromLC x) (impl_fromLC y)
-
-aeq :: LambdaImpl -> LC IdInt -> LC IdInt -> Bool
-aeq LambdaImpl{..} x y = x' `impl_aeq` y' where
-    x' = impl_fromLC x
-    y' = impl_fromLC y
-
-
-
-prop_aeqScoped :: LambdaImpl -> Property
-prop_aeqScoped LambdaImpl{..} = withMaxSuccess 1000 $ forAllShrink IdInt.genScoped IdInt.shrinkScoped  $ \x -> 
-  let x' = impl_fromLC x
-      y' = impl_fromLC y
-      y  = Unique.fromUnique (Unique.toUnique x)
-  in property (x' `impl_aeq` y') 
-
-
-prop_aeq :: LambdaImpl -> Property
-prop_aeq LambdaImpl{..} = withMaxSuccess 1000 $ forAll arbitrary  $ \x -> 
-  let x' = impl_fromLC x
-      y' = impl_fromLC y
-      y  = Unique.fromUnique (Unique.toUnique x)
-  in property (x' `impl_aeq` y') 
-  
-
-aeqQCs :: TestTree
-aeqQCs = testGroup "AEQ unit tests" (map f impls) where
-  f i = testProperty (impl_name i) (Main.prop_aeqScoped i) 
-
--- Unit tests from the benchmark (normalizing the giant lambda term)  
-getTerm :: IO (LC Id)
-getTerm = do
-  contents <- readFile "timing.lam"
-  return $ read (stripComments contents)
-
--- Random tests 
-getRandomTerms :: IO ([LC IdInt], [LC IdInt])
-getRandomTerms = do
-   contents <- readFile "random.lam"
-   let ss = lines (stripComments contents)
-   let inputs = map (toIdInt . (read :: String -> LC Id)) ss
-   contents <- readFile "random.nf2.lam"
-   let ss = lines (stripComments contents)
-   let outputs = map (toIdInt . (read :: String -> LC Id)) ss
-   return (inputs, outputs)
-
-nfRandomTests :: IO TestTree
-nfRandomTests = do
-  (inputs, outputs) <- getRandomTerms
-  let test_impl :: LambdaImpl -> LC IdInt -> LC IdInt -> TestTree
-      test_impl LambdaImpl{..} tm1 tm2 = do
-         let result = (impl_toLC . impl_nf . impl_fromLC ) tm1 
-         testCase "" (assertBool ("orig tm:     " ++ show tm1 ++ "\nnf produced: " ++ show result ++ "\nshould be:   " ++ show tm2) (db_aeq tm2 result))
-  return $ testGroup "NF Unit Tests" $
-    map (\i -> testGroup (impl_name i) $ zipWith (test_impl i) inputs outputs) impls 
-
 db_aeq :: LC IdInt -> LC IdInt -> Bool
 db_aeq t1 t2 = DeBruijn.toDB t1 == DeBruijn.toDB t2
 
+-- | Reference version of nf
+-- convert to DB indices first
+db_nf :: LC IdInt -> LC IdInt
+db_nf tm = DeBruijn.fromDB (DeBruijn.nfd (DeBruijn.toDB tm))
 
-nfQC :: LambdaImpl -> Property
-nfQC LambdaImpl{..} = forAllShrink genScopedLam shrinkScoped $ \tm1 -> do
-   let result = (impl_toLC . impl_nf . impl_fromLC ) tm1
-   let tm2    = (DeBruijn.fromDB (DeBruijn.nfd (DeBruijn.toDB tm1)))
-   property (db_aeq tm2 result)
+-------------------------------------------------------------------
+-- Conversion to/from LC tests
+-- make sure round-trip is identity
+
+prop_rt :: LambdaImpl -> Property
+prop_rt LambdaImpl{..} = withMaxSuccess 1000 $ forAllShrink IdInt.genScoped IdInt.shrinkScoped  $ \x ->
+  impl_toLC (impl_fromLC x) `db_aeq` x
+
+rtQCs :: TestTree
+rtQCs = testGroup "Conv QC tests" (map f impls) where
+  f i = testProperty (impl_name i) (prop_rt i)
+
+-------------------------------------------------------------------
+-- Alpha-equivalence tests
+
+-- | Make sure that a "freshened" version of a term is alpha-equivalent to itself
+prop_aeq :: LambdaImpl -> Property
+prop_aeq LambdaImpl{..} = withMaxSuccess 1000 $ forAllShrink IdInt.genScoped IdInt.shrinkScoped  $ \x -> 
+  let x' = impl_fromLC x
+      y' = impl_fromLC y
+      y  = Unique.fromUnique (Unique.toUnique x)
+  in property (x' `impl_aeq` y') 
+
+-- | Convert prop above into Tasty test
+aeqQCs :: TestTree
+aeqQCs = testGroup "AEQ QC tests" (map f impls) where
+  f i = testProperty (impl_name i) (Main.prop_aeq i) 
 
 
+-------------------------------------------------------------------
+-- Fueled Normalization matches original
+
+-- | Quick-check based tests for normalization, compare with reference version
+-- Note: must use fueled version becase random terms may not terminate
+prop_fueled_nf :: LambdaImpl -> Property
+prop_fueled_nf LambdaImpl{..} = withMaxSuccess 1000 $ forAllShrink genScopedLam shrinkScoped $ \tm1 -> do
+   case (impl_nfi 1000 (impl_fromLC tm1)) of
+     Just result -> property (impl_aeq (impl_nf (impl_fromLC tm1)) result)
+     Nothing -> classify True "nonterminating" $ property True                       
+
+nfFueledQCs :: TestTree
+nfFueledQCs = testGroup "NF fueled quick checks" (map f impls) where
+  f i = testProperty (impl_name i) (prop_fueled_nf i)
+
+
+-------------------------------------------------------------------
+-- Normalization tests
+
+-- Stats for random.lam
+-- sz: 100000
+--   num substs: 26 26 26 26 28 28 29 29 29 29 30 32 32 33 33 34 35 36 38 39 40 43 44 59 177
+--   bind depths: 23 27 29 30 32 32 33 33 33 34 34 34 36 37 37 40 40 40 40 44 44 46 46 46 57
+--   depth:       36 42 44 45 45 47 48 48 49 49 50 50 51 52 53 53 56 56 56 60 60 60 61 62 73
+
+
+-- | Pre-set random tests for normalization
+nfRandomTests :: IO TestTree
+nfRandomTests = do
+  inputs <- getTerms "lams/random.lam"
+  outputs <- getTerms "lams/random.nf2.lam"
+  let test_impl :: LambdaImpl -> LC IdInt -> LC IdInt -> TestTree
+      test_impl LambdaImpl{..} tm1 tm2 = do
+         let result = (impl_toLC . impl_nf . impl_fromLC ) tm1 
+         testCase "" (assertBool ("orig tm:     " ++ show tm1
+                                  ++ "\nnf produced: " ++ show result
+                                  ++ "\nshould be:   " ++ show tm2) (db_aeq tm2 result))
+  return $ testGroup "NF Unit Tests" $
+    map (\i -> testGroup (impl_name i) $ zipWith (test_impl i) inputs outputs) impls 
+
+-- | Quick-check based tests for normalization, compare with reference version
+-- Note: must use fueled version becase random terms may not terminate
+prop_nf :: LambdaImpl -> Property
+prop_nf LambdaImpl{..} = withMaxSuccess 1000 $ forAllShrink genScopedLam shrinkScoped $ \tm1 -> do
+   case (impl_toLC <$> (impl_nfi 1000 (impl_fromLC tm1))) of
+     Just result -> do let tm2    = db_nf tm1
+                       property (db_aeq tm2 result)
+     Nothing -> classify True "nonterminating" $ property True                       
+
+nfQCs :: TestTree
+nfQCs = testGroup "NF quick checks" (map f impls) where
+  f i = testProperty (impl_name i) (prop_nf i)
+
+-- | Unit test based on normalizing large lambda term
 nfUnitTests :: IO TestTree
 nfUnitTests = do
-  tm <- getTerm
+  tm <- getTerm "lams/lennart.lam"
   let tm1 = toIdInt tm
   let test_impl LambdaImpl{..} = do
          let result = (impl_toLC . impl_nf . impl_fromLC ) tm1 
-         assertBool ("nf produced: " ++ show result) (Lambda.aeq lambda_false result)
+         assertBool ("nf produced: " ++ show result) (db_aeq lambda_false result)
   return $ testGroup "NF Unit Tests" $
     map (\i -> testCase (impl_name i) $ test_impl i) impls 
 
@@ -105,55 +128,6 @@ main :: IO ()
 main = do
   nfTests <- nfUnitTests
   nfRandomTests <- nfRandomTests
-  defaultMain $ testGroup "tests" [nfRandomTests] -- aeqQCs, nfTests
+  defaultMain $ testGroup "tests" [rtQCs, aeqQCs, nfQCs, nfFueledQCs, nfRandomTests, nfTests]
 
 
-{-
-
--- test case that demonstrates the issue with renaming with a bound variable
--- the simplifications to t2 and t3 below do not demonstrate the bug, only t1
--- note how x3 is already in scope, 
-
-> t1 :: LC IdInt
-> t1 = lam 0 (lam 1 (lam 2 (lam 3 (lam 4
->         (  (lam 1 (lam 2 (lam 3 ( var 1 @@ (lam 4 (var 4)))))) @@
->            (  (lam 1 (lam 2 ((lam 3 (var 2)) @@ (var 1 @@ var 3)))) @@
->               (lam 1 (lam 2 (var 3)))))))))
-
-
-\x0.\x1.\x2.\x3.\x4.(\x1.\x2.\x3.x1 (\x4.x4)) ((\x1.\x2.(\x3.x2) (x1 x3)) (\x1.\x2.x3))
-
-\x0.\x1.\x2.\x3.\x4.
-    (\x1.\x2.\x3.x1 (\x4.x4)) ((\x1.\x2.(\x3.x2) (x1 x3)) (\x1.\x2.x3))
--->
-    (\x1.\x2.\x3.x1 (\x4.x4)) ((\x1.\x2.x2) (\x1.\x2.x3))
-
-> t2 :: LC IdInt
-> t2 = lam 0 (lam 1 (lam 2 (lam 3 (lam 4
->         (  (lam 1 (lam 2 (lam 3 ( var 1 @@ (lam 4 (var 4)))))) @@
->            (  (lam 1 (lam 2 (var 2))) @@
->               (lam 1 (lam 2 (var 3)))))))))
-
-
-\x0.\x1.\x2.\x3.\x4.\x1.\x2.(\x3.x2) (x1 x3)
-
-
-
-
-> t3 = lam 0 (lam 1 (lam 2 (lam 3 (lam 4
->          (lam 1 (lam 2 ((lam 3 (var 2)) @@ (var 1 @@ var 3))))))))
-
-\x0.\x1.\x2.\x3.\x4.
-   (\x1.x1 ((\x2.x1) (\x2.x2) (\x2.x2 x1))) (\x1.\x2.(\x3.\x4.x1) (\x3.x3 x2))
-
-> t4 = lam 0 (lam 1 (lam 2 (lam 3 (lam 4
->        ((lam 1 (var 1 @@ ((lam 2 (var 1)) @@ (lam 2 (var 2)) @@ (lam 2 (var 2 @@ var 1)))))
->        @@
->        (lam 1 (lam 2 ( (lam 3 (lam 4 (var 1))) @@ (lam 3 (var 3 @@ var 2))))))))))
-
--- Counterexample for Core
-
-> t5 :: LC IdInt
-> t5 = lam 0 (lam 1 (lam 2 (lam 3 (lam 4 (lam 1 (lam 2 (lam 3 (lam 4 (lam 5 (var 1 @@ var 3))))))))))
-
--}

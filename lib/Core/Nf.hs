@@ -32,22 +32,21 @@ impl = LambdaImpl {
 freshen :: LC IdInt -> LC IdInt
 freshen e = substExpr "freshen" emptySubst e
 
--- This function works
--- but is it the same as the other versions?
--- and why is it soooo slow
 nf :: LC IdInt -> LC IdInt
 nf expr = go init_subst expr where
   init_subst = mkEmptySubst (mkInScopeSet (exprFreeVars expr))    
   -- INVARIANT: all terms that enter the range of the substitution
   -- have been normalized already
   go :: Subst -> LC IdInt -> LC IdInt
-  go s (Var v)   = lookupIdSubst ("nf") s v
+  go s (Var v)   = lookupIdSubst "nf" s v
   go s (Lam x b) = Lam y (go s' b) where
       (s', y) = substBndr s x
   go s (App f a) = 
       case go s f of 
-        Lam x b -> do go s' b where
-            s' = extendIdSubst s x (go s a)
+        Lam x b -> go s' b where
+            -- need a new subst as we have "applied" the current one already          
+            is = mkEmptySubst (substInScope s)
+            s' = extendIdSubst is x (go s a)
         f' -> App f' (go s a)
 
 -- This is a closer version than `nf` but it is even slower??
@@ -95,7 +94,9 @@ nfi i expr = go i init_subst expr where
       f' <- go (i-1) s f
       case f' of 
         Lam x b -> do
-          s' <- extendIdSubst s x <$> go (i-1) s a
+          -- need a new subst as we have "applied" the current one already
+          let is = mkEmptySubst (substInScope s)
+          s' <- extendIdSubst is x <$> go (i-1) s a
           go (i-1) s' b
         _ -> App f' <$> go (i-1) s a
 

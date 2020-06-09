@@ -30,7 +30,7 @@ user	0m0.009s
 > import IdInt
 > import Subst
 > import Control.DeepSeq
-
+>
 > import Text.PrettyPrint.HughesPJ(Doc, renderStyle, style, text,
 >            (<+>), parens)
 > import qualified Text.PrettyPrint.HughesPJ as PP
@@ -83,10 +83,12 @@ Computing the normal form proceeds as usual. Should never return a delayed subst
 
 > nfd :: DB -> DB
 > nfd e@(DVar _) = e
-> nfd (DLam b) = DLam (bind (nfd (unbind b)))
+> nfd (DLam b) =
+>   DLam (bind (nfd (unbind b)))
 > nfd (DApp f a) =
 >     case whnf f of
->         DLam b -> nfd (instantiate b a)
+>         DLam b -> 
+>            nfd (instantiate b a)
 >         f' -> DApp (nfd f') (nfd a)
 
 Compute the weak head normal form. Should never return a delayed substitution at the top level.
@@ -96,15 +98,16 @@ Compute the weak head normal form. Should never return a delayed substitution at
 > whnf e@(DLam _) = e
 > whnf (DApp f a) =
 >     case whnf f of
->         DLam b -> whnf (instantiate b a)
+>         DLam b ->
+>           whnf (instantiate b a)
 >         f' -> DApp f' a
 
 
 Bounded versions
 
 > nfi :: Int -> DB -> Maybe DB
-> nfi 0 e = Nothing
-> nfi n e@(DVar _) = return e
+> nfi 0 _e = Nothing
+> nfi _n e@(DVar _) = return e
 > nfi n (DLam b) = DLam . bind <$> nfi (n-1) (unbind b)
 > nfi n (DApp f a) = do
 >     f' <- whnfi (n-1) f 
@@ -113,9 +116,9 @@ Bounded versions
 >         _ -> DApp <$> nfi n f' <*> nfi n a
 
 > whnfi :: Int -> DB -> Maybe DB
-> whnfi 0 e = Nothing
-> whnfi n e@(DVar _) = return e
-> whnfi n e@(DLam _) = return e
+> whnfi 0 _e = Nothing
+> whnfi _n e@(DVar _) = return e
+> whnfi _n e@(DLam _) = return e
 > whnfi n (DApp f a) = do
 >     f' <- whnfi (n-1) f 
 >     case whnf f' of
@@ -131,16 +134,18 @@ so the free variables refer to the correct binders.
 >   var = DVar
 >
 >   -- 3 -- subst (Inc 0) e    = e   -- can discard an identity substitution
->   subst s (DVar i)   = applySub s i
->   subst s (DLam b)   = DLam (substBind s b)
->   subst s (DApp f a) = DApp (subst s f) (subst s a) 
+>   subst s x = go s x where
+>     go _s (DVar i)   = applySub s i
+>     go _s (DLam b)   = DLam (substBind s b)
+>     go _s (DApp f a) = DApp (go s f) (go s a) 
 
 
 > {-# SPECIALIZE applySub :: Sub DB -> Int -> DB #-}
 > {-# SPECIALIZE nil :: Sub DB #-}
+> {-# SPECIALIZE comp :: Sub DB -> Sub DB -> Sub DB #-}
+> 
 > {-# SPECIALIZE lift :: Sub DB -> Sub DB #-}
 > {-# SPECIALIZE single :: DB -> Sub DB #-}
-> {-# SPECIALIZE comp :: Sub DB -> Sub DB -> Sub DB #-}
 > {-# SPECIALIZE unbind :: Bind DB -> DB #-}
 > {-# SPECIALIZE instantiate :: Bind DB -> DB -> DB #-}
 > {-# SPECIALIZE substBind :: Sub DB -> Bind DB -> Bind DB #-}

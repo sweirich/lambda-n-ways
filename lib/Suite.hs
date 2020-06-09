@@ -1,9 +1,11 @@
 {-# LANGUAGE RecordWildCards #-}
 module Suite where
 
+import qualified Misc
 import Lambda
 import IdInt
 import Impl
+
 
 import Simple
 import SimpleB
@@ -35,14 +37,28 @@ impls = [ DeBruijnParB.impl
         , Unbound.impl
         , Unique.impl
         , Core.Nf.impl 
-        -- , NominalG.impl -- generally too slow (12s vs. <1 s for everything else)
+        -- , NominalG.impl -- generally too slow (12s vs. <200 ms for everything else)
         ]
 
 --------------------------------------------------------------
 --------------------------------------------------------------
-  
+
+-- | Read a single term from a file
+getTerm :: String -> IO (LC IdInt)
+getTerm filename = do
+   contents <- readFile filename
+   let s = Misc.stripComments contents
+   return $ toIdInt ((read :: String -> LC Id) s)
+
+-- | Read a list of terms from a file
+getTerms :: String -> IO [LC IdInt]
+getTerms filename = do
+   contents <- readFile filename
+   let ss = lines (Misc.stripComments contents)
+   return $ map (toIdInt . (read :: String -> LC Id)) ss
 
 
+-- Convenience functions for creating test cases
 infixl 5 @@
 (@@) :: LC IdInt -> LC IdInt -> LC IdInt
 a @@ b  = App a b
@@ -58,9 +74,8 @@ lambda_true = lam 0 (lam 1 (var 0))
 lambda_false :: LC IdInt
 lambda_false = lam 0 (lam 1 (var 1))
 
-prop_rt :: LambdaImpl -> LC IdInt -> Bool
-prop_rt LambdaImpl{..} x = impl_toLC (impl_fromLC x) `Lambda.aeq` x
 
+{-
 -- | Ok if either times out too early. But if they both finish, it should
 -- be with the same answer
 eqMaybe :: (a -> a -> Bool) -> Maybe a -> Maybe a -> Property
@@ -82,3 +97,4 @@ lc_nfi LambdaImpl{..} i x =
 prop_closedNF :: LambdaImpl -> Property
 prop_closedNF impl = forAllShrink IdInt.genScoped IdInt.shrinkScoped $ \x ->
       eqMaybe Unique.aeq (lc_nfi DeBruijn.impl 1000 x) (lc_nfi impl 1000 x)
+-}
