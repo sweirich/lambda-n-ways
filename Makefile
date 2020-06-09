@@ -22,7 +22,8 @@ top.pdf: top.tex $(TEXFILES)
 
 .PHONY: timing
 timing:	LC
-	stack run -- --output conv_bench.html --match prefix "conv/"  > output.txt
+	stack run -- --output rand_bench.html --match prefix "rand/"  > output.txt
+	stack run -- --output conv_bench.html --match prefix "conv/"  >> output.txt
 	stack run -- --output nf_bench.html --match prefix "nf/"  >> output.txt
 	stack run -- --output aeq_bench.html --match prefix "aeq/" >> output.txt
 

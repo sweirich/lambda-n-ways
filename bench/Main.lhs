@@ -76,9 +76,9 @@
 >   let runBench (Bench n f x) = bench n $ Criterion.Main.nf f x
 >   defaultMain [
 >      bgroup "rand" $ map runBench rands
->   --   bgroup "conv" $ map runBench convs
+>    , bgroup "conv" $ map runBench convs
 >    , bgroup "nf"   $ map runBench nfs
->   -- , bgroup "aeq"  $ map runBench aeqs
+>    , bgroup "aeq"  $ map runBench aeqs
 >    ] 
 >
 >
