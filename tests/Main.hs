@@ -77,11 +77,6 @@ nfFueledQCs = testGroup "NF fueled quick checks" (map f impls) where
 -------------------------------------------------------------------
 -- Normalization tests
 
--- Stats for random.lam
--- sz: 100000
---   num substs: 26 26 26 26 28 28 29 29 29 29 30 32 32 33 33 34 35 36 38 39 40 43 44 59 177
---   bind depths: 23 27 29 30 32 32 33 33 33 34 34 34 36 37 37 40 40 40 40 44 44 46 46 46 57
---   depth:       36 42 44 45 45 47 48 48 49 49 50 50 51 52 53 53 56 56 56 60 60 60 61 62 73
 
 
 -- | Pre-set random tests for normalization

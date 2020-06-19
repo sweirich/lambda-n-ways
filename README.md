@@ -36,7 +36,7 @@ This is derived from Lennart Augustsson's unpublished draft paper
 
   DeBruijn indices that shift during substitution.
 
-2. Contributed by Bertram Felgenhauer 
+2. Contributed by Bertram Felgenhauer (not part of benchmark)
 
 - DeBruijnC [DB_C]
 
@@ -90,11 +90,41 @@ This is derived from Lennart Augustsson's unpublished draft paper
   Uses nominal package & generic programming
   
 
-## Normalization microbenchmark
+## Benchmarks
 
-The microbenchmark used here is full normalization of the lambda-calculus
+Download the html files to see the Criterion graphs. Or look at the
+[raw results](output.txt).
+ 
+1. Normalization of random lambda terms: 
+[rand_bench.html](rand_bench.html).
+
+These 25 random terms stored in the file [random2.lam](lams/random2.lam).  They are
+generated via `genScopedLam` in [Lambda.lhs](lib/Lambda.lhs) with size
+parameter `100000`, and so are closed, and contain lots of
+lambdas. Normalizing these terms requires between 26-36 calls to `subst`. The
+terms themselves have total depth from 23-60 and binding depth from 13-46.
+
+2. Normalization of pathological lambda term:
+  [nf_bench.html](nf_bench.html)
+
+```
+   bind depth: 25
+   depth:      53
+   num substs: 119697
+```
+
+3. Alpha-equivalence of pathological lambda term:
+   [aeq_bench.html](aeq_bench.html)
+   
+
+
+
+
+### Normalization microbenchmark
+
+The microbenchmark is full normalization of the lambda-calculus
 term: `factorial 6 == sum [1..37] + 17` represented with a Scott-encoding of
-the datatypes. See [timing.lam](timing.lam) for the definition of this term.
+the datatypes. See [lennart.lam](lams/lennart.lam) for the definition of this term.
 
 By full normalization, we mean computing the following partial function that 
 repeatedly performs beta-reduction on the leftmost redex.
@@ -117,19 +147,26 @@ enabling that computation. Instead, we want the computation to be as close to th
 implementation above as possible.
 
 Because this function is partial (not all lambda-calculus terms have normal
-forms), each implementation also should support a "fueled" version of the `nf`
-and `whnf` functions (called `nfi` and `whnfi`, respectively).
+forms), for testing, each implementation also should support a "fueled"
+version of the `nf` and `whnf` functions (called `nfi` and `whnfi`,
+respectively). However, benchmarking uses the unfueled version.
 
-## Running the microbenchmark
+## Running the benchmarks
 
      make timing
 
-## Latest results
-
-See [nf_bench.html](nf_bench.html) and See [aeq_bench.html](aeq_bench.html)
-or the [raw results](output.txt).
-
 ## References
 
+- repo this is forked from (and Lennart's draft paper)
 - https://www.schoolofhaskell.com/user/edwardk/bound
 - https://gitlab.haskell.org/ghc/ghc
+
+## Missing implementations
+
+Optimized version of locally nameless
+
+Optimized version of nominal logic
+
+https://arxiv.org/pdf/1111.0085.pdf
+
+https://dl.acm.org/doi/10.1145/3018610.3018613
