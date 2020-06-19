@@ -6,8 +6,8 @@ This is a general purpose library for defining substitution for debruijn indices
 
 > data Bind a = Bind !(Sub a) !a deriving (Show)
 
-> bind :: a -> Bind a
-> bind = Bind (Inc 0)
+> bind :: SubstC a => a -> Bind a
+> bind = Bind nil
 > {-# INLINABLE bind #-}
 
 > unbind :: SubstC a => Bind a -> a
@@ -25,6 +25,10 @@ This is a general purpose library for defining substitution for debruijn indices
 
 > instance (SubstC a, Eq a) => Eq (Bind a) where
 >    (Bind s1 x) == (Bind s2 y) = subst s1 x == subst s2 y
+
+> instance NFData a => NFData (Bind a) where
+>   rnf (Bind s a) = rnf s `seq` rnf a
+
 
 > -- 4 -- make all fields strict
 > -- NOTE: do *not* make first argument of Cons strict. See lams/regression1.lam
@@ -88,6 +92,4 @@ NOTE: adding a smart constructor in lift really slows things down!
 >   rnf (Cons t ts) = rnf t `seq` rnf ts
 >   rnf (s1 :<> s2) = rnf s1 `seq` rnf s2
 
-> instance NFData a => NFData (Bind a) where
->   rnf (Bind s a) = rnf s `seq` rnf a
 

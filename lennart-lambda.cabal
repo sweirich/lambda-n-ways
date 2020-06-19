@@ -26,6 +26,7 @@ library
       DeBruijnPar
       DeBruijnParB
       DeBruijnParF
+      DeBruijnParFB
       SubstScoped
       DeBruijnScoped
       Subst

@@ -1,7 +1,11 @@
 The DeBruijn module implements the Normal Form function by
 using de Bruijn indicies.
 
-> module DeBruijnParF(nf,DeBruijnParF.aeq,nfd,aeqd,toDB,fromDB,nfi, impl) where
+It uses functions to represent substitutions, but introduces a 'Bind' abstract
+type to delay substitutions.
+
+> {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+> module DeBruijnParFB(nf,DeBruijnParFB.aeq,nfd,aeqd,toDB,fromDB,nfi, impl) where
 > import Data.List(elemIndex)
 > import Lambda
 > import IdInt
@@ -10,7 +14,7 @@ using de Bruijn indicies.
 > import Impl
 > impl :: LambdaImpl
 > impl = LambdaImpl {
->             impl_name   = "DB_F"
+>             impl_name   = "DB_FB"
 >           , impl_fromLC = toDB
 >           , impl_toLC   = fromDB
 >           , impl_nf     = nfd
@@ -20,28 +24,29 @@ using de Bruijn indicies.
 
 
 Variables are represented by their binding depth, i.e., how many
-$\lambda$s out the binding $\lambda$ is.  Free variables are represented
-by negative numbers.
+$\lambda$s out the binding $\lambda$ is. 
 
-1. smart constructor in lift
-2. check for subst (Inc 0)
-3. ! in Sub definition
-4. ! in DB definition
 
-none: user	0m4.180s
-3:    user	0m4.327s
-3,4:  user	0m0.846s
-2,3,4:
 
-> -- 4 
-> data DB = DVar {-# unpack #-} !Int | DLam !DB
+> data DB = DVar {-# unpack #-} !Int | DLam !(Bind DB)
 >         | DApp !DB  !DB
->   deriving (Eq)
+>     deriving (Eq)
 >
 > instance NFData DB where
 >    rnf (DVar i) = rnf i
->    rnf (DLam d) = rnf d
+>    rnf (DLam d) = rnf (unbind d)
 >    rnf (DApp a b) = rnf a `seq` rnf b
+
+
+> instance SubstC DB where
+>   var = DVar
+>   subst s (DVar i)   = applySub s i
+>   subst s (DLam e)   = DLam (substBind s e)
+>   subst s (DApp f a) = DApp (subst s f) (subst s a)
+
+
+> {-# SPECIALIZE applySub :: Sub DB -> Int -> DB #-}
+> {-# SPECIALIZE nil  :: Sub DB #-}
 
 
 > aeq :: LC IdInt -> LC IdInt -> Bool
@@ -58,10 +63,10 @@ Computing the normal form proceeds as usual.
 
 > nfd :: DB -> DB
 > nfd e@(DVar _) = e
-> nfd (DLam e) = DLam (nfd e)
+> nfd (DLam e) = DLam (bind (nfd (unbind e)))
 > nfd (DApp f a) =
 >     case whnf f of
->         DLam b -> nfd (subst (single a) b)
+>         DLam b -> nfd (instantiate b a)
 >         f' -> DApp (nfd f') (nfd a)
 
 Compute the weak head normal form.
@@ -71,20 +76,16 @@ Compute the weak head normal form.
 > whnf e@(DLam _) = e
 > whnf (DApp f a) =
 >     case whnf f of
->         DLam b -> whnf (subst (single a) b)
+>         DLam b -> whnf (instantiate b a)
 >         f' -> DApp f' a
 
 
 Bounded versions
 
-> instantiate :: DB -> DB -> DB
-> instantiate b a = subst (single a) b
-> {-# INLINABLE instantiate #-}
-
 > nfi :: Int -> DB -> Maybe DB
 > nfi 0 e = Nothing
-> nfi n e@(DVar _) = return e
-> nfi n (DLam b) = DLam <$> nfi (n-1) b
+> nfi _n e@(DVar _) = return e
+> nfi n (DLam b) = DLam . bind <$> nfi (n-1) (unbind b)
 > nfi n (DApp f a) = do
 >     f' <- whnfi (n-1) f 
 >     case f' of
@@ -101,48 +102,72 @@ Bounded versions
 >         DLam b -> whnfi (n-1) (instantiate b a)
 >         _ -> return $ DApp f' a
 
+-----------------------------------------------------------------
 
+>
+> data Bind a = Bind (Sub a) !a
+>
+> bind :: SubstC a => a -> Bind a
+> bind = Bind nil
+> {-# INLINABLE bind #-}
 
-Substitution needs to adjust the inserted expression
-so the free variables refer to the correct binders.
+> unbind :: SubstC a => Bind a -> a
+> unbind (Bind s a) = subst s a
+> {-# INLINABLE unbind #-}
 
-> -- 3 
-> newtype Sub = Sub (Int -> DB)
+> instantiate :: SubstC a => Bind a -> a -> a
+> instantiate (Bind s a) b = subst (s <> single b) a
+> {-# INLINABLE instantiate #-}
 
-> applySub :: Sub -> Int -> DB
+> substBind :: SubstC a => Sub a -> Bind a -> Bind a
+> substBind s2 (Bind s1 e) = Bind (s1 <> lift s2) e
+> {-# INLINABLE substBind #-}
+
+> instance (SubstC a, Eq a) => Eq (Bind a) where
+>    (Bind s1 x) == (Bind s2 y) = subst s1 x == subst s2 y
+
+> instance NFData a => NFData (Bind a) where
+>   rnf (Bind s a) = rnf s `seq` rnf a
+
+-----------------------------------------------------------------
+
+> newtype Sub a = Sub (Int -> a) deriving (NFData)
+
+> class SubstC a where
+>    var   :: Int -> a
+>    subst :: Sub a -> a -> a
+
+> applySub :: SubstC a => Sub a -> Int -> a
 > {-# INLINE applySub #-}
 > applySub (Sub f) = f  
 
-> lift :: Sub -> Sub
+> lift :: SubstC a => Sub a -> Sub a
 > {-# INLINE lift #-}
-> lift s   = consSub (DVar 0) (s <> incSub 1)   -- 1
-> single :: DB -> Sub
+> lift s   = consSub (var 0) (s <> incSub 1)   -- 1
+> single :: SubstC a => a -> Sub a
 > {-# INLINE single #-}
 > single t = consSub t (incSub 0)
 
-> subst :: Sub -> DB -> DB
-> subst s (DVar i)   = applySub s i
-> subst s (DLam e)   = DLam (subst (lift s) e)
-> subst s (DApp f a) = DApp (subst s f) (subst s a)
 
-> idSub :: Sub 
-> {-# INLINE idSub #-}
-> idSub = Sub DVar
+> nil :: SubstC a => Sub a 
+> {-# INLINE nil #-}
+> nil = Sub var
 
-> incSub :: Int -> Sub 
+> incSub :: SubstC a => Int -> Sub a
 > {-# INLINE incSub #-}
-> incSub y = Sub (\x -> DVar (y + x))
+> incSub y = Sub (\x -> var (y + x))
 
-> consSub :: DB -> Sub -> Sub 
+> consSub :: SubstC a => a -> Sub a -> Sub a
 > {-# INLINE consSub #-}
 > consSub t ts = Sub $ \x -> 
->   if x < 0 then DVar x
+>   if x < 0 then var x
 >   else if  x == 0 then t
 >   else applySub ts (x - 1)
 
-> instance Semigroup Sub where
+> instance SubstC a => Semigroup (Sub a) where
 >   s1 <> s2  = Sub $ \ x ->  subst s2 (applySub s1 x)
-
+> instance SubstC a => Monoid (Sub a) where
+>   mempty  = nil
 
 Convert to deBruijn indicies.  Do this by keeping a list of the bound
 variable so the depth can be found of all variables.  Do not touch
@@ -151,7 +176,7 @@ free variables.
 > toDB :: LC IdInt -> DB
 > toDB = to []
 >   where to vs (Var v@(IdInt i)) = maybe (DVar i) DVar (elemIndex v vs)
->         to vs (Lam x b) = DLam (to (x:vs) b)
+>         to vs (Lam x b) = DLam (bind (to (x:vs) b))
 >         to vs (App f a) = DApp (to vs f) (to vs a)
 
 Convert back from deBruijn to the LC type.
@@ -161,5 +186,5 @@ Convert back from deBruijn to the LC type.
 >   where from (IdInt n) (DVar i) | i < 0     = Var (IdInt i)
 >                                 | i >= n    = Var (IdInt i)
 >                                 | otherwise = Var (IdInt (n-i-1))
->         from n (DLam b) = Lam n (from (succ n) b)
+>         from n (DLam b) = Lam n (from (succ n) (unbind b))
 >         from n (DApp f a) = App (from n f) (from n a)

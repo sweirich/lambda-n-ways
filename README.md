@@ -49,17 +49,22 @@ This is derived from Lennart Augustsson's unpublished draft paper
   
   Parallel substitution version, representing substitutions as functions. 
 
+- DeBruijnParF [DB_FB]
+  
+  Parallel substitution version, representing substitutions as functions. 
+  Introduces a 'Bind' abstract type to cache substitutions at binders.
+
 - DeBruijnPar [DB_P]
 
   Parallel substitution version (with reified substs). Based on
-  https://github.com/sweirich/challenge/blob/master/debruijn/debruijn1.md
+  https://github.com/sweirich/challenge/blob/canon/debruijn/debruijn1.md
 
 - DeBruijnParB [DB_B]
 
   Parallel substitution version with reified substs, but caches a substitution in terms.
   Uses general the purpose library in [Subst](Subst.hs)
   Optimized version described here
-  https://github.com/sweirich/challenge/tree/master/debruijn
+  https://github.com/sweirich/challenge/tree/canon/debruijn
 
 - DeBruijnScoped [Scoped]
 

@@ -1,11 +1,23 @@
 The DeBruijn module implements the Normal Form function by
 using de Bruijn indicies.
 
-> module DeBruijnPar(nf,DeBruijnPar.aeq,nfd,aeqd,toDB,fromDB) where
+> module DeBruijnPar(nf,DeBruijnPar.aeq,nfd,aeqd,toDB,fromDB,impl) where
 > import Data.List(elemIndex)
 > import Lambda
 > import IdInt
 > import Control.DeepSeq
+
+> import Impl
+> impl :: LambdaImpl
+> impl = LambdaImpl {
+>             impl_name   = "DB_P"
+>           , impl_fromLC = toDB
+>           , impl_toLC   = fromDB
+>           , impl_nf     = nfd
+>           , impl_nfi    = error "no nfi"
+>           , impl_aeq    = (==)
+>        }
+
 
 Variables are represented by their binding depth, i.e., how many
 $\lambda$s out the binding $\lambda$ is.  Free variables are represented
@@ -85,33 +97,6 @@ so the free variables refer to the correct binders.
 > subst s (DVar i) = applySub s i
 > subst s (DLam e)   = DLam (subst (lift s) e)
 > subst s (DApp f a) = DApp (subst s f) (subst s a)
-
-
-prop_IdL s =
-  (Inc Z :∘ s) === s 
-  
-prop_ShiftCons n t s =
-  (Inc (S n) :∘ (t :· s)) === (Inc n :∘ s) 
-
-prop_IdR s =
-  (s :∘ Inc Z) === s
-
-prop_Ass s1 s2 s3 =
-  ((s1 :∘ s2) :∘ s3) === (s1  :∘ (s2 :∘ s3))
-
-prop_Map t s1 s2 =
-  ((t :· s1) :∘ s2) === ((subst s2 t) :· (s1 :∘ s2))
-
-> instance Semigroup Sub where
->   -- smart constructor for composition
->   Inc k1 <> Inc k2  = Inc (k1 + k2)
->   Inc 0  <> s       = s
->   Inc n  <> Cons _ s
->           | n > 0 = Inc (n - 1) <> s
->   s      <> Inc 0   = s
->   (s1 :<> s2) <> s3 = s1 <> (s2 <> s3)
->   (Cons t s1) <> s2 = Cons (subst s2 t) (s1 <> s2)
->   s1 <> s2 = s1 :<> s2
 
 
 Convert to deBruijn indicies.  Do this by keeping a list of the bound

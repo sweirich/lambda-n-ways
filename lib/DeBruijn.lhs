@@ -8,6 +8,7 @@ using de Bruijn indicies.
 > import Control.DeepSeq
 
 > import Impl
+
 > impl :: LambdaImpl
 > impl = LambdaImpl {
 >             impl_name   = "DB"
@@ -20,8 +21,7 @@ using de Bruijn indicies.
 
 
 Variables are represented by their binding depth, i.e., how many
-$\lambda$s out the binding $\lambda$ is.  Free variables are represented
-by negative numbers.
+$\lambda$s out the binding $\lambda$ is.  
 
 > data DB = DVar !Int | DLam DB | DApp DB DB
 >   deriving (Eq)
@@ -64,8 +64,8 @@ Bounded versions
 > instantiate b a = subst 0 a b
 
 > nfi :: Int -> DB -> Maybe DB
-> nfi 0 e = Nothing
-> nfi n e@(DVar _) = return e
+> nfi 0 _e = Nothing
+> nfi _n e@(DVar _) = return e
 > nfi n (DLam b) = DLam <$> nfi (n-1) b
 > nfi n (DApp f a) = do
 >     f' <- whnfi (n-1) f 
@@ -74,9 +74,9 @@ Bounded versions
 >         _ -> DApp <$> nfi n f' <*> nfi n a
 
 > whnfi :: Int -> DB -> Maybe DB
-> whnfi 0 e = Nothing
-> whnfi n e@(DVar _) = return e
-> whnfi n e@(DLam _) = return e
+> whnfi 0 _e = Nothing
+> whnfi _n e@(DVar _) = return e
+> whnfi _n e@(DLam _) = return e
 > whnfi n (DApp f a) = do
 >     f' <- whnfi (n-1) f 
 >     case whnf f' of

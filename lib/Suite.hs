@@ -13,8 +13,10 @@ import Unique
 import HOAS
 import DeBruijn
 -- import DeBruijnC
+import DeBruijnPar
 import DeBruijnParF
 import DeBruijnParB
+import DeBruijnParFB
 import BoundDB
 import Unbound
 import UnboundGenerics
@@ -25,18 +27,21 @@ import NominalG
 import Test.QuickCheck
 
 impls :: [LambdaImpl]
-impls = [ DeBruijnParB.impl
+impls = [ 
+          DeBruijnParF.impl
+        , DeBruijnParFB.impl
+        , DeBruijnPar.impl
+        , DeBruijnParB.impl
         , DeBruijnScoped.impl
-        , BoundDB.impl
-        , HOAS.impl
-        , SimpleB.impl
-        , DeBruijnParF.impl
-        , Simple.impl 
-        , DeBruijn.impl
-        , UnboundGenerics.impl 
-        , Unbound.impl
-        , Unique.impl
-        , Core.Nf.impl 
+        --, DeBruijn.impl
+        --, BoundDB.impl
+        --, HOAS.impl
+        -- , SimpleB.impl
+        --, Simple.impl 
+        --, UnboundGenerics.impl 
+        --, Unbound.impl
+        --, Unique.impl
+        --, Core.Nf.impl 
         -- , NominalG.impl -- generally too slow (12s vs. <200 ms for everything else)
         ]
 

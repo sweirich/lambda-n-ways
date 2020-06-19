@@ -41,7 +41,7 @@
 >     let! tm = force (impl_fromLC lc) in
 >     Bench impl_name (rnf . impl_nf) tm
 
-> -- | Benchmarks for timing normal form calculation (multiple term)
+> -- | Benchmarks for timing normal form calculation (multiple terms)
 > nf_bss :: String ->[LC IdInt] -> [Bench]
 > nf_bss nm lcs = map impl2nf impls where
 >   impl2nf LambdaImpl {..} =
@@ -69,10 +69,10 @@
 >   let tm2 = toIdInt (Unique.fromUnique (Unique.toUnique tm1))
 >   return $! rnf tm2
 >   let! convs = conv_bs tm1
->   let! nfs   = nf_bs tm1
+>   let! nfs   = nf_bss "" [tm1]
 >   let! aeqs  = aeq_bs tm1 tm2
 >   random_terms <- getTerms "lams/random2.lam"
->   let! rands = nf_bss "random" random_terms
+>   let! rands = nf_bss "" random_terms
 >   let runBench (Bench n f x) = bench n $ Criterion.Main.nf f x
 >   defaultMain [
 >      bgroup "rand" $ map runBench rands
