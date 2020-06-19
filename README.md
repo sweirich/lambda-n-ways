@@ -104,8 +104,12 @@ parameter `100000`, and so are closed, and contain lots of
 lambdas. Normalizing these terms requires between 26-36 calls to `subst`. The
 terms themselves have total depth from 23-60 and binding depth from 13-46.
 
-2. Normalization of pathological lambda term:
-  [nf_bench.html](nf_bench.html)
+2. Conversion to representation: [conv_bench.html](conv_bench.html). How long
+   does it take to convert a parsed named representation to the internal
+   representation of the implementation? Converts the pathological term.
+   
+3. Normalization of pathological lambda term:
+  [nf_bench.html](nf_bench.html). See below.
 
 ```
    bind depth: 25
@@ -113,12 +117,9 @@ terms themselves have total depth from 23-60 and binding depth from 13-46.
    num substs: 119697
 ```
 
-3. Alpha-equivalence of pathological lambda term:
+4. Alpha-equivalence of pathological lambda term:
    [aeq_bench.html](aeq_bench.html)
    
-
-
-
 
 ### Normalization microbenchmark
 
