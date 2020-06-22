@@ -71,7 +71,8 @@
 >   let! convs = conv_bs tm1
 >   let! nfs   = nf_bss "" [tm1]
 >   let! aeqs  = aeq_bs tm1 tm2
->   random_terms <- getTerms "lams/lams100.lam"
+>   random_terms <- getTerms "lams/random.lam"
+>   --random_terms <- getTerms "lams/lams100.lam"
 >   let! rands = nf_bss "" random_terms
 >   let runBench (Bench n f x) = bench n $ Criterion.Main.nf f x
 >   defaultMain [
