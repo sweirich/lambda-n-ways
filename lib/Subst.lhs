@@ -15,12 +15,12 @@ This is a general purpose library for defining substitution for debruijn indices
 > {-# INLINABLE unbind #-}
 
 > instantiate :: SubstC a => Bind a -> a -> a
-> instantiate (Bind s a) b = subst (comp s (single b)) a
+> instantiate (Bind s a) b = subst (s <> single b) a
 > {-# INLINABLE instantiate #-}
 
 > substBind :: SubstC a => Sub a -> Bind a -> Bind a
 >   -- NOTE: use comp instead of :<>
-> substBind s2 (Bind s1 e) = Bind (comp s1 (lift s2)) e
+> substBind s2 (Bind s1 e) = Bind (s1 <> lift s2) e
 > {-# INLINABLE substBind #-}
 
 > instance (SubstC a, Eq a) => Eq (Bind a) where

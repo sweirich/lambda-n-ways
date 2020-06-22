@@ -12,7 +12,8 @@ import Suite
 import qualified Simple
 import qualified Unique
 import Test.QuickCheck
-
+import System.IO
+import Control.Monad
 
 -- Stats for random.lam
 -- sz: 100000
@@ -61,7 +62,7 @@ factStats = do
 -- under normalization
 --mkNfSuite :: Int -> IO [LC IdInt]
 mkNfSuite sz = do
-    let num = 50
+    let num = 100
     tms_ss <- loop num []
     let (tms, ss) = List.unzip tms_ss
     putStrLn $ "sz: " ++ show sz
@@ -81,3 +82,19 @@ mkNfSuite sz = do
 
 median :: (Ord a, Num a) => [a] -> a
 median xs = List.sort xs !! (n `div` 2) where n = length xs
+
+printNfSuite :: [LC IdInt] -> IO ()
+printNfSuite xs = do
+  f <- openFile "lams/lams100.lam" WriteMode
+  forM_ xs $ \x -> hPutStrLn f $ show x
+
+
+{-
+lams100.lam
+
+sz: 10000
+   num substs: 26 26 26 26 26 26 26 26 26 26 26 26 26 26 27 27 27 27 27 27 27 27 27 27 27 27 28 28 28 28 28 28 28 28 28 28 29 29 29 29 29 29 29 29 29 29 29 29 29 29 29 29 30 30 30 30 30 31 31 31 31 32 32 32 32 33 33 33 33 33 34 34 34 34 35 35 35 36 36 36 37 37 38 38 40 41 42 42 42 43 46 52 55 56 56 57 60 65 79 215
+   bind depths: 16 18 19 19 19 21 22 24 24 24 24 24 25 25 25 25 26 26 26 26 26 26 27 27 27 27 27 27 28 28 28 28 28 28 28 29 29 29 29 29 29 30 30 30 30 31 31 31 31 31 31 31 31 31 31 31 31 32 32 32 32 32 32 32 33 33 33 33 33 33 33 34 34 34 34 34 34 35 35 36 36 36 37 37 37 37 38 39 40 40 40 40 41 42 42 43 45 47 47 51
+   depth:       24 28 31 32 32 32 34 34 35 35 35 36 36 36 36 36 37 37 37 38 38 38 38 38 39 39 39 39 39 39 40 40 40 40 40 41 41 41 41 42 42 42 42 42 42 42 43 43 43 43 43 43 43 43 44 44 44 44 44 44 44 44 44 44 44 45 45 45 46 46 46 46 46 46 47 47 47 47 48 48 48 48 49 49 50 50 50 51 51 52 52 53 54 54 55 55 57 59 60 64
+
+-}

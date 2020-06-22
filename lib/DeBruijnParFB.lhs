@@ -1,15 +1,19 @@
 The DeBruijn module implements the Normal Form function by
 using de Bruijn indicies.
 
-It uses functions to represent substitutions, but introduces a 'Bind' abstract
-type to delay substitutions.
+This version uses Haskell functions to represent substitutions, but introduces
+ a 'Bind' abstract type to delay substitutions at binders.
 
 > {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-> module DeBruijnParFB(nf,DeBruijnParFB.aeq,nfd,aeqd,toDB,fromDB,nfi, impl) where
+> module DeBruijnParFB(nf,DeBruijnParFB.aeq,nfd,toDB,fromDB,nfi, impl) where
 > import Data.List(elemIndex)
 > import Lambda
 > import IdInt
 > import Control.DeepSeq
+> import Text.PrettyPrint.HughesPJ(Doc, renderStyle, style, text,
+>            (<+>), parens)
+> import qualified Text.PrettyPrint.HughesPJ as PP
+
 >
 > import Impl
 > impl :: LambdaImpl
@@ -27,22 +31,22 @@ Variables are represented by their binding depth, i.e., how many
 $\lambda$s out the binding $\lambda$ is. 
 
 
-
 > data DB = DVar {-# unpack #-} !Int | DLam !(Bind DB)
 >         | DApp !DB  !DB
 >     deriving (Eq)
 >
 > instance NFData DB where
 >    rnf (DVar i) = rnf i
->    rnf (DLam d) = rnf (unbind d)
+>    rnf (DLam d) = rnf d
 >    rnf (DApp a b) = rnf a `seq` rnf b
-
 
 > instance SubstC DB where
 >   var = DVar
->   subst s (DVar i)   = applySub s i
->   subst s (DLam e)   = DLam (substBind s e)
->   subst s (DApp f a) = DApp (subst s f) (subst s a)
+>
+>   subst s x = go s x where 
+>     go _s (DVar i)   = applySub s i
+>     go _s (DLam b)   = DLam (substBind s b)
+>     go _s (DApp f a) = DApp (go s f) (go s a) 
 
 
 > {-# SPECIALIZE applySub :: Sub DB -> Int -> DB #-}
@@ -50,11 +54,7 @@ $\lambda$s out the binding $\lambda$ is.
 
 
 > aeq :: LC IdInt -> LC IdInt -> Bool
-> aeq x y = aeqd (toDB x) (toDB y)
-
-> aeqd :: DB -> DB -> Bool
-> aeqd = (==)
-
+> aeq x y = toDB x == toDB y
 
 > nf :: LC IdInt -> LC IdInt
 > nf = fromDB . nfd . toDB
@@ -93,9 +93,9 @@ Bounded versions
 >         _ -> DApp <$> nfi n f' <*> nfi n a
 
 > whnfi :: Int -> DB -> Maybe DB
-> whnfi 0 e = Nothing
-> whnfi n e@(DVar _) = return e
-> whnfi n e@(DLam _) = return e
+> whnfi 0 _e = Nothing
+> whnfi _n e@(DVar _) = return e
+> whnfi _n e@(DLam _) = return e
 > whnfi n (DApp f a) = do
 >     f' <- whnfi (n-1) f 
 >     case whnf f' of
@@ -105,7 +105,7 @@ Bounded versions
 -----------------------------------------------------------------
 
 >
-> data Bind a = Bind (Sub a) !a
+> data Bind a = Bind !(Sub a) !a
 >
 > bind :: SubstC a => a -> Bind a
 > bind = Bind nil
@@ -138,27 +138,28 @@ Bounded versions
 >    subst :: Sub a -> a -> a
 
 > applySub :: SubstC a => Sub a -> Int -> a
-> {-# INLINE applySub #-}
+> {-# INLINABLE applySub #-}
 > applySub (Sub f) = f  
 
 > lift :: SubstC a => Sub a -> Sub a
-> {-# INLINE lift #-}
-> lift s   = consSub (var 0) (s <> incSub 1)   -- 1
+> {-# INLINABLE lift #-}
+> lift s   = consSub (var 0) (s <> incSub 1)
+> 
 > single :: SubstC a => a -> Sub a
-> {-# INLINE single #-}
-> single t = consSub t (incSub 0)
+> {-# INLINABLE single #-}
+> single t = consSub t nil
 
 
 > nil :: SubstC a => Sub a 
-> {-# INLINE nil #-}
+> {-# INLINABLE nil #-}
 > nil = Sub var
 
 > incSub :: SubstC a => Int -> Sub a
-> {-# INLINE incSub #-}
+> {-# INLINABLE incSub #-}
 > incSub y = Sub (\x -> var (y + x))
 
 > consSub :: SubstC a => a -> Sub a -> Sub a
-> {-# INLINE consSub #-}
+> {-# INLINABLE consSub #-}
 > consSub t ts = Sub $ \x -> 
 >   if x < 0 then var x
 >   else if  x == 0 then t
@@ -188,3 +189,18 @@ Convert back from deBruijn to the LC type.
 >                                 | otherwise = Var (IdInt (n-i-1))
 >         from n (DLam b) = Lam n (from (succ n) (unbind b))
 >         from n (DApp f a) = App (from n f) (from n a)
+
+---------------------------------------------------------
+
+> instance Show DB where
+>     show = renderStyle style . ppLC 0
+
+
+> ppLC :: Int -> DB -> Doc
+> ppLC _ (DVar v)   = text $ "x" ++ show v
+> ppLC p (DLam b) = pparens (p>0) $ text "\\." PP.<> ppLC 0 (unbind b)
+> ppLC p (DApp f a) = pparens (p>1) $ ppLC 1 f <+> ppLC 2 a
+
+> pparens :: Bool -> Doc -> Doc
+> pparens True d = parens d
+> pparens False d = d

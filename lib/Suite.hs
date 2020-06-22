@@ -33,15 +33,15 @@ impls = [
         , DeBruijnPar.impl
         , DeBruijnParB.impl
         , DeBruijnScoped.impl
-        --, DeBruijn.impl
-        --, BoundDB.impl
-        --, HOAS.impl
-        -- , SimpleB.impl
-        --, Simple.impl 
-        --, UnboundGenerics.impl 
-        --, Unbound.impl
-        --, Unique.impl
-        --, Core.Nf.impl 
+        , DeBruijn.impl
+        , BoundDB.impl
+        , HOAS.impl
+        , SimpleB.impl
+        , Simple.impl 
+        , UnboundGenerics.impl 
+        , Unbound.impl
+        , Unique.impl
+        , Core.Nf.impl 
         -- , NominalG.impl -- generally too slow (12s vs. <200 ms for everything else)
         ]
 

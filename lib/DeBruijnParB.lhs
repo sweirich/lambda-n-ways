@@ -5,7 +5,7 @@ It uses parallel substitutions and explcit substitutions stored in the term.
 
 potential optimizations
 
-1. smart constructor in subst s2 (DS s1 a)
+1. smart constructor in subst s2 (Bind s1 a)
 2. smart constructor in lift
 3. check for subst (Inc 0)
 4. ! in Sub definition
@@ -55,21 +55,40 @@ This version adds an explicit substitution to the data type that allows
 the sub to be suspended (and perhaps optimized).
 
 > -- 5 -- make fields strict
-> data DB = DVar !Int | DLam !(Bind DB) | DApp !DB !DB
->
+> data DB = DVar {-# unpack #-} !Int | DLam !(Bind DB)
+>         | DApp !DB !DB
+>    deriving (Eq)
+> 
 > instance NFData DB where
 >    rnf (DVar i) = rnf i
 >    rnf (DLam d) = rnf d
 >    rnf (DApp a b) = rnf a `seq` rnf b
 
 
-Alpha equivalence requires pushing delayed substitutions into the terms
+Substitution needs to adjust the inserted expression
+so the free variables refer to the correct binders.
 
-> instance Eq DB where
->    DVar x == DVar y = x == y
->    DLam x == DLam y = x == y
->    DApp x1 x2 == DApp y1 y2 = x1 == y1 && x2 == y2
->    _ == _           = False
+> -- push the substitution in one level
+> instance SubstC DB where
+>   var = DVar
+>
+>   -- 3 -- subst (Inc 0) e    = e   -- can discard an identity substitution
+>   subst s x = go s x where 
+>     go _s (DVar i)   = applySub s i
+>     go _s (DLam b)   = DLam (substBind s b)
+>     go _s (DApp f a) = DApp (go s f) (go s a) 
+
+
+> {-# SPECIALIZE applySub :: Sub DB -> Int -> DB #-}
+> {-# SPECIALIZE nil :: Sub DB #-}
+> {-# SPECIALIZE comp :: Sub DB -> Sub DB -> Sub DB #-}
+> 
+> {-# SPECIALIZE lift :: Sub DB -> Sub DB #-}
+> {-# SPECIALIZE single :: DB -> Sub DB #-}
+> {-# SPECIALIZE unbind :: Bind DB -> DB #-}
+> {-# SPECIALIZE instantiate :: Bind DB -> DB -> DB #-}
+> {-# SPECIALIZE substBind :: Sub DB -> Bind DB -> Bind DB #-}
+
 
 
 > aeq :: LC IdInt -> LC IdInt -> Bool
@@ -79,12 +98,12 @@ Alpha equivalence requires pushing delayed substitutions into the terms
 > nf :: LC IdInt -> LC IdInt
 > nf = fromDB . nfd . toDB
 
-Computing the normal form proceeds as usual. Should never return a delayed substitution anywhere in the term.
+Computing the normal form proceeds as usual. Should never return a delayed
+ substitution anywhere in the term.
 
 > nfd :: DB -> DB
 > nfd e@(DVar _) = e
-> nfd (DLam b) =
->   DLam (bind (nfd (unbind b)))
+> nfd (DLam b) = DLam (bind (nfd (unbind b)))
 > nfd (DApp f a) =
 >     case whnf f of
 >         DLam b -> 
@@ -98,8 +117,7 @@ Compute the weak head normal form. Should never return a delayed substitution at
 > whnf e@(DLam _) = e
 > whnf (DApp f a) =
 >     case whnf f of
->         DLam b ->
->           whnf (instantiate b a)
+>         DLam b -> whnf (instantiate b a)
 >         f' -> DApp f' a
 
 
@@ -126,29 +144,6 @@ Bounded versions
 >         _ -> return $ DApp f' a
 
 
-Substitution needs to adjust the inserted expression
-so the free variables refer to the correct binders.
-
-> -- push the substitution in one level
-> instance SubstC DB where
->   var = DVar
->
->   -- 3 -- subst (Inc 0) e    = e   -- can discard an identity substitution
->   subst s x = go s x where
->     go _s (DVar i)   = applySub s i
->     go _s (DLam b)   = DLam (substBind s b)
->     go _s (DApp f a) = DApp (go s f) (go s a) 
-
-
-> {-# SPECIALIZE applySub :: Sub DB -> Int -> DB #-}
-> {-# SPECIALIZE nil :: Sub DB #-}
-> {-# SPECIALIZE comp :: Sub DB -> Sub DB -> Sub DB #-}
-> 
-> {-# SPECIALIZE lift :: Sub DB -> Sub DB #-}
-> {-# SPECIALIZE single :: DB -> Sub DB #-}
-> {-# SPECIALIZE unbind :: Bind DB -> DB #-}
-> {-# SPECIALIZE instantiate :: Bind DB -> DB -> DB #-}
-> {-# SPECIALIZE substBind :: Sub DB -> Bind DB -> Bind DB #-}
 
 
 Convert to deBruijn indicies.  Do this by keeping a list of the bound

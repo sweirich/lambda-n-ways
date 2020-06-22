@@ -1,7 +1,9 @@
 The DeBruijn module implements the Normal Form function by
 using de Bruijn indicies.
 
-> module DeBruijnParF(nf,DeBruijnParF.aeq,nfd,aeqd,toDB,fromDB,nfi, impl) where
+Substitutions are represented as functions.
+
+> module DeBruijnParF(nf,DeBruijnParF.aeq,nfd,toDB,fromDB,nfi, impl) where
 > import Data.List(elemIndex)
 > import Lambda
 > import IdInt
@@ -20,20 +22,9 @@ using de Bruijn indicies.
 
 
 Variables are represented by their binding depth, i.e., how many
-$\lambda$s out the binding $\lambda$ is.  Free variables are represented
-by negative numbers.
+$\lambda$s out the binding $\lambda$ is.
 
-1. smart constructor in lift
-2. check for subst (Inc 0)
-3. ! in Sub definition
-4. ! in DB definition
 
-none: user	0m4.180s
-3:    user	0m4.327s
-3,4:  user	0m0.846s
-2,3,4:
-
-> -- 4 
 > data DB = DVar {-# unpack #-} !Int | DLam !DB
 >         | DApp !DB  !DB
 >   deriving (Eq)
@@ -43,13 +34,13 @@ none: user	0m4.180s
 >    rnf (DLam d) = rnf d
 >    rnf (DApp a b) = rnf a `seq` rnf b
 
+> subst :: Sub -> DB -> DB
+> subst s (DVar i)   = applySub s i
+> subst s (DLam e)   = DLam (subst (lift s) e)
+> subst s (DApp f a) = DApp (subst s f) (subst s a)
 
 > aeq :: LC IdInt -> LC IdInt -> Bool
-> aeq x y = aeqd (toDB x) (toDB y)
-
-> aeqd :: DB -> DB -> Bool
-> aeqd = (==)
-
+> aeq x y = toDB x == toDB y
 
 > nf :: LC IdInt -> LC IdInt
 > nf = fromDB . nfd . toDB
@@ -61,7 +52,7 @@ Computing the normal form proceeds as usual.
 > nfd (DLam e) = DLam (nfd e)
 > nfd (DApp f a) =
 >     case whnf f of
->         DLam b -> nfd (subst (single a) b)
+>         DLam b -> nfd (instantiate b a)
 >         f' -> DApp (nfd f') (nfd a)
 
 Compute the weak head normal form.
@@ -71,7 +62,7 @@ Compute the weak head normal form.
 > whnf e@(DLam _) = e
 > whnf (DApp f a) =
 >     case whnf f of
->         DLam b -> whnf (subst (single a) b)
+>         DLam b -> whnf (instantiate b a)
 >         f' -> DApp f' a
 
 
@@ -82,8 +73,8 @@ Bounded versions
 > {-# INLINABLE instantiate #-}
 
 > nfi :: Int -> DB -> Maybe DB
-> nfi 0 e = Nothing
-> nfi n e@(DVar _) = return e
+> nfi 0 _e = Nothing
+> nfi _n e@(DVar _) = return e
 > nfi n (DLam b) = DLam <$> nfi (n-1) b
 > nfi n (DApp f a) = do
 >     f' <- whnfi (n-1) f 
@@ -92,9 +83,9 @@ Bounded versions
 >         _ -> DApp <$> nfi n f' <*> nfi n a
 
 > whnfi :: Int -> DB -> Maybe DB
-> whnfi 0 e = Nothing
-> whnfi n e@(DVar _) = return e
-> whnfi n e@(DLam _) = return e
+> whnfi 0 _e = Nothing
+> whnfi _n e@(DVar _) = return e
+> whnfi _n e@(DLam _) = return e
 > whnfi n (DApp f a) = do
 >     f' <- whnfi (n-1) f 
 >     case whnf f' of
@@ -115,15 +106,11 @@ so the free variables refer to the correct binders.
 
 > lift :: Sub -> Sub
 > {-# INLINE lift #-}
-> lift s   = consSub (DVar 0) (s <> incSub 1)   -- 1
+> lift s   = consSub (DVar 0) (s <> incSub 1)
+ 
 > single :: DB -> Sub
 > {-# INLINE single #-}
-> single t = consSub t (incSub 0)
-
-> subst :: Sub -> DB -> DB
-> subst s (DVar i)   = applySub s i
-> subst s (DLam e)   = DLam (subst (lift s) e)
-> subst s (DApp f a) = DApp (subst s f) (subst s a)
+> single t = consSub t idSub
 
 > idSub :: Sub 
 > {-# INLINE idSub #-}
@@ -142,6 +129,8 @@ so the free variables refer to the correct binders.
 
 > instance Semigroup Sub where
 >   s1 <> s2  = Sub $ \ x ->  subst s2 (applySub s1 x)
+> instance Monoid Sub where
+>   mempty  = idSub
 
 
 Convert to deBruijn indicies.  Do this by keeping a list of the bound
