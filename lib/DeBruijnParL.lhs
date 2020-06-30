@@ -104,7 +104,8 @@ Bounded versions
 
 > -- identity substitution, leaves all variables alone
 > nilSub :: Sub 
-> nilSub =  DVar <$> [0 ..]
+> nilSub =  go 0 where
+>    go i = DVar i : go (i+1)
 > {-# INLINE nilSub #-}
 
 > -- increment everything by 1
