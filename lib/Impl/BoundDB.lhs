@@ -4,7 +4,7 @@ using de Bruijn indicies.
 > {-# LANGUAGE DeriveGeneric #-}
 > {-# LANGUAGE DeriveTraversable #-}
 > {-# LANGUAGE StandaloneDeriving #-}
-> module BoundDB(nf,BoundDB.aeq,toDB,fromDB,nfd, impl) where
+> module Impl.BoundDB(nf,Impl.BoundDB.aeq,toDB,fromDB,nfd, impl) where
 > import Lambda
 > import IdInt
 > import Data.Functor.Classes (Eq1(..))

@@ -4,7 +4,7 @@ This module is trying to make a "delayed" substitution version of the "Simple" i
 > {-# LANGUAGE FlexibleInstances #-}
 > {-# LANGUAGE UndecidableInstances #-}
 > {-# LANGUAGE ScopedTypeVariables #-}
-> module SimpleB(nf,aeq,aeqd,toExp,fromExp,nfd,nfi, impl) where
+> module Impl.SimpleB(nf,aeq,aeqd,toExp,fromExp,nfd,nfi, impl) where
 > import qualified Lambda as LC
 > import IdInt 
 > import Control.DeepSeq
@@ -34,7 +34,7 @@ This module is trying to make a "delayed" substitution version of the "Simple" i
 Get a variable which is not in the given set.
 
 > newId :: VarSet -> IdInt
-> newId vs = case SimpleB.lookupMax vs of
+> newId vs = case Impl.SimpleB.lookupMax vs of
 >               Just v   -> succ v
 >               Nothing  -> toEnum 0
 
@@ -98,7 +98,7 @@ Invariants:
 
 
 > varSetMax :: VarSet -> IdInt
-> varSetMax s = maybe (toEnum 0) succ (SimpleB.lookupMax s)
+> varSetMax s = maybe (toEnum 0) succ (Impl.SimpleB.lookupMax s)
 > {-# INLINABLE varSetMax #-}
 
 > instance (FreeVars e) => FreeVars (Bind e) where

@@ -9,8 +9,8 @@ import Lambda
 import IdInt
 import Impl
 import Suite
-import qualified Simple
-import qualified Unique
+import qualified Impl.Simple as Simple
+import qualified Impl.Unique as Unique
 import Test.QuickCheck
 import System.IO
 import Control.Monad

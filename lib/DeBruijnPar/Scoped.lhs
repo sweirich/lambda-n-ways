@@ -7,10 +7,10 @@ It uses parallel substitutions and explcit substitutions stored in the term.
 > {-# LANGUAGE DataKinds #-}
 > {-# LANGUAGE TypeFamilies #-}
 > {-# LANGUAGE UndecidableInstances #-}
-> module DeBruijnScoped(nf,DeBruijnScoped.aeq, toDB, fromDB, nfd, nfi, impl) where
+> module DeBruijnPar.Scoped(nf,DeBruijnPar.Scoped.aeq, toDB, fromDB, nfd, nfi, impl) where
 > import Lambda
 > import IdInt
-> import SubstScoped
+> import DeBruijnPar.SubstScoped
 > import Control.DeepSeq
 
 > import Text.PrettyPrint.HughesPJ(Doc, renderStyle, style, text,

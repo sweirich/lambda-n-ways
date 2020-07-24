@@ -5,7 +5,7 @@ This version uses Haskell functions to represent substitutions, but introduces
  a 'Bind' abstract type to delay substitutions at binders.
 
 > {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-> module DeBruijnParFB(nf,DeBruijnParFB.aeq,nfd,toDB,fromDB,nfi, impl) where
+> module DeBruijnPar.FB(nf,DeBruijnPar.FB.aeq,nfd,toDB,fromDB,nfi, impl) where
 > import Data.List(elemIndex)
 > import Lambda
 > import IdInt

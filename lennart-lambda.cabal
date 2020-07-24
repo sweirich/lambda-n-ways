@@ -19,31 +19,30 @@ source-repository head
 library
   hs-source-dirs: lib
   exposed-modules:
-      Suite
-      SimpleB
-      DeBruijn
-      DeBruijnC
-      DeBruijnPar
-      DeBruijnParB
-      DeBruijnParF
-      DeBruijnParFB
-      DeBruijnParL
-      SubstScoped
-      DeBruijnScoped
-      Subst
-      HOAS
-      IdInt
-      IdInt.Map
-      IdInt.Set
       Impl
       Lambda
       Misc
-      Simple
-      Unique
-      BoundDB
-      Unbound
-      UnboundGenerics
-      NominalG
+      Suite
+      IdInt
+      IdInt.Map
+      IdInt.Set
+      Impl.BoundDB
+      Impl.DeBruijn
+      Impl.HOAS
+      Impl.Simple
+      Impl.SimpleB
+      Impl.Unique
+      Impl.Unbound
+      Impl.UnboundGenerics
+      Impl.DeBruijnC
+      DeBruijnPar.P
+      DeBruijnPar.B
+      DeBruijnPar.F
+      DeBruijnPar.FB
+      DeBruijnPar.L
+      DeBruijnPar.SubstScoped
+      DeBruijnPar.Scoped
+      DeBruijnPar.Subst
       Core.Core
       Core.Unique
       Core.FV

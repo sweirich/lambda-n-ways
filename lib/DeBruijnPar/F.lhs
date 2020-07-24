@@ -3,7 +3,7 @@ using de Bruijn indicies.
 
 Substitutions are represented as functions.
 
-> module DeBruijnParF(nf,DeBruijnParF.aeq,nfd,toDB,fromDB,nfi, impl) where
+> module DeBruijnPar.F(nf,DeBruijnPar.F.aeq,nfd,toDB,fromDB,nfi, impl) where
 > import Data.List(elemIndex)
 > import Lambda
 > import IdInt

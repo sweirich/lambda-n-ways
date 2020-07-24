@@ -1,7 +1,7 @@
 The DeBruijn module implements the Normal Form function by
 using de Bruijn indicies.
 
-> module DeBruijnPar(nf,DeBruijnPar.aeq,nfd,aeqd,toDB,fromDB,impl) where
+> module DeBruijnPar.P(nf,DeBruijnPar.P.aeq,nfd,aeqd,toDB,fromDB,impl) where
 > import Data.List(elemIndex)
 > import Lambda
 > import IdInt

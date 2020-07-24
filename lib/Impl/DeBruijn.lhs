@@ -1,18 +1,17 @@
 The DeBruijn module implements the Normal Form function by
 using de Bruijn indicies.
 
-Substitutions are represented as infinite lists
-
-> module DeBruijnParL(nf,DeBruijnParL.aeq,nfd,toDB,fromDB,nfi, impl) where
+> module Impl.DeBruijn(nf,Impl.DeBruijn.aeq, toDB, fromDB, nfd, nfi, impl) where
 > import Data.List(elemIndex)
 > import Lambda
 > import IdInt
 > import Control.DeepSeq
->
+
 > import Impl
+
 > impl :: LambdaImpl
 > impl = LambdaImpl {
->             impl_name   = "DB_L"
+>             impl_name   = "DB"
 >           , impl_fromLC = toDB
 >           , impl_toLC   = fromDB
 >           , impl_nf     = nfd
@@ -22,22 +21,15 @@ Substitutions are represented as infinite lists
 
 
 Variables are represented by their binding depth, i.e., how many
-$\lambda$s out the binding $\lambda$ is.
+$\lambda$s out the binding $\lambda$ is.  
 
-
-> data DB = DVar {-# unpack #-} !Int | DLam !DB
->         | DApp !DB  !DB
+> data DB = DVar !Int | DLam DB | DApp DB DB
 >   deriving (Eq)
->
+
 > instance NFData DB where
 >    rnf (DVar i) = rnf i
 >    rnf (DLam d) = rnf d
 >    rnf (DApp a b) = rnf a `seq` rnf b
-
-> subst :: Sub -> DB -> DB
-> subst s (DVar i)   = applySub s i
-> subst s (DLam e)   = DLam (subst (lift s) e)
-> subst s (DApp f a) = DApp (subst s f) (subst s a)
 
 > aeq :: LC IdInt -> LC IdInt -> Bool
 > aeq x y = toDB x == toDB y
@@ -52,7 +44,7 @@ Computing the normal form proceeds as usual.
 > nfd (DLam e) = DLam (nfd e)
 > nfd (DApp f a) =
 >     case whnf f of
->         DLam b -> nfd (instantiate b a)
+>         DLam b -> nfd (subst 0 a b)
 >         f' -> DApp (nfd f') (nfd a)
 
 Compute the weak head normal form.
@@ -62,15 +54,14 @@ Compute the weak head normal form.
 > whnf e@(DLam _) = e
 > whnf (DApp f a) =
 >     case whnf f of
->         DLam b -> whnf (instantiate b a)
+>         DLam b -> whnf (subst 0 a b)
 >         f' -> DApp f' a
 
 
 Bounded versions
 
 > instantiate :: DB -> DB -> DB
-> instantiate b a = subst (single a) b
-> {-# INLINABLE instantiate #-}
+> instantiate b a = subst 0 a b
 
 > nfi :: Int -> DB -> Maybe DB
 > nfi 0 _e = Nothing
@@ -94,46 +85,19 @@ Bounded versions
 
 
 
+Substitution needs to adjust the inserted expression
+so the free variables refer to the correct binders.
 
-> -- 3 
-> type Sub = [DB]
-
-> applySub :: Sub -> Int -> DB
-> applySub s i = s !! i
-> {-# INLINE applySub #-}
-
-> -- identity substitution, leaves all variables alone
-> nilSub :: Sub 
-> nilSub =  go 0 where
->    go i = DVar i : go (i+1)
-> {-# INLINE nilSub #-}
-
-> -- increment everything by 1
-> weakSub :: Sub
-> {-# INLINE weakSub #-}
-> weakSub = tail nilSub
-
-> -- singleton, replace 0 with t, leave everything
-> -- else alone
-> single :: DB -> Sub
-> {-# INLINE single #-}
-> single t = t `consSub` nilSub
-
-
-> consSub :: DB -> Sub -> Sub
-> {-# INLINE consSub #-}
-> consSub x s = x : s
-
-
-
-> -- Used in substitution when going under a binder
-> lift :: Sub -> Sub
-> lift s = DVar 0 : (s `composeSub` weakSub)
-> {-# INLINE lift #-}
-
-> composeSub :: Sub -> Sub -> Sub
-> composeSub s1 s2 = map (subst s2) s1
-> {-# INLINE composeSub #-}
+> subst :: Int -> DB -> DB -> DB
+> subst o s v@(DVar i) | i == o = adjust 0 s
+>                      | i >  o = DVar (i-1)
+>                      | otherwise = v
+>   where adjust n e@(DVar j) | j >= n = DVar (j+o)
+>                             | otherwise = e
+>         adjust n (DLam e) = DLam (adjust (n+1) e)
+>         adjust n (DApp f a) = DApp (adjust n f) (adjust n a)
+> subst o s (DLam e) = DLam (subst (o+1) s e)
+> subst o s (DApp f a) = DApp (subst o s f) (subst o s a)
 
 Convert to deBruijn indicies.  Do this by keeping a list of the bound
 variable so the depth can be found of all variables.  Do not touch

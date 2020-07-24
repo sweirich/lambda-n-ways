@@ -8,7 +8,7 @@ This is a general purpose library for defining substitution for debruijn indices
 > {-# LANGUAGE UndecidableInstances #-}
 > {-# LANGUAGE QuantifiedConstraints #-}
 > 
-> module SubstScoped where
+> module DeBruijnPar.SubstScoped where
 >
 > import Data.Kind (Type)
 > import Control.DeepSeq

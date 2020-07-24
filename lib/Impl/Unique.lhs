@@ -7,7 +7,8 @@ variables are unique.
 > {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 > {-# LANGUAGE FlexibleContexts #-}
 > {-# LANGUAGE ScopedTypeVariables #-}
-> module Unique(nf, Unique.aeq, toUnique, fromUnique, impl, Unique) where
+> module Impl.Unique(nf, Impl.Unique.aeq, 
+>                     toUnique, fromUnique, impl, Unique) where
 > import Lambda as LC
 > import qualified Data.Map as M
 > import Control.Monad.State
@@ -212,7 +213,7 @@ Find an existing variable in the mapping.
 >     (fromMaybe v1 (M.lookup v1 m1), fromMaybe v2 (M.lookup v2 m2))
 
 > aeq' :: Unique -> Unique -> Bool
-> aeq' = coerce Unique.aeq
+> aeq' = coerce Impl.Unique.aeq
 
 > aeq :: LC IdInt -> LC IdInt -> Bool
 > aeq a b = evalState (uaeq (M.empty,M.empty) a b) (initState (App a b))
@@ -229,4 +230,4 @@ Find an existing variable in the mapping.
 
 
 > prop_unique :: LC IdInt -> Bool
-> prop_unique x = Unique.aeq x (Unique.fromUnique (Unique.toUnique x))
+> prop_unique x = Impl.Unique.aeq x (Impl.Unique.fromUnique (Impl.Unique.toUnique x))

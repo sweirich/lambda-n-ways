@@ -1,0 +1,161 @@
+	Thu Jun  4 11:02 2020 Time and Allocation Profiling Report  (Final)
+
+	   LC +RTS -p -RTS
+
+	total time  =     3486.23 secs   (3486232 ticks @ 1000 us, 1 processor)
+	total alloc = 1,934,549,246,232 bytes  (excludes profiling overheads)
+
+COST CENTRE   MODULE       SRC                                 %time %alloc
+
+lookupIdSubst Core.Subst   lib/Core/Subst.hs:(138,1)-(143,24)   33.2   50.0
+lookupUFM     Core.UniqFM  lib/Core/UniqFM.hs:278:1-55          29.4   50.0
+lookupInScope Core.VarEnv  lib/Core/VarEnv.hs:150:1-61          13.0    0.0
+nf            Core.Nf      lib/Core/Nf.hs:(25,1)-(35,34)         7.8    0.0
+lookupVarSet  Core.VarSet  lib/Core/VarSet.hs:134:1-31           5.9    0.0
+lookupVarEnv  Core.VarEnv  lib/Core/VarEnv.hs:480:1-28           5.5    0.0
+lookupUniqSet Core.UniqSet lib/Core/UniqSet.hs:155:1-43          5.1    0.0
+
+
+                                                                                                                    individual      inherited
+COST CENTRE                        MODULE                  SRC                                  no.      entries  %time %alloc   %time %alloc
+
+MAIN                               MAIN                    <built-in>                            490          0    0.0    0.0   100.0  100.0
+ CAF                               Main                    <entire-module>                       979          0    0.0    0.0     0.0    0.0
+  correctness                      Main                    bench/Main.lhs:(54,3)-(61,25)         995          1    0.0    0.0     0.0    0.0
+   aeq                             Lambda                  lib/Lambda.lhs:(71,3)-(79,22)         999          1    0.0    0.0     0.0    0.0
+  getTerm                          Main                    bench/Main.lhs:(87,3)-(89,42)         982          1    0.0    0.0     0.0    0.0
+  impls                            Main                    bench/Main.lhs:(36,3)-(48,11)         992          1    0.0    0.0     0.0    0.0
+  lambda_false                     Main                    bench/Main.lhs:125:3-38              1001          1    0.0    0.0     0.0    0.0
+   lam                             Main                    bench/Main.lhs:120:3-27              1002          1    0.0    0.0     0.0    0.0
+  main                             Main                    bench/Main.lhs:(175,3)-(190,6)        980          1    0.0    0.0     0.0    0.0
+ CAF                               IdInt                   <entire-module>                       977          0    0.0    0.0     0.0    0.0
+  firstBoundId                     IdInt                   lib/IdInt.lhs:23:3-24                 990          1    0.0    0.0     0.0    0.0
+ CAF                               Lambda                  <entire-module>                       975          0    0.0    0.0     0.0    0.0
+ CAF                               Core.Core               <entire-module>                       971          0    0.0    0.0     0.0    0.0
+  isLocalId                        Core.Core               lib/Core/Core.hs:45:1-22             1013          1    0.0    0.0     0.0    0.0
+  isLocalVar                       Core.Core               lib/Core/Core.hs:42:1-23             1087          1    0.0    0.0     0.0    0.0
+ CAF                               Core.Unique             <entire-module>                       970          0    0.0    0.0     0.0    0.0
+  maxLocalUnique                   Core.Unique             lib/Core/Unique.hs:168:1-34          1078          1    0.0    0.0     0.0    0.0
+  minLocalUnique                   Core.Unique             lib/Core/Unique.hs:165:1-27          1083          1    0.0    0.0     0.0    0.0
+  mkUniqueGrimily                  Core.Unique             lib/Core/Unique.hs:88:1-26           1017          1    0.0    0.0     0.0    0.0
+ CAF                               Core.FV                 <entire-module>                       969          0    0.0    0.0     0.0    0.0
+  fvVarSet                         Core.FV                 lib/Core/FV.hs:105:1-32              1042          1    0.0    0.0     0.0    0.0
+ CAF                               Core.CoreFVs            <entire-module>                       968          0    0.0    0.0     0.0    0.0
+  exprFreeVars                     Core.CoreFVs            lib/Core/CoreFVs.hs:101:1-33         1040          1    0.0    0.0     0.0    0.0
+ CAF                               Core.VarEnv             <entire-module>                       966          0    0.0    0.0     0.0    0.0
+  delVarEnv                        Core.VarEnv             lib/Core/VarEnv.hs:476:1-29          1055          1    0.0    0.0     0.0    0.0
+  emptyVarEnv                      Core.VarEnv             lib/Core/VarEnv.hs:486:1-27          1060          1    0.0    0.0     0.0    0.0
+  extendVarEnv                     Core.VarEnv             lib/Core/VarEnv.hs:468:1-27          1067          1    0.0    0.0     0.0    0.0
+  lookupVarEnv                     Core.VarEnv             lib/Core/VarEnv.hs:480:1-28          1014          1    0.0    0.0     0.0    0.0
+ CAF                               Core.VarSet             <entire-module>                       965          0    0.0    0.0     0.0    0.0
+  elemVarSet                       Core.VarSet             lib/Core/VarSet.hs:127:1-34          1021          1    0.0    0.0     0.0    0.0
+  emptyVarSet                      Core.VarSet             lib/Core/VarSet.hs:113:1-30          1046          1    0.0    0.0     0.0    0.0
+  extendVarSet                     Core.VarSet             lib/Core/VarSet.hs:115:1-33          1026          1    0.0    0.0     0.0    0.0
+  lookupVarSet                     Core.VarSet             lib/Core/VarSet.hs:134:1-31          1062          1    0.0    0.0     0.0    0.0
+ CAF                               Core.UniqFM             <entire-module>                       964          0    0.0    0.0     0.0    0.0
+  emptyUFM                         Core.UniqFM             lib/Core/UniqFM.hs:95:1-22           1048          1    0.0    0.0     0.0    0.0
+ CAF                               Core.UniqSet            <entire-module>                       962          0    0.0    0.0     0.0    0.0
+  emptyUniqSet                     Core.UniqSet            lib/Core/UniqSet.hs:76:1-31          1047          1    0.0    0.0     0.0    0.0
+  getUniqSet                       Core.UniqSet            lib/Core/UniqSet.hs:188:1-24         1080          1    0.0    0.0     0.0    0.0
+ CAF                               Core.Nf                 <entire-module>                       961          0    0.0    0.0     0.0    0.0
+  impl                             Core.Nf                 lib/Core/Nf.hs:(12,1)-(19,9)          998          1    0.0    0.0     0.0    0.0
+ CAF                               GHC.Conc.Signal         <entire-module>                       600          0    0.0    0.0     0.0    0.0
+ CAF                               GHC.IO.Encoding         <entire-module>                       581          0    0.0    0.0     0.0    0.0
+ CAF                               GHC.IO.Encoding.Iconv   <entire-module>                       579          0    0.0    0.0     0.0    0.0
+ CAF                               GHC.IO.Exception        <entire-module>                       573          0    0.0    0.0     0.0    0.0
+ CAF                               GHC.IO.FD               <entire-module>                       572          0    0.0    0.0     0.0    0.0
+ CAF                               GHC.IO.Handle.FD        <entire-module>                       570          0    0.0    0.0     0.0    0.0
+ CAF                               GHC.IO.Handle.Internals <entire-module>                       569          0    0.0    0.0     0.0    0.0
+ CAF                               GHC.TopHandler          <entire-module>                       543          0    0.0    0.0     0.0    0.0
+ main                              Main                    bench/Main.lhs:(175,3)-(190,6)        981          0    0.0    0.0   100.0  100.0
+  toIdInt                          IdInt                   lib/IdInt.lhs:(44,3)-(46,63)          984          2    0.0    0.0     0.0    0.0
+   freeVars                        Lambda                  lib/Lambda.lhs:(36,3)-(38,52)         986        522    0.0    0.0     0.0    0.0
+  aeq_bs                           Main                    bench/Main.lhs:(79,3)-(83,62)         994          1    0.0    0.0     0.0    0.0
+  conv_bs                          Main                    bench/Main.lhs:(66,3)-(68,44)         991          1    0.0    0.0     0.0    0.0
+  fromUnique                       Unique                  lib/Unique.lhs:37:26-35               988          1    0.0    0.0     0.0    0.0
+  nf_bs                            Main                    bench/Main.lhs:(73,3)-(76,40)         993          1    0.0    0.0     0.0    0.0
+  toUnique                         Unique                  lib/Unique.lhs:56:3-30                987          1    0.0    0.0     0.0    0.0
+   allVars                         Lambda                  lib/Lambda.lhs:(43,3)-(45,49)         989        261    0.0    0.0     0.0    0.0
+  correctness                      Main                    bench/Main.lhs:(54,3)-(61,25)         996          0    0.0    0.0   100.0  100.0
+   toIdInt                         IdInt                   lib/IdInt.lhs:(44,3)-(46,63)         1005          1    0.0    0.0     0.0    0.0
+    freeVars                       Lambda                  lib/Lambda.lhs:(36,3)-(38,52)        1018        261    0.0    0.0     0.0    0.0
+   aeq                             Lambda                  lib/Lambda.lhs:(71,3)-(79,22)        1000          0    0.0    0.0     0.0    0.0
+   getTerm                         Main                    bench/Main.lhs:(87,3)-(89,42)         997          0    0.0    0.0     0.0    0.0
+    stripComments                  Misc                    lib/Misc.lhs:(7,3)-(12,45)           1006        863    0.0    0.0     0.0    0.0
+   impl                            Core.Nf                 lib/Core/Nf.hs:(12,1)-(19,9)         1003          0    0.0    0.0   100.0  100.0
+    nf                             Core.Nf                 lib/Core/Nf.hs:(25,1)-(35,34)        1004          5    7.8    0.0   100.0  100.0
+     lookupIdSubst                 Core.Subst              lib/Core/Subst.hs:(138,1)-(143,24)   109260454577874   33.2   50.0    92.2  100.0
+      lookupInScope                Core.VarEnv             lib/Core/VarEnv.hs:150:1-61          109560454577874   13.0    0.0    40.1   50.0
+       lookupVarSet                Core.VarSet             lib/Core/VarSet.hs:134:1-31          1096          0    5.9    0.0    27.1   50.0
+        lookupUniqSet              Core.UniqSet            lib/Core/UniqSet.hs:155:1-43         109760454577874    5.1    0.0    21.1   50.0
+         lookupUFM                 Core.UniqFM             lib/Core/UniqFM.hs:278:1-55          109860454577874   16.0   50.0    16.0   50.0
+      lookupVarEnv                 Core.VarEnv             lib/Core/VarEnv.hs:480:1-28          1093          0    5.5    0.0    18.9    0.0
+       lookupUFM                   Core.UniqFM             lib/Core/UniqFM.hs:278:1-55          109460454577874   13.4    0.0    13.4    0.0
+     whnf                          Core.Nf                 lib/Core/Nf.hs:(38,1)-(44,22)        1007         83    0.0    0.0     0.0    0.0
+      substBndr                    Core.Subst              lib/Core/Subst.hs:(261,1)-(262,45)   1010         50    0.0    0.0     0.0    0.0
+       uniqAway                    Core.VarEnv             lib/Core/VarEnv.hs:(188,1)-(190,39)  1034         50    0.0    0.0     0.0    0.0
+        elemInScopeSet             Core.VarEnv             lib/Core/VarEnv.hs:145:1-61          1035         50    0.0    0.0     0.0    0.0
+         elemVarSet                Core.VarSet             lib/Core/VarSet.hs:127:1-34          1036          0    0.0    0.0     0.0    0.0
+          elementOfUniqSet         Core.UniqSet            lib/Core/UniqSet.hs:128:1-44         1037         50    0.0    0.0     0.0    0.0
+           elemUFM                 Core.UniqFM             lib/Core/UniqFM.hs:272:1-53          1038         50    0.0    0.0     0.0    0.0
+       extendInScopeSet            Core.VarEnv             lib/Core/VarEnv.hs:(130,1)-(131,38)  1030         47    0.0    0.0     0.0    0.0
+        extendVarSet               Core.VarSet             lib/Core/VarSet.hs:115:1-33          1031          0    0.0    0.0     0.0    0.0
+         addOneToUniqSet           Core.UniqSet            lib/Core/UniqSet.hs:85:1-60          1032         47    0.0    0.0     0.0    0.0
+          addToUFM                 Core.UniqFM             lib/Core/UniqFM.hs:121:1-64          1033         47    0.0    0.0     0.0    0.0
+       delVarEnv                   Core.VarEnv             lib/Core/VarEnv.hs:476:1-29          1058          0    0.0    0.0     0.0    0.0
+        delFromUFM                 Core.UniqFM             lib/Core/UniqFM.hs:174:1-62          1059         50    0.0    0.0     0.0    0.0
+      substExpr                    Core.Subst              lib/Core/Subst.hs:218:1-62           1008         50    0.0    0.0     0.0    0.0
+       substBndr                   Core.Subst              lib/Core/Subst.hs:(261,1)-(262,45)   1011       1389    0.0    0.0     0.0    0.0
+        uniqAway                   Core.VarEnv             lib/Core/VarEnv.hs:(188,1)-(190,39)  1019       1389    0.0    0.0     0.0    0.0
+         elemInScopeSet            Core.VarEnv             lib/Core/VarEnv.hs:145:1-61          1020       1389    0.0    0.0     0.0    0.0
+          elemVarSet               Core.VarSet             lib/Core/VarSet.hs:127:1-34          1022          0    0.0    0.0     0.0    0.0
+           elementOfUniqSet        Core.UniqSet            lib/Core/UniqSet.hs:128:1-44         1023       1389    0.0    0.0     0.0    0.0
+            elemUFM                Core.UniqFM             lib/Core/UniqFM.hs:272:1-53          1024       1389    0.0    0.0     0.0    0.0
+         setVarUnique              Core.Core               lib/Core/Core.hs:25:1-46             1076         30    0.0    0.0     0.0    0.0
+         unsafeGetFreshLocalUnique Core.VarEnv             lib/Core/VarEnv.hs:(201,1)-(208,18)  1077         30    0.0    0.0     0.0    0.0
+          incrUnique               Core.Unique             lib/Core/Unique.hs:158:1-42          1084         30    0.0    0.0     0.0    0.0
+          ltUnique                 Core.Unique             lib/Core/Unique.hs:111:1-46          1082         30    0.0    0.0     0.0    0.0
+          mkLocalUnique            Core.Unique             lib/Core/Unique.hs:162:1-28          1081         30    0.0    0.0     0.0    0.0
+          ufmToIntMap              Core.UniqFM             lib/Core/UniqFM.hs:362:1-23          1079         30    0.0    0.0     0.0    0.0
+        extendInScopeSet           Core.VarEnv             lib/Core/VarEnv.hs:(130,1)-(131,38)  1025       1383    0.0    0.0     0.0    0.0
+         extendVarSet              Core.VarSet             lib/Core/VarSet.hs:115:1-33          1027          0    0.0    0.0     0.0    0.0
+          addOneToUniqSet          Core.UniqSet            lib/Core/UniqSet.hs:85:1-60          1028       1383    0.0    0.0     0.0    0.0
+           addToUFM                Core.UniqFM             lib/Core/UniqFM.hs:121:1-64          1029       1383    0.0    0.0     0.0    0.0
+        delVarEnv                  Core.VarEnv             lib/Core/VarEnv.hs:476:1-29          1056          0    0.0    0.0     0.0    0.0
+         delFromUFM                Core.UniqFM             lib/Core/UniqFM.hs:174:1-62          1057       1359    0.0    0.0     0.0    0.0
+        extendVarEnv               Core.VarEnv             lib/Core/VarEnv.hs:468:1-27          1085          0    0.0    0.0     0.0    0.0
+         addToUFM                  Core.UniqFM             lib/Core/UniqFM.hs:121:1-64          1086         30    0.0    0.0     0.0    0.0
+       lookupIdSubst               Core.Subst              lib/Core/Subst.hs:(138,1)-(143,24)   1012       1289    0.0    0.0     0.0    0.0
+        lookupInScope              Core.VarEnv             lib/Core/VarEnv.hs:150:1-61          1061       1215    0.0    0.0     0.0    0.0
+         lookupVarSet              Core.VarSet             lib/Core/VarSet.hs:134:1-31          1063          0    0.0    0.0     0.0    0.0
+          lookupUniqSet            Core.UniqSet            lib/Core/UniqSet.hs:155:1-43         1064       1215    0.0    0.0     0.0    0.0
+           lookupUFM               Core.UniqFM             lib/Core/UniqFM.hs:278:1-55          1065       1215    0.0    0.0     0.0    0.0
+        lookupVarEnv               Core.VarEnv             lib/Core/VarEnv.hs:480:1-28          1015          0    0.0    0.0     0.0    0.0
+         lookupUFM                 Core.UniqFM             lib/Core/UniqFM.hs:278:1-55          1016       1289    0.0    0.0     0.0    0.0
+      extendIdSubst                Core.Subst              lib/Core/Subst.hs:(109,1)-(111,41)   1070         23    0.0    0.0     0.0    0.0
+       extendVarEnv                Core.VarEnv             lib/Core/VarEnv.hs:468:1-27          1071          0    0.0    0.0     0.0    0.0
+        addToUFM                   Core.UniqFM             lib/Core/UniqFM.hs:121:1-64          1072         23    0.0    0.0     0.0    0.0
+      lookupIdSubst                Core.Subst              lib/Core/Subst.hs:(138,1)-(143,24)   1073          6    0.0    0.0     0.0    0.0
+       lookupInScope               Core.VarEnv             lib/Core/VarEnv.hs:150:1-61          1088          2    0.0    0.0     0.0    0.0
+        lookupVarSet               Core.VarSet             lib/Core/VarSet.hs:134:1-31          1089          0    0.0    0.0     0.0    0.0
+         lookupUniqSet             Core.UniqSet            lib/Core/UniqSet.hs:155:1-43         1090          2    0.0    0.0     0.0    0.0
+          lookupUFM                Core.UniqFM             lib/Core/UniqFM.hs:278:1-55          1091          2    0.0    0.0     0.0    0.0
+       lookupVarEnv                Core.VarEnv             lib/Core/VarEnv.hs:480:1-28          1074          0    0.0    0.0     0.0    0.0
+        lookupUFM                  Core.UniqFM             lib/Core/UniqFM.hs:278:1-55          1075          6    0.0    0.0     0.0    0.0
+     extendIdSubst                 Core.Subst              lib/Core/Subst.hs:(109,1)-(111,41)   1066         29    0.0    0.0     0.0    0.0
+      extendVarEnv                 Core.VarEnv             lib/Core/VarEnv.hs:468:1-27          1068          0    0.0    0.0     0.0    0.0
+       addToUFM                    Core.UniqFM             lib/Core/UniqFM.hs:121:1-64          1069         29    0.0    0.0     0.0    0.0
+     mkEmptySubst                  Core.Subst              lib/Core/Subst.hs:90:1-50            1009          5    0.0    0.0     0.0    0.0
+     mkInScopeSet                  Core.VarEnv             lib/Core/VarEnv.hs:127:1-40          1039          5    0.0    0.0     0.0    0.0
+     exprFreeVars                  Core.CoreFVs            lib/Core/CoreFVs.hs:101:1-33         1041          0    0.0    0.0     0.0    0.0
+      fvVarSet                     Core.FV                 lib/Core/FV.hs:105:1-32              1043          0    0.0    0.0     0.0    0.0
+       fvVarListVarSet             Core.FV                 lib/Core/FV.hs:87:1-66               1044          5    0.0    0.0     0.0    0.0
+        expr_fvs                   Core.CoreFVs            lib/Core/CoreFVs.hs:(246,1)-(250,51) 1045        646    0.0    0.0     0.0    0.0
+         elemVarSet                Core.VarSet             lib/Core/VarSet.hs:127:1-34          1052          0    0.0    0.0     0.0    0.0
+          elementOfUniqSet         Core.UniqSet            lib/Core/UniqSet.hs:128:1-44         1053        232    0.0    0.0     0.0    0.0
+           elemUFM                 Core.UniqFM             lib/Core/UniqFM.hs:272:1-53          1054        232    0.0    0.0     0.0    0.0
+         extendVarSet              Core.VarSet             lib/Core/VarSet.hs:115:1-33          1049          0    0.0    0.0     0.0    0.0
+          addOneToUniqSet          Core.UniqSet            lib/Core/UniqSet.hs:85:1-60          1050        203    0.0    0.0     0.0    0.0
+           addToUFM                Core.UniqFM             lib/Core/UniqFM.hs:121:1-64          1051        203    0.0    0.0     0.0    0.0
+  getTerm                          Main                    bench/Main.lhs:(87,3)-(89,42)         983          0    0.0    0.0     0.0    0.0
+   stripComments                   Misc                    lib/Misc.lhs:(7,3)-(12,45)            985        863    0.0    0.0     0.0    0.0

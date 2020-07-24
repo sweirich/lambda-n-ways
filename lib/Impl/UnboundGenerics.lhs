@@ -7,7 +7,7 @@
 >           , ScopedTypeVariables
 >  #-}
 
-> module UnboundGenerics(impl) where
+> module Impl.UnboundGenerics(impl) where
 
 > import qualified Lambda as L
 > import IdInt

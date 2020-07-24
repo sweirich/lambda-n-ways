@@ -7,44 +7,47 @@ import IdInt
 import Impl
 
 
-import Simple
-import SimpleB
-import Unique
-import HOAS
-import DeBruijn
+import Impl.Simple
+import Impl.SimpleB
+import Impl.HOAS
+import Impl.DeBruijn
+import Impl.BoundDB
+import Impl.Unbound
+import Impl.UnboundGenerics
+import Impl.Unique
+--import Impl.NominalG
+
 -- import DeBruijnC
-import DeBruijnPar
-import DeBruijnParF
-import DeBruijnParB
-import DeBruijnParFB
-import DeBruijnParL
-import BoundDB
-import Unbound
-import UnboundGenerics
-import DeBruijnScoped
+import DeBruijnPar.P
+import DeBruijnPar.F
+import DeBruijnPar.B
+import DeBruijnPar.FB
+import DeBruijnPar.L
+import DeBruijnPar.Scoped
+
 import Core.Nf
-import NominalG
+
 
 import Test.QuickCheck
 
 impls :: [LambdaImpl]
 impls = [ 
-          DeBruijnParF.impl
-        , DeBruijnParFB.impl
-        , DeBruijnParL.impl
-        , DeBruijnPar.impl
-        , DeBruijnParB.impl
-        , DeBruijnScoped.impl
-        , DeBruijn.impl
-        , BoundDB.impl
-        , HOAS.impl
-        , SimpleB.impl
-        , Simple.impl 
-        , UnboundGenerics.impl 
-        , Unbound.impl
-        , Unique.impl
+          DeBruijnPar.F.impl
+        , DeBruijnPar.FB.impl
+        , DeBruijnPar.L.impl
+        , DeBruijnPar.P.impl
+        , DeBruijnPar.B.impl
+        , DeBruijnPar.Scoped.impl
+        , Impl.DeBruijn.impl
+        , Impl.BoundDB.impl
+        , Impl.HOAS.impl
+        , Impl.SimpleB.impl
+        , Impl.Simple.impl 
+        , Impl.UnboundGenerics.impl 
+        , Impl.Unbound.impl
+        , Impl.Unique.impl
         , Core.Nf.impl  
-        -- , NominalG.impl -- generally too slow (12s vs. <200 ms for everything else)
+        -- , Impl.NominalG.impl -- generally too slow (12s vs. <200 ms for everything else)
         ]
 
 --------------------------------------------------------------

@@ -5,7 +5,7 @@ alpha-renames bound variables during substitution if they would ever
 capture a free variable.
 
 > {-# LANGUAGE FlexibleContexts #-}
-> module Simple(nf,whnf,nfi,impl,iNf,St(..),subst) where
+> module Impl.Simple(nf,whnf,nfi,impl,iNf,St(..),subst) where
 > import Data.List(union, (\\))
 > import Lambda
 > import IdInt  

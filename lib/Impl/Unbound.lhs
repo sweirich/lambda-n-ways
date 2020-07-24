@@ -3,7 +3,7 @@
 > {-# LANGUAGE MultiParamTypeClasses #-}
 > {-# LANGUAGE DeriveTraversable #-}
 > {-# LANGUAGE TemplateHaskell #-}
-> module Unbound(nf,Unbound.aeq, aeqd, fromDB, toDB, nfu, impl) where
+> module Impl.Unbound(nf,Impl.Unbound.aeq, aeqd, fromDB, toDB, nfu, impl) where
 > import qualified Lambda as L
 > import IdInt
 >

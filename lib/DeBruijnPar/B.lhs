@@ -24,11 +24,11 @@ NONE:   user	0m6.655s
 1,3,4,5,6: user	0m0.010s
 user	0m0.009s
 
-> module DeBruijnParB(nf,DeBruijnParB.aeq,toDB,fromDB,nfd,nfi, impl) where
+> module DeBruijnPar.B(nf,DeBruijnPar.B.aeq,toDB,fromDB,nfd,nfi, impl) where
 > import Data.List(elemIndex)
 > import Lambda
 > import IdInt
-> import Subst
+> import DeBruijnPar.Subst
 > import Control.DeepSeq
 >
 > import Text.PrettyPrint.HughesPJ(Doc, renderStyle, style, text,

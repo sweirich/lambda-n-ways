@@ -1,6 +1,6 @@
 This is a general purpose library for defining substitution for debruijn indices
 
-> module Subst where
+> module DeBruijnPar.Subst where
 >
 > import Control.DeepSeq
 
