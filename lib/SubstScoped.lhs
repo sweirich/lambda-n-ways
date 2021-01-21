@@ -58,27 +58,27 @@ This is a general purpose library for defining substitution for debruijn indices
 > ------------------------------------
 
 > data Bind a n where
->    Bind :: !(Sub a m (S n)) -> !(a m) -> Bind a n
+>    Bind :: !(Sub a m n) -> !(a (S m)) -> Bind a n
 
 > bind :: a (S n) -> Bind a n
 > bind x = Bind (Inc SZ) x
 > {-# INLINABLE bind #-}
 
 > unbind :: SubstC a => Bind a n -> a (S n)
-> unbind (Bind s a) = subst s a
+> unbind (Bind s a) = subst (lift s) a
 > {-# INLINABLE unbind #-}
 
 > instantiate :: SubstC a => Bind a n -> a n -> a n
-> instantiate (Bind s a) b = subst (comp s (single b)) a
+> instantiate (Bind s a) b = subst (Cons b s) a
 > {-# INLINABLE instantiate #-}
 
 > substBind :: SubstC a => Sub a n m -> Bind a n -> Bind a m
 >   -- use comp instead of :<>
-> substBind s2 (Bind s1 e) = Bind (comp s1 (lift s2)) e
+> substBind s2 (Bind s1 e) = Bind (comp s1 s2) e
 > {-# INLINABLE substBind #-}
 
 > instance (SubstC a, Eq (a (S n))) => Eq (Bind a n) where
->    (Bind s1 x) == (Bind s2 y) = subst s1 x == subst s2 y
+>    (Bind s1 x) == (Bind s2 y) = subst (lift s1) x == subst (lift s2) y
 
 > ------------------------------------
 

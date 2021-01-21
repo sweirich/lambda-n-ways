@@ -1,8 +1,11 @@
-packages:
-  ../replib/RepLib/
-  ../replib/Unbound/
-  ../lennart-lambda/
+packages: .
+packages: ../RepLib
+packages: ../Unbound
 
+-- If you don't have replib checked out:
 
-
-
+-- source-repository-package
+--   type: git
+--   location: git@github.com:sweirich/replib.git
+--   tag: 0c7a400d2f275fe8ac8d946ef80f269e7f37c078
+--   subdir: RepLib Unbound
