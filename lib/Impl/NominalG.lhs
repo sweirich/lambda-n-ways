@@ -1,11 +1,11 @@
 
-Implementation using the Nominal library
+Implementation using the Nominal library (available from hackage)
 
 > {-# LANGUAGE FlexibleInstances #-}
 > {-# LANGUAGE DeriveGeneric #-}
 > {-# LANGUAGE DeriveAnyClass #-}
 
-> module NominalG(nf,nfi,impl) where
+> module Impl.NominalG(nf,nfi,impl) where
 > import Data.List(union, (\\))
 > import qualified Lambda as LC
 > import IdInt  

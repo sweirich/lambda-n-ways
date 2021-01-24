@@ -2,7 +2,7 @@
 > module Impl where
 
 Every lambda calculus implementation must have a way to convert to and from
-the "raw string" representation, a way to compute the normal form, and a way
+a "named" representation, a way to compute the normal form, and a way
 to determine alpha-equivalence.  For uniformity, we package these components up
 in a data structure. 
 

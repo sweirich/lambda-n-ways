@@ -10,6 +10,7 @@ import Impl
 import Impl.Simple
 import Impl.SimpleB
 import Impl.HOAS
+import Impl.Kit
 import Impl.DeBruijn
 import Impl.BoundDB
 import Impl.Unbound
@@ -17,7 +18,7 @@ import Impl.UnboundGenerics
 import Impl.Unique
 --import Impl.NominalG
 
--- import DeBruijnC
+-- import Impl.DeBruijnC
 import DeBruijnPar.P
 import DeBruijnPar.F
 import DeBruijnPar.B
@@ -41,6 +42,7 @@ impls = [
         , Impl.DeBruijn.impl
         , Impl.BoundDB.impl
         , Impl.HOAS.impl
+        , Impl.Kit.impl
         , Impl.SimpleB.impl
         , Impl.Simple.impl 
         , Impl.UnboundGenerics.impl 
@@ -73,16 +75,16 @@ infixl 5 @@
 (@@) :: LC IdInt -> LC IdInt -> LC IdInt
 a @@ b  = App a b
 lam :: Int -> LC IdInt -> LC IdInt
-lam i b = Lam (IdInt i) b
+lam i = Lam (IdInt i)
 var :: Int -> LC IdInt
 var i   = Var (IdInt i)
 
 
-lambda_true :: LC IdInt
-lambda_true = lam 0 (lam 1 (var 0))
+lambdaTrue :: LC IdInt
+lambdaTrue = lam 0 (lam 1 (var 0))
 
-lambda_false :: LC IdInt
-lambda_false = lam 0 (lam 1 (var 1))
+lambdaFalse :: LC IdInt
+lambdaFalse = lam 0 (lam 1 (var 1))
 
 
 {-

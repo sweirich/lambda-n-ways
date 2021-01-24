@@ -94,6 +94,11 @@ This is derived from Lennart Augustsson's unpublished draft paper
 
   Uses nominal package & generic programming
   
+- Kit
+
+  https://dl.acm.org/doi/10.1145/3018610.3018613
+
+- 
 
 ## Benchmarks
 
@@ -175,4 +180,3 @@ Optimized version of nominal logic
 
 https://arxiv.org/pdf/1111.0085.pdf
 
-https://dl.acm.org/doi/10.1145/3018610.3018613

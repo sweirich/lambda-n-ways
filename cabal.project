@@ -1,6 +1,6 @@
 packages: .
-packages: ../RepLib
-packages: ../Unbound
+packages: ../replib/RepLib
+packages: ../replib/Unbound
 
 -- If you don't have replib checked out:
 
