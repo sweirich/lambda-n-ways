@@ -1,0 +1,5 @@
+- ignore: {name: Use foldr}
+- ignore: {name: Use foldl}
+- ignore: {name: Use head}
+- ignore: {name: Use guards}
+- ignore: {name: Use camelCase}

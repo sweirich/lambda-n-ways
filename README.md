@@ -110,13 +110,13 @@ Download the html files to see the Criterion graphs. Or look at the
 
 These 25 random terms stored in the file [random2.lam](lams/random2.lam).  They are
 generated via `genScopedLam` in [Lambda.lhs](lib/Lambda.lhs) with size
-parameter `100000`, and so are closed, and contain lots of
+parameter `100000`, and so are closed and contain lots of
 lambdas. Normalizing these terms requires between 26-36 calls to `subst`. The
 terms themselves have total depth from 23-60 and binding depth from 13-46.
 
 2. Conversion to representation: [conv_bench.html](results/conv_bench.html). How long
    does it take to convert a parsed named representation to the internal
-   representation of the implementation? Converts the pathological term.
+   representation of the implementation? alpha-converts the pathological term.
    
 3. Normalization of pathological lambda term:
   [nf_bench.html](results/nf_bench.html). See below.
@@ -165,6 +165,23 @@ respectively). However, benchmarking uses the unfueled version.
 ## Running the benchmarks
 
      make timing
+
+## Testing the benchmarks
+
+Unit tests:
+- Verifies that each implementation correctly normalizes the pathological term.
+- Verifies that each implementation correctly normalizes the random lambda terms
+      random.lam -> random.nf2.lam
+
+QC:
+- conversion from/to named representation is identity on lambda terms
+- freshened version of random lambda term is AEQ
+- nf on random lambda term matches reference version (DB)
+   (This test is only for impls with a "fueled version" of normalization)
+
+- 
+
+     stack test
 
 ## References
 
