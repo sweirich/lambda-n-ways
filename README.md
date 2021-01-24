@@ -103,10 +103,10 @@ This is derived from Lennart Augustsson's unpublished draft paper
 ## Benchmarks
 
 Download the html files to see the Criterion graphs. Or look at the
-[raw results](output.txt).
+[raw results](results/output.txt).
  
 1. Normalization of random lambda terms: 
-[rand_bench.html](rand_bench.html).
+[rand_bench.html](results/rand_bench.html).
 
 These 25 random terms stored in the file [random2.lam](lams/random2.lam).  They are
 generated via `genScopedLam` in [Lambda.lhs](lib/Lambda.lhs) with size
@@ -114,12 +114,12 @@ parameter `100000`, and so are closed, and contain lots of
 lambdas. Normalizing these terms requires between 26-36 calls to `subst`. The
 terms themselves have total depth from 23-60 and binding depth from 13-46.
 
-2. Conversion to representation: [conv_bench.html](conv_bench.html). How long
+2. Conversion to representation: [conv_bench.html](results/conv_bench.html). How long
    does it take to convert a parsed named representation to the internal
    representation of the implementation? Converts the pathological term.
    
 3. Normalization of pathological lambda term:
-  [nf_bench.html](nf_bench.html). See below.
+  [nf_bench.html](results/nf_bench.html). See below.
 
 ```
    bind depth: 25
@@ -128,7 +128,7 @@ terms themselves have total depth from 23-60 and binding depth from 13-46.
 ```
 
 4. Alpha-equivalence of pathological lambda term:
-   [aeq_bench.html](aeq_bench.html)
+   [aeq_bench.html](results/aeq_bench.html)
    
 
 ### Normalization microbenchmark
