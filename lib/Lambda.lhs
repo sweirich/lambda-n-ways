@@ -7,7 +7,7 @@ print in a nice way.
 > {-# LANGUAGE DeriveGeneric #-}
 > {-# LANGUAGE ScopedTypeVariables #-}
 > module Lambda(LC(..), freeVars, allVars, Id(..), aeq, genScoped, shrinkScoped,
-> prop_roundTrip, genScopedLam, maxBindingDepth, depth) where
+> prop_roundTrip, genScopedLam, maxBindingDepth, depth, toIdInt) where
 > import Data.List(union, (\\))
 > import Data.Char(isAlphaNum)
 > import Text.PrettyPrint.HughesPJ(Doc, renderStyle, style, text,
@@ -21,7 +21,10 @@ print in a nice way.
 > import Data.Map (Map)
 >
 > import Test.QuickCheck
+> import Data.Kind (Type)
+> import Control.Monad.State
 
+> import IdInt
 
 The LC type of $\lambda$ term is parametrized over the type of the variables.
 It has constructors for variables, $\lambda$-abstraction, and application.
@@ -85,6 +88,16 @@ left.
 >   aeqd (App a1 a2) (App b1 b2) =
 >     aeqd a1 b1 && aeqd a2 b2
 >   aeqd _ _ = False
+
+> conv :: (Ord v) => LC v -> FreshM v (LC IdInt)
+> conv (Var v)   = Var <$> convVar v
+> conv (Lam v e) = Lam <$> convVar v <*> conv e
+> conv (App f a) = App <$> conv f    <*> conv a
+
+> toIdInt :: (Ord v) => LC v -> LC IdInt
+> toIdInt e = evalState (conv e) (0, fvmap)
+>   where fvmap = Prelude.foldr (\ (v, i) m -> M.insert v (IdInt i) m) M.empty
+>                               (zip (Lambda.freeVars e) [1..])
 
 
 ---------------------------- Read/Show -------------------------------------

@@ -5,7 +5,7 @@
 > {-# LANGUAGE TemplateHaskell #-}
 > module Impl.Unbound(nf,Impl.Unbound.aeq, aeqd, fromDB, toDB, nfu, impl) where
 > import qualified Lambda as L
-> import IdInt
+> import IdInt hiding (FreshM)
 >
 > import qualified Control.DeepSeq as DS
 

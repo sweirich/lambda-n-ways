@@ -7,7 +7,7 @@ import IdInt
 import Impl
 import qualified Impl.DeBruijn as DeBruijn
 import qualified Impl.Unique as Unique
-import Lambda
+import Lambda 
 import Misc
 import Suite
 import System.Exit (exitFailure)
@@ -32,7 +32,7 @@ db_nf tm = DeBruijn.fromDB (DeBruijn.nfd (DeBruijn.toDB tm))
 
 prop_rt :: LambdaImpl -> Property
 prop_rt LambdaImpl {..} = withMaxSuccess 1000 $
-  forAllShrink IdInt.genScoped IdInt.shrinkScoped $ \x ->
+  forAllShrink genScoped shrinkScoped $ \x ->
     impl_toLC (impl_fromLC x) `db_aeq` x
 
 rtQCs :: TestTree
@@ -46,7 +46,7 @@ rtQCs = testGroup "Conv QC tests" (map f impls)
 -- | Make sure that a "freshened" version of a term is alpha-equivalent to itself
 prop_aeq :: LambdaImpl -> Property
 prop_aeq LambdaImpl {..} = withMaxSuccess 1000 $
-  forAllShrink IdInt.genScoped IdInt.shrinkScoped $ \x ->
+  forAllShrink genScoped shrinkScoped $ \x ->
     let x' = impl_fromLC x
         y' = impl_fromLC y
         y = Unique.fromUnique (Unique.toUnique x)
@@ -59,16 +59,13 @@ aeqQCs = testGroup "AEQ QC tests" (map f impls)
     f i = testProperty (impl_name i) (Main.prop_aeq i)
 
 -------------------------------------------------------------------
--- Fueled Normalization matches original
-
--------------------------------------------------------------------
 -- Normalization tests
 
 -- | Pre-set random tests for normalization
-nfRandomTests :: IO TestTree
-nfRandomTests = do
-  inputs <- getTerms "lams/random.lam"
-  outputs <- getTerms "lams/random.nf2.lam"
+nfRandomTests :: String -> IO TestTree
+nfRandomTests str = do
+  inputs <- getTerms $ "lams/" ++ str ++ ".lam"
+  outputs <- getTerms $ "lams/" ++ str ++ ".nf.lam"
   let test_impl :: LambdaImpl -> LC IdInt -> LC IdInt -> TestTree
       test_impl LambdaImpl {..} tm1 tm2 = do
         let result = (impl_toLC . impl_nf . impl_fromLC) tm1
@@ -84,7 +81,7 @@ nfRandomTests = do
               (db_aeq tm2 result)
           )
   return $
-    testGroup "NF Unit Tests" $
+    testGroup ("NF random tests: " ++ str) $
       map (\i -> testGroup (impl_name i) $ zipWith (test_impl i) inputs outputs) impls
 
 ------------------------------------------------------------------------------
@@ -136,13 +133,13 @@ nfUnitTests = do
         let result = (impl_toLC . impl_nf . impl_fromLC) tm1
         assertBool ("nf produced: " ++ show result) (db_aeq lambdaFalse result)
   return $
-    testGroup "NF Unit Tests" $
+    testGroup "NF Unit Test (Lennart) " $
       map (\i -> testCase (impl_name i) $ test_impl i) impls
 
 -- test the correctness by normalizing the benchmarking term
 -- should produce result equal to false
 main :: IO ()
 main = do
-  nfTests <- nfUnitTests
-  nfRandomTests <- nfRandomTests
-  defaultMain $ testGroup "tests" [rtQCs, aeqQCs, nfQCs, nfRandomTests, nfTests]
+  nfRandomTests <- mapM nfRandomTests ["random", "random25", "random35"]
+  lennart <- nfUnitTests
+  defaultMain $ testGroup "tests" ([rtQCs, aeqQCs, nfQCs] ++ nfRandomTests ++ [lennart])

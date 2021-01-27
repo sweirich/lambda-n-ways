@@ -1,19 +1,20 @@
 -- | Generate a benchmark suite for normalization
--- 
--- Goal is to generate random sets of terms that 
+--
+-- Goal is to generate random sets of terms that
 module QuickBench where
 
+import Control.Monad
 import qualified Data.List as List
-import Misc
-import Lambda
+import qualified DeBruijnPar.Scoped as Scoped
 import IdInt
 import Impl
-import Suite
 import qualified Impl.Simple as Simple
 import qualified Impl.Unique as Unique
-import Test.QuickCheck
+import Lambda
+import Misc
+import Suite
 import System.IO
-import Control.Monad
+import Test.QuickCheck
 
 -- Stats for random.lam
 -- sz: 100000
@@ -27,7 +28,6 @@ import Control.Monad
 --   bind depths: 13 15 22 27 27 29 29 31 31 33 33 34 35 36 36 38 39 39 40 41 41 41 43 44 46
 --   depth:       23 23 37 40 41 44 44 45 46 47 47 49 50 51 52 53 53 53 54 55 55 56 58 60 60
 
-
 {- stats about lennart.lam
    bind depth: 25
    depth:      53
@@ -40,54 +40,74 @@ import Control.Monad
 factStats :: IO ()
 factStats = do
   contents <- readFile "timing.lam"
-  let
-    tm :: LC IdInt
-    tm = toIdInt (read (stripComments contents) :: LC Id)
+  let tm :: LC IdInt
+      tm = toIdInt (read (stripComments contents) :: LC Id)
   putStrLn $ "   bind depth: " ++ show (maxBindingDepth tm)
   putStrLn $ "   depth:      " ++ show (depth tm)
-  let loop n = 
+  let loop n =
         case Simple.iNf n tm of
           Just (tm', ss) -> do
-            putStrLn $ "   normalized steps:  " ++ show n 
+            putStrLn $ "   normalized steps:  " ++ show n
             putStrLn $ "   num substs: " ++ show (Simple.numSubsts ss)
           Nothing -> do
             putStrLn $ "   failed for:        " ++ show n
             loop (n * 2)
   loop 1000
-  
-
-
 
 -- | Use quickcheck to generate random lambda terms. Save the ones that actually do something
 -- under normalization
---mkNfSuite :: Int -> IO [LC IdInt]
-mkNfSuite sz = do
-    let num = 100
-    tms_ss <- loop num []
-    let (tms, ss) = List.unzip tms_ss
-    putStrLn $ "sz: " ++ show sz
-    putStrLn $ "   num substs: " ++ List.intercalate " " (map show (List.sort (map Simple.numSubsts ss)))
-    putStrLn $ "   bind depths: " ++ List.intercalate " " (map show (List.sort (map maxBindingDepth tms)))
-    putStrLn $ "   depth:       " ++ List.intercalate " " (map show (List.sort (map depth tms)))
-    return $ zip tms (zip3 (map Simple.numSubsts ss) (map maxBindingDepth tms) (map depth tms))
+data NfTerm = NfTerm
+  { suite_before :: LC IdInt,
+    suite_after :: LC IdInt,
+    suite_numSubsts :: Int,
+    suite_bindDepth :: Int,
+    suite_depth :: Int
+  }
+
+mkNfTerm :: Int -> IO [NfTerm]
+mkNfTerm sz = do
+  let num = 100
+  xs <- loop num []
+  putStrLn $ "sz: " ++ show sz
+  putStrLn $ "   num substs: " ++ unwords (map show (List.sort (map suite_numSubsts xs)))
+  putStrLn $ "   bind depths: " ++ unwords (map show (List.sort (map suite_bindDepth xs)))
+  putStrLn $ "   depth:       " ++ unwords (map show (List.sort (map suite_depth xs)))
+  return xs
   where
     loop 0 tms = return tms
     loop n tms = do
-       tm <- generate (resize sz (genScopedLam :: Gen (LC IdInt)))
-       case Simple.iNf 2000 tm of
-               Just (tm',ss) -> if not (tm `Lambda.aeq` tm') && Simple.numSubsts ss > 25 then loop (n-1) ((tm,ss):tms)
-                                else loop n tms
-               Nothing -> loop n tms
-
+      tm <- generate (resize sz (genScopedLam :: Gen (LC IdInt)))
+      let stm = Scoped.toDB tm
+      case Simple.iNf 2000 tm of
+        Just (tm', ss) ->
+          if not (tm `Lambda.aeq` tm') && Simple.numSubsts ss > 45
+            then do
+              putStrLn $ "Generation:" ++ show n
+              let x =
+                    NfTerm
+                      { suite_before = tm,
+                        suite_after = tm',
+                        suite_numSubsts = Simple.numSubsts ss,
+                        suite_bindDepth = maxBindingDepth tm,
+                        suite_depth = depth tm
+                      }
+              loop (n -1) (x : tms)
+            else loop n tms
+        Nothing -> loop n tms
 
 median :: (Ord a, Num a) => [a] -> a
 median xs = List.sort xs !! (n `div` 2) where n = length xs
 
-printNfSuite :: [LC IdInt] -> IO ()
-printNfSuite xs = do
-  f <- openFile "lams/lams100.lam" WriteMode
-  forM_ xs $ \x -> hPutStrLn f $ show x
-
+printNfTerm :: String -> [NfTerm] -> IO ()
+printNfTerm fname xs = do
+  f <- openFile ("lams/" ++ fname ++ ".lam") WriteMode
+  fnf <- openFile ("lams/" ++ fname ++ ".nf.lam") WriteMode
+  forM_ xs $ \x -> do
+    hPutStrLn f ("-- numSubsts:  " ++ show (suite_numSubsts x))
+    hPutStrLn f ("-- bind depth: " ++ show (suite_bindDepth x))
+    hPutStrLn f ("-- depth:      " ++ show (suite_depth x))
+    hPrint f (suite_before x)
+  forM_ xs $ \x -> hPrint fnf (suite_after x)
 
 {-
 lams100.lam

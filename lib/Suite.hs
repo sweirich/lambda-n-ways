@@ -61,7 +61,7 @@ getTerm filename = do
 getTerms :: String -> IO [LC IdInt]
 getTerms filename = do
   contents <- readFile filename
-  let ss = lines (Misc.stripComments contents)
+  let ss = filter (/= "") (lines (Misc.stripComments contents))
   return $ map (toIdInt . (read :: String -> LC Id)) ss
 
 -- Convenience functions for creating test cases

@@ -5,11 +5,14 @@ alpha-renames bound variables during substitution if they would ever
 capture a free variable.
 
 > {-# LANGUAGE FlexibleContexts #-}
+> {-# LANGUAGE ScopedTypeVariables #-}
 > module Impl.Simple(nf,whnf,nfi,impl,iNf,St(..),subst) where
 > import Data.List(union, (\\))
 > import Lambda
 > import IdInt  
 > import Impl
+> import Data.Map(Map)
+> import qualified Data.Map as M
 >
 > import Control.Monad.State
 > import Control.Monad.Except
@@ -23,6 +26,25 @@ capture a free variable.
 >           , impl_nfi    = nfi
 >           , impl_aeq    = Lambda.aeq
 >        }
+
+
+> subst :: forall v. (Nominal v) => v -> LC v -> LC v -> LC v
+> subst x a b = sub (M.singleton x a) vs0 b
+>   where
+>        sub :: Map v (LC v) -> [v] -> LC v -> LC v
+>        sub ss _ e@(Var v) | v `M.member` ss = (ss M.! v) :: LC v
+>                           | otherwise = e
+>        sub ss vs e@(Lam v e') | v `M.member` ss = e
+>                               | v `elem` fvs = Lam v' (sub ss (v':vs) e'')
+>                               | otherwise = Lam v (sub ss (v:vs) e')
+>                                where 
+>                                    v' = newId vs
+>                                    e'' = subst v (Var v') e'
+>        sub ss vs (App f a) = App (sub ss vs f) (sub ss vs a)
+>        
+>        fvs = freeVars a
+>        vs0 = fvs `union` allVars b `union` [x] -- make sure we don't rename v' to variable we are sub'ing for
+
 
 The normal form is computed by repeatedly performing
 substitution ($\beta$-reduction) on the leftmost redex.
@@ -123,46 +145,4 @@ the number of beta reductions
 >         _ -> return $ App f' a
 
 
-
-Substitution has only one interesting case, the abstraction.
-For abstraction there are three cases:
-if the bound variable, {\tt v}, is equal to the variable we
-are replacing, {\tt x}, then we are done,
-if the bound variable is in set set of free variables
-of the substituted expression then there would be
-an accidental capture and we rename it,
-otherwise the substitution just continues.
-
-How should the new variable be picked when doing the
-renaming?  The new variable must not be in the set of
-free variables of {\tt s} since this would case another
-accidental capture, nor must it be among the free variables
-of {\tt e'} since this could cause another accidental
-capture.  Conservatively, we avoid all variables occuring
-in the original {\tt b} to fulfill the second requirement.
-
-> subst :: IdInt -> LC IdInt -> LC IdInt -> LC IdInt
-> subst x s b = sub vs0 b
->  where sub _ e@(Var v) | v == x = s
->                        | otherwise = e
->        sub vs e@(Lam v e') | v == x = e
->                            | v `elem` fvs = Lam v' (sub (v':vs) e'')
->                            | otherwise = Lam v (sub (v:vs) e')
->                             where v' = newId vs
->                                   e'' = subst v (Var v') e'
->        sub vs (App f a) = App (sub vs f) (sub vs a)
->
->        fvs = freeVars s
->        vs0 = fvs `union` allVars b
->               `union` [x] -- make sure we don't rename v' to variable we are sub'ing for
-
-(Note: this code was updated according to Kmett's blog post
- https://www.schoolofhaskell.com/user/edwardk/bound.)
-
-Get a variable which is not in the given set.
-Do this simply by generating all variables and picking the
-first not in the given set.
-
-> newId :: [IdInt] -> IdInt
-> newId vs = head ([firstBoundId .. ] \\ vs)
 

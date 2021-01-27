@@ -21,6 +21,7 @@ library
   exposed-modules:
       Impl
       Lambda
+      LambdaImpl
       Misc
       Suite
       IdInt
