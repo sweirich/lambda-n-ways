@@ -8,5 +8,6 @@
     "cSpell.ignoreWords": [
         "bndr",
         "outputable"
-    ]
+    ],
+    "haskell.hlintOn": false
 }

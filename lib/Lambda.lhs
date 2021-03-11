@@ -6,25 +6,20 @@ print in a nice way.
 
 > {-# LANGUAGE DeriveGeneric #-}
 > {-# LANGUAGE ScopedTypeVariables #-}
-> module Lambda(LC(..), freeVars, allVars, Id(..), aeq, genScoped, shrinkScoped,
-> prop_roundTrip, genScopedLam, maxBindingDepth, depth, toIdInt) where
+> module Lambda(LC(..), 
+>   freeVars, allVars, 
+>   aeq, genScoped, shrinkScoped,
+>   genScopedLam, maxBindingDepth, depth) where
+
+> import Imports
+
 > import Data.List(union, (\\))
-> import Data.Char(isAlphaNum)
-> import Text.PrettyPrint.HughesPJ(Doc, renderStyle, style, text,
->            (<+>), parens)
 > import qualified Text.PrettyPrint.HughesPJ as PP
-> import Text.ParserCombinators.ReadP
-> import GHC.Generics
-> import Control.DeepSeq
-
+> import qualified Text.ParserCombinators.ReadP as RP
 > import qualified Data.Map as M
-> import Data.Map (Map)
->
-> import Test.QuickCheck
-> import Data.Kind (Type)
-> import Control.Monad.State
 
-> import IdInt
+
+> -- import IdInt
 
 The LC type of $\lambda$ term is parametrized over the type of the variables.
 It has constructors for variables, $\lambda$-abstraction, and application.
@@ -89,6 +84,7 @@ left.
 >     aeqd a1 b1 && aeqd a2 b2
 >   aeqd _ _ = False
 
+> {- 
 > conv :: (Ord v) => LC v -> FreshM v (LC IdInt)
 > conv (Var v)   = Var <$> convVar v
 > conv (Lam v e) = Lam <$> convVar v <*> conv e
@@ -98,7 +94,7 @@ left.
 > toIdInt e = evalState (conv e) (0, fvmap)
 >   where fvmap = Prelude.foldr (\ (v, i) m -> M.insert v (IdInt i) m) M.empty
 >                               (zip (Lambda.freeVars e) [1..])
-
+> -}
 
 ---------------------------- Read/Show -------------------------------------
 
@@ -106,12 +102,12 @@ The Read instance for the LC type reads $\lambda$ term with the normal
 syntax.
 
 > instance (Read v) => Read (LC v) where
->     readsPrec _ = readP_to_S pLC
+>     readsPrec _ = RP.readP_to_S pLC
 
 A ReadP parser for $\lambda$-expressions.
 
 > pLC, pLCAtom, pLCVar, pLCLam, pLCApp :: (Read v) => ReadP (LC v)
-> pLC = pLCLam +++ pLCApp +++ pLCLet
+> pLC = pLCLam RP.+++ pLCApp RP.+++ pLCLet
 >
 > pLCVar = do
 >     v <- pVar
@@ -125,10 +121,10 @@ A ReadP parser for $\lambda$-expressions.
 >     return $ Lam v e
 >
 > pLCApp = do
->     es <- many1 pLCAtom
+>     es <- RP.many1 pLCAtom
 >     return $ foldl1 App es
 >
-> pLCAtom = pLCVar +++ (do _ <- schar '('; e <- pLC; _ <- schar ')'; return e)
+> pLCAtom = pLCVar RP.+++ (do _ <- schar '('; e <- pLC; _ <- schar ')'; return e)
 
 To make expressions a little easier to read we also allow let expression
 as a syntactic sugar for $\lambda$ and application.
@@ -142,34 +138,36 @@ as a syntactic sugar for $\lambda$ and application.
 >           e <- pLC
 >           return (v, e)
 >     _ <- sstring "let"
->     bs <- sepBy pDef (schar ';')
+>     bs <- RP.sepBy pDef (schar ';')
 >     _ <- sstring "in"
 >     e <- pLC
 >     return $ foldr lcLet e bs
 
 >
 > schar :: Char -> ReadP Char
-> schar c = do skipSpaces; char c
+> schar c = do RP.skipSpaces; RP.char c
 >
 > sstring :: String -> ReadP String
-> sstring c = do skipSpaces; string c
+> sstring c = do RP.skipSpaces; RP.string c
 >
 > pVar :: (Read v) => ReadP v
-> pVar = do skipSpaces; readS_to_P (readsPrec 9)
+> pVar = do RP.skipSpaces; RP.readS_to_P (readsPrec 9)
 
 Pretty print $\lambda$-expressions when shown.
 
 > instance (Show v) => Show (LC v) where
->     show = renderStyle style . ppLC 0
+>     show = PP.renderStyle PP.style . ppLC 0
 >
 > ppLC :: (Show v) => Int -> LC v -> Doc
-> ppLC _ (Var v)   = text $ show v
-> ppLC p (Lam v e) = pparens (p>0) $ text ("\\" ++ show v ++ ".") PP.<> ppLC 0 e
-> ppLC p (App f a) = pparens (p>1) $ ppLC 1 f <+> ppLC 2 a
+> ppLC _ (Var v)   = PP.text $ show v
+> ppLC p (Lam v e) = pparens (p>0) $ PP.text ("\\" ++ show v ++ ".") PP.<> ppLC 0 e
+> ppLC p (App f a) = pparens (p>1) $ ppLC 1 f PP.<+> ppLC 2 a
 
 > pparens :: Bool -> Doc -> Doc
-> pparens True d = parens d
+> pparens True d = PP.parens d
 > pparens False d = d
+
+> {- 
 
 The Id type of identifiers.
 
@@ -200,6 +198,8 @@ Round trip property for parsing / pp
 
 > prop_roundTrip :: LC Id -> Bool
 > prop_roundTrip x = read (show x) == x
+
+> -}
 
 > ----------------------- Arbitrary instances -----------------------------------
 

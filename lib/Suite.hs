@@ -4,13 +4,16 @@ module Suite where
 
 -- import Impl.DeBruijnC
 
+import Control.Monad.State (evalState)
 import Core.Nf
+import qualified Data.Map.Strict as M
 import DeBruijnPar.B
 import DeBruijnPar.F
 import DeBruijnPar.FB
 import DeBruijnPar.L
 import DeBruijnPar.P
 import DeBruijnPar.Scoped
+import Id
 import IdInt
 import Impl
 import Impl.BoundDB
@@ -22,9 +25,9 @@ import Impl.SimpleB
 import Impl.Unbound
 import Impl.UnboundGenerics
 import Impl.Unique
+import Imports
 import Lambda
 import qualified Misc
-import Test.QuickCheck
 
 impls :: [LambdaImpl]
 impls =
@@ -46,6 +49,20 @@ impls =
     Core.Nf.impl
     -- , Impl.NominalG.impl -- generally too slow (12s vs. <200 ms for everything else)
   ]
+
+conv :: (Ord v) => LC v -> FreshM v (LC IdInt)
+conv (Var v) = Var <$> convVar v
+conv (Lam v e) = Lam <$> convVar v <*> conv e
+conv (App f a) = App <$> conv f <*> conv a
+
+toIdInt :: (Ord v) => LC v -> LC IdInt
+toIdInt e = evalState (conv e) (0, fvmap)
+  where
+    fvmap =
+      Prelude.foldr
+        (\(v, i) m -> M.insert v (IdInt i) m)
+        M.empty
+        (zip (Lambda.freeVars e) [1 ..])
 
 --------------------------------------------------------------
 --------------------------------------------------------------

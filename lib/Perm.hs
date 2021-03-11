@@ -109,7 +109,7 @@ supportPerm (Perm p) = S.fromList [ x | x <- M.keys p, M.findWithDefault x x p /
 
 -- | Restrict a permutation to a certain domain.
 restrict :: Ord a => Perm a -> [a] -> Perm a
-restrict (Perm p) l = Perm (foldl' (\p' k -> M.delete k p') p l)
+restrict (Perm p) l = Perm (foldl' (flip M.delete) p l)
 
 -- | A partial permutation consists of two maps, one in each direction
 --   (inputs -> outputs and outputs -> inputs).
@@ -130,14 +130,16 @@ extendPP x y pp@(PP mfwd mrev)
 -- | Convert a partial permutation into a full permutation by closing
 --   off any remaining open chains into a cycles.
 ppToPerm :: Ord a => PartialPerm a -> Perm a
-ppToPerm (PP mfwd mrev) = Perm $ foldr (uncurry M.insert) mfwd
+ppToPerm (PP mfwd mrev) = Perm $ foldr (uncurry M.insert . (findEnd &&& id)) mfwd chainStarts
+{-
+foldr (uncurry M.insert) mfwd
                                        (map (findEnd &&& id) chainStarts)
+-}
         -- beginnings of open chains are elements which map to
         -- something in the forward direction but have no ancestor.
   where chainStarts = S.toList (M.keysSet mfwd `S.difference` M.keysSet mrev)
-        findEnd x = case M.lookup x mfwd of
-                      Nothing -> x
-                      Just x' -> findEnd x'
+        findEnd x = maybe x findEnd (M.lookup x mfwd)
+                   
 
 -- | @mkPerm l1 l2@ creates a permutation that sends @l1@ to @l2@.
 --   Fail if there is no such permutation, either because the lists
@@ -191,7 +193,7 @@ instance (Ord a, Arbitrary a) => Arbitrary (Perm a) where
                  return $ go xs empty
     where
       go []       p = p
-      go (x:[])   p = p
+      go [x]   p = p
       go (x:y:xs) p 
        | x `elem` support p || y `elem` support p = go xs p
        | otherwise  = go xs (single x y <> p)
@@ -201,7 +203,7 @@ instance (Ord a, Arbitrary a) => Arbitrary (Perm a) where
     Just (x, y) -> [Perm (M.delete x (M.delete y m))]
 
 prop_valid :: Perm Int -> Bool
-prop_valid p = permValid p
+prop_valid = permValid
 
 prop_shrink :: Perm Int -> Bool
 prop_shrink p = all permValid (shrink p)

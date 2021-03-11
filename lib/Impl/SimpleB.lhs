@@ -1,9 +1,6 @@
-This module is trying to make a "delayed" substitution version of the "Simple" implementation. 
+This module is trying to make a "delayed" substitution version 
+of the "Simple" implementation. 
 
-> {-# LANGUAGE MultiParamTypeClasses #-}
-> {-# LANGUAGE FlexibleInstances #-}
-> {-# LANGUAGE UndecidableInstances #-}
-> {-# LANGUAGE ScopedTypeVariables #-}
 > module Impl.SimpleB(nf,aeq,aeqd,toExp,fromExp,nfd,nfi, impl) where
 > import qualified Lambda as LC
 > import IdInt 

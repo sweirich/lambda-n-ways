@@ -19,11 +19,12 @@ source-repository head
 library
   hs-source-dirs: lib
   exposed-modules:
+      Imports
       Impl
       Lambda
-      LambdaImpl
       Misc
       Suite
+      Id
       IdInt
       IdInt.Map
       IdInt.Set
@@ -75,6 +76,18 @@ library
                 , unbound >= 0.5.1.3
                 , unbound-generics >= 0.4.1
   default-language: Haskell2010
+  default-extensions: 
+                  DeriveGeneric
+                , FlexibleContexts
+                , FlexibleInstances
+                , GADTs
+                , GeneralizedNewtypeDeriving
+                , InstanceSigs
+                , MultiParamTypeClasses
+                , ScopedTypeVariables
+                , TupleSections
+                , TypeFamilies
+                , UndecidableInstances
 
 executable LC
   hs-source-dirs: bench

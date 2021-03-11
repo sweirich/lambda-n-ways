@@ -12,6 +12,35 @@ false).
 This is derived from Lennart Augustsson's unpublished draft paper
 "Lambda-calculus Cooked Four Ways".
 
+## File structure
+
+lib/
+  DeBruijnPar/
+  IdInt.lhs
+  IdInt/
+  Impl/
+
+bench/
+test/
+
+## Basic implementation organization
+
+lib/
+  Imports.hs 
+     - rexports common modules
+  IdInt.lhs 
+     - Identifiers based on a newtype for Ints
+     - Includes FreshM state monad for generating new IdInts
+  Lambda.lhs  
+     - Lambda calculus parameterized by type of binder/variable (v)
+     - Same type must be used in both locations. 
+     - Includes ReadP, show, fv, aeq, 
+  Impl.lhs
+     - General Definition of a `LambdaImpl` structure
+  Misc.lhs
+  Suite.lhs
+
+
 
 ## Contents
 

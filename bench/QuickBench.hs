@@ -6,6 +6,7 @@ module QuickBench where
 import Control.Monad
 import qualified Data.List as List
 import qualified DeBruijnPar.Scoped as Scoped
+import Id
 import IdInt
 import Impl
 import qualified Impl.Simple as Simple

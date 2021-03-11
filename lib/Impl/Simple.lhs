@@ -11,7 +11,7 @@ capture a free variable.
 > import Lambda
 > import IdInt  
 > import Impl
-> import Data.Map(Map)
+> import Imports
 > import qualified Data.Map as M
 >
 > import Control.Monad.State
@@ -28,11 +28,11 @@ capture a free variable.
 >        }
 
 
-> subst :: forall v. (Nominal v) => v -> LC v -> LC v -> LC v
+> subst :: IdInt -> LC IdInt -> LC IdInt -> LC IdInt
 > subst x a b = sub (M.singleton x a) vs0 b
 >   where
->        sub :: Map v (LC v) -> [v] -> LC v -> LC v
->        sub ss _ e@(Var v) | v `M.member` ss = (ss M.! v) :: LC v
+>        sub :: Map IdInt (LC IdInt) -> [IdInt] -> LC IdInt -> LC IdInt
+>        sub ss _ e@(Var v) | v `M.member` ss = (ss M.! v) 
 >                           | otherwise = e
 >        sub ss vs e@(Lam v e') | v `M.member` ss = e
 >                               | v `elem` fvs = Lam v' (sub ss (v':vs) e'')

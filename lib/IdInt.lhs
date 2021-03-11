@@ -1,20 +1,18 @@
 A fast type of identifiers, Ints, for $\lambda$-expressions.
 
-> {-# LANGUAGE DeriveGeneric #-}
-> {-# LANGUAGE ScopedTypeVariables #-}
-> {-# LANGUAGE InstanceSigs #-}
-> {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 > 
-> module IdInt(IdInt(..), firstBoundId, FreshM, convVar, Nominal(..),
->      ) where
+> module IdInt(IdInt(..), 
+>   firstBoundId, 
+>   FreshM, 
+>   convVar,
+>   newId, 
+>   ) where
+
+> import Imports
 
 > import Data.List(union, (\\))
 > import qualified Data.Map as M
-> import Control.Monad.State
-> import GHC.Generics
-> import Control.DeepSeq
-> import Test.QuickCheck
-> import Data.Coerce(coerce)
+
 
 An IdInt is just another name for an Int.
 
@@ -56,17 +54,8 @@ Only generate positive idint
 
 Find a new identifier not in a given set
 
-> class (Ord v, Enum v) => Nominal v where
->    newId  :: [v] -> v
-
-> instance Nominal IdInt where
->   newId :: [IdInt] -> IdInt
-> 
->   newId [] = firstBoundId
->   newId vs = succ (maximum vs)
-
-
-The state monad has the next unused Int and a mapping of identifiers to IdInt.
+The state monad has the next unused Int and a mapping of identifiers 
+to IdInt.
 
 > type FreshM v a = State (Int, M.Map v IdInt) a
 
@@ -83,7 +72,9 @@ If the variable is in the map the use it, otherwise add it.
 >            return ii
 >        Just ii -> return ii
 
-
+> newId :: [IdInt] -> IdInt 
+> newId [] = firstBoundId
+> newId vs = succ (maximum vs)
 
 ------------------------------------------------
 
