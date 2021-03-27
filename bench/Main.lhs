@@ -1,7 +1,9 @@
-> {-# LANGUAGE ExistentialQuantification #-}
 > {-# LANGUAGE BangPatterns #-}
 > {-# LANGUAGE RecordWildCards #-}
 > 
+> {- | Entry point for the benchmarking application. 
+>      
+>  -}
 > module Main where
 > import qualified Data.List as List
 > import Misc
