@@ -19,8 +19,6 @@ Some of the other hair in this code is to be able to use a
 Haskell).
 -}
 
-{-# LANGUAGE BangPatterns #-}
-
 module Core.Unique (
         -- * Main data types
         Unique(..), Uniquable(..),
@@ -159,7 +157,7 @@ incrUnique (MkUnique i) = MkUnique (i + 1)
 stepUnique (MkUnique i) n = MkUnique (i + n)
 
 mkLocalUnique :: Int -> Unique
-mkLocalUnique i = MkUnique i
+mkLocalUnique = MkUnique
 
 minLocalUnique :: Unique
 minLocalUnique = MkUnique 0

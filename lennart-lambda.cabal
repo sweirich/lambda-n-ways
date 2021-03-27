@@ -58,6 +58,13 @@ library
       Core.UniqDFM
       Core.UniqSet
       Core.Nf
+      Abstract.Class
+      Abstract.Simple
+      Abstract.DeBruijnPar
+      Abstract.DeBruijnPar.F
+      Abstract.DeBruijnPar.B
+      Abstract.DeBruijn
+      Abstract.UnboundGenerics
   ghc-options:  -O2 -funfolding-use-threshold=16 -fno-warn-unticked-promoted-constructors
   build-depends:
                         base >= 4.13
@@ -87,6 +94,7 @@ library
                 , ScopedTypeVariables
                 , TupleSections
                 , TypeFamilies
+                , TypeApplications
                 , UndecidableInstances
 
 executable LC

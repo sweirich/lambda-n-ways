@@ -9,5 +9,13 @@
         "bndr",
         "outputable"
     ],
-    "haskell.hlintOn": false
+    "haskell.hlintOn": false,
+    "haskell.hlint.run": "never",
+    "haskell.hlint.ignore": [
+        "Redundant do"
+    ],
+    "haskell.plugin.importLens.codeLensOn": false,
+    "haskell.diagnosticsOnChange": false,
+    "haskell.formatOnImportOn": false,
+    "haskell.indentationRules.enabled": false
 }

@@ -65,11 +65,9 @@ Invariants:
 
 1. bind_fvs is cached freeVars of e, minus v
 
-2. bind_bvs is cached boundVars of e
-
 3. The domain of the bind_subst is a subset of bind_fvs
 
-3. The freeVars of the bind_subst do not include v (i.e. no capture).
+3. The freeVars of the bind_subst do not include v (i.e. they will not capture).
    (If this would happen when constructing a bind, we will freshen v to v'
    and extend the substitution with v -> v', in the case that v is free in e.)
 

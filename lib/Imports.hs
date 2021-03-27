@@ -4,6 +4,7 @@ module Imports
     module GHC.Generics,
     module Test.QuickCheck,
     module Control.DeepSeq,
+    module Data.Proxy,
     IntMap,
     IntSet,
     Map,
@@ -42,6 +43,7 @@ import Data.IntMap.Strict (IntMap)
 import Data.IntSet (IntSet)
 import Data.Kind (Type)
 import Data.Map.Strict (Map)
+import Data.Proxy
 import Data.Sequence (Seq)
 import Data.Set (Set)
 import Data.Tuple (curry, fst, snd, swap, uncurry)
