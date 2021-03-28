@@ -7,7 +7,7 @@ import IdInt
 import Impl
 import qualified Impl.DeBruijn as DeBruijn
 import qualified Impl.Unique as Unique
-import Lambda 
+import Lambda
 import Misc
 import Suite
 import System.Exit (exitFailure)
@@ -140,6 +140,7 @@ nfUnitTests = do
 -- should produce result equal to false
 main :: IO ()
 main = do
-  nfRandomTests <- mapM nfRandomTests ["random", "random25", "random35"]
+  nfRandoms <- mapM nfRandomTests ["random", "random2", "random25", "random35", "lams100"]
+  nfLamTests <- mapM nfRandomTests ["t1", "t2", "t3", "t4", "tests", "onesubst", "twosubst", "threesubst", "foursubst"]
   lennart <- nfUnitTests
-  defaultMain $ testGroup "tests" ([rtQCs, aeqQCs, nfQCs] ++ nfRandomTests ++ [lennart])
+  defaultMain $ testGroup "tests" ([rtQCs, aeqQCs, nfQCs] ++ nfRandoms ++ nfLamTests ++ [lennart])

@@ -77,7 +77,7 @@ that is not a $\beta$-redex.
 >         f' -> App f' a
 
 
-For testing, we can add a "fueled" version
+For testing, we can add a "fueled" version that also counts the number of substitutions
 
 > nfi :: Int -> LC IdInt -> Maybe (LC IdInt)
 > nfi 0 _e = Nothing

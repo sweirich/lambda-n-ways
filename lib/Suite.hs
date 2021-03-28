@@ -36,7 +36,7 @@ import qualified Misc
 
 impls :: [LambdaImpl]
 impls =
-  [ DeBruijnPar.F.impl,
+  [ {- DeBruijnPar.F.impl,
     DeBruijnPar.FB.impl,
     DeBruijnPar.L.impl,
     DeBruijnPar.P.impl,
@@ -45,9 +45,9 @@ impls =
     Impl.DeBruijn.impl,
     Impl.BoundDB.impl,
     Impl.HOAS.impl,
-    Impl.Kit.impl,
-    Impl.SimpleB.impl,
-    Impl.Simple.impl,
+    Impl.Kit.impl, -}
+    Impl.SimpleB.impl
+    {- Impl.Simple.impl,
     Impl.UnboundGenerics.impl,
     Impl.Unbound.impl,
     Impl.Unique.impl,
@@ -63,11 +63,11 @@ impls =
       "abstract DB_B",
     Impl.fromBindingImpl
       (Proxy :: Proxy ADB.DB)
-      "abstract DB",
-    Impl.fromBindingImpl
+      "abstract DB", -}
+    {- Impl.fromBindingImpl
       (Proxy :: Proxy AUG.U)
-      "abstract Unbound Generics"
-      -- , Impl.NominalG.impl -- generally too slow (12s vs. <200 ms for everything else)
+      "abstract Unbound Generics" -}
+    -- , Impl.NominalG.impl -- generally too slow (12s vs. <200 ms for everything else)
   ]
 
 conv :: (Ord v) => LC v -> FreshM v (LC IdInt)
