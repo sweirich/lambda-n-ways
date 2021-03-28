@@ -25,6 +25,7 @@ import Impl.BoundDB
 import Impl.DeBruijn
 import Impl.HOAS
 import Impl.Kit
+import qualified Impl.LocallyNameless
 import Impl.Simple
 import Impl.SimpleB
 import Impl.Unbound
@@ -46,7 +47,8 @@ impls =
     Impl.BoundDB.impl,
     Impl.HOAS.impl,
     Impl.Kit.impl, -}
-    Impl.SimpleB.impl
+    Impl.LocallyNameless.impl
+    -- Impl.SimpleB.impl,
     {- Impl.Simple.impl,
     Impl.UnboundGenerics.impl,
     Impl.Unbound.impl,
