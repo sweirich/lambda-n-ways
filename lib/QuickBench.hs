@@ -123,7 +123,7 @@ arbitraryNfTerms sz = do
       let stm = Scoped.toDB tm
       case Simple.iNf 2000 tm of
         Just (tm', ss) ->
-          if not (tm `Lambda.aeq` tm') && Simple.numSubsts ss > 45
+          if not (tm `Lambda.aeq` tm') && Simple.numSubsts ss == 4
             then do
               putStrLn $ "Generation:" ++ show n
               let x =
@@ -141,8 +141,8 @@ arbitraryNfTerms sz = do
 median :: (Ord a, Num a) => [a] -> a
 median xs = List.sort xs !! (n `div` 2) where n = length xs
 
-printNfTerm :: String -> [NfTerm] -> IO ()
-printNfTerm fname xs = do
+printNfTerms :: String -> [NfTerm] -> IO ()
+printNfTerms fname xs = do
   f <- openFile ("lams/" ++ fname ++ ".lam") WriteMode
   fnf <- openFile ("lams/" ++ fname ++ ".nf.lam") WriteMode
   forM_ xs $ \x -> do
@@ -150,7 +150,30 @@ printNfTerm fname xs = do
     hPutStrLn f ("-- bind depth: " ++ show (suite_bindDepth x))
     hPutStrLn f ("-- depth:      " ++ show (suite_depth x))
     hPrint f (suite_before x)
-  forM_ xs $ \x -> hPrint fnf (suite_after x)
+  forM_ xs $ \x ->
+    hPrint fnf (suite_after x)
+
+readNfTerms :: String -> IO [NfTerm]
+readNfTerms fname =
+  do
+    f <- readFile ("lams/" ++ fname ++ ".lam")
+    fnf <- readFile ("lams/" ++ fname ++ ".nf.lam")
+    let loop (ss : bd : dp : lam : xs) (nlam : ys)
+          | Just ss_str <- List.stripPrefix "-- numSubsts:  " ss,
+            Just bd_str <- List.stripPrefix "-- bind depth: " bd,
+            Just dp_str <- List.stripPrefix "-- depth:      " dp =
+            NfTerm
+              { suite_before = read lam,
+                suite_after = read nlam,
+                suite_numSubsts = read ss_str,
+                suite_bindDepth = read bd_str,
+                suite_depth = read dp_str
+              } :
+            loop xs ys
+        loop (x : xs) (y : ys) = error ("cannot parse " ++ x)
+        loop [] [] = []
+        loop _ _ = error "nf file doesn't match input"
+    return $ loop (lines f) (lines fnf)
 
 -- | Add stats to the source
 -- and create the nf file
@@ -158,4 +181,4 @@ addNf :: String -> IO ()
 addNf str = do
   lams2 <- readLams str
   nfs <- nfTerms lams2
-  printNfTerm str nfs
+  printNfTerms str nfs
