@@ -26,6 +26,7 @@ import Impl.DeBruijn
 import Impl.HOAS
 import Impl.Kit
 import qualified Impl.LocallyNameless
+import qualified Impl.LocallyNamelessOpt
 import Impl.Simple
 import Impl.SimpleB
 import Impl.Unbound
@@ -45,16 +46,17 @@ impls =
     DeBruijnPar.Scoped.impl,
     Impl.DeBruijn.impl,
     Impl.BoundDB.impl,
-    Impl.HOAS.impl,
-    Impl.Kit.impl, -}
-    Impl.LocallyNameless.impl
+    Impl.Kit.impl,
+    Impl.HOAS.impl,-}
+    Impl.LocallyNameless.impl,
+    Impl.LocallyNamelessOpt.impl
     -- Impl.SimpleB.impl,
-    {- Impl.Simple.impl,
-    Impl.UnboundGenerics.impl,
-    Impl.Unbound.impl,
-    Impl.Unique.impl,
-    Core.Nf.impl,
-    Impl.fromBindingImpl
+    -- Impl.Simple.impl,
+    -- Impl.UnboundGenerics.impl,
+    -- Impl.Unbound.impl,
+    -- Impl.Unique.impl
+    -- Core.Nf.impl,
+    {- Impl.fromBindingImpl
       (Proxy :: Proxy IdInt)
       "abstract simple",
     Impl.fromBindingImpl

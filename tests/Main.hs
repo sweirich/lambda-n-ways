@@ -141,6 +141,10 @@ nfUnitTests = do
 main :: IO ()
 main = do
   nfRandoms <- mapM nfRandomTests [] -- "random", "random2", "random25", "random35", "lams100"]
-  nfLamTests <- mapM nfRandomTests ["t1", "t2", "t3", "t4", "tests", "onesubst", "twosubst", "threesubst", "foursubst"]
+  nfLamTests <- mapM nfRandomTests ["t1", "t2", "t3", "t4"]
+  nfSimple <- mapM nfRandomTests ["simpleclosed"]
+  nfMoreTests <- mapM nfRandomTests ["tests", "onesubst", "twosubst", "threesubst", "foursubst"]
   lennart <- nfUnitTests
   defaultMain $ testGroup "tests" ([rtQCs, aeqQCs, nfQCs] ++ nfRandoms ++ nfLamTests ++ [lennart])
+
+-- defaultMain $ testGroup "tests" nfSimple

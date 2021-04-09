@@ -33,6 +33,7 @@ library
       Impl.DeBruijn
       Impl.HOAS
       Impl.LocallyNameless
+      Impl.LocallyNamelessOpt
       Impl.NominalG
       Impl.Simple
       Impl.SimpleB
