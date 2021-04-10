@@ -1,15 +1,17 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE QuantifiedConstraints #-}
+{-# LANGUAGE TypeOperators #-}
 
 -- | Based directly on transliteration of Coq output for Ott Locally Nameless Backend
--- Then optimized to use parallel de Bruijn substitutions
-module Impl.LocallyNamelessOpt where
+-- Then with types addded
+module Impl.LocallyNamelessV2 where
 
 import qualified Control.Monad.State as State
 import qualified Data.IntMap as IM
 import Data.List (elemIndex)
 import qualified Data.Set as Set
+import Data.Type.Equality
 import IdInt
 import Impl
 import Imports hiding (S, lift)
@@ -20,37 +22,9 @@ import qualified Unsafe.Coerce as Unsafe
 -- lennart: 1.03s
 -- random: 0.807 ms
 
--- 1. Adding strictness annotations to the datatype definition:
--- lennart: 132 ms
--- random: 3.64 ms
-
--- 2. Switching to strongly-typed parallel subst for bound vars
--- lennart: 3.49s
--- random: 5.12 ms
-
---- 3. Suspending the bv subst, ala DB_P
--- lennart: 6.64ms
--- random: 1.53 ms
-
---- 4. unsafeCoerce for weaken
--- lennart: 6.36ms
--- random: 1.60 ms
-
---- 5. use smart constructor for composition in lift
--- lennart: 4.74s (v. bad)
--- random: 13ms (v.bad)
--- regressing this change
-
---- 6. don't use smart constructor comp at all
--- lennart: 8.10s (v.v.bad)
--- random: 2.5ms
-
----- 7. regressing to use comp in substBvBind only
--- lennart: 4.61s (still bad)
--- random: 2.02ms
-
--- GO back to 4!!! smart constructor in substBvBind and in open
-
+-- 1. Well-typed (slows it down)
+-- lennart: 1.43s
+-- random: 1.8ms
 -------------------------------------------------------------------
 
 -- Index to keep track of bound variable scope
@@ -96,62 +70,11 @@ shift SZ x = x
 shift (SS m) x = FS (shift m x)
 
 --------------------------------------------------------------
--- A bound variable multi-substitution. Note that in this implementation
--- even though we only ever replace bound variables with locally closed terms,
--- we still need to renumber (shift) bound variables as we open and close expressions
-
-data Sub (a :: Nat -> Type) (n :: Nat) (m :: Nat) where
-  Inc :: !(SNat m) -> Sub a n (Plus m n) --  increment by m
-  Cons :: (a m) -> !(Sub a n m) -> Sub a (S n) m --  extend a substitution (like cons)
-  (:<>) :: !(Sub a m n) -> !(Sub a n p) -> Sub a m p --  compose substitutions
-
-infixr 9 :<> -- like usual composition  (.)
-
-class SubstC (a :: Nat -> Type) where
-  var :: Idx n -> a n
-  substBv :: Sub a n m -> a n -> a m
-
---  Value of the index x in the substitution s
-applyS :: SubstC a => Sub a n m -> Idx n -> a m
-applyS (Inc m) x = var (shift m x)
-applyS (Cons ty _s) FZ = ty
-applyS (Cons _ty s) (FS x) = applyS s x
-applyS (s1 :<> s2) x = substBv s2 (applyS s1 x)
-{-# INLINEABLE applyS #-}
-
-nil :: SubstC a => Sub a n n
-nil = Inc SZ
-{-# INLINEABLE nil #-}
-
-lift :: SubstC a => Sub a n m -> Sub a (S n) (S m)
-lift s = Cons (var FZ) (s :<> Inc (SS SZ))
-{-# INLINEABLE lift #-}
-
-single :: SubstC a => a n -> Sub a (S n) n
-single t = Cons t (Inc SZ)
-{-# INLINEABLE single #-}
-
-incSub :: Sub a n (S n)
-incSub = Inc (SS SZ)
-{-# INLINEABLE incSub #-}
-
--- smart constructor for composition
-comp :: SubstC a => Sub a m n -> Sub a n p -> Sub a m p
-comp (Inc SZ) s = s
-comp (Inc (SS n)) (Cons t s) = comp (Inc n) s
-comp s (Inc SZ) = s
-comp (s1 :<> s2) s3 = comp s1 (comp s2 s3)
-comp (Cons t s1) s2 = Cons (substBv s2 t) (comp s1 s2)
-comp s1 s2 = s1 :<> s2
-{-# INLINEABLE comp #-}
-
-instance (forall n. NFData (a n)) => NFData (Sub a m1 m2) where
-  rnf (Inc i) = rnf i
-  rnf (Cons t ts) = rnf t `seq` rnf ts
-  rnf (s1 :<> s2) = rnf s1 `seq` rnf s2
 
 instance (forall n. NFData (a n)) => NFData (Bind a m) where
-  rnf (Bind s1 a) = rnf s1 `seq` rnf a
+  rnf (Bind s a) =
+    -- rnf s `seq`
+    rnf a
 
 instance NFData (Idx a) where
   rnf FZ = ()
@@ -170,48 +93,149 @@ instance NFData (SNat a) where
 -- and we only use open for variables with a single bound variable.
 -- This means that we do *not* need to shift as much.
 
-data Bind a n where
-  Bind :: !(Sub a m n) -> !(a (S m)) -> Bind a n
+data Bind a k where
+  --Bind :: Sub n (S k) -> !(a (Plus n (S k))) -> Bind a k
+  Bind :: b -> !(a (S k)) -> Bind a k
 
 -- create a binding by "abstracting a variable"
-bind :: a (S n) -> Bind a n
-bind x = Bind (Inc SZ) x
+bind :: SNat k -> a (S k) -> Bind a k
+bind k x = Bind (Sub (SS k) VNil) x
 {-# INLINEABLE bind #-}
 
-unbind :: SubstC a => Bind a n -> a (S n)
-unbind (Bind s a) = substBv (lift s) a
+unbind :: forall k. Bind Exp k -> Exp (S k)
+unbind (Bind _ss a) = a -- multi_open_exp_wrt_exp_rec ss a
 {-# INLINEABLE unbind #-}
 
-substBvBind :: SubstC a => Sub a n m -> Bind a n -> Bind a m
-substBvBind s2 (Bind s1 e) = Bind (s1 `comp` s2) e
-{-# INLINEABLE substBvBind #-}
-
-instance (SubstC a, Eq (a (S n))) => Eq (Bind a n) where
+instance (Eq (Exp (S n))) => Eq (Bind Exp n) where
   b1 == b2 = unbind b1 == unbind b2
 
 -- Exp Z is  locally closed terms
 data Exp (n :: Nat) where
   Var_b :: !(Idx n) -> Exp n
   Var_f :: !IdInt -> Exp n
-  Abs :: Bind Exp n -> Exp n
+  Abs :: !(Bind Exp n) -> Exp n
   App :: !(Exp n) -> !(Exp n) -> Exp n
   deriving (Generic)
 
 -- instance Show (Exp n) where
 
-open :: Bind Exp Z -> Exp Z -> Exp Z
-open (Bind (s1 :: Sub Exp m Z) (e :: Exp (S m))) u = substBv s e
+-- keep track of the opening that has been done already
+-- via bound-variable substitution
+-- a substitution looks like
+-- k=1    0 -> 0 , 1 -> 1 , k+1 -> x, k+2 -> y, ...
+-- as we apply it underneath a binding, it needs to be converted to
+-- a larger scope (where the newly bound variables are left alone).
+-- k=2    0 -> 0 , 1 -> 1 , 2 -> 2, k+1 -> x, k+2 -> y, ...
+-- more generally, we have the scope depth k and a n-ary mapping for variables k+i for 0<=i<n
+data Vec (n :: Nat) where
+  VNil :: Vec Z
+  VCons :: Exp Z -> Vec n -> Vec (S n)
+
+nth :: SNat n -> Vec (S n) -> Exp Z
+nth SZ (VCons a _) = a
+nth (SS m) (VCons _ ss) = nth m ss
+
+inth :: Idx n -> Vec n -> Exp Z
+inth FZ (VCons a _) = a
+inth (FS m) (VCons _ ss) = inth m ss
+
+append :: Vec m -> Vec n -> Vec (Plus m n)
+append VNil v = v
+append (VCons u vm) vn = VCons u (append vm vn)
+
+data Sub n k where
+  Sub :: SNat k -> Vec n -> Sub n k
+
+emptySub :: Sub Z Z
+emptySub = Sub SZ VNil
+
+appendSub :: Sub m k -> Sub n k -> Sub (Plus m n) k
+appendSub (Sub k ss0) (Sub _ ss1) = Sub k (append ss0 ss1)
+
+lift :: Sub n k -> Sub n (S k)
+lift (Sub n ss) = Sub (SS n) ss
+
+plus_comm :: forall n k. S (Plus n k) :~: Plus n (S k)
+plus_comm = Unsafe.unsafeCoerce Refl
+
+plus_Z_r :: forall n. Plus n Z :~: n
+plus_Z_r = Unsafe.unsafeCoerce Refl
+
+plus_inj :: forall n k m. Plus n (S k) :~: S m -> Plus n k :~: m
+plus_inj = Unsafe.unsafeCoerce Refl
+
+multi_open_exp_wrt_exp_rec :: forall n k. Sub n k -> Exp (Plus n k) -> Exp k
+multi_open_exp_wrt_exp_rec ss@(Sub k v) e =
+  case e of
+    Var_b (i :: Idx (Plus n k)) -> openIdx i k v
+    Var_f x -> Var_f x
+    Abs (Bind ss1 b) --  -> Abs (Bind (ss1 `appendSub` ss0) b)
+      | Refl <- plus_comm @n @k ->
+        Abs (Bind k (multi_open_exp_wrt_exp_rec (Sub (SS k) v) b))
+    (App e1 e2) ->
+      App
+        (multi_open_exp_wrt_exp_rec ss e1)
+        (multi_open_exp_wrt_exp_rec ss e2)
+
+shiftV :: Exp k -> Exp (S k)
+shiftV (Var_b n) = Var_b (FS n)
+shiftV x = Unsafe.unsafeCoerce x
+
+-- when we find a bound variable, determine whether we should
+-- leave it alone or replace it
+openIdx :: forall n k. Idx (Plus n k) -> SNat k -> Vec n -> Exp k
+openIdx i SZ v
+  | Refl <- plus_Z_r @n = inth i v
+openIdx FZ (SS n) v = Var_b FZ
+openIdx (FS (m :: Idx m0)) (SS (k :: SNat k0)) v
+  | Refl <- plus_comm @n @k0 =
+    shiftV (openIdx m k v)
   where
-    s :: Sub Exp (S m) Z
-    s = (lift s1) `comp` (single u)
+    p1 :: S m0 :~: Plus n (S k0)
+    p1 = Refl
+    p2 :: S k0 :~: k
+    p2 = Refl
+    p3 :: S (Plus n k0) :~: Plus n (S k0)
+    p3 = plus_comm @n @k0
+    p5 :: m0 :~: Plus n k0
+    p5 = Unsafe.unsafeCoerce Refl
 
-instance SubstC Exp where
-  var = Var_b
+{-
+openIdx _ SZ (SCons =
+openIdx (FS n) (SCons _u ss) = weaken <$> lookupIdx n ss
+openIdx (FS n) SNil = Nothing
+openIdx (FZ (SCons u _) =
+-}
+--open_bind_wrt_bind :: SNat n -> Exp Z -> Bind Exp (S n) -> Bind Exp n
+--open_bind_wrt_bind k1 u (Bind (Sub k1 e) = Bind (open_exp_wrt_exp_rec (SS k) u e)
 
-  substBv s (Var_b i) = applyS s i
-  substBv s (Var_f x) = Var_f x
-  substBv s (Abs b) = Abs (substBvBind s b)
-  substBv s (App a b) = App (substBv s a) (substBv s b)
+-- either n is equal to m or greater than m
+compareIdx :: SNat k -> Idx (S k) -> Maybe (Idx k)
+compareIdx SZ FZ = Nothing
+compareIdx (SS m) (FS n) = FS <$> compareIdx m n
+compareIdx SZ (FS m) = Nothing
+compareIdx (SS _) FZ = Just FZ
+
+{-
+open_exp_wrt_exp_rec :: forall n. SNat n -> Exp Z -> Exp (S n) -> Exp n
+open_exp_wrt_exp_rec k u e =
+  case e of
+    (Var_b (n :: Idx (S n))) ->
+      case compareIdx k n of
+        Just i -> Var_b i
+        Nothing -> weaken u
+    (Var_f x) -> Var_f x
+    (Abs b) -> Abs (open_bind_wrt_bind k u b)
+    (App e1 e2) ->
+      App
+        (open_exp_wrt_exp_rec k u e1)
+        (open_exp_wrt_exp_rec k u e2)
+-}
+
+open :: Bind Exp Z -> Exp Z -> Exp Z
+open (Bind _ss e) u = f
+  where
+    f = multi_open_exp_wrt_exp_rec (Sub SZ (VCons u VNil)) e
 
 -- if n2 is greater than n1 increment it. Otherwise just return it.
 cmpIdx :: Idx (S n) -> Idx n -> Idx (S n)
@@ -236,42 +260,25 @@ close_subst_wrt_exp (FS m) x1 (Cons u ss) =
     return $ Cons (close_exp_wrt_exp_rec (FS m) x1 u) ss'
 -}
 
-close_exp_wrt_exp_rec :: Idx (S n) -> IdInt -> Exp n -> Exp (S n)
-close_exp_wrt_exp_rec n1 x1 e1 =
+close_exp_wrt_exp_rec :: SNat n -> Idx (S n) -> IdInt -> Exp n -> Exp (S n)
+close_exp_wrt_exp_rec k n1 x1 e1 =
   case e1 of
     Var_f x2 -> if (x1 == x2) then (Var_b n1) else (Var_f x2)
     -- variables that are greater than the binding level n1 need to be incremented
     -- because we are adding another binding
     Var_b n2 -> Var_b (cmpIdx n1 n2)
-    Abs b -> Abs (bind (close_exp_wrt_exp_rec (FS n1) x1 (unbind b)))
+    Abs b -> Abs (bind (SS k) (close_exp_wrt_exp_rec (SS k) (FS n1) x1 (unbind b)))
     -- Abs (Bind (s1 :: Sub Exp m n) (b :: Exp (S m))) -> undefined
     -- here if s1 maps Var_b n1 to Var_f x1 then we can cancel the close out.
-    App e2 e3 -> App (close_exp_wrt_exp_rec n1 x1 e2) (close_exp_wrt_exp_rec n1 x1 e3)
+    App e2 e3 -> App (close_exp_wrt_exp_rec k n1 x1 e2) (close_exp_wrt_exp_rec k n1 x1 e3)
 
 close :: IdInt -> Exp Z -> Bind Exp Z
-close x e = bind (close_exp_wrt_exp_rec FZ x e)
-
-{-
-openBindRec :: Int -> Exp -> Bind Exp -> Bind Exp
-openBindRec = undefined
-
-open :: Bind Exp -> Exp -> Exp
-open e u = undefined -- open_exp_wrt_exp_rec 0 u e
-
-closeBindRec :: Int -> IdInt -> Bind Exp -> Bind Exp
-closeBindRec = undefined
-
-close :: IdInt -> Exp -> Bind Exp
-close x1 e1 = undefined -- close_exp_wrt_exp_rec 0 x1 e1
-
-fvBind :: Bind Exp -> Set IdInt
-fvBind = undefined
--}
+close x e = bind SZ (close_exp_wrt_exp_rec SZ FZ x e)
 
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "LocallyNamelessOpt",
+    { impl_name = "LocallyNamelessTyped",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
       impl_nf = nfd,
@@ -302,14 +309,14 @@ fromDB = from firstBoundId
 -}
 
 toDB :: LC.LC IdInt -> Exp Z
-toDB = to []
+toDB = to SZ []
   where
-    to :: [(IdInt, Idx n)] -> LC.LC IdInt -> Exp n
-    to vs (LC.Var v@(IdInt i)) = maybe (Var_f v) Var_b (lookup v vs)
-    to vs (LC.Lam x b) = Abs (bind b')
+    to :: SNat n -> [(IdInt, Idx n)] -> LC.LC IdInt -> Exp n
+    to k vs (LC.Var v@(IdInt i)) = maybe (Var_f v) Var_b (lookup v vs)
+    to k vs (LC.Lam x b) = Abs (bind k b')
       where
-        b' = to ((x, FZ) : mapSnd FS vs) b
-    to vs (LC.App f a) = App (to vs f) (to vs a)
+        b' = to (SS k) ((x, FZ) : mapSnd FS vs) b
+    to k vs (LC.App f a) = App (to k vs f) (to k vs a)
 
 mapSnd :: (a -> b) -> [(c, a)] -> [(c, b)]
 mapSnd f = map (\(v, i) -> (v, f i))
@@ -360,19 +367,14 @@ weakenSubst (s1 :<> s2) = weakenSubst @p s1 :<> weakenSubst @p s2
 
 -- free variable substitution
 subst :: Exp Z -> IdInt -> Exp Z -> Exp Z
-subst u y e = subst0 e
+subst u y e = subst0 SZ e
   where
-    subst_ss :: forall m n. Sub Exp m n -> Sub Exp m n
-    subst_ss (Inc k) = Inc k
-    subst_ss (Cons a ss) = Cons (subst0 a) (subst_ss ss)
-    subst_ss (s1 :<> s2) = subst_ss s1 :<> subst_ss s2
-
-    subst0 :: forall n. Exp n -> Exp n
-    subst0 e = case e of
+    subst0 :: forall n. SNat n -> Exp n -> Exp n
+    subst0 k e = case e of
       (Var_b n) -> Var_b n
       (Var_f x) -> (if x == y then weaken @n u else (Var_f x))
-      (Abs (Bind s1 e1)) -> Abs (Bind (subst_ss s1) (subst0 e1))
-      (App e1 e2) -> App (subst0 @n e1) (subst0 @n e2)
+      (Abs b) -> Abs (bind k (subst0 (SS k) (unbind b)))
+      (App e1 e2) -> App (subst0 @n k e1) (subst0 @n k e2)
 
 fv :: Exp n -> Set IdInt
 fv e =

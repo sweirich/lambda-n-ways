@@ -27,6 +27,7 @@ import Impl.HOAS
 import Impl.Kit
 import qualified Impl.LocallyNameless
 import qualified Impl.LocallyNamelessOpt
+import qualified Impl.LocallyNamelessV2
 import Impl.Simple
 import Impl.SimpleB
 import Impl.Unbound
@@ -49,7 +50,7 @@ impls =
     Impl.Kit.impl,
     Impl.HOAS.impl,-}
     Impl.LocallyNameless.impl,
-    Impl.LocallyNamelessOpt.impl
+    Impl.LocallyNamelessV2.impl
     -- Impl.SimpleB.impl,
     -- Impl.Simple.impl,
     -- Impl.UnboundGenerics.impl,
