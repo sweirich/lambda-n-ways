@@ -35,6 +35,7 @@ library
       Impl.LocallyNameless
       Impl.LocallyNamelessOpt
       Impl.LocallyNamelessV2
+      Impl.LocallyNamelessTyped
       Impl.NominalG
       Impl.Simple
       Impl.SimpleB

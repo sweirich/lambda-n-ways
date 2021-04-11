@@ -7,6 +7,7 @@
 -- | Based directly on transliteration of Coq output for Ott Locally Nameless Backend
 -- Then with types addded, and multi substitutions
 -- And caching openning substitutions at binders
+-- and caching closing substitutions at binders
 module Impl.LocallyNamelessV2 where
 
 import qualified Control.Monad.State as State
@@ -30,9 +31,13 @@ import qualified Unsafe.Coerce as Unsafe
 
 -- 2. Well-typed multisubst
 
--- 3. Combo multisubst
+-- 3. Combo multisubst for open
 -- lennart: 4.10 ms (wow!)
 -- random: 1.46 ms (a little slow)
+
+-- 4. Combo multisubst for open & close
+-- lennart: 3.05 ms
+-- random: 0.349 ms
 -------------------------------------------------------------------
 
 -- Index to keep track of bound variable scope
@@ -73,16 +78,22 @@ toInt :: Idx n -> Int
 toInt FZ = 0
 toInt (FS n) = 1 + toInt n
 
-shift :: SNat m -> Idx n -> Idx (Plus m n)
-shift SZ x = x
-shift (SS m) x = FS (shift m x)
-
 --------------------------------------------------------------
 
+instance NFData a => NFData (Vec a n) where
+  rnf VNil = ()
+  rnf (VCons a b) = rnf a `seq` rnf b
+
+instance NFData (Sub n k) where
+  rnf (Sub n k) = rnf n `seq` rnf k
+
 instance (forall n. NFData (a n)) => NFData (Bind a m) where
-  rnf (Bind s a) =
-    -- rnf s `seq`
-    rnf a
+  rnf (BindOpen s a) = rnf s `seq` rnf a
+  rnf (Bind a) = rnf a
+  rnf (BindClose _ k v a) =
+    rnf k
+      `seq` rnf v
+      `seq` rnf a
 
 instance NFData (Idx a) where
   rnf FZ = ()
@@ -102,18 +113,27 @@ instance NFData (SNat a) where
 -- This means that we do *not* need to shift as much.
 
 data Bind a k where
-  Bind :: Sub n (S k) -> !(a (Plus n (S k))) -> Bind a k
-
--- Bind :: b -> !(a (S k)) -> Bind a k
+  Bind :: !(a (S k)) -> Bind a k
+  BindOpen :: Sub n (S k) -> !(a (Plus n (S k))) -> Bind a k
+  BindClose ::
+    (S k :~: Plus n k0) ->
+    SNat k0 ->
+    Vec IdInt n ->
+    !(a k0) ->
+    Bind a k
 
 -- create a binding by "abstracting a variable"
 -- doesn't remember any previously opened bindings
-bind :: SNat k -> a (S k) -> Bind a k
-bind k x = Bind (Sub (SS k) VNil) x
+bind :: SNat k -> Exp (S k) -> Bind Exp k
+bind k x = Bind x
 {-# INLINEABLE bind #-}
 
 unbind :: forall k. Bind Exp k -> Exp (S k)
-unbind (Bind ss a) = multi_open_exp_wrt_exp_rec ss a
+unbind (Bind a) = a
+unbind (BindOpen ss a) =
+  multi_open_exp_wrt_exp_rec ss a
+unbind (BindClose Refl k vs a) =
+  multi_close_exp_wrt_exp_rec k vs a
 {-# INLINEABLE unbind #-}
 
 instance (Eq (Exp (S n))) => Eq (Bind Exp n) where
@@ -137,24 +157,24 @@ data Exp (n :: Nat) where
 -- a larger scope (where the newly bound variables are left alone).
 -- k=2    0 -> 0 , 1 -> 1 , 2 -> 2, k+1 -> x, k+2 -> y, ...
 -- more generally, we have the scope depth k and a n-ary mapping for variables k+i for 0<=i<n
-data Vec (n :: Nat) where
-  VNil :: Vec Z
-  VCons :: Exp Z -> Vec n -> Vec (S n)
+data Vec a (n :: Nat) where
+  VNil :: Vec a Z
+  VCons :: a -> Vec a n -> Vec a (S n)
 
-nth :: SNat n -> Vec (S n) -> Exp Z
+nth :: SNat n -> Vec a (S n) -> a
 nth SZ (VCons a _) = a
 nth (SS m) (VCons _ ss) = nth m ss
 
-inth :: Idx n -> Vec n -> Exp Z
+inth :: Idx n -> Vec a n -> a
 inth FZ (VCons a _) = a
 inth (FS m) (VCons _ ss) = inth m ss
 
-append :: Vec m -> Vec n -> Vec (Plus m n)
+append :: Vec a m -> Vec a n -> Vec a (Plus m n)
 append VNil v = v
 append (VCons u vm) vn = VCons u (append vm vn)
 
 data Sub n k where
-  Sub :: SNat k -> Vec n -> Sub n k
+  Sub :: SNat k -> Vec (Exp Z) n -> Sub n k
 
 emptySub :: Sub Z Z
 emptySub = Sub SZ VNil
@@ -165,8 +185,8 @@ appendSub (Sub k ss0) (Sub _ ss1) = Sub k (append ss0 ss1)
 lift :: Sub n k -> Sub n (S k)
 lift (Sub n ss) = Sub (SS n) ss
 
-plus_comm :: forall n k. S (Plus n k) :~: Plus n (S k)
-plus_comm = Unsafe.unsafeCoerce Refl
+plus_S_r :: forall n k. S (Plus n k) :~: Plus n (S k)
+plus_S_r = Unsafe.unsafeCoerce Refl
 
 plus_Z_r :: forall n. Plus n Z :~: n
 plus_Z_r = Unsafe.unsafeCoerce Refl
@@ -175,23 +195,24 @@ plus_inj :: forall n k m. Plus n (S k) :~: S m -> Plus n k :~: m
 plus_inj = Unsafe.unsafeCoerce Refl
 
 multi_open_exp_wrt_exp_rec :: forall n k. Sub n k -> Exp (Plus n k) -> Exp k
-multi_open_exp_wrt_exp_rec ss@(Sub (k :: SNat k) (vn :: Vec n)) e =
+multi_open_exp_wrt_exp_rec ss@(Sub (k :: SNat k) (vn :: Vec (Exp Z) n)) e =
   case e of
     Var_b (i :: Idx (Plus n k)) -> openIdx i k vn
     Var_f x -> Var_f x
     Abs
-      ( Bind
-          (Sub (nk1 :: SNat (S (Plus n k))) (vm :: Vec m))
+      ( BindOpen
+          (Sub (nk1 :: SNat (S (Plus n k))) (vm :: Vec (Exp Z) m))
           -- (ss1 :: Sub m (S (Plus n k)))
           (b :: Exp (Plus m (S (Plus n k))))
-        ) -> Abs (Bind ss2 b2)
+        ) -> Abs (BindOpen ss2 b2)
         where
           ss2 :: Sub (Plus m n) (S k)
           ss2 = Sub (SS k) (append vm vn)
           b2 :: Exp (Plus (Plus m n) (S k))
           b2 = Unsafe.unsafeCoerce b
-    --  | Refl <- plus_comm @n @k ->
-    --    Abs (Bind k (multi_open_exp_wrt_exp_rec (Sub (SS k) v) b))
+    Abs b
+      | Refl <- plus_S_r @n @k ->
+        Abs (BindOpen (Sub (SS k) vn) (unbind b))
     (App e1 e2) ->
       App
         (multi_open_exp_wrt_exp_rec ss e1)
@@ -203,12 +224,12 @@ shiftV x = Unsafe.unsafeCoerce x
 
 -- when we find a bound variable, determine whether we should
 -- leave it alone or replace it
-openIdx :: forall n k. Idx (Plus n k) -> SNat k -> Vec n -> Exp k
+openIdx :: forall n k. Idx (Plus n k) -> SNat k -> Vec (Exp Z) n -> Exp k
 openIdx i SZ v
   | Refl <- plus_Z_r @n = inth i v
 openIdx FZ (SS n) v = Var_b FZ
 openIdx (FS (m :: Idx m0)) (SS (k :: SNat k0)) v
-  | Refl <- plus_comm @n @k0 =
+  | Refl <- plus_S_r @n @k0 =
     shiftV (openIdx m k v)
   where
     p1 :: S m0 :~: Plus n (S k0)
@@ -216,7 +237,7 @@ openIdx (FS (m :: Idx m0)) (SS (k :: SNat k0)) v
     p2 :: S k0 :~: k
     p2 = Refl
     p3 :: S (Plus n k0) :~: Plus n (S k0)
-    p3 = plus_comm @n @k0
+    p3 = plus_S_r @n @k0
     p5 :: m0 :~: Plus n k0
     p5 = Unsafe.unsafeCoerce Refl
 
@@ -229,12 +250,12 @@ compareIdx (SS _) FZ = Just FZ
 
 open :: Bind Exp Z -> Exp Z -> Exp Z
 open
-  ( Bind
-      (Sub (k :: SNat (S Z)) (vs :: Vec n))
+  ( BindOpen
+      (Sub (k :: SNat (S Z)) (vs :: Vec (Exp Z) n))
       (e :: Exp (Plus n (S Z)))
     )
   u
-    | Refl <- plus_comm @n @Z =
+    | Refl <- plus_S_r @n @Z =
       f
     where
       f = multi_open_exp_wrt_exp_rec ss e'
@@ -242,8 +263,83 @@ open
       ss = Sub SZ (VCons u vs)
       e' :: Exp (Plus (S n) Z)
       e' = Unsafe.unsafeCoerce e
+open b u = multi_open_exp_wrt_exp_rec ss (unbind b)
+  where
+    ss = Sub SZ (VCons u VNil)
 
 -----------------------------------------------------------------
+
+sPlus :: SNat n -> SNat m -> SNat (Plus n m)
+sPlus SZ m = m
+sPlus (SS n) m = SS (sPlus n m)
+
+sLength :: Vec a n -> SNat n
+sLength VNil = SZ
+sLength (VCons _ v) = SS (sLength v)
+
+conv :: forall n k a. a (S (Plus n k)) -> a (Plus n (S k))
+conv x = case plus_S_r @n @k of Refl -> x
+
+find :: IdInt -> Vec IdInt n -> Maybe (Idx n)
+find x VNil = Nothing
+find x (VCons y vs)
+  | x == y = Just FZ
+  | otherwise = FS <$> find x vs
+
+shift :: SNat k -> Idx n -> Idx (Plus k n)
+shift SZ x = x
+shift (SS m) x = FS (shift m x)
+
+-- add k to the appropriate index
+shiftIdx :: forall n k. Idx n -> SNat k -> Idx (Plus n k)
+shiftIdx n SZ
+  | Refl <- plus_Z_r @n = n
+shiftIdx n (SS (k0 :: SNat k0))
+  | Refl <- plus_S_r @n @k0 = FS (shiftIdx n k0)
+
+weakenIdx :: forall n k. Idx k -> Idx (Plus n k)
+weakenIdx = Unsafe.unsafeCoerce
+
+-- Create `n` new "bound" variables by looking for the "free" variables in the vector
+-- and replacing them with the appropriate indices
+-- `k` is the current nesting level. Once we are done, it will be k+n.
+--    example:  say k=1, n=2 and vec = {x,y}
+--       x y 0 (\. x y 1 0 w)  ==>  1 2 0 (\. 2 3 1 0 w)
+--                                  0+k 1+k 0 (\. 0+k+1 1+k+1 1 0
+multi_close_exp_wrt_exp_rec ::
+  forall n k.
+  SNat k ->
+  Vec IdInt n ->
+  Exp k ->
+  Exp (Plus n k)
+multi_close_exp_wrt_exp_rec k xs e =
+  case e of
+    Var_f x -> case find x xs of
+      Just n -> Var_b (shiftIdx n k)
+      Nothing -> Var_f x
+    Var_b n2 -> Var_b (weakenIdx @n n2)
+    Abs (BindClose Refl (k0 :: SNat k0) (ys :: Vec IdInt n0) (a :: Exp k0)) ->
+      Abs (BindClose pf2 k0 v a)
+      where
+        v :: Vec IdInt (Plus n n0)
+        v = append xs ys
+        pf1 :: S k :~: Plus n0 k0
+        pf1 = Refl
+        pf2 :: S (Plus n k) :~: Plus (Plus n n0) k0
+        pf2 = Unsafe.unsafeCoerce Refl
+    --Abs (BindClose _ (append vm vn) a)
+    Abs b | Refl <- plus_S_r @n @k -> Abs (bind (sPlus (sLength xs) k) recur')
+      where
+        ub :: Exp (S k)
+        ub = unbind b
+        recur :: Exp (Plus n (S k))
+        recur = multi_close_exp_wrt_exp_rec (SS k) xs ub
+        recur' :: Exp (S (Plus n k))
+        recur' = Unsafe.unsafeCoerce recur
+    App e2 e3 -> App (multi_close_exp_wrt_exp_rec k xs e2) (multi_close_exp_wrt_exp_rec k xs e3)
+
+close :: IdInt -> Exp Z -> Bind Exp Z
+close x e = bind SZ (multi_close_exp_wrt_exp_rec SZ (VCons x VNil) e)
 
 -- if n2 is greater than n1 increment it. Otherwise just return it.
 cmpIdx :: Idx (S n) -> Idx n -> Idx (S n)
@@ -257,7 +353,7 @@ cmpIdx n1 n2 =
 -- Create a new "bound index" from a free variable
 -- The index starts at FZ and comes from a larger scope
 -- All variables that are less than the new index must be incremented.
-
+{-
 close_exp_wrt_exp_rec :: SNat n -> Idx (S n) -> IdInt -> Exp n -> Exp (S n)
 close_exp_wrt_exp_rec k n1 x1 e1 =
   case e1 of
@@ -269,9 +365,9 @@ close_exp_wrt_exp_rec k n1 x1 e1 =
     -- Abs (Bind (s1 :: Sub Exp m n) (b :: Exp (S m))) -> undefined
     -- here if s1 maps Var_b n1 to Var_f x1 then we can cancel the close out.
     App e2 e3 -> App (close_exp_wrt_exp_rec k n1 x1 e2) (close_exp_wrt_exp_rec k n1 x1 e3)
-
-close :: IdInt -> Exp Z -> Bind Exp Z
-close x e = bind SZ (close_exp_wrt_exp_rec SZ FZ x e)
+-}
+--close :: IdInt -> Exp Z -> Bind Exp Z
+--close x e = bind SZ (close_exp_wrt_exp_rec SZ FZ x e)
 
 impl :: LambdaImpl
 impl =

@@ -4,7 +4,7 @@
 {-# LANGUAGE TypeOperators #-}
 
 -- | Based directly on transliteration of Coq output for Ott Locally Nameless Backend
--- Then with types addded
+-- Then with types addded to make sure that terms stay locally closed (when they need to be)
 module Impl.LocallyNamelessTyped where
 
 import qualified Control.Monad.State as State
@@ -237,6 +237,7 @@ open (Bind _ss e) u = f
   where
     f = multi_open_exp_wrt_exp_rec (Sub SZ (VCons u VNil)) e
 
+{-
 -- if n2 is greater than n1 increment it. Otherwise just return it.
 cmpIdx :: Idx (S n) -> Idx n -> Idx (S n)
 cmpIdx n1 n2 =
@@ -245,28 +246,22 @@ cmpIdx n1 n2 =
     (FS m, FS n) -> FS (cmpIdx m n)
     (FZ, FZ) -> FZ
     (FZ, FS n) -> FS FZ
+-}
 
--- Create a new "bound index" from a free variable
--- The index starts at FZ and comes from a larger scope
--- All variables that are less than the new index must be incremented.
+weakenIdx :: Idx n -> Idx (S n)
+weakenIdx = Unsafe.unsafeCoerce
 
 {-
-close_subst_wrt_exp :: Idx (S n) -> IdInt -> Sub Exp m n -> Maybe (Sub Exp m (S n))
-close_subst_wrt_exp FZ x1 (Cons (Var_f x2) (Inc SZ))
-  | x1 == x2 = Just $ Inc SZ
-close_subst_wrt_exp (FS m) x1 (Cons u ss) =
-  do
-    ss' <- close_subst_wrt_exp m x1 ss
-    return $ Cons (close_exp_wrt_exp_rec (FS m) x1 u) ss'
+weakenIdx :: Idx n -> Idx (S n)
+weakenIdx FZ = FZ
+weakenIdx (FS m) = FS (weakenIdx m)
 -}
 
 close_exp_wrt_exp_rec :: SNat n -> Idx (S n) -> IdInt -> Exp n -> Exp (S n)
 close_exp_wrt_exp_rec k n1 x1 e1 =
   case e1 of
     Var_f x2 -> if (x1 == x2) then (Var_b n1) else (Var_f x2)
-    -- variables that are greater than the binding level n1 need to be incremented
-    -- because we are adding another binding
-    Var_b n2 -> Var_b (cmpIdx n1 n2)
+    Var_b n2 -> Var_b (weakenIdx n2)
     Abs b -> Abs (bind (SS k) (close_exp_wrt_exp_rec (SS k) (FS n1) x1 (unbind b)))
     -- Abs (Bind (s1 :: Sub Exp m n) (b :: Exp (S m))) -> undefined
     -- here if s1 maps Var_b n1 to Var_f x1 then we can cancel the close out.

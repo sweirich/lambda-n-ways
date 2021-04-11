@@ -27,6 +27,7 @@ import Impl.HOAS
 import Impl.Kit
 import qualified Impl.LocallyNameless
 import qualified Impl.LocallyNamelessOpt
+import qualified Impl.LocallyNamelessTyped
 import qualified Impl.LocallyNamelessV2
 import Impl.Simple
 import Impl.SimpleB

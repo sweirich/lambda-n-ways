@@ -85,11 +85,16 @@ open_exp_wrt_exp_rec k u e =
 open :: Exp -> Exp -> Exp
 open e u = open_exp_wrt_exp_rec 0 u e
 
+-- n1 is the index of the newly created "bound variable".
+-- It starts at 0 and is incremented in each recursive call.
+-- It is *also* the current binding level, i.e. an index greater than any
+-- any bound variable that appears in the term. (Assuming that close is called
+-- only with locally closed terms.
 close_exp_wrt_exp_rec :: Int -> IdInt -> Exp -> Exp
 close_exp_wrt_exp_rec n1 x1 e1 =
   case e1 of
     Var_f x2 -> if (x1 == x2) then (Var_b n1) else (Var_f x2)
-    Var_b n2 -> if (n2 < n1) then (Var_b n2) else (Var_b (1 + n2))
+    Var_b n2 -> Var_b n2 -- if (n2 < n1) then (Var_b n2) else (Var_b (1 + n2))
     Abs e2 -> Abs (close_exp_wrt_exp_rec (1 + n1) x1 e2)
     App e2 e3 -> App (close_exp_wrt_exp_rec n1 x1 e2) (close_exp_wrt_exp_rec n1 x1 e3)
 
