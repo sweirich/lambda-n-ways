@@ -36,7 +36,7 @@ import qualified Unsafe.Coerce as Unsafe
 
 -- 5. back to ints, with some general cleanup
 -- lennart: 2.76 ms
--- random: 0.121 ms
+-- random: 0.116 ms
 -------------------------------------------------------------------
 
 instance (NFData a) => NFData (Bind a) where
@@ -110,21 +110,17 @@ multi_open_exp_wrt_exp_rec k vn e =
 -- when we find a bound variable, determine whether we should
 -- leave it alone or replace it
 openIdx :: Int -> Int -> [Exp] -> Exp
-openIdx i 0 v = v !! i
-openIdx 0 _ v = Var_b 0
-openIdx m k v = openIdx (m -1) (k -1) v
+openIdx i j v
+  | i >= j = v !! (i - j)
+  | otherwise = Var_b 0
+{-# INLINEABLE openIdx #-}
 
 open :: Bind Exp -> Exp -> Exp
 open (BindOpen k vs e) u = multi_open_exp_wrt_exp_rec 0 (u : vs) e
 open b u = multi_open_exp_wrt_exp_rec 0 [u] (unbind b)
+{-# INLINEABLE open #-}
 
 -----------------------------------------------------------------
-
-find :: IdInt -> [IdInt] -> Maybe Int
-find x [] = Nothing
-find x (y : vs)
-  | x == y = Just 0
-  | otherwise = (1 +) <$> find x vs
 
 -- Create `n` new "bound" variables by looking for the "free" variables in the vector
 -- and replacing them with the appropriate indices
@@ -135,7 +131,7 @@ find x (y : vs)
 multi_close_exp_wrt_exp_rec :: Int -> [IdInt] -> Exp -> Exp
 multi_close_exp_wrt_exp_rec k xs e =
   case e of
-    Var_f x -> case find x xs of
+    Var_f x -> case elemIndex x xs of
       Just n -> Var_b (n + k)
       Nothing -> Var_f x
     Var_b n2 -> Var_b n2
@@ -143,7 +139,6 @@ multi_close_exp_wrt_exp_rec k xs e =
       Abs (BindClose k0 (ys <> xs) a)
     Abs b -> Abs (bind recur)
       where
-        recur :: Exp
         recur = multi_close_exp_wrt_exp_rec (k + 1) xs (unbind b)
     App e2 e3 ->
       App
@@ -152,8 +147,7 @@ multi_close_exp_wrt_exp_rec k xs e =
 
 close :: IdInt -> Exp -> Bind Exp
 close x e = BindClose 0 [x] e
-
---close x e = bind (multi_close_exp_wrt_exp_rec 0 [x] e)
+{-# INLINEABLE close #-}
 
 impl :: LambdaImpl
 impl =
