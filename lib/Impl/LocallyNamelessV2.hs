@@ -15,6 +15,7 @@ import qualified Data.IntMap as IM
 import Data.List (elemIndex)
 import qualified Data.Set as Set
 import Data.Type.Equality
+import Debug.Trace
 import IdInt
 import Impl
 import Imports hiding (S, lift)
@@ -36,8 +37,8 @@ import qualified Unsafe.Coerce as Unsafe
 -- random: 1.46 ms (a little slow)
 
 -- 4. Combo multisubst for open & close
--- lennart: 3.05 ms
--- random: 0.349 ms
+-- lennart: 3.11 ms
+-- random: 0.135 ms  .1
 -------------------------------------------------------------------
 
 -- Index to keep track of bound variable scope
@@ -124,8 +125,8 @@ data Bind a k where
 
 -- create a binding by "abstracting a variable"
 -- doesn't remember any previously opened bindings
-bind :: SNat k -> Exp (S k) -> Bind Exp k
-bind k x = Bind x
+bind :: Exp (S k) -> Bind Exp k
+bind x = Bind x
 {-# INLINEABLE bind #-}
 
 unbind :: forall k. Bind Exp k -> Exp (S k)
@@ -188,6 +189,10 @@ lift (Sub n ss) = Sub (SS n) ss
 plus_S_r :: forall n k. S (Plus n k) :~: Plus n (S k)
 plus_S_r = Unsafe.unsafeCoerce Refl
 
+conv_plus_S_r :: forall n k a. a (S (Plus n k)) -> a (Plus n (S k))
+conv_plus_S_r
+  | Refl <- plus_S_r @n @k = id
+
 plus_Z_r :: forall n. Plus n Z :~: n
 plus_Z_r = Unsafe.unsafeCoerce Refl
 
@@ -201,8 +206,10 @@ multi_open_exp_wrt_exp_rec ss@(Sub (k :: SNat k) (vn :: Vec (Exp Z) n)) e =
     Var_f x -> Var_f x
     Abs
       ( BindOpen
-          (Sub (nk1 :: SNat (S (Plus n k))) (vm :: Vec (Exp Z) m))
-          -- (ss1 :: Sub m (S (Plus n k)))
+          ( Sub
+              (nk1 :: SNat (S (Plus n k)))
+              (vm :: Vec (Exp Z) m)
+            )
           (b :: Exp (Plus m (S (Plus n k))))
         ) -> Abs (BindOpen ss2 b2)
         where
@@ -210,9 +217,13 @@ multi_open_exp_wrt_exp_rec ss@(Sub (k :: SNat k) (vn :: Vec (Exp Z) n)) e =
           ss2 = Sub (SS k) (append vm vn)
           b2 :: Exp (Plus (Plus m n) (S k))
           b2 = Unsafe.unsafeCoerce b
-    Abs b
-      | Refl <- plus_S_r @n @k ->
-        Abs (BindOpen (Sub (SS k) vn) (unbind b))
+    Abs b ->
+      Abs (BindOpen ss2 b2)
+      where
+        ss2 :: Sub n (S k)
+        ss2 = Sub (SS k) vn
+        b2 :: Exp (Plus n (S k))
+        b2 = conv_plus_S_r @n @k (unbind b)
     (App e1 e2) ->
       App
         (multi_open_exp_wrt_exp_rec ss e1)
@@ -318,17 +329,26 @@ multi_close_exp_wrt_exp_rec k xs e =
       Just n -> Var_b (shiftIdx n k)
       Nothing -> Var_f x
     Var_b n2 -> Var_b (weakenIdx @n n2)
-    Abs (BindClose Refl (k0 :: SNat k0) (ys :: Vec IdInt n0) (a :: Exp k0)) ->
-      Abs (BindClose pf2 k0 v a)
-      where
-        v :: Vec IdInt (Plus n n0)
-        v = append xs ys
-        pf1 :: S k :~: Plus n0 k0
-        pf1 = Refl
-        pf2 :: S (Plus n k) :~: Plus (Plus n n0) k0
-        pf2 = Unsafe.unsafeCoerce Refl
+    Abs
+      ( BindClose
+          Refl
+          (k0 :: SNat k0)
+          (ys :: Vec IdInt n0)
+          (a :: Exp k0)
+        ) ->
+        Abs (BindClose pf2 k0 v a)
+        where
+          v :: Vec IdInt (Plus n0 n)
+          v = append ys xs
+          pf1 :: S k :~: Plus n0 k0
+          pf1 = Refl
+          pf2 :: S (Plus n k) :~: Plus (Plus n0 n) k0
+          pf2 = Unsafe.unsafeCoerce Refl
     --Abs (BindClose _ (append vm vn) a)
-    Abs b | Refl <- plus_S_r @n @k -> Abs (bind (sPlus (sLength xs) k) recur')
+    Abs b
+      | Refl <- plus_S_r @n @k ->
+        Abs
+          (bind recur')
       where
         ub :: Exp (S k)
         ub = unbind b
@@ -336,10 +356,16 @@ multi_close_exp_wrt_exp_rec k xs e =
         recur = multi_close_exp_wrt_exp_rec (SS k) xs ub
         recur' :: Exp (S (Plus n k))
         recur' = Unsafe.unsafeCoerce recur
-    App e2 e3 -> App (multi_close_exp_wrt_exp_rec k xs e2) (multi_close_exp_wrt_exp_rec k xs e3)
+    App e2 e3 ->
+      App
+        (multi_close_exp_wrt_exp_rec k xs e2)
+        (multi_close_exp_wrt_exp_rec k xs e3)
 
 close :: IdInt -> Exp Z -> Bind Exp Z
-close x e = bind SZ (multi_close_exp_wrt_exp_rec SZ (VCons x VNil) e)
+close x e =
+  BindClose Refl SZ (VCons x VNil) e
+
+--bind (multi_close_exp_wrt_exp_rec SZ (VCons x VNil) e)
 
 -- if n2 is greater than n1 increment it. Otherwise just return it.
 cmpIdx :: Idx (S n) -> Idx n -> Idx (S n)
@@ -387,7 +413,7 @@ toDB = to SZ []
   where
     to :: SNat n -> [(IdInt, Idx n)] -> LC.LC IdInt -> Exp n
     to k vs (LC.Var v@(IdInt i)) = maybe (Var_f v) Var_b (lookup v vs)
-    to k vs (LC.Lam x b) = Abs (bind k b')
+    to k vs (LC.Lam x b) = Abs (bind b')
       where
         b' = to (SS k) ((x, FZ) : mapSnd FS vs) b
     to k vs (LC.App f a) = App (to k vs f) (to k vs a)
@@ -431,7 +457,7 @@ subst u y e = subst0 SZ e
     subst0 k e = case e of
       (Var_b n) -> Var_b n
       (Var_f x) -> (if x == y then weaken @n u else (Var_f x))
-      (Abs b) -> Abs (bind k (subst0 (SS k) (unbind b)))
+      (Abs b) -> Abs (bind (subst0 (SS k) (unbind b)))
       (App e1 e2) -> App (subst0 @n k e1) (subst0 @n k e2)
 
 fv :: Exp n -> Set IdInt
