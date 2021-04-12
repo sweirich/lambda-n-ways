@@ -1,0 +1,40 @@
+-- numSubsts:  1
+-- bind depth: 1
+-- depth:      2
+(\x0.x0) (\x1.x1)
+-- numSubsts:  1
+-- bind depth: 2
+-- depth:      3
+(\x0.\x1.x0) (\x2.x2)
+-- numSubsts:  1
+-- bind depth: 3
+-- depth:      4
+(\x0.\x1.\x1.x0) (\x2.x2)
+-- numSubsts:  1
+-- bind depth: 4
+-- depth:      5
+(\x0.\x1.\x1.\x1.x0) (\x2.x2)
+-- numSubsts:  1
+-- bind depth: 5
+-- depth:      6
+(\x0.\x1.\x1.\x1.\x1.x0) (\x2.x2)
+-- numSubsts:  1
+-- bind depth: 6
+-- depth:      7
+(\x0.\x1.\x1.\x1.\x1.\x1.x0) (\x2.x2)
+-- numSubsts:  1
+-- bind depth: 7
+-- depth:      8
+(\x0.\x1.\x1.\x1.\x1.\x1.\x1.x0) (\x2.x2)
+-- numSubsts:  1
+-- bind depth: 8
+-- depth:      9
+(\x0.\x1.\x1.\x1.\x1.\x1.\x1.\x1.x0) (\x2.x2)
+-- numSubsts:  1
+-- bind depth: 9
+-- depth:      10
+(\x0.\x1.\x1.\x1.\x1.\x1.\x1.\x1.\x1.x0) (\x2.x2)
+-- numSubsts:  1
+-- bind depth: 10
+-- depth:      11
+(\x0.\x1.\x1.\x1.\x1.\x1.\x1.\x1.\x1.\x1.x0) (\x2.x2)

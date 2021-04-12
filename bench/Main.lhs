@@ -22,6 +22,7 @@
 
 > data Bench =
 >   forall a. Bench String (a -> ()) a
+>   | BGroup String [Bench]
 
 
 > -- | Benchmarks for timing conversion from named representation to internal representation
@@ -48,8 +49,16 @@
 > nf_bss nm lcs = map impl2nf impls where
 >   impl2nf LambdaImpl {..} =
 >     let! tms = force (map impl_fromLC lcs) in
->     let  pairs = zip lcs (map impl_nf tms) in
+>     -- let  pairs = zip lcs (map impl_nf tms) in
 >     Bench (impl_name <> "/" <> nm) (rnf . map impl_nf) tms
+
+> -- | Benchmarks for timing normal form calculation (multiple terms)
+> constructed_bss :: String ->[LC IdInt] -> [Bench]
+> constructed_bss nm lcs = map impl2nf impls where
+>   impl2nf LambdaImpl {..} =
+>     let! tms = force (map impl_fromLC lcs) in
+>     let benches = map (\(t,i) -> Bench (show i) (rnf . impl_nf) t) (zip tms [1..]) in
+>     BGroup (impl_name <> "/" <> nm) benches
 
 
 > -- benchmark for alpha-equivalence
@@ -61,7 +70,9 @@
 >     Bench impl_name (\(x,y) -> rnf (impl_aeq x y)) (tm1,tm2)
 
 
-
+> runBench :: Bench -> Benchmark
+> runBench (Bench n f x) = bench n $ Criterion.Main.nf f x
+> runBench (BGroup n bs) = bgroup n $ map runBench bs
 
 > main :: IO ()
 > main = do
@@ -76,12 +87,18 @@
 >   random_terms <- getTerms "lams/random.lam"
 >   --random_terms <- getTerms "lams/lams100.lam"
 >   let! rands = nf_bss "" random_terms
->   let runBench (Bench n f x) = bench n $ Criterion.Main.nf f x
+>   con_terms <- getTerms "lams/constructed20.lam"
+>   let! cons = constructed_bss "con" con_terms
+>   capt_terms <- getTerms "lams/capture10.lam"
+>   let! capts = constructed_bss "capt" capt_terms
+>   -- let runBench (Bench n f x) = bench n $ Criterion.Main.nf f x
 >   defaultMain [
->      bgroup "rand" $ map runBench rands
+>     bgroup "rand" $ map runBench rands
 >    , bgroup "conv" $ map runBench convs
 >    , bgroup "nf"   $ map runBench nfs
 >    , bgroup "aeq"  $ map runBench aeqs
+>    , bgroup "con"  $ map runBench cons
+>    , bgroup "capt" $ map runBench capts
 >    ] 
 >
 >

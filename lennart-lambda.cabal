@@ -32,11 +32,12 @@ library
       Impl.BoundDB
       Impl.DeBruijn
       Impl.HOAS
-      Impl.LocallyNameless
-      Impl.LocallyNamelessOpt
-      Impl.LocallyNamelessV2
-      Impl.LocallyNamelessV3
-      Impl.LocallyNamelessTyped
+      LocallyNameless.Ott
+      LocallyNameless.Opt
+      LocallyNameless.Par
+      LocallyNameless.ParOpt
+      LocallyNameless.Typed
+      LocallyNameless.TypedOpt
       Impl.NominalG
       Impl.Simple
       Impl.SimpleB

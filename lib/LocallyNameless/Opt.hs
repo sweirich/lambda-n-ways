@@ -3,7 +3,7 @@
 -- And caching openning substitutions at binders
 -- and caching closing substitutions at binders
 -- and removing types so we can use ints instead of unary nats
-module Impl.LocallyNamelessV3 (impl) where
+module LocallyNameless.Opt (impl) where
 
 import qualified Control.Monad.State as State
 import qualified Data.IntMap as IM
@@ -37,6 +37,8 @@ import qualified Unsafe.Coerce as Unsafe
 -- 5. back to ints, with some general cleanup
 -- lennart: 2.76 ms
 -- random: 0.116 ms
+
+--- (NOTE: dlists instead of lists slowed things down)
 -------------------------------------------------------------------
 
 instance (NFData a) => NFData (Bind a) where
@@ -55,6 +57,10 @@ instance (NFData a) => NFData (Bind a) where
 -- when we open, we only replace with locally closed terms
 -- and we only use open for variables with a single bound variable.
 -- This means that we do *not* need to shift as much.
+
+type DList a = a -> a
+
+app d1 d2 = d1 . d2
 
 data Bind a where
   Bind :: !a -> Bind a
@@ -152,7 +158,7 @@ close x e = BindClose 0 [x] e
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "LocallyNamelessV3",
+    { impl_name = "LocallyNameless.Opt",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
       impl_nf = nfd,

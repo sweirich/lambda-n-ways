@@ -25,11 +25,6 @@ import Impl.BoundDB
 import Impl.DeBruijn
 import Impl.HOAS
 import Impl.Kit
-import qualified Impl.LocallyNameless
-import qualified Impl.LocallyNamelessOpt
-import qualified Impl.LocallyNamelessTyped
-import qualified Impl.LocallyNamelessV2
-import qualified Impl.LocallyNamelessV3
 import Impl.Simple
 import Impl.SimpleB
 import Impl.Unbound
@@ -37,27 +32,33 @@ import Impl.UnboundGenerics
 import Impl.Unique
 import Imports
 import Lambda
+import qualified LocallyNameless.Opt
+import qualified LocallyNameless.Ott
+import qualified LocallyNameless.Par
+import qualified LocallyNameless.ParOpt
+import qualified LocallyNameless.Typed
+import qualified LocallyNameless.TypedOpt
 import qualified Misc
 
 impls :: [LambdaImpl]
 impls =
-  [ {- DeBruijnPar.F.impl,
-    DeBruijnPar.FB.impl,
-    DeBruijnPar.L.impl,
-    DeBruijnPar.P.impl,
-    DeBruijnPar.B.impl,
-    DeBruijnPar.Scoped.impl,
+  [ Impl.HOAS.impl,
+    LocallyNameless.Opt.impl,
+    LocallyNameless.TypedOpt.impl,
     Impl.DeBruijn.impl,
-    Impl.BoundDB.impl,
+    --DeBruijnPar.F.impl,
+    DeBruijnPar.FB.impl,
+    --DeBruijnPar.L.impl,
+    --DeBruijnPar.P.impl,
+    DeBruijnPar.Scoped.impl,
+    DeBruijnPar.B.impl,
     Impl.Kit.impl,
-    Impl.HOAS.impl,-}
-    --Impl.LocallyNameless.impl,
-    Impl.LocallyNamelessV2.impl,
-    Impl.LocallyNamelessV3.impl
+    Impl.BoundDB.impl
+    -- LocallyNameless.Ott.impl,
     -- Impl.SimpleB.impl,
-    -- Impl.Simple.impl,
-    -- Impl.UnboundGenerics.impl,
-    -- Impl.Unbound.impl,
+    --Impl.Simple.impl,
+    --Impl.UnboundGenerics.impl,
+    --Impl.Unbound.impl
     -- Impl.Unique.impl
     -- Core.Nf.impl,
     {- Impl.fromBindingImpl

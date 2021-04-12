@@ -1,5 +1,5 @@
 -- | Based directly on transliteration of Coq output for Ott Locally Nameless Backend
-module Impl.LocallyNameless where
+module LocallyNameless.Ott where
 
 import Control.Monad.State
 import Data.List (elemIndex)
@@ -12,7 +12,7 @@ import qualified Lambda as LC
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "LocallyNameless",
+    { impl_name = "LocallyNameless.Ott",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
       impl_nf = nfd,
