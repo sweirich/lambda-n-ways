@@ -3,19 +3,19 @@
 {-# LANGUAGE QuantifiedConstraints #-}
 
 -- | Uses typed, and optimized parallel de Bruijn substitutions
-module LocallyNameless.ParOpt where
+module LocallyNameless.ParOpt (impl) where
 
 import qualified Control.Monad.State as State
 import qualified Data.IntMap as IM
 import Data.List (elemIndex)
 import qualified Data.Set as Set
-import IdInt
-import Impl
+import IdInt (IdInt (..), firstBoundId)
+import Impl (LambdaImpl (..))
 import Imports hiding (S, lift)
 import qualified Lambda as LC
 import qualified Unsafe.Coerce as Unsafe
 
--- 0. Original
+-- 0. (Ott) Original
 -- lennart: 1.03s
 -- random: 0.807 ms
 
@@ -23,7 +23,7 @@ import qualified Unsafe.Coerce as Unsafe
 -- lennart: 132 ms
 -- random: 3.64 ms
 
--- 2. Switching to strongly-typed parallel subst for bound vars
+-- 2. (Par) Switching to strongly-typed parallel subst for bound vars
 -- lennart: 3.49s
 -- random: 5.12 ms
 
@@ -31,7 +31,7 @@ import qualified Unsafe.Coerce as Unsafe
 -- lennart: 6.64ms
 -- random: 1.53 ms
 
---- 4. unsafeCoerce for weaken
+--- 4. (ParOpt) unsafeCoerce for weaken
 -- lennart: 6.36ms
 -- random: 1.60 ms
 
@@ -225,16 +225,6 @@ cmpIdx n1 n2 =
 -- The index starts at FZ and comes from a larger scope
 -- All variables that are less than the new index must be incremented.
 
-{-
-close_subst_wrt_exp :: Idx (S n) -> IdInt -> Sub Exp m n -> Maybe (Sub Exp m (S n))
-close_subst_wrt_exp FZ x1 (Cons (Var_f x2) (Inc SZ))
-  | x1 == x2 = Just $ Inc SZ
-close_subst_wrt_exp (FS m) x1 (Cons u ss) =
-  do
-    ss' <- close_subst_wrt_exp m x1 ss
-    return $ Cons (close_exp_wrt_exp_rec (FS m) x1 u) ss'
--}
-
 close_exp_wrt_exp_rec :: Idx (S n) -> IdInt -> Exp n -> Exp (S n)
 close_exp_wrt_exp_rec n1 x1 e1 =
   case e1 of
@@ -250,23 +240,6 @@ close_exp_wrt_exp_rec n1 x1 e1 =
 close :: IdInt -> Exp Z -> Bind Exp Z
 close x e = bind (close_exp_wrt_exp_rec FZ x e)
 
-{-
-openBindRec :: Int -> Exp -> Bind Exp -> Bind Exp
-openBindRec = undefined
-
-open :: Bind Exp -> Exp -> Exp
-open e u = undefined -- open_exp_wrt_exp_rec 0 u e
-
-closeBindRec :: Int -> IdInt -> Bind Exp -> Bind Exp
-closeBindRec = undefined
-
-close :: IdInt -> Exp -> Bind Exp
-close x1 e1 = undefined -- close_exp_wrt_exp_rec 0 x1 e1
-
-fvBind :: Bind Exp -> Set IdInt
-fvBind = undefined
--}
-
 impl :: LambdaImpl
 impl =
   LambdaImpl
@@ -277,28 +250,6 @@ impl =
       impl_nfi = nfi,
       impl_aeq = aeq
     }
-
-{-
-toDB :: LC.LC IdInt -> DB Z
-toDB = to []
-  where to :: [(IdInt, Idx n)] -> LC IdInt ->  DB n
-        to vs (Var v)   = DVar (fromJust (lookup v vs))
-        to vs (Lam v b) = DLam (bind b') where
-             b' = to ((v,FZ):mapSnd FS vs) b
-        to vs (App f a) = DApp (to vs f) (to vs a)
--
-
-fromDB :: DB n -> LC IdInt
-fromDB = from firstBoundId
-  where
-    from :: IdInt -> DB n -> LC IdInt
-    from (IdInt n) (DVar i)
-      | toInt i < 0 = Var (IdInt $ toInt i)
-      | toInt i >= n = Var (IdInt $ toInt i)
-      | otherwise = Var (IdInt (n - (toInt i) -1))
-    from n (DLam b) = Lam n (from (succ n) (unbind b))
-    from n (DApp f a) = App (from n f) (from n a)
--}
 
 toDB :: LC.LC IdInt -> Exp Z
 toDB = to []
@@ -381,47 +332,6 @@ fv e =
     (Abs b) -> fv (unbind b)
     (App e1 e2) -> fv e1 `Set.union` fv e2
 
-{-
-open_exp_wrt_exp_rec :: Int -> Exp -> Exp -> Exp
-open_exp_wrt_exp_rec k u e =
-  case e of
-    (Var_b n) ->
-      case compare n k of
-        LT -> Var_b n
-        EQ -> u
-        GT -> Var_b (n - 1)
-    (Var_f x) -> Var_f x
-    (Abs e) -> Abs (openBindRec (k + 1) u e)
-    (App e1 e2) ->
-      App
-        (open_exp_wrt_exp_rec k u e1)
-        (open_exp_wrt_exp_rec k u e2)
-
-open_exp_wrt_map_rec :: IM.IntMap IdInt -> Exp -> Exp
-open_exp_wrt_map_rec k e =
-  case e of
-    (Var_b n) ->
-      case compare n k of
-        LT -> Var_b n
-        EQ -> u
-        GT -> Var_b (n - 1)
-    (Var_f x) -> Var_f x
-    (Abs e) -> Abs (openRec (k + 1) e)
-    -- need to increment the domain of all
-    (App e1 e2) ->
-      App
-        (open_exp_wrt_map_rec k e1)
-        (open_exp_wrt_map_rec k e2)
-
-close_exp_wrt_exp_rec :: Int -> IdInt -> Exp -> Exp
-close_exp_wrt_exp_rec n1 x1 e1 =
-  case e1 of
-    Var_f x2 -> if (x1 == x2) then (Var_b n1) else (Var_f x2)
-    Var_b n2 -> if (n2 < n1) then (Var_b n2) else (Var_b (1 + n2))
-    Abs e2 -> Abs (closeBindRec (1 + n1) x1 e2)
-    App e2 e3 -> App (close_exp_wrt_exp_rec n1 x1 e2) (close_exp_wrt_exp_rec n1 x1 e3)
--}
-
 type N a = State IdInt a
 
 newVar :: (MonadState IdInt m) => m IdInt
@@ -435,7 +345,6 @@ nfd e = State.evalState (nf' e) firstBoundId
 
 nf' :: Exp Z -> N (Exp Z)
 nf' e@(Var_f _) = return e
-nf' e@(Var_b _) = error "should not reach this"
 nf' (Abs b) = do
   x <- newVar
   b' <- nf' (open b (Var_f x))
@@ -449,7 +358,6 @@ nf' (App f a) = do
 -- Compute the weak head normal form.
 whnf :: Exp Z -> N (Exp Z)
 whnf e@(Var_f _) = return e
-whnf e@(Var_b _) = error "BUG"
 whnf e@(Abs _) = return e
 whnf (App f a) = do
   f' <- whnf f
@@ -467,7 +375,6 @@ type NM a = State.StateT IdInt Maybe a
 nfi' :: Int -> (Exp Z) -> NM (Exp Z)
 nfi' 0 _ = State.lift Nothing
 nfi' n e@(Var_f _) = return e
-nfi' n e@(Var_b _) = error "should not reach this"
 nfi' n (Abs e) = do
   x <- newVar
   e' <- nfi' (n - 1) (open e (Var_f x))
@@ -482,7 +389,6 @@ nfi' n (App f a) = do
 whnfi :: Int -> Exp Z -> NM (Exp Z)
 whnfi 0 _ = State.lift Nothing
 whnfi n e@(Var_f _) = return e
-whnfi n e@(Var_b _) = error "BUG"
 whnfi n e@(Abs _) = return e
 whnfi n (App f a) = do
   f' <- whnfi (n -1) f

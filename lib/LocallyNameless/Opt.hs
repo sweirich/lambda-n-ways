@@ -9,36 +9,36 @@ import qualified Control.Monad.State as State
 import qualified Data.IntMap as IM
 import Data.List (elemIndex)
 import qualified Data.Set as Set
-import Data.Type.Equality
-import IdInt
-import Impl
+import IdInt (IdInt (..), firstBoundId)
+import Impl (LambdaImpl (..))
 import Imports hiding (S, lift)
 import qualified Lambda as LC
-import qualified Unsafe.Coerce as Unsafe
 
--- 0. Original
+-- 0. Original (Ott)
 -- lennart: 1.03s
 -- random: 0.807 ms
 
--- 1. Well-typed (slows it down)
+-- 1. (Types) Well-typed (slows it down)
 -- lennart: 1.43s
 -- random: 1.8ms
 
--- 2. Well-typed multisubst
+-- 2. (ParTyped) Well-typed multisubst
 
 -- 3. Combo multisubst for open
 -- lennart: 4.10 ms (wow!)
 -- random: 1.46 ms (a little slow)
 
--- 4. Combo multisubst for open & close
+-- 4. (TypedOtt) Combo multisubst for open & close
 -- lennart: 3.05 ms
 -- random: 0.135 ms
 
 -- 5. back to ints, with some general cleanup
--- lennart: 2.76 ms
--- random: 0.116 ms
-
---- (NOTE: dlists instead of lists slowed things down)
+-- NOTE: actually caching close at binder incurs a small penalty (second #s)
+-- lennart: 2.76 ms / 3.13 ms
+-- random: 0.116 ms / 0.126 ms
+-- con20: 721ns / 678ns
+-- capt9: 387ns / 386ns
+--- (NOTE: dlists instead of lists slows things down)
 -------------------------------------------------------------------
 
 instance (NFData a) => NFData (Bind a) where
@@ -52,19 +52,13 @@ instance (NFData a) => NFData (Bind a) where
 --------------------------------------------------------------
 --------------------------------------------------------------
 
--- Locally nameless simplification.
--- We only use substBv to implement open
--- when we open, we only replace with locally closed terms
--- and we only use open for variables with a single bound variable.
--- This means that we do *not* need to shift as much.
-
-type DList a = a -> a
-
-app d1 d2 = d1 . d2
+-- Caching open/close at binders.
+-- To speed up this implementation, we delay the execution of open / close
+-- in a binder so that multiple traversals can fuse together
 
 data Bind a where
   Bind :: !a -> Bind a
-  BindOpen :: !Int -> ![Exp] -> !a -> Bind a
+  BindOpen :: !Int -> ![a] -> !a -> Bind a
   BindClose :: !Int -> ![IdInt] -> !a -> Bind a
 
 -- create a binding by "abstracting a variable"
@@ -83,12 +77,11 @@ unbind (BindClose k vs a) =
 instance (Eq Exp) => Eq (Bind Exp) where
   b1 == b2 = unbind b1 == unbind b2
 
--- Exp Z is  locally closed terms
 data Exp where
   Var_b :: !Int -> Exp
   Var_f :: !IdInt -> Exp
   Abs :: !(Bind Exp) -> Exp
-  App :: !(Exp) -> !(Exp) -> Exp
+  App :: !Exp -> !Exp -> Exp
   deriving (Generic)
 
 -- keep track of the opening that has been done already
@@ -105,7 +98,8 @@ multi_open_exp_wrt_exp_rec k vn e =
   case e of
     Var_b i -> openIdx i k vn
     Var_f x -> Var_f x
-    Abs (BindOpen nk1 vm b) -> Abs (BindOpen (k + nk1) (vm <> vn) b)
+    Abs (BindOpen nk1 vm b) ->
+      Abs (BindOpen (k + nk1) (vm <> vn) b)
     Abs b ->
       Abs (BindOpen (k + 1) vn (unbind b))
     (App e1 e2) ->
@@ -141,11 +135,12 @@ multi_close_exp_wrt_exp_rec k xs e =
       Just n -> Var_b (n + k)
       Nothing -> Var_f x
     Var_b n2 -> Var_b n2
-    Abs (BindClose k0 ys a) ->
-      Abs (BindClose k0 (ys <> xs) a)
-    Abs b -> Abs (bind recur)
-      where
-        recur = multi_close_exp_wrt_exp_rec (k + 1) xs (unbind b)
+    Abs (BindClose k0 ys a) -> Abs (BindClose k0 (ys <> xs) a)
+    Abs b ->
+      Abs (BindClose (k + 1) xs (unbind b))
+    --Abs (bind recur)
+    --where
+    --  recur = multi_close_exp_wrt_exp_rec (k + 1) xs (unbind b)
     App e2 e3 ->
       App
         (multi_close_exp_wrt_exp_rec k xs e2)

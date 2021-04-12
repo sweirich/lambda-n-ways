@@ -4,11 +4,6 @@ module Suite where
 
 -- import Impl.DeBruijnC
 
-import qualified Abstract.DeBruijn as ADB
-import qualified Abstract.DeBruijnPar.B as AB
-import qualified Abstract.DeBruijnPar.F as AF
-import qualified Abstract.Simple as AS
-import qualified Abstract.UnboundGenerics as AUG
 import Control.Monad.State (evalState)
 import Core.Nf
 import qualified Data.Map.Strict as M
@@ -42,41 +37,29 @@ import qualified Misc
 
 impls :: [LambdaImpl]
 impls =
-  [ Impl.HOAS.impl,
+  [ --Impl.HOAS.impl,
     LocallyNameless.Opt.impl,
     LocallyNameless.TypedOpt.impl,
-    Impl.DeBruijn.impl,
-    --DeBruijnPar.F.impl,
-    DeBruijnPar.FB.impl,
-    --DeBruijnPar.L.impl,
-    --DeBruijnPar.P.impl,
-    DeBruijnPar.Scoped.impl,
-    DeBruijnPar.B.impl,
-    Impl.Kit.impl,
-    Impl.BoundDB.impl
-    -- LocallyNameless.Ott.impl,
+    --Impl.DeBruijn.impl,
+    -- DeBruijnPar.F.impl,
+    --DeBruijnPar.FB.impl,
+    -- DeBruijnPar.L.impl,
+    -- DeBruijnPar.P.impl,
+    -- DeBruijnPar.Scoped.impl,
+    --DeBruijnPar.B.impl,
+    --Impl.Kit.impl,
+    --Impl.BoundDB.impl
+    LocallyNameless.Ott.impl,
+    LocallyNameless.Par.impl,
+    LocallyNameless.ParOpt.impl,
+    LocallyNameless.Typed.impl
     -- Impl.SimpleB.impl,
-    --Impl.Simple.impl,
-    --Impl.UnboundGenerics.impl,
-    --Impl.Unbound.impl
+    -- Impl.Simple.impl,
+    -- Impl.UnboundGenerics.impl,
+    -- Impl.Unbound.impl
     -- Impl.Unique.impl
     -- Core.Nf.impl,
-    {- Impl.fromBindingImpl
-      (Proxy :: Proxy IdInt)
-      "abstract simple",
-    Impl.fromBindingImpl
-      (Proxy :: Proxy AF.DB)
-      "abstract DB_F",
-    Impl.fromBindingImpl
-      (Proxy :: Proxy AB.DB)
-      "abstract DB_B",
-    Impl.fromBindingImpl
-      (Proxy :: Proxy ADB.DB)
-      "abstract DB", -}
-    {- Impl.fromBindingImpl
-      (Proxy :: Proxy AUG.U)
-      "abstract Unbound Generics" -}
-    -- , Impl.NominalG.impl -- generally too slow (12s vs. <200 ms for everything else)
+    -- Impl.NominalG.impl -- generally too slow (12s vs. <200 ms for everything else)
   ]
 
 conv :: (Ord v) => LC v -> FreshM v (LC IdInt)

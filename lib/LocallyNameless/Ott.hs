@@ -1,11 +1,12 @@
 -- | Based directly on transliteration of Coq output for Ott Locally Nameless Backend
-module LocallyNameless.Ott where
+-- This is the first/simplest implementation in this series
+module LocallyNameless.Ott (impl) where
 
-import Control.Monad.State
+import qualified Control.Monad.State as State
 import Data.List (elemIndex)
 import qualified Data.Set as Set
-import IdInt
-import Impl
+import IdInt (IdInt (..), firstBoundId)
+import Impl (LambdaImpl (..))
 import Imports
 import qualified Lambda as LC
 
@@ -110,7 +111,7 @@ newVar = do
   return i
 
 nfd :: Exp -> Exp
-nfd e = evalState (nf' e) firstBoundId
+nfd e = State.evalState (nf' e) firstBoundId
 
 nf' :: Exp -> N Exp
 nf' e@(Var_f _) = return e
@@ -128,7 +129,7 @@ nf' (App f a) = do
 -- Compute the weak head normal form.
 whnf :: Exp -> N Exp
 whnf e@(Var_f _) = return e
-whnf e@(Var_b _) = error "BUG"
+whnf e@(Var_b _) = error "should not reach this"
 whnf e@(Abs _) = return e
 whnf (App f a) = do
   f' <- whnf f
@@ -139,12 +140,12 @@ whnf (App f a) = do
 -- Fueled version
 
 nfi :: Int -> Exp -> Maybe Exp
-nfi n e = evalStateT (nfi' n e) firstBoundId
+nfi n e = State.evalStateT (nfi' n e) firstBoundId
 
-type NM a = StateT IdInt Maybe a
+type NM a = State.StateT IdInt Maybe a
 
 nfi' :: Int -> Exp -> NM Exp
-nfi' 0 _ = lift Nothing
+nfi' 0 _ = State.lift Nothing
 nfi' n e@(Var_f _) = return e
 nfi' n e@(Var_b _) = error "should not reach this"
 nfi' n (Abs e) = do
@@ -159,9 +160,9 @@ nfi' n (App f a) = do
 
 -- Compute the weak head normal form.
 whnfi :: Int -> Exp -> NM Exp
-whnfi 0 _ = lift Nothing
+whnfi 0 _ = State.lift Nothing
 whnfi n e@(Var_f _) = return e
-whnfi n e@(Var_b _) = error "BUG"
+whnfi n e@(Var_b _) = error "should not reach this"
 whnfi n e@(Abs _) = return e
 whnfi n (App f a) = do
   f' <- whnfi (n -1) f

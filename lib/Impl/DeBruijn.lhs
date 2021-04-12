@@ -1,5 +1,6 @@
 The DeBruijn module implements the Normal Form function by
-using de Bruijn indicies.
+using de Bruijn indicies. It is originally from Lennart Augustsson's repository
+but has been modified to to fit into this setting.
 
 > module Impl.DeBruijn(nf,Impl.DeBruijn.aeq, toDB, fromDB, nfd, nfi, impl) where
 > import Data.List(elemIndex)

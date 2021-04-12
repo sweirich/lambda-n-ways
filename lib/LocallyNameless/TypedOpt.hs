@@ -8,7 +8,7 @@
 -- Then with types addded, and multi substitutions
 -- And caching openning substitutions at binders
 -- and caching closing substitutions at binders
-module LocallyNameless.TypedOpt where
+module LocallyNameless.TypedOpt (impl) where
 
 import qualified Control.Monad.State as State
 import qualified Data.IntMap as IM
@@ -344,7 +344,6 @@ multi_close_exp_wrt_exp_rec k xs e =
           pf1 = Refl
           pf2 :: S (Plus n k) :~: Plus (Plus n0 n) k0
           pf2 = Unsafe.unsafeCoerce Refl
-    --Abs (BindClose _ (append vm vn) a)
     Abs b
       | Refl <- plus_S_r @n @k ->
         Abs
@@ -365,8 +364,6 @@ close :: IdInt -> Exp Z -> Bind Exp Z
 close x e =
   BindClose Refl SZ (VCons x VNil) e
 
---bind (multi_close_exp_wrt_exp_rec SZ (VCons x VNil) e)
-
 -- if n2 is greater than n1 increment it. Otherwise just return it.
 cmpIdx :: Idx (S n) -> Idx n -> Idx (S n)
 cmpIdx n1 n2 =
@@ -375,25 +372,6 @@ cmpIdx n1 n2 =
     (FS m, FS n) -> FS (cmpIdx m n)
     (FZ, FZ) -> FZ
     (FZ, FS n) -> FS FZ
-
--- Create a new "bound index" from a free variable
--- The index starts at FZ and comes from a larger scope
--- All variables that are less than the new index must be incremented.
-{-
-close_exp_wrt_exp_rec :: SNat n -> Idx (S n) -> IdInt -> Exp n -> Exp (S n)
-close_exp_wrt_exp_rec k n1 x1 e1 =
-  case e1 of
-    Var_f x2 -> if (x1 == x2) then (Var_b n1) else (Var_f x2)
-    -- variables that are greater than the binding level n1 need to be incremented
-    -- because we are adding another binding
-    Var_b n2 -> Var_b (cmpIdx n1 n2)
-    Abs b -> Abs (bind (SS k) (close_exp_wrt_exp_rec (SS k) (FS n1) x1 (unbind b)))
-    -- Abs (Bind (s1 :: Sub Exp m n) (b :: Exp (S m))) -> undefined
-    -- here if s1 maps Var_b n1 to Var_f x1 then we can cancel the close out.
-    App e2 e3 -> App (close_exp_wrt_exp_rec k n1 x1 e2) (close_exp_wrt_exp_rec k n1 x1 e3)
--}
---close :: IdInt -> Exp Z -> Bind Exp Z
---close x e = bind SZ (close_exp_wrt_exp_rec SZ FZ x e)
 
 impl :: LambdaImpl
 impl =

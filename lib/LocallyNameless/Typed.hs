@@ -5,24 +5,24 @@
 
 -- | Based directly on transliteration of Coq output for Ott Locally Nameless Backend
 -- Then with types addded to make sure that terms stay locally closed (when they need to be)
-module LocallyNameless.Typed where
+module LocallyNameless.Typed (impl) where
 
 import qualified Control.Monad.State as State
 import qualified Data.IntMap as IM
 import Data.List (elemIndex)
 import qualified Data.Set as Set
-import Data.Type.Equality
-import IdInt
-import Impl
+import Data.Type.Equality (type (:~:) (..))
+import IdInt (IdInt (..), firstBoundId)
+import Impl (LambdaImpl (..))
 import Imports hiding (S, lift)
 import qualified Lambda as LC
 import qualified Unsafe.Coerce as Unsafe
 
--- 0. Original
+-- 0. (Ott) Original
 -- lennart: 1.03s
 -- random: 0.807 ms
 
--- 1. Well-typed (slows it down)
+-- 1. (Typed) Well-typed (slows it down)
 -- lennart: 1.43s
 -- random: 1.8ms
 -------------------------------------------------------------------
@@ -72,9 +72,7 @@ shift (SS m) x = FS (shift m x)
 --------------------------------------------------------------
 
 instance (forall n. NFData (a n)) => NFData (Bind a m) where
-  rnf (Bind s a) =
-    -- rnf s `seq`
-    rnf a
+  rnf (Bind a) = rnf a
 
 instance NFData (Idx a) where
   rnf FZ = ()
@@ -88,22 +86,20 @@ instance NFData (SNat a) where
 --------------------------------------------------------------
 
 -- Locally nameless simplification.
--- We only use substBv to implement open
 -- when we open, we only replace with locally closed terms
 -- and we only use open for variables with a single bound variable.
 -- This means that we do *not* need to shift as much.
 
 data Bind a k where
-  --Bind :: Sub n (S k) -> !(a (Plus n (S k))) -> Bind a k
-  Bind :: b -> !(a (S k)) -> Bind a k
+  Bind :: !(a (S k)) -> Bind a k
 
 -- create a binding by "abstracting a variable"
-bind :: SNat k -> a (S k) -> Bind a k
-bind k x = Bind (Sub (SS k) VNil) x
+bind :: a (S k) -> Bind a k
+bind = Bind
 {-# INLINEABLE bind #-}
 
 unbind :: forall k. Bind Exp k -> Exp (S k)
-unbind (Bind _ss a) = a -- multi_open_exp_wrt_exp_rec ss a
+unbind (Bind a) = a -- multi_open_exp_wrt_exp_rec ss a
 {-# INLINEABLE unbind #-}
 
 instance (Eq (Exp (S n))) => Eq (Bind Exp n) where
@@ -164,18 +160,29 @@ plus_Z_r = Unsafe.unsafeCoerce Refl
 plus_inj :: forall n k m. Plus n (S k) :~: S m -> Plus n k :~: m
 plus_inj = Unsafe.unsafeCoerce Refl
 
+{-
 multi_open_exp_wrt_exp_rec :: forall n k. Sub n k -> Exp (Plus n k) -> Exp k
 multi_open_exp_wrt_exp_rec ss@(Sub k v) e =
   case e of
     Var_b (i :: Idx (Plus n k)) -> openIdx i k v
     Var_f x -> Var_f x
-    Abs (Bind ss1 b) --  -> Abs (Bind (ss1 `appendSub` ss0) b)
+    Abs (Bind b)
       | Refl <- plus_comm @n @k ->
-        Abs (Bind k (multi_open_exp_wrt_exp_rec (Sub (SS k) v) b))
+        Abs (Bind (multi_open_exp_wrt_exp_rec (Sub (SS k) v) b))
     (App e1 e2) ->
       App
         (multi_open_exp_wrt_exp_rec ss e1)
         (multi_open_exp_wrt_exp_rec ss e2)
+-}
+
+weakenIdx :: Idx n -> Idx (S n)
+weakenIdx = Unsafe.unsafeCoerce
+
+{-
+weakenIdx :: Idx n -> Idx (S n)
+weakenIdx FZ = FZ
+weakenIdx (FS m) = FS (weakenIdx m)
+-}
 
 shiftV :: Exp k -> Exp (S k)
 shiftV (Var_b n) = Var_b (FS n)
@@ -183,6 +190,7 @@ shiftV x = Unsafe.unsafeCoerce x
 
 -- when we find a bound variable, determine whether we should
 -- leave it alone or replace it
+-- This is really hacky!
 openIdx :: forall n k. Idx (Plus n k) -> SNat k -> Vec n -> Exp k
 openIdx i SZ v
   | Refl <- plus_Z_r @n = inth i v
@@ -206,8 +214,6 @@ openIdx (FS n) (SCons _u ss) = weaken <$> lookupIdx n ss
 openIdx (FS n) SNil = Nothing
 openIdx (FZ (SCons u _) =
 -}
---open_bind_wrt_bind :: SNat n -> Exp Z -> Bind Exp (S n) -> Bind Exp n
---open_bind_wrt_bind k1 u (Bind (Sub k1 e) = Bind (open_exp_wrt_exp_rec (SS k) u e)
 
 -- either n is equal to m or greater than m
 compareIdx :: SNat k -> Idx (S k) -> Maybe (Idx k)
@@ -216,7 +222,6 @@ compareIdx (SS m) (FS n) = FS <$> compareIdx m n
 compareIdx SZ (FS m) = Nothing
 compareIdx (SS _) FZ = Just FZ
 
-{-
 open_exp_wrt_exp_rec :: forall n. SNat n -> Exp Z -> Exp (S n) -> Exp n
 open_exp_wrt_exp_rec k u e =
   case e of
@@ -225,50 +230,27 @@ open_exp_wrt_exp_rec k u e =
         Just i -> Var_b i
         Nothing -> weaken u
     (Var_f x) -> Var_f x
-    (Abs b) -> Abs (open_bind_wrt_bind k u b)
+    (Abs (Bind b)) -> Abs (Bind (open_exp_wrt_exp_rec (SS k) u b))
     (App e1 e2) ->
       App
         (open_exp_wrt_exp_rec k u e1)
         (open_exp_wrt_exp_rec k u e2)
--}
 
 open :: Bind Exp Z -> Exp Z -> Exp Z
-open (Bind _ss e) u = f
+open (Bind e) u = f
   where
-    f = multi_open_exp_wrt_exp_rec (Sub SZ (VCons u VNil)) e
+    f = open_exp_wrt_exp_rec SZ u e
 
-{-
--- if n2 is greater than n1 increment it. Otherwise just return it.
-cmpIdx :: Idx (S n) -> Idx n -> Idx (S n)
-cmpIdx n1 n2 =
-  case (n1, n2) of
-    (FS m, FZ) -> FZ
-    (FS m, FS n) -> FS (cmpIdx m n)
-    (FZ, FZ) -> FZ
-    (FZ, FS n) -> FS FZ
--}
-
-weakenIdx :: Idx n -> Idx (S n)
-weakenIdx = Unsafe.unsafeCoerce
-
-{-
-weakenIdx :: Idx n -> Idx (S n)
-weakenIdx FZ = FZ
-weakenIdx (FS m) = FS (weakenIdx m)
--}
-
-close_exp_wrt_exp_rec :: SNat n -> Idx (S n) -> IdInt -> Exp n -> Exp (S n)
-close_exp_wrt_exp_rec k n1 x1 e1 =
+close_exp_wrt_exp_rec :: Idx (S n) -> IdInt -> Exp n -> Exp (S n)
+close_exp_wrt_exp_rec n1 x1 e1 =
   case e1 of
     Var_f x2 -> if (x1 == x2) then (Var_b n1) else (Var_f x2)
     Var_b n2 -> Var_b (weakenIdx n2)
-    Abs b -> Abs (bind (SS k) (close_exp_wrt_exp_rec (SS k) (FS n1) x1 (unbind b)))
-    -- Abs (Bind (s1 :: Sub Exp m n) (b :: Exp (S m))) -> undefined
-    -- here if s1 maps Var_b n1 to Var_f x1 then we can cancel the close out.
-    App e2 e3 -> App (close_exp_wrt_exp_rec k n1 x1 e2) (close_exp_wrt_exp_rec k n1 x1 e3)
+    Abs b -> Abs (bind (close_exp_wrt_exp_rec (FS n1) x1 (unbind b)))
+    App e2 e3 -> App (close_exp_wrt_exp_rec n1 x1 e2) (close_exp_wrt_exp_rec n1 x1 e3)
 
 close :: IdInt -> Exp Z -> Bind Exp Z
-close x e = bind SZ (close_exp_wrt_exp_rec SZ FZ x e)
+close x e = bind (close_exp_wrt_exp_rec FZ x e)
 
 impl :: LambdaImpl
 impl =
@@ -281,34 +263,12 @@ impl =
       impl_aeq = aeq
     }
 
-{-
-toDB :: LC.LC IdInt -> DB Z
-toDB = to []
-  where to :: [(IdInt, Idx n)] -> LC IdInt ->  DB n
-        to vs (Var v)   = DVar (fromJust (lookup v vs))
-        to vs (Lam v b) = DLam (bind b') where
-             b' = to ((v,FZ):mapSnd FS vs) b
-        to vs (App f a) = DApp (to vs f) (to vs a)
--
-
-fromDB :: DB n -> LC IdInt
-fromDB = from firstBoundId
-  where
-    from :: IdInt -> DB n -> LC IdInt
-    from (IdInt n) (DVar i)
-      | toInt i < 0 = Var (IdInt $ toInt i)
-      | toInt i >= n = Var (IdInt $ toInt i)
-      | otherwise = Var (IdInt (n - (toInt i) -1))
-    from n (DLam b) = Lam n (from (succ n) (unbind b))
-    from n (DApp f a) = App (from n f) (from n a)
--}
-
 toDB :: LC.LC IdInt -> Exp Z
 toDB = to SZ []
   where
     to :: SNat n -> [(IdInt, Idx n)] -> LC.LC IdInt -> Exp n
     to k vs (LC.Var v@(IdInt i)) = maybe (Var_f v) Var_b (lookup v vs)
-    to k vs (LC.Lam x b) = Abs (bind k b')
+    to k vs (LC.Lam x b) = Abs (bind b')
       where
         b' = to (SS k) ((x, FZ) : mapSnd FS vs) b
     to k vs (LC.App f a) = App (to k vs f) (to k vs a)
@@ -368,7 +328,7 @@ subst u y e = subst0 SZ e
     subst0 k e = case e of
       (Var_b n) -> Var_b n
       (Var_f x) -> (if x == y then weaken @n u else (Var_f x))
-      (Abs b) -> Abs (bind k (subst0 (SS k) (unbind b)))
+      (Abs b) -> Abs (bind (subst0 (SS k) (unbind b)))
       (App e1 e2) -> App (subst0 @n k e1) (subst0 @n k e2)
 
 fv :: Exp n -> Set IdInt
@@ -378,47 +338,6 @@ fv e =
     (Var_f x) -> Set.singleton x
     (Abs b) -> fv (unbind b)
     (App e1 e2) -> fv e1 `Set.union` fv e2
-
-{-
-open_exp_wrt_exp_rec :: Int -> Exp -> Exp -> Exp
-open_exp_wrt_exp_rec k u e =
-  case e of
-    (Var_b n) ->
-      case compare n k of
-        LT -> Var_b n
-        EQ -> u
-        GT -> Var_b (n - 1)
-    (Var_f x) -> Var_f x
-    (Abs e) -> Abs (openBindRec (k + 1) u e)
-    (App e1 e2) ->
-      App
-        (open_exp_wrt_exp_rec k u e1)
-        (open_exp_wrt_exp_rec k u e2)
-
-open_exp_wrt_map_rec :: IM.IntMap IdInt -> Exp -> Exp
-open_exp_wrt_map_rec k e =
-  case e of
-    (Var_b n) ->
-      case compare n k of
-        LT -> Var_b n
-        EQ -> u
-        GT -> Var_b (n - 1)
-    (Var_f x) -> Var_f x
-    (Abs e) -> Abs (openRec (k + 1) e)
-    -- need to increment the domain of all
-    (App e1 e2) ->
-      App
-        (open_exp_wrt_map_rec k e1)
-        (open_exp_wrt_map_rec k e2)
-
-close_exp_wrt_exp_rec :: Int -> IdInt -> Exp -> Exp
-close_exp_wrt_exp_rec n1 x1 e1 =
-  case e1 of
-    Var_f x2 -> if (x1 == x2) then (Var_b n1) else (Var_f x2)
-    Var_b n2 -> if (n2 < n1) then (Var_b n2) else (Var_b (1 + n2))
-    Abs e2 -> Abs (closeBindRec (1 + n1) x1 e2)
-    App e2 e3 -> App (close_exp_wrt_exp_rec n1 x1 e2) (close_exp_wrt_exp_rec n1 x1 e3)
--}
 
 type N a = State IdInt a
 
@@ -433,7 +352,6 @@ nfd e = State.evalState (nf' e) firstBoundId
 
 nf' :: Exp Z -> N (Exp Z)
 nf' e@(Var_f _) = return e
-nf' e@(Var_b _) = error "should not reach this"
 nf' (Abs b) = do
   x <- newVar
   b' <- nf' (open b (Var_f x))
@@ -447,7 +365,6 @@ nf' (App f a) = do
 -- Compute the weak head normal form.
 whnf :: Exp Z -> N (Exp Z)
 whnf e@(Var_f _) = return e
-whnf e@(Var_b _) = error "BUG"
 whnf e@(Abs _) = return e
 whnf (App f a) = do
   f' <- whnf f
@@ -465,7 +382,6 @@ type NM a = State.StateT IdInt Maybe a
 nfi' :: Int -> (Exp Z) -> NM (Exp Z)
 nfi' 0 _ = State.lift Nothing
 nfi' n e@(Var_f _) = return e
-nfi' n e@(Var_b _) = error "should not reach this"
 nfi' n (Abs e) = do
   x <- newVar
   e' <- nfi' (n - 1) (open e (Var_f x))
@@ -480,7 +396,6 @@ nfi' n (App f a) = do
 whnfi :: Int -> Exp Z -> NM (Exp Z)
 whnfi 0 _ = State.lift Nothing
 whnfi n e@(Var_f _) = return e
-whnfi n e@(Var_b _) = error "BUG"
 whnfi n e@(Abs _) = return e
 whnfi n (App f a) = do
   f' <- whnfi (n -1) f
