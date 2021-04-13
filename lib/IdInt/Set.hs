@@ -1,25 +1,28 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-module IdInt.Set(IdIntSet(..)
-      , empty
-      , singleton
-      , union
-      , (\\)
-      , toList
-      , IdInt.Set.null
-      , findMax
-      , delete
-      , member
-      , notMember
-      , isSubsetOf
 
-      , freeVars
-      ) where
+module IdInt.Set
+  ( IdIntSet (..),
+    empty,
+    singleton,
+    union,
+    (\\),
+    toList,
+    IdInt.Set.null,
+    findMax,
+    delete,
+    member,
+    notMember,
+    isSubsetOf,
+    insert,
+    freeVars,
+  )
+where
 
-import IdInt
-import qualified Data.IntSet as IntSet
-import Data.Coerce 
-import Lambda hiding (freeVars)
 import Control.DeepSeq
+import Data.Coerce
+import qualified Data.IntSet as IntSet
+import IdInt
+import Lambda hiding (freeVars)
 
 -- A set of IdInts, based on Data.IntSet
 
@@ -42,7 +45,7 @@ toList = coerce IntSet.toList
 
 null :: IdIntSet -> Bool
 null = coerce IntSet.null
- 
+
 findMax :: IdIntSet -> IdInt
 findMax = coerce IntSet.findMax
 
@@ -52,14 +55,16 @@ delete = coerce IntSet.delete
 notMember :: IdInt -> IdIntSet -> Bool
 notMember = coerce IntSet.notMember
 
-member  :: IdInt -> IdIntSet -> Bool
+member :: IdInt -> IdIntSet -> Bool
 member = coerce IntSet.member
 
 isSubsetOf :: IdIntSet -> IdIntSet -> Bool
 isSubsetOf = coerce IntSet.isSubsetOf
 
+insert :: IdInt -> IdIntSet -> IdIntSet
+insert = coerce IntSet.insert
 
 freeVars :: LC IdInt -> IdIntSet
-freeVars (Var v)   = singleton v
+freeVars (Var v) = singleton v
 freeVars (Lam v e) = freeVars e \\ singleton v
 freeVars (App f a) = freeVars f `union` freeVars a
