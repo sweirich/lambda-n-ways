@@ -21,7 +21,7 @@ import Impl.DeBruijn
 import Impl.HOAS
 import Impl.Kit
 import Impl.Simple
-import Impl.SimpleB
+import Impl.SimpleH
 import Impl.Unbound
 import Impl.UnboundGenerics
 import Impl.Unique
@@ -38,8 +38,8 @@ import qualified Misc
 impls :: [LambdaImpl]
 impls =
   [ --Impl.HOAS.impl,
-    LocallyNameless.Opt.impl,
-    LocallyNameless.TypedOpt.impl,
+    -- LocallyNameless.Opt.impl,
+    -- LocallyNameless.TypedOpt.impl,
     --Impl.DeBruijn.impl,
     -- DeBruijnPar.F.impl,
     --DeBruijnPar.FB.impl,
@@ -49,12 +49,12 @@ impls =
     --DeBruijnPar.B.impl,
     --Impl.Kit.impl,
     --Impl.BoundDB.impl
-    LocallyNameless.Ott.impl,
-    LocallyNameless.Par.impl,
-    LocallyNameless.ParOpt.impl,
-    LocallyNameless.Typed.impl
-    -- Impl.SimpleB.impl,
-    -- Impl.Simple.impl,
+    -- LocallyNameless.Ott.impl,
+    -- LocallyNameless.Par.impl,
+    -- LocallyNameless.ParOpt.impl,
+    -- LocallyNameless.Typed.impl,
+    Impl.SimpleH.impl,
+    Impl.Simple.impl
     -- Impl.UnboundGenerics.impl,
     -- Impl.Unbound.impl
     -- Impl.Unique.impl

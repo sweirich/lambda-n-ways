@@ -1,5 +1,7 @@
 -- | This module is trying to make a "delayed" substitution version
 -- of the "Simple" implementation.
+-- Strangely, composing substitutions too much causes this impl to really slow
+-- down on the lennart/nf benchmark.
 module Impl.SimpleH (impl) where
 
 import IdInt (IdInt)
@@ -80,28 +82,24 @@ bind v a = Bind emptySub (S.delete v (freeVars a)) v a
 -- 1. renaming bound variable to avoid capture
 -- (2. pruning substitution to terminate early)
 unbind :: Bind Exp -> (IdInt, Exp)
-unbind b@(Bind _s _fv y a') = (y, a')
-{-  where
-    -- if the stored substitution is empty no need to apply it
-    a' = if M.null s then a else subst s a
-    (y, s, a) = unbindHelper b -}
+unbind b@(Bind _s _fv _y _a) = (y, subst s a)
+  where
+    (y, s, a) = unbindHelper b
 {-# INLINEABLE unbind #-}
 
-{-
 unbindHelper :: Bind Exp -> (IdInt, Sub Exp, Exp)
 unbindHelper (Bind s fv x a)
+  -- fast-path
+  | M.null s = (x, s, a)
   -- alpha-vary if in danger of capture
-  | x `S.member` fv_s =
-    let y = maximum (fmap varSetMax [fv, fv_s])
-     in let s'' = M.insert x (Var y) s'
-         in (y, emptySub, subst s'' a)
-  | otherwise =
-    (x, s', a)
+  | x `S.member` fv_s = (y, M.insert x (Var y) s', a)
+  | otherwise = (x, s', a)
   where
     -- restrict the substitution to only the free variables of the term
     s' = M.restrictKeys s fv
     fv_s = freeVarsSub s'
--}
+    y = maximum (fmap varSetMax [fv, fv_s])
+{-# INLINEABLE unbindHelper #-}
 
 instantiate :: Bind Exp -> Exp -> Exp
 instantiate b u = subst (M.singleton y u) a
@@ -114,19 +112,21 @@ varSetMax s = maybe (toEnum 0) succ (lookupMax s)
 {-# INLINEABLE varSetMax #-}
 
 freeVarsBind :: Bind Exp -> S.IdIntSet
-freeVarsBind b = freeVars a S.\\ S.singleton x
-  where
-    (x, a) = unbind b
-{-
 freeVarsBind b = freeVarsSub s <> (bind_fvs b S.\\ M.keysSet s)
   where
     (x, s, a) = unbindHelper b
--}
 {-# INLINEABLE freeVarsBind #-}
 
 substBind :: M.IdIntMap Exp -> Bind Exp -> Bind Exp
-substBind s2 (Bind s1 fv x a)
-  | M.null s1 = bind y a'
+substBind s2 b@(Bind s1 _fv _x _a)
+  | M.null s2 = b
+  -- forcing this substitution, instead of delaying it,  seems to be particularly
+  -- important for the lennart/nf benchmark. (14.0 sec -> 0.11 sec)
+  | M.null s1 = bind x (subst s' a)
+  where
+    (x, s', a) = unbindHelper (b {bind_subst = s2})
+{-
+  bind y a'
   where
     s' = M.restrictKeys s2 fv
     fv_s = freeVarsSub s'
@@ -142,9 +142,9 @@ substBind s2 (Bind s1 fv x a)
               let y = maximum (fmap varSetMax [fv, fv_s])
                in let s'' = M.insert x (Var y) s'
                    in (y, subst s'' a)
-            else (x, subst s2 a)
+            else (x, subst s2 a) -}
+substBind s2 b@(Bind s1 _fv _x _e) = b {bind_subst = s2 `comp` s1}
 
--- substBind s2 b@(Bind s1 _fv _x _e) = b {bind_subst = s2 `comp` s1}
 instance (NFData a) => NFData (Bind a) where
   rnf (Bind s f x a) = rnf s `seq` rnf f `seq` rnf x `seq` rnf a
 
@@ -160,8 +160,6 @@ singleSub :: IdInt -> e -> Sub e
 singleSub = M.singleton
 {-# INLINEABLE singleSub #-}
 
--- subst (s1 `comp` s2) a == subst s1 (subst s2 a)
-{-
 comp :: Sub Exp -> Sub Exp -> Sub Exp
 comp s1 s2
   | M.null s1 = s2
@@ -170,7 +168,6 @@ comp s1 s2
   -- but we also want the range of s2 to be substituted by s1
   | otherwise = substSub s1 s2 <> s1
 {-# INLINEABLE comp #-}
--}
 
 freeVarsSub :: M.IdIntMap Exp -> S.IdIntSet
 freeVarsSub = foldMap freeVars
@@ -194,9 +191,11 @@ freeVars (Lam b) = freeVarsBind b
 freeVars (App f a) = freeVars f `S.union` freeVars a
 
 subst :: M.IdIntMap Exp -> Exp -> Exp
-subst s (Var x) = M.findWithDefault (Var x) x s
-subst s (Lam b) = Lam (substBind s b)
-subst s (App f a) = App (subst s f) (subst s a)
+subst s e = if M.null s then e else subst0 e
+  where
+    subst0 (Var x) = M.findWithDefault (Var x) x s
+    subst0 (Lam b) = Lam (substBind s b)
+    subst0 (App f a) = App (subst0 f) (subst0 a)
 
 -------------------------------------------------------------------
 
@@ -212,12 +211,12 @@ aeqBind :: Bind Exp -> Bind Exp -> Bool
 aeqBind b1 b2
   | x1 == x2 -- aeqd (subst s1 a1) (subst s2 a2)
     =
-    aeqd a1 a2
+    aeqd (subst s1 a1) (subst s2 a2)
   | x1 `S.member` freeVarsBind b2 = False
-  | otherwise = aeqd a1 (subst (M.singleton x2 (Var x1)) a2)
+  | otherwise = aeqd (subst s1 a1) (subst (M.singleton x2 (Var x1) `comp` s2) a2)
   where
-    (x1, a1) = unbind b1
-    (x2, a2) = unbind b2
+    (x1, s1, a1) = unbindHelper b1
+    (x2, s2, a2) = unbindHelper b2
 
 aeqd :: Exp -> Exp -> Bool
 aeqd (Var v1) (Var v2) = v1 == v2
