@@ -41,6 +41,8 @@ library
       Impl.NominalG
       Impl.Simple
       Impl.SimpleB
+      Impl.SimpleH
+      Impl.SimpleM
       Impl.Unique
       Impl.Unbound
       Impl.UnboundGenerics
