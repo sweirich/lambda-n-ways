@@ -19,7 +19,7 @@ Type-and-Scope Safe Programs and Their Proofs
 Guillaume Allais, James Chapman, Conor McBride, James McKinna
 -}
 
-module Impl.Kit (Term, fromLC, toLC, nfd, impl) where
+module Impl.Kit (impl) where
 
 import Control.DeepSeq
 import Control.Monad.State
