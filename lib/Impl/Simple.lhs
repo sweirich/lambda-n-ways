@@ -1,20 +1,21 @@
-
+{-
 The Simple module implements the Normal Form function by
 using a na\"{i}ve version of substitution. In otherwords, this version
 alpha-renames bound variables during substitution if they would ever
 capture a free variable.
+-}
 
 > {-# LANGUAGE FlexibleContexts #-}
 > {-# LANGUAGE ScopedTypeVariables #-}
 > module Impl.Simple(nf,whnf,nfi,impl,iNf,St(..),subst) where
 > import Data.List(union, (\\))
-> import Lambda
-> import IdInt  
-> import Impl
+> import Lambda ( aeq, allVars, freeVars, LC(..) )
+> import IdInt ( newId, IdInt )  
+> import Impl ( LambdaImpl(..) )
 > import Imports
 > import qualified Data.Map as M
 >
-> import Control.Monad.State
+> import qualified Control.Monad.State as State
 > import Control.Monad.Except
 
 > impl :: LambdaImpl
@@ -34,7 +35,7 @@ capture a free variable.
 >        sub :: Map IdInt (LC IdInt) -> [IdInt] -> LC IdInt -> LC IdInt
 >        sub ss _ e@(Var v) | v `M.member` ss = (ss M.! v) 
 >                           | otherwise = e
->        sub ss vs e@(Lam v e') | v `M.member` ss = e
+>        sub ss vs e@(Lam v e') | v `M.member` ss = e -- ??? all the others are renamings
 >                               | v `elem` fvs = Lam v' (sub ss (v':vs) e'')
 >                               | otherwise = Lam v (sub ss (v:vs) e')
 >                                where 
@@ -112,10 +113,10 @@ the number of beta reductions
 >   put (s { numSubsts = numSubsts s + 1 } { tmsIn = a : tmsIn s })
 >   return (subst x a b)
 
-> type M a = StateT St (Either String) a
+> type M a = State.StateT St (Either String) a
 
 > iNf :: Int -> LC IdInt -> Maybe (LC IdInt, St)
-> iNf i z = hush $ runStateT (nfm i z :: M (LC IdInt)) (St 0 [])
+> iNf i z = hush $ State.runStateT (nfm i z :: M (LC IdInt)) (St 0 [])
 
 > hush :: Either a b -> Maybe b
 > hush = either (const Nothing) Just
