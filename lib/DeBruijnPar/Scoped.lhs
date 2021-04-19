@@ -123,7 +123,8 @@ so the free variables refer to the correct binders.
 
 
 Convert to deBruijn indicies.  Do this by keeping a list of the bound
-variable so the depth can be found of all variables. 
+variable so the depth can be found of all variables. NOTE: input term 
+must be closed.
 
 > toDB :: LC IdInt -> DB Z
 > toDB = to [] 
