@@ -21,7 +21,9 @@ import Impl.DeBruijn
 import Impl.HOAS
 import Impl.Kit
 import Impl.Simple
-import Impl.SimpleH
+import qualified Impl.SimpleB
+import qualified Impl.SimpleH
+import qualified Impl.SimpleM
 import Impl.Unbound
 import Impl.UnboundGenerics
 import Impl.Unique
@@ -40,32 +42,31 @@ impls =
   [ --Impl.HOAS.impl,
     -- LocallyNameless.Opt.impl,
     -- LocallyNameless.TypedOpt.impl,
-    --Impl.DeBruijn.impl,
+    -- Impl.DeBruijn.impl,
     -- DeBruijnPar.F.impl,
-    --DeBruijnPar.FB.impl,
+    -- DeBruijnPar.FB.impl,
     -- DeBruijnPar.L.impl,
-    -- DeBruijnPar.P.impl,
+    -- DeBruijnPar.P.impl
     -- DeBruijnPar.Scoped.impl,
-    --DeBruijnPar.B.impl,
-    --Impl.Kit.impl,
-    --Impl.BoundDB.impl
+    -- DeBruijnPar.B.impl,
+    -- Impl.Kit.impl,
+    -- Impl.BoundDB.impl
     -- LocallyNameless.Ott.impl,
     -- LocallyNameless.Par.impl,
     -- LocallyNameless.ParOpt.impl,
     -- LocallyNameless.Typed.impl,
-    Impl.SimpleH.impl,
-    Impl.Simple.impl
-    -- Impl.UnboundGenerics.impl,
+    --Impl.SimpleH.impl
+    Impl.SimpleB.impl
+    --Impl.SimpleM.impl
+    --Impl.Simple.impl
+    --Impl.UnboundGenerics.impl
     -- Impl.Unbound.impl
     -- Impl.Unique.impl
     -- Core.Nf.impl,
     -- Impl.NominalG.impl -- generally too slow (12s vs. <200 ms for everything else)
   ]
 
-conv :: (Ord v) => LC v -> FreshM v (LC IdInt)
-conv (Var v) = Var <$> convVar v
-conv (Lam v e) = Lam <$> convVar v <*> conv e
-conv (App f a) = App <$> conv f <*> conv a
+-- Convert a lambda-calculus to
 
 toIdInt :: (Ord v) => LC v -> LC IdInt
 toIdInt e = evalState (conv e) (0, fvmap)
@@ -75,6 +76,11 @@ toIdInt e = evalState (conv e) (0, fvmap)
         (\(v, i) m -> M.insert v (IdInt i) m)
         M.empty
         (zip (Lambda.freeVars e) [1 ..])
+
+    conv :: (Ord v) => LC v -> FreshM v (LC IdInt)
+    conv (Var v) = Var <$> convVar v
+    conv (Lam v e) = Lam <$> convVar v <*> conv e
+    conv (App f a) = App <$> conv f <*> conv a
 
 --------------------------------------------------------------
 --------------------------------------------------------------
@@ -93,6 +99,7 @@ getTerms filename = do
   let ss = filter (/= "") (lines (Misc.stripComments contents))
   return $ map (toIdInt . (read :: String -> LC Id)) ss
 
+{-
 -- Convenience functions for creating test cases
 infixl 5 @@
 
@@ -104,30 +111,10 @@ lam i = Lam (IdInt i)
 
 var :: Int -> LC IdInt
 var i = Var (IdInt i)
+-}
 
 lambdaTrue :: LC IdInt
-lambdaTrue = lam 0 (lam 1 (var 0))
+lambdaTrue = Lam (IdInt 0) (Lam (IdInt 1) (Var (IdInt 0)))
 
 lambdaFalse :: LC IdInt
-lambdaFalse = lam 0 (lam 1 (var 1))
-
-{-
--- | Ok if either times out too early. But if they both finish, it should
--- be with the same answer
-eqMaybe :: (a -> a -> Bool) -> Maybe a -> Maybe a -> Property
-eqMaybe f (Just x) (Just y) = classify True "aeq" (f x y)
-eqMaybe _f _ _ = property True
-
-prop_sameNF :: (Int -> LC IdInt -> Maybe (LC IdInt)) -> Int -> LC IdInt ->  Property
-prop_sameNF f i x = eqMaybe Lambda.aeq (Simple.nfi i x) (f i x)
-
-lc_nfi :: LambdaImpl -> Int -> LC IdInt -> Maybe (LC IdInt)
-lc_nfi LambdaImpl{..} i x =
-  impl_toLC <$>  impl_nfi i (impl_fromLC x)
-
--- NOTE: need "fueled" version of normalization
--- NOTE: hard to shrink and stay well-closed
-prop_closedNF :: LambdaImpl -> Property
-prop_closedNF impl = forAllShrink IdInt.genScoped IdInt.shrinkScoped $ \x ->
-      eqMaybe Unique.aeq (lc_nfi DeBruijn.impl 1000 x) (lc_nfi impl 1000 x)
--}
+lambdaFalse = Lam (IdInt 0) (Lam (IdInt 1) (Var (IdInt 1)))
