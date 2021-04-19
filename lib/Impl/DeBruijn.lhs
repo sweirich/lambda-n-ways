@@ -2,7 +2,7 @@ The DeBruijn module implements the Normal Form function by
 using de Bruijn indicies. It is originally from Lennart Augustsson's repository
 but has been modified to to fit into this setting.
 
-> module Impl.DeBruijn(nf,Impl.DeBruijn.aeq, toDB, fromDB, nfd, nfi, impl) where
+> module Impl.DeBruijn(impl, toDB, fromDB, nfd, nfi) where
 > import Data.List(elemIndex)
 > import Lambda
 > import IdInt
@@ -31,12 +31,6 @@ $\lambda$s out the binding $\lambda$ is.
 >    rnf (DVar i) = rnf i
 >    rnf (DLam d) = rnf d
 >    rnf (DApp a b) = rnf a `seq` rnf b
-
-> aeq :: LC IdInt -> LC IdInt -> Bool
-> aeq x y = toDB x == toDB y
-
-> nf :: LC IdInt -> LC IdInt
-> nf = fromDB . nfd . toDB
 
 Computing the normal form proceeds as usual.
 
