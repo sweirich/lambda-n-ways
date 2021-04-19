@@ -1,20 +1,24 @@
+{-# LANGUAGE DeriveTraversable #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 
 module IdInt.Map where
 
-import Control.DeepSeq
-import Data.Coerce
-import Data.Foldable
+import Control.DeepSeq (NFData)
+import Data.Coerce (coerce)
 import qualified Data.IntMap as M
-import IdInt
-import IdInt.Set
+import IdInt (IdInt (..))
+import IdInt.Set (IdIntSet (..))
 
-newtype IdIntMap a = IdIntMap (M.IntMap a) deriving (Eq, Show, Functor, Semigroup, Monoid, NFData, Foldable)
+newtype IdIntMap a = IdIntMap (M.IntMap a)
+  deriving (Eq, Show, Functor, Semigroup, Monoid, NFData, Foldable, Traversable)
 
 null :: forall a. IdIntMap a -> Bool
 null = coerce $ M.null @a
+
+elems :: forall a. IdIntMap a -> [a]
+elems = coerce $ M.elems @a
 
 insert :: forall a. IdInt -> a -> IdIntMap a -> IdIntMap a
 insert = coerce $ M.insert @a
