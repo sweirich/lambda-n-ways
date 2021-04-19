@@ -77,25 +77,26 @@ bind :: IdInt -> Exp -> Bind Exp
 bind v a = Bind emptySub (S.delete v (freeVars a)) v a
 {-# INLINEABLE bind #-}
 
--- | This part of the term does the dirty work with pushing a substitution through
--- the binder.
--- 1. renaming bound variable to avoid capture
--- (2. pruning substitution to terminate early)
 unbind :: Bind Exp -> (IdInt, Exp)
-unbind b@(Bind _s _fv _y _a) = (y, subst s a)
+unbind b = (y, subst s a)
   where
     (y, s, a) = unbindHelper b
 {-# INLINEABLE unbind #-}
 
+-- | This part does the dirty work with pushing a substitution through
+-- the binder. It returns but does not actually apply the substitution.
+-- 1. renaming bound variable to avoid capture
+-- 2. pruning the substitution to terminate early
 unbindHelper :: Bind Exp -> (IdInt, Sub Exp, Exp)
 unbindHelper (Bind s fv x a)
   -- fast-path
   | M.null s = (x, s, a)
   -- alpha-vary if in danger of capture
   | x `S.member` fv_s = (y, M.insert x (Var y) s', a)
+  -- usual case, but prune substitution
   | otherwise = (x, s', a)
   where
-    -- restrict the substitution to only the free variables of the term
+    -- restrict to the free variables of the term
     s' = M.restrictKeys s fv
     fv_s = freeVarsSub s'
     y = maximum (fmap varSetMax [fv, fv_s])
@@ -105,6 +106,11 @@ instantiate :: Bind Exp -> Exp -> Exp
 instantiate b u = subst (M.singleton y u) a
   where
     (y, a) = unbind b
+{-
+instantiate b u = subst (s `comp` (M.singleton y u)) a
+  where
+    (y, s, a) = unbindHelper b
+    -}
 {-# INLINEABLE instantiate #-}
 
 varSetMax :: VarSet -> IdInt

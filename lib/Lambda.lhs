@@ -84,18 +84,6 @@ left.
 >     aeqd a1 b1 && aeqd a2 b2
 >   aeqd _ _ = False
 
-> {- 
-> conv :: (Ord v) => LC v -> FreshM v (LC IdInt)
-> conv (Var v)   = Var <$> convVar v
-> conv (Lam v e) = Lam <$> convVar v <*> conv e
-> conv (App f a) = App <$> conv f    <*> conv a
-
-> toIdInt :: (Ord v) => LC v -> LC IdInt
-> toIdInt e = evalState (conv e) (0, fvmap)
->   where fvmap = Prelude.foldr (\ (v, i) m -> M.insert v (IdInt i) m) M.empty
->                               (zip (Lambda.freeVars e) [1..])
-> -}
-
 ---------------------------- Read/Show -------------------------------------
 
 The Read instance for the LC type reads $\lambda$ term with the normal
