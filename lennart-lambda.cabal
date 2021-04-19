@@ -29,33 +29,33 @@ library
       QuickBench
       IdInt.Map
       IdInt.Set
-      Impl.BoundDB
-      Impl.DeBruijn
-      Impl.HOAS
+      DeBruijn.Bound
+      DeBruijn.Kit
+      DeBruijn.Par.P
+      DeBruijn.Par.B
+      DeBruijn.Par.F
+      DeBruijn.Par.FB
+      DeBruijn.Par.L
+      DeBruijn.Par.SubstScoped
+      DeBruijn.Par.Scoped
+      DeBruijn.Par.Subst
       LocallyNameless.Ott
       LocallyNameless.Opt
       LocallyNameless.Par
       LocallyNameless.ParOpt
       LocallyNameless.Typed
       LocallyNameless.TypedOpt
-      Impl.NominalG
-      Impl.Simple
-      Impl.SimpleB
-      Impl.SimpleH
-      Impl.SimpleM
-      Impl.Unique
-      Impl.Unbound
-      Impl.UnboundGenerics
+      LocallyNameless.Unbound
+      LocallyNameless.UnboundGenerics
+      Lennart.Simple
+      Lennart.DeBruijn
+      Lennart.Unique
+      Lennart.HOAS
+      Named.NominalG
+      Named.SimpleB
+      Named.SimpleH
+      Named.SimpleM
       Impl.DeBruijnC
-      Impl.Kit
-      DeBruijnPar.P
-      DeBruijnPar.B
-      DeBruijnPar.F
-      DeBruijnPar.FB
-      DeBruijnPar.L
-      DeBruijnPar.SubstScoped
-      DeBruijnPar.Scoped
-      DeBruijnPar.Subst
       Core.Core
       Core.Unique
       Core.FV

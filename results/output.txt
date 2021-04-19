@@ -1,1380 +1,503 @@
-benchmarking rand/LocallyNameless.Opt/
-time                 136.0 μs   (133.6 μs .. 138.2 μs)
-                     0.998 R²   (0.997 R² .. 0.999 R²)
-mean                 137.8 μs   (135.9 μs .. 140.1 μs)
-std dev              7.136 μs   (5.561 μs .. 9.369 μs)
-variance introduced by outliers: 53% (severely inflated)
+benchmarking rand/SimpleH/
+time                 800.9 μs   (775.2 μs .. 818.5 μs)
+                     0.996 R²   (0.995 R² .. 0.998 R²)
+mean                 767.8 μs   (760.0 μs .. 778.2 μs)
+std dev              31.54 μs   (24.80 μs .. 40.93 μs)
+variance introduced by outliers: 33% (moderately inflated)
 
-benchmarking rand/LocallyNameless.TypedOpt/
-time                 146.9 μs   (145.3 μs .. 149.0 μs)
-                     0.998 R²   (0.993 R² .. 1.000 R²)
-mean                 147.9 μs   (146.5 μs .. 150.6 μs)
-std dev              6.592 μs   (3.115 μs .. 12.38 μs)
-variance introduced by outliers: 44% (moderately inflated)
+benchmarking rand/SimpleB/
+time                 478.3 μs   (467.9 μs .. 488.3 μs)
+                     0.997 R²   (0.996 R² .. 0.999 R²)
+mean                 466.9 μs   (461.4 μs .. 474.1 μs)
+std dev              21.50 μs   (17.56 μs .. 26.80 μs)
+variance introduced by outliers: 40% (moderately inflated)
 
-benchmarking rand/LocallyNameless.Ott/
-time                 820.3 μs   (812.3 μs .. 828.6 μs)
-                     0.999 R²   (0.999 R² .. 1.000 R²)
-mean                 833.3 μs   (827.9 μs .. 842.9 μs)
-std dev              24.32 μs   (14.24 μs .. 37.07 μs)
-variance introduced by outliers: 19% (moderately inflated)
+benchmarking rand/Simple/
+time                 35.47 ms   (34.60 ms .. 36.51 ms)
+                     0.996 R²   (0.991 R² .. 0.999 R²)
+mean                 35.63 ms   (35.23 ms .. 36.57 ms)
+std dev              1.289 ms   (558.8 μs .. 2.165 ms)
+variance introduced by outliers: 11% (moderately inflated)
 
-benchmarking rand/LocallyNameless.Par/
-time                 196.8 ms   (196.1 ms .. 197.7 ms)
+benchmarking conv/SimpleH
+time                 3.601 μs   (3.573 μs .. 3.620 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 3.628 μs   (3.605 μs .. 3.671 μs)
+std dev              101.0 ns   (64.45 ns .. 168.1 ns)
+variance introduced by outliers: 34% (moderately inflated)
+
+benchmarking conv/SimpleB
+time                 3.486 μs   (3.458 μs .. 3.517 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 3.455 μs   (3.433 μs .. 3.476 μs)
+std dev              74.60 ns   (60.08 ns .. 96.22 ns)
+variance introduced by outliers: 24% (moderately inflated)
+
+benchmarking conv/Simple
+time                 678.8 ns   (676.7 ns .. 681.4 ns)
                      1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 196.5 ms   (196.4 ms .. 196.7 ms)
-std dev              270.5 μs   (179.1 μs .. 395.8 μs)
+mean                 679.7 ns   (677.4 ns .. 683.4 ns)
+std dev              9.872 ns   (6.065 ns .. 14.84 ns)
 variance introduced by outliers: 14% (moderately inflated)
 
-benchmarking rand/LocallyNameless.ParOpt/
-time                 1.607 ms   (1.597 ms .. 1.615 ms)
+benchmarking nf/SimpleH/
+time                 108.6 ms   (107.1 ms .. 110.2 ms)
                      1.000 R²   (0.999 R² .. 1.000 R²)
-mean                 1.607 ms   (1.597 ms .. 1.627 ms)
-std dev              43.89 μs   (23.94 μs .. 81.41 μs)
-variance introduced by outliers: 14% (moderately inflated)
-
-benchmarking rand/LocallyNameless.Typed/
-time                 25.92 ms   (25.62 ms .. 26.32 ms)
-                     0.999 R²   (0.999 R² .. 1.000 R²)
-mean                 26.05 ms   (25.94 ms .. 26.24 ms)
-std dev              315.2 μs   (154.0 μs .. 522.7 μs)
-
-benchmarking conv/LocallyNameless.Opt
-time                 13.68 μs   (13.62 μs .. 13.74 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 13.70 μs   (13.62 μs .. 13.78 μs)
-std dev              279.1 ns   (221.0 ns .. 368.6 ns)
-variance introduced by outliers: 19% (moderately inflated)
-
-benchmarking conv/LocallyNameless.TypedOpt
-time                 14.33 μs   (14.24 μs .. 14.42 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 14.40 μs   (14.32 μs .. 14.45 μs)
-std dev              205.7 ns   (133.9 ns .. 343.4 ns)
-variance introduced by outliers: 10% (moderately inflated)
-
-benchmarking conv/LocallyNameless.Ott
-time                 4.594 μs   (4.571 μs .. 4.618 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 4.594 μs   (4.562 μs .. 4.614 μs)
-std dev              78.32 ns   (54.36 ns .. 115.6 ns)
-variance introduced by outliers: 16% (moderately inflated)
-
-benchmarking conv/LocallyNameless.Par
-time                 14.74 μs   (14.56 μs .. 14.94 μs)
-                     0.998 R²   (0.998 R² .. 0.999 R²)
-mean                 14.56 μs   (14.44 μs .. 14.74 μs)
-std dev              484.9 ns   (366.9 ns .. 681.6 ns)
-variance introduced by outliers: 39% (moderately inflated)
-
-benchmarking conv/LocallyNameless.ParOpt
-time                 14.72 μs   (14.48 μs .. 14.98 μs)
-                     0.997 R²   (0.996 R² .. 0.999 R²)
-mean                 14.90 μs   (14.67 μs .. 15.25 μs)
-std dev              932.3 ns   (691.9 ns .. 1.233 μs)
-variance introduced by outliers: 70% (severely inflated)
-
-benchmarking conv/LocallyNameless.Typed
-time                 13.92 μs   (13.85 μs .. 14.00 μs)
-                     0.999 R²   (0.999 R² .. 1.000 R²)
-mean                 13.95 μs   (13.88 μs .. 14.13 μs)
-std dev              373.6 ns   (169.5 ns .. 711.9 ns)
-variance introduced by outliers: 29% (moderately inflated)
-
-benchmarking nf/LocallyNameless.Opt/
-time                 3.064 ms   (3.051 ms .. 3.075 ms)
-                     1.000 R²   (0.999 R² .. 1.000 R²)
-mean                 3.038 ms   (3.021 ms .. 3.050 ms)
-std dev              45.37 μs   (35.80 μs .. 60.05 μs)
-
-benchmarking nf/LocallyNameless.TypedOpt/
-time                 3.266 ms   (3.239 ms .. 3.298 ms)
-                     0.999 R²   (0.999 R² .. 1.000 R²)
-mean                 3.284 ms   (3.266 ms .. 3.306 ms)
-std dev              67.21 μs   (47.50 μs .. 92.66 μs)
-
-benchmarking nf/LocallyNameless.Ott/
-time                 1.010 s    (641.1 ms .. 1.259 s)
-                     0.985 R²   (0.950 R² .. 1.000 R²)
-mean                 1.013 s    (957.9 ms .. 1.072 s)
-std dev              71.79 ms   (32.98 ms .. 89.90 ms)
-variance introduced by outliers: 20% (moderately inflated)
-
-benchmarking nf/LocallyNameless.Par/
-time                 1.461 s    (1.448 s .. 1.471 s)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 1.453 s    (1.449 s .. 1.457 s)
-std dev              4.263 ms   (3.447 ms .. 4.936 ms)
-variance introduced by outliers: 19% (moderately inflated)
-
-benchmarking nf/LocallyNameless.ParOpt/
-time                 7.033 ms   (6.781 ms .. 7.337 ms)
-                     0.993 R²   (0.989 R² .. 0.997 R²)
-mean                 6.750 ms   (6.659 ms .. 6.856 ms)
-std dev              283.8 μs   (185.9 μs .. 361.5 μs)
-variance introduced by outliers: 21% (moderately inflated)
-
-benchmarking nf/LocallyNameless.Typed/
-time                 380.9 ms   (367.7 ms .. 406.6 ms)
-                     0.999 R²   (0.999 R² .. 1.000 R²)
-mean                 372.0 ms   (369.2 ms .. 376.9 ms)
-std dev              4.683 ms   (527.9 μs .. 5.922 ms)
-variance introduced by outliers: 19% (moderately inflated)
-
-benchmarking aeq/LocallyNameless.Opt
-time                 811.2 ns   (794.5 ns .. 831.4 ns)
-                     0.996 R²   (0.994 R² .. 0.997 R²)
-mean                 837.5 ns   (821.1 ns .. 854.5 ns)
-std dev              55.30 ns   (46.97 ns .. 64.41 ns)
-variance introduced by outliers: 78% (severely inflated)
-
-benchmarking aeq/LocallyNameless.TypedOpt
-time                 1.501 μs   (1.482 μs .. 1.526 μs)
-                     0.998 R²   (0.997 R² .. 0.999 R²)
-mean                 1.508 μs   (1.488 μs .. 1.530 μs)
-std dev              68.71 ns   (59.29 ns .. 85.54 ns)
-variance introduced by outliers: 61% (severely inflated)
-
-benchmarking aeq/LocallyNameless.Ott
-time                 867.1 ns   (848.7 ns .. 889.5 ns)
-                     0.995 R²   (0.993 R² .. 0.998 R²)
-mean                 866.9 ns   (851.6 ns .. 886.8 ns)
-std dev              58.91 ns   (46.74 ns .. 86.04 ns)
-variance introduced by outliers: 79% (severely inflated)
-
-benchmarking aeq/LocallyNameless.Par
-time                 1.634 μs   (1.588 μs .. 1.692 μs)
-                     0.994 R²   (0.991 R² .. 0.996 R²)
-mean                 1.651 μs   (1.624 μs .. 1.692 μs)
-std dev              115.2 ns   (96.01 ns .. 151.8 ns)
-variance introduced by outliers: 79% (severely inflated)
-
-benchmarking aeq/LocallyNameless.ParOpt
-time                 24.86 μs   (24.10 μs .. 25.66 μs)
-                     0.994 R²   (0.991 R² .. 0.996 R²)
-mean                 24.99 μs   (24.46 μs .. 25.63 μs)
-std dev              1.955 μs   (1.631 μs .. 2.450 μs)
-variance introduced by outliers: 77% (severely inflated)
-
-benchmarking aeq/LocallyNameless.Typed
-time                 1.467 μs   (1.429 μs .. 1.512 μs)
-                     0.996 R²   (0.993 R² .. 0.998 R²)
-mean                 1.477 μs   (1.452 μs .. 1.508 μs)
-std dev              94.45 ns   (72.96 ns .. 128.3 ns)
-variance introduced by outliers: 76% (severely inflated)
-
-benchmarking con/LocallyNameless.Opt/con/1
-time                 48.39 ns   (47.50 ns .. 49.36 ns)
-                     0.998 R²   (0.996 R² .. 0.999 R²)
-mean                 49.00 ns   (48.26 ns .. 50.02 ns)
-std dev              2.969 ns   (2.357 ns .. 4.310 ns)
-variance introduced by outliers: 79% (severely inflated)
-
-benchmarking con/LocallyNameless.Opt/con/2
-time                 77.05 ns   (75.48 ns .. 78.96 ns)
-                     0.996 R²   (0.994 R² .. 0.999 R²)
-mean                 78.20 ns   (76.93 ns .. 79.59 ns)
-std dev              4.380 ns   (3.639 ns .. 5.508 ns)
-variance introduced by outliers: 76% (severely inflated)
-
-benchmarking con/LocallyNameless.Opt/con/3
-time                 102.8 ns   (101.8 ns .. 103.7 ns)
-                     0.999 R²   (0.999 R² .. 1.000 R²)
-mean                 102.7 ns   (102.0 ns .. 103.6 ns)
-std dev              2.790 ns   (2.161 ns .. 3.982 ns)
-variance introduced by outliers: 41% (moderately inflated)
-
-benchmarking con/LocallyNameless.Opt/con/4
-time                 131.3 ns   (128.4 ns .. 135.0 ns)
-                     0.997 R²   (0.995 R² .. 0.999 R²)
-mean                 130.8 ns   (129.4 ns .. 132.4 ns)
-std dev              5.150 ns   (3.730 ns .. 6.976 ns)
-variance introduced by outliers: 59% (severely inflated)
-
-benchmarking con/LocallyNameless.Opt/con/5
-time                 155.4 ns   (154.4 ns .. 156.6 ns)
-                     0.999 R²   (0.998 R² .. 1.000 R²)
-mean                 159.8 ns   (157.7 ns .. 163.2 ns)
-std dev              9.200 ns   (6.680 ns .. 13.13 ns)
-variance introduced by outliers: 76% (severely inflated)
-
-benchmarking con/LocallyNameless.Opt/con/6
-time                 187.7 ns   (185.1 ns .. 190.6 ns)
-                     0.999 R²   (0.998 R² .. 0.999 R²)
-mean                 188.2 ns   (186.5 ns .. 190.3 ns)
-std dev              6.491 ns   (5.228 ns .. 8.119 ns)
-variance introduced by outliers: 52% (severely inflated)
-
-benchmarking con/LocallyNameless.Opt/con/7
-time                 221.0 ns   (219.2 ns .. 222.7 ns)
-                     0.999 R²   (0.999 R² .. 1.000 R²)
-mean                 221.5 ns   (219.2 ns .. 224.2 ns)
-std dev              8.869 ns   (7.089 ns .. 11.14 ns)
-variance introduced by outliers: 59% (severely inflated)
-
-benchmarking con/LocallyNameless.Opt/con/8
-time                 251.0 ns   (249.9 ns .. 252.1 ns)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 250.2 ns   (249.0 ns .. 251.8 ns)
-std dev              4.667 ns   (3.597 ns .. 6.118 ns)
-variance introduced by outliers: 23% (moderately inflated)
-
-benchmarking con/LocallyNameless.Opt/con/9
-time                 279.5 ns   (277.4 ns .. 281.5 ns)
-                     1.000 R²   (0.999 R² .. 1.000 R²)
-mean                 278.7 ns   (277.3 ns .. 280.4 ns)
-std dev              5.102 ns   (4.073 ns .. 6.292 ns)
-variance introduced by outliers: 23% (moderately inflated)
-
-benchmarking con/LocallyNameless.Opt/con/10
-time                 334.0 ns   (322.9 ns .. 345.0 ns)
-                     0.996 R²   (0.993 R² .. 0.999 R²)
-mean                 325.9 ns   (322.4 ns .. 331.7 ns)
-std dev              14.29 ns   (10.19 ns .. 20.53 ns)
-variance introduced by outliers: 63% (severely inflated)
-
-benchmarking con/LocallyNameless.Opt/con/11
-time                 361.3 ns   (358.9 ns .. 364.1 ns)
-                     0.999 R²   (0.999 R² .. 1.000 R²)
-mean                 366.3 ns   (362.0 ns .. 374.7 ns)
-std dev              19.61 ns   (9.836 ns .. 31.21 ns)
-variance introduced by outliers: 71% (severely inflated)
-
-benchmarking con/LocallyNameless.Opt/con/12
-time                 432.0 ns   (416.6 ns .. 446.6 ns)
-                     0.992 R²   (0.991 R² .. 0.995 R²)
-mean                 409.5 ns   (401.8 ns .. 420.3 ns)
-std dev              30.73 ns   (23.83 ns .. 37.11 ns)
-variance introduced by outliers: 83% (severely inflated)
-
-benchmarking con/LocallyNameless.Opt/con/13
-time                 453.5 ns   (443.8 ns .. 463.8 ns)
-                     0.995 R²   (0.992 R² .. 0.997 R²)
-mean                 459.0 ns   (449.3 ns .. 470.4 ns)
-std dev              35.29 ns   (29.01 ns .. 46.29 ns)
-variance introduced by outliers: 84% (severely inflated)
-
-benchmarking con/LocallyNameless.Opt/con/14
-time                 466.7 ns   (456.1 ns .. 482.5 ns)
-                     0.993 R²   (0.989 R² .. 0.997 R²)
-mean                 481.1 ns   (470.2 ns .. 493.3 ns)
-std dev              37.58 ns   (30.95 ns .. 45.85 ns)
-variance introduced by outliers: 84% (severely inflated)
-
-benchmarking con/LocallyNameless.Opt/con/15
-time                 492.5 ns   (485.0 ns .. 503.7 ns)
-                     0.997 R²   (0.994 R² .. 0.999 R²)
-mean                 493.0 ns   (487.2 ns .. 501.8 ns)
-std dev              24.00 ns   (16.58 ns .. 38.39 ns)
-variance introduced by outliers: 67% (severely inflated)
-
-benchmarking con/LocallyNameless.Opt/con/16
-time                 545.6 ns   (535.8 ns .. 558.7 ns)
-                     0.997 R²   (0.996 R² .. 0.998 R²)
-mean                 565.2 ns   (556.1 ns .. 573.9 ns)
-std dev              31.13 ns   (25.76 ns .. 38.02 ns)
-variance introduced by outliers: 72% (severely inflated)
-
-benchmarking con/LocallyNameless.Opt/con/17
-time                 549.2 ns   (544.9 ns .. 555.6 ns)
-                     0.997 R²   (0.995 R² .. 0.999 R²)
-mean                 590.9 ns   (575.8 ns .. 607.9 ns)
-std dev              57.54 ns   (50.46 ns .. 63.52 ns)
-variance introduced by outliers: 89% (severely inflated)
-
-benchmarking con/LocallyNameless.Opt/con/18
-time                 618.2 ns   (599.6 ns .. 641.6 ns)
-                     0.994 R²   (0.993 R² .. 0.997 R²)
-mean                 607.9 ns   (597.4 ns .. 619.1 ns)
-std dev              37.18 ns   (29.91 ns .. 45.14 ns)
-variance introduced by outliers: 76% (severely inflated)
-
-benchmarking con/LocallyNameless.Opt/con/19
-time                 615.6 ns   (596.5 ns .. 645.9 ns)
-                     0.994 R²   (0.988 R² .. 0.999 R²)
-mean                 611.7 ns   (603.9 ns .. 628.1 ns)
-std dev              35.50 ns   (17.67 ns .. 55.25 ns)
-variance introduced by outliers: 73% (severely inflated)
-
-benchmarking con/LocallyNameless.Opt/con/20
-time                 688.8 ns   (676.9 ns .. 701.0 ns)
-                     0.997 R²   (0.996 R² .. 0.998 R²)
-mean                 693.9 ns   (682.4 ns .. 706.1 ns)
-std dev              42.34 ns   (35.07 ns .. 50.86 ns)
-variance introduced by outliers: 76% (severely inflated)
-
-benchmarking con/LocallyNameless.TypedOpt/con/1
-time                 52.65 ns   (51.56 ns .. 53.85 ns)
-                     0.997 R²   (0.995 R² .. 0.998 R²)
-mean                 52.52 ns   (51.75 ns .. 53.38 ns)
-std dev              2.813 ns   (2.228 ns .. 3.421 ns)
-variance introduced by outliers: 75% (severely inflated)
-
-benchmarking con/LocallyNameless.TypedOpt/con/2
-time                 83.99 ns   (82.21 ns .. 85.94 ns)
-                     0.998 R²   (0.996 R² .. 0.999 R²)
-mean                 82.68 ns   (81.72 ns .. 83.73 ns)
-std dev              3.442 ns   (2.739 ns .. 4.457 ns)
-variance introduced by outliers: 63% (severely inflated)
-
-benchmarking con/LocallyNameless.TypedOpt/con/3
-time                 116.9 ns   (114.7 ns .. 118.9 ns)
-                     0.997 R²   (0.996 R² .. 0.998 R²)
-mean                 118.7 ns   (116.6 ns .. 120.9 ns)
-std dev              7.167 ns   (6.180 ns .. 8.302 ns)
-variance introduced by outliers: 78% (severely inflated)
-
-benchmarking con/LocallyNameless.TypedOpt/con/4
-time                 146.9 ns   (145.3 ns .. 149.3 ns)
-                     0.998 R²   (0.998 R² .. 0.999 R²)
-mean                 146.6 ns   (145.0 ns .. 148.6 ns)
-std dev              6.335 ns   (5.196 ns .. 7.615 ns)
-variance introduced by outliers: 64% (severely inflated)
-
-benchmarking con/LocallyNameless.TypedOpt/con/5
-time                 179.4 ns   (174.8 ns .. 185.0 ns)
-                     0.996 R²   (0.993 R² .. 0.999 R²)
-mean                 183.2 ns   (180.0 ns .. 187.3 ns)
-std dev              13.03 ns   (11.14 ns .. 15.09 ns)
-variance introduced by outliers: 82% (severely inflated)
-
-benchmarking con/LocallyNameless.TypedOpt/con/6
-time                 214.8 ns   (211.0 ns .. 218.7 ns)
-                     0.998 R²   (0.997 R² .. 0.999 R²)
-mean                 217.7 ns   (215.0 ns .. 221.0 ns)
-std dev              10.44 ns   (8.731 ns .. 13.01 ns)
-variance introduced by outliers: 67% (severely inflated)
-
-benchmarking con/LocallyNameless.TypedOpt/con/7
-time                 253.7 ns   (251.0 ns .. 256.9 ns)
-                     0.999 R²   (0.998 R² .. 0.999 R²)
-mean                 253.5 ns   (250.5 ns .. 257.0 ns)
-std dev              10.69 ns   (9.024 ns .. 13.01 ns)
-variance introduced by outliers: 61% (severely inflated)
-
-benchmarking con/LocallyNameless.TypedOpt/con/8
-time                 298.6 ns   (295.2 ns .. 302.6 ns)
-                     0.998 R²   (0.997 R² .. 0.999 R²)
-mean                 300.1 ns   (296.5 ns .. 305.2 ns)
-std dev              13.67 ns   (10.34 ns .. 21.16 ns)
-variance introduced by outliers: 65% (severely inflated)
-
-benchmarking con/LocallyNameless.TypedOpt/con/9
-time                 332.6 ns   (328.9 ns .. 336.3 ns)
-                     0.999 R²   (0.998 R² .. 0.999 R²)
-mean                 332.7 ns   (329.6 ns .. 336.2 ns)
-std dev              11.65 ns   (9.272 ns .. 14.59 ns)
-variance introduced by outliers: 51% (severely inflated)
-
-benchmarking con/LocallyNameless.TypedOpt/con/10
-time                 373.6 ns   (367.9 ns .. 379.7 ns)
-                     0.998 R²   (0.998 R² .. 0.999 R²)
-mean                 372.2 ns   (368.3 ns .. 377.1 ns)
-std dev              14.64 ns   (12.41 ns .. 17.54 ns)
-variance introduced by outliers: 57% (severely inflated)
-
-benchmarking con/LocallyNameless.TypedOpt/con/11
-time                 403.6 ns   (402.3 ns .. 405.1 ns)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 404.1 ns   (402.9 ns .. 406.6 ns)
-std dev              5.428 ns   (2.788 ns .. 9.019 ns)
-variance introduced by outliers: 13% (moderately inflated)
-
-benchmarking con/LocallyNameless.TypedOpt/con/12
-time                 456.8 ns   (450.0 ns .. 464.9 ns)
-                     0.997 R²   (0.995 R² .. 0.998 R²)
-mean                 465.1 ns   (457.5 ns .. 474.7 ns)
-std dev              29.94 ns   (23.75 ns .. 36.28 ns)
-variance introduced by outliers: 78% (severely inflated)
-
-benchmarking con/LocallyNameless.TypedOpt/con/13
-time                 506.3 ns   (487.9 ns .. 520.6 ns)
-                     0.995 R²   (0.993 R² .. 0.997 R²)
-mean                 484.8 ns   (478.2 ns .. 494.2 ns)
-std dev              26.37 ns   (19.25 ns .. 33.90 ns)
-variance introduced by outliers: 71% (severely inflated)
-
-benchmarking con/LocallyNameless.TypedOpt/con/14
-time                 512.8 ns   (508.5 ns .. 518.0 ns)
-                     0.999 R²   (0.998 R² .. 1.000 R²)
-mean                 511.6 ns   (508.6 ns .. 517.0 ns)
-std dev              14.01 ns   (9.280 ns .. 22.49 ns)
-variance introduced by outliers: 38% (moderately inflated)
-
-benchmarking con/LocallyNameless.TypedOpt/con/15
-time                 552.9 ns   (546.0 ns .. 561.0 ns)
-                     0.997 R²   (0.996 R² .. 0.999 R²)
-mean                 569.9 ns   (560.2 ns .. 582.0 ns)
-std dev              38.58 ns   (31.88 ns .. 46.54 ns)
-variance introduced by outliers: 79% (severely inflated)
-
-benchmarking con/LocallyNameless.TypedOpt/con/16
-time                 588.6 ns   (581.2 ns .. 599.1 ns)
-                     0.997 R²   (0.996 R² .. 0.999 R²)
-mean                 593.9 ns   (585.0 ns .. 605.0 ns)
-std dev              32.24 ns   (25.53 ns .. 39.85 ns)
-variance introduced by outliers: 71% (severely inflated)
-
-benchmarking con/LocallyNameless.TypedOpt/con/17
-time                 620.3 ns   (612.9 ns .. 631.8 ns)
-                     0.996 R²   (0.994 R² .. 0.998 R²)
-mean                 629.9 ns   (619.9 ns .. 645.2 ns)
-std dev              41.08 ns   (31.95 ns .. 50.46 ns)
-variance introduced by outliers: 78% (severely inflated)
-
-benchmarking con/LocallyNameless.TypedOpt/con/18
-time                 652.2 ns   (644.9 ns .. 663.5 ns)
-                     0.997 R²   (0.994 R² .. 0.998 R²)
-mean                 676.0 ns   (663.0 ns .. 692.8 ns)
-std dev              48.63 ns   (40.39 ns .. 59.72 ns)
-variance introduced by outliers: 81% (severely inflated)
-
-benchmarking con/LocallyNameless.TypedOpt/con/19
-time                 684.5 ns   (679.3 ns .. 692.2 ns)
-                     0.998 R²   (0.997 R² .. 0.999 R²)
-mean                 725.3 ns   (711.1 ns .. 741.5 ns)
-std dev              52.85 ns   (45.79 ns .. 61.95 ns)
-variance introduced by outliers: 81% (severely inflated)
-
-benchmarking con/LocallyNameless.TypedOpt/con/20
-time                 721.7 ns   (714.5 ns .. 732.2 ns)
-                     0.997 R²   (0.994 R² .. 0.998 R²)
-mean                 774.9 ns   (754.9 ns .. 795.5 ns)
-std dev              73.19 ns   (65.75 ns .. 82.85 ns)
-variance introduced by outliers: 88% (severely inflated)
-
-benchmarking con/LocallyNameless.Ott/con/1
-time                 33.51 ns   (33.25 ns .. 33.90 ns)
-                     0.998 R²   (0.997 R² .. 0.999 R²)
-mean                 35.06 ns   (34.53 ns .. 35.58 ns)
-std dev              1.968 ns   (1.830 ns .. 2.122 ns)
-variance introduced by outliers: 77% (severely inflated)
-
-benchmarking con/LocallyNameless.Ott/con/2
-time                 64.59 ns   (63.88 ns .. 65.66 ns)
-                     0.998 R²   (0.997 R² .. 0.999 R²)
-mean                 67.36 ns   (66.19 ns .. 68.43 ns)
-std dev              3.685 ns   (3.356 ns .. 4.091 ns)
-variance introduced by outliers: 75% (severely inflated)
-
-benchmarking con/LocallyNameless.Ott/con/3
-time                 105.9 ns   (104.3 ns .. 108.2 ns)
-                     0.997 R²   (0.996 R² .. 0.999 R²)
-mean                 110.6 ns   (108.6 ns .. 112.4 ns)
-std dev              6.676 ns   (6.202 ns .. 7.355 ns)
-variance introduced by outliers: 78% (severely inflated)
-
-benchmarking con/LocallyNameless.Ott/con/4
-time                 166.8 ns   (158.7 ns .. 173.5 ns)
-                     0.992 R²   (0.991 R² .. 0.996 R²)
-mean                 159.9 ns   (157.2 ns .. 163.3 ns)
-std dev              10.58 ns   (8.225 ns .. 13.05 ns)
-variance introduced by outliers: 80% (severely inflated)
-
-benchmarking con/LocallyNameless.Ott/con/5
-time                 228.2 ns   (222.7 ns .. 234.9 ns)
-                     0.995 R²   (0.994 R² .. 0.998 R²)
-mean                 227.5 ns   (223.6 ns .. 233.7 ns)
-std dev              16.14 ns   (11.78 ns .. 24.95 ns)
-variance introduced by outliers: 82% (severely inflated)
-
-benchmarking con/LocallyNameless.Ott/con/6
-time                 306.7 ns   (298.9 ns .. 316.3 ns)
-                     0.995 R²   (0.994 R² .. 0.998 R²)
-mean                 302.6 ns   (297.3 ns .. 310.5 ns)
-std dev              20.26 ns   (15.54 ns .. 25.76 ns)
-variance introduced by outliers: 80% (severely inflated)
-
-benchmarking con/LocallyNameless.Ott/con/7
-time                 426.2 ns   (416.8 ns .. 438.5 ns)
-                     0.996 R²   (0.995 R² .. 0.998 R²)
-mean                 421.2 ns   (415.6 ns .. 429.1 ns)
-std dev              21.74 ns   (16.27 ns .. 26.84 ns)
-variance introduced by outliers: 69% (severely inflated)
-
-benchmarking con/LocallyNameless.Ott/con/8
-time                 533.3 ns   (521.4 ns .. 550.1 ns)
-                     0.994 R²   (0.993 R² .. 0.997 R²)
-mean                 538.8 ns   (529.3 ns .. 550.2 ns)
-std dev              35.23 ns   (29.51 ns .. 41.36 ns)
-variance introduced by outliers: 78% (severely inflated)
-
-benchmarking con/LocallyNameless.Ott/con/9
-time                 637.5 ns   (621.5 ns .. 655.1 ns)
-                     0.996 R²   (0.995 R² .. 0.998 R²)
-mean                 656.8 ns   (643.9 ns .. 669.4 ns)
-std dev              40.64 ns   (37.98 ns .. 43.63 ns)
-variance introduced by outliers: 76% (severely inflated)
-
-benchmarking con/LocallyNameless.Ott/con/10
-time                 767.6 ns   (745.2 ns .. 787.9 ns)
-                     0.997 R²   (0.996 R² .. 0.999 R²)
-mean                 777.8 ns   (765.5 ns .. 793.2 ns)
-std dev              47.11 ns   (42.15 ns .. 52.03 ns)
-variance introduced by outliers: 75% (severely inflated)
-
-benchmarking con/LocallyNameless.Ott/con/11
-time                 947.0 ns   (922.7 ns .. 975.8 ns)
-                     0.995 R²   (0.993 R² .. 0.997 R²)
-mean                 928.3 ns   (912.3 ns .. 950.5 ns)
-std dev              64.78 ns   (52.02 ns .. 80.64 ns)
-variance introduced by outliers: 80% (severely inflated)
-
-benchmarking con/LocallyNameless.Ott/con/12
-time                 1.068 μs   (1.046 μs .. 1.098 μs)
-                     0.996 R²   (0.995 R² .. 0.998 R²)
-mean                 1.090 μs   (1.069 μs .. 1.111 μs)
-std dev              70.48 ns   (65.97 ns .. 76.75 ns)
-variance introduced by outliers: 77% (severely inflated)
-
-benchmarking con/LocallyNameless.Ott/con/13
-time                 1.351 μs   (1.323 μs .. 1.392 μs)
-                     0.996 R²   (0.995 R² .. 0.997 R²)
-mean                 1.361 μs   (1.336 μs .. 1.388 μs)
-std dev              90.96 ns   (78.94 ns .. 110.2 ns)
-variance introduced by outliers: 77% (severely inflated)
-
-benchmarking con/LocallyNameless.Ott/con/14
-time                 1.428 μs   (1.398 μs .. 1.477 μs)
-                     0.993 R²   (0.991 R² .. 0.996 R²)
-mean                 1.538 μs   (1.504 μs .. 1.572 μs)
-std dev              116.5 ns   (100.9 ns .. 129.6 ns)
-variance introduced by outliers: 81% (severely inflated)
-
-benchmarking con/LocallyNameless.Ott/con/15
-time                 1.624 μs   (1.575 μs .. 1.674 μs)
-                     0.995 R²   (0.994 R² .. 0.997 R²)
-mean                 1.628 μs   (1.598 μs .. 1.668 μs)
-std dev              121.4 ns   (105.0 ns .. 138.6 ns)
-variance introduced by outliers: 81% (severely inflated)
-
-benchmarking con/LocallyNameless.Ott/con/16
-time                 2.001 μs   (1.935 μs .. 2.049 μs)
-                     0.994 R²   (0.992 R² .. 0.997 R²)
-mean                 1.942 μs   (1.904 μs .. 1.982 μs)
-std dev              126.3 ns   (106.3 ns .. 154.5 ns)
-variance introduced by outliers: 76% (severely inflated)
-
-benchmarking con/LocallyNameless.Ott/con/17
-time                 2.046 μs   (2.018 μs .. 2.088 μs)
-                     0.997 R²   (0.996 R² .. 0.999 R²)
-mean                 2.093 μs   (2.063 μs .. 2.129 μs)
-std dev              111.0 ns   (90.78 ns .. 137.6 ns)
-variance introduced by outliers: 67% (severely inflated)
-
-benchmarking con/LocallyNameless.Ott/con/18
-time                 2.433 μs   (2.371 μs .. 2.485 μs)
-                     0.997 R²   (0.995 R² .. 0.998 R²)
-mean                 2.342 μs   (2.307 μs .. 2.388 μs)
-std dev              136.6 ns   (114.2 ns .. 166.4 ns)
-variance introduced by outliers: 71% (severely inflated)
-
-benchmarking con/LocallyNameless.Ott/con/19
-time                 2.467 μs   (2.408 μs .. 2.521 μs)
-                     0.996 R²   (0.994 R² .. 0.997 R²)
-mean                 2.438 μs   (2.401 μs .. 2.486 μs)
-std dev              140.5 ns   (113.9 ns .. 171.7 ns)
-variance introduced by outliers: 71% (severely inflated)
-
-benchmarking con/LocallyNameless.Ott/con/20
-time                 2.737 μs   (2.665 μs .. 2.808 μs)
-                     0.995 R²   (0.993 R² .. 0.998 R²)
-mean                 2.655 μs   (2.617 μs .. 2.709 μs)
-std dev              155.1 ns   (122.0 ns .. 199.0 ns)
-variance introduced by outliers: 71% (severely inflated)
-
-benchmarking con/LocallyNameless.Par/con/1
-time                 52.70 ns   (51.71 ns .. 53.83 ns)
-                     0.997 R²   (0.996 R² .. 0.998 R²)
-mean                 54.27 ns   (53.27 ns .. 55.16 ns)
-std dev              3.164 ns   (2.626 ns .. 3.930 ns)
-variance introduced by outliers: 78% (severely inflated)
-
-benchmarking con/LocallyNameless.Par/con/2
-time                 120.0 ns   (116.4 ns .. 124.0 ns)
-                     0.994 R²   (0.990 R² .. 0.997 R²)
-mean                 120.8 ns   (118.3 ns .. 123.5 ns)
-std dev              8.774 ns   (7.737 ns .. 10.62 ns)
-variance introduced by outliers: 83% (severely inflated)
-
-benchmarking con/LocallyNameless.Par/con/3
-time                 183.9 ns   (182.2 ns .. 186.2 ns)
-                     0.999 R²   (0.998 R² .. 1.000 R²)
-mean                 185.3 ns   (183.8 ns .. 187.7 ns)
-std dev              6.144 ns   (4.512 ns .. 7.931 ns)
-variance introduced by outliers: 50% (moderately inflated)
-
-benchmarking con/LocallyNameless.Par/con/4
-time                 267.1 ns   (266.2 ns .. 268.2 ns)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 267.0 ns   (266.1 ns .. 268.1 ns)
-std dev              3.272 ns   (2.594 ns .. 4.252 ns)
+mean                 109.8 ms   (109.2 ms .. 111.0 ms)
+std dev              1.218 ms   (468.9 μs .. 1.914 ms)
+
+benchmarking nf/SimpleB/
+time                 179.4 ms   (177.1 ms .. 182.3 ms)
+                     1.000 R²   (0.998 R² .. 1.000 R²)
+mean                 177.6 ms   (175.5 ms .. 179.1 ms)
+std dev              2.478 ms   (1.795 ms .. 3.423 ms)
 variance introduced by outliers: 12% (moderately inflated)
 
-benchmarking con/LocallyNameless.Par/con/5
-time                 393.2 ns   (385.9 ns .. 400.7 ns)
-                     0.998 R²   (0.997 R² .. 0.999 R²)
-mean                 391.7 ns   (386.7 ns .. 397.1 ns)
-std dev              17.36 ns   (14.66 ns .. 20.69 ns)
-variance introduced by outliers: 62% (severely inflated)
-
-benchmarking con/LocallyNameless.Par/con/6
-time                 503.8 ns   (493.3 ns .. 515.9 ns)
-                     0.996 R²   (0.995 R² .. 0.998 R²)
-mean                 505.4 ns   (498.4 ns .. 513.8 ns)
-std dev              25.88 ns   (21.90 ns .. 32.36 ns)
-variance introduced by outliers: 69% (severely inflated)
-
-benchmarking con/LocallyNameless.Par/con/7
-time                 631.0 ns   (621.4 ns .. 642.9 ns)
-                     0.998 R²   (0.997 R² .. 0.999 R²)
-mean                 637.8 ns   (629.3 ns .. 648.0 ns)
-std dev              32.72 ns   (26.11 ns .. 44.27 ns)
-variance introduced by outliers: 68% (severely inflated)
-
-benchmarking con/LocallyNameless.Par/con/8
-time                 790.7 ns   (774.3 ns .. 806.5 ns)
-                     0.998 R²   (0.997 R² .. 0.999 R²)
-mean                 794.8 ns   (785.2 ns .. 805.6 ns)
-std dev              35.76 ns   (30.49 ns .. 41.51 ns)
-variance introduced by outliers: 62% (severely inflated)
-
-benchmarking con/LocallyNameless.Par/con/9
-time                 992.9 ns   (972.5 ns .. 1.016 μs)
-                     0.997 R²   (0.995 R² .. 0.998 R²)
-mean                 990.5 ns   (973.3 ns .. 1.012 μs)
-std dev              62.10 ns   (49.20 ns .. 78.54 ns)
-variance introduced by outliers: 76% (severely inflated)
-
-benchmarking con/LocallyNameless.Par/con/10
-time                 1.143 μs   (1.118 μs .. 1.167 μs)
-                     0.997 R²   (0.995 R² .. 0.998 R²)
-mean                 1.171 μs   (1.149 μs .. 1.198 μs)
-std dev              78.36 ns   (63.68 ns .. 112.4 ns)
-variance introduced by outliers: 78% (severely inflated)
-
-benchmarking con/LocallyNameless.Par/con/11
-time                 1.326 μs   (1.294 μs .. 1.358 μs)
-                     0.996 R²   (0.995 R² .. 0.997 R²)
-mean                 1.329 μs   (1.305 μs .. 1.354 μs)
-std dev              84.35 ns   (76.72 ns .. 96.56 ns)
-variance introduced by outliers: 75% (severely inflated)
-
-benchmarking con/LocallyNameless.Par/con/12
-time                 1.567 μs   (1.535 μs .. 1.601 μs)
-                     0.997 R²   (0.996 R² .. 0.999 R²)
-mean                 1.584 μs   (1.556 μs .. 1.620 μs)
-std dev              103.0 ns   (84.42 ns .. 148.6 ns)
-variance introduced by outliers: 76% (severely inflated)
-
-benchmarking con/LocallyNameless.Par/con/13
-time                 1.744 μs   (1.711 μs .. 1.779 μs)
-                     0.998 R²   (0.996 R² .. 0.999 R²)
-mean                 1.771 μs   (1.747 μs .. 1.804 μs)
-std dev              98.40 ns   (75.74 ns .. 144.1 ns)
-variance introduced by outliers: 70% (severely inflated)
-
-benchmarking con/LocallyNameless.Par/con/14
-time                 1.907 μs   (1.870 μs .. 1.946 μs)
-                     0.998 R²   (0.997 R² .. 0.999 R²)
-mean                 1.919 μs   (1.896 μs .. 1.955 μs)
-std dev              92.65 ns   (69.63 ns .. 128.4 ns)
-variance introduced by outliers: 63% (severely inflated)
-
-benchmarking con/LocallyNameless.Par/con/15
-time                 2.156 μs   (2.133 μs .. 2.184 μs)
-                     0.999 R²   (0.998 R² .. 0.999 R²)
-mean                 2.204 μs   (2.179 μs .. 2.231 μs)
-std dev              89.18 ns   (69.43 ns .. 117.0 ns)
-variance introduced by outliers: 54% (severely inflated)
-
-benchmarking con/LocallyNameless.Par/con/16
-time                 2.348 μs   (2.330 μs .. 2.366 μs)
-                     1.000 R²   (0.999 R² .. 1.000 R²)
-mean                 2.348 μs   (2.332 μs .. 2.363 μs)
-std dev              51.57 ns   (42.06 ns .. 65.34 ns)
-variance introduced by outliers: 26% (moderately inflated)
-
-benchmarking con/LocallyNameless.Par/con/17
-time                 2.591 μs   (2.565 μs .. 2.627 μs)
-                     0.999 R²   (0.998 R² .. 0.999 R²)
-mean                 2.612 μs   (2.590 μs .. 2.647 μs)
-std dev              92.12 ns   (75.09 ns .. 115.3 ns)
-variance introduced by outliers: 47% (moderately inflated)
-
-benchmarking con/LocallyNameless.Par/con/18
-time                 2.856 μs   (2.822 μs .. 2.898 μs)
-                     0.999 R²   (0.999 R² .. 1.000 R²)
-mean                 2.838 μs   (2.825 μs .. 2.859 μs)
-std dev              55.25 ns   (38.12 ns .. 81.20 ns)
-variance introduced by outliers: 21% (moderately inflated)
-
-benchmarking con/LocallyNameless.Par/con/19
-time                 3.165 μs   (3.112 μs .. 3.208 μs)
-                     0.999 R²   (0.998 R² .. 0.999 R²)
-mean                 3.125 μs   (3.104 μs .. 3.157 μs)
-std dev              84.38 ns   (62.74 ns .. 114.0 ns)
-variance introduced by outliers: 33% (moderately inflated)
-
-benchmarking con/LocallyNameless.Par/con/20
-time                 3.451 μs   (3.400 μs .. 3.518 μs)
-                     0.998 R²   (0.997 R² .. 0.999 R²)
-mean                 3.570 μs   (3.508 μs .. 3.650 μs)
-std dev              242.4 ns   (180.1 ns .. 330.9 ns)
-variance introduced by outliers: 76% (severely inflated)
-
-benchmarking con/LocallyNameless.ParOpt/con/1
-time                 98.64 ns   (96.24 ns .. 100.9 ns)
-                     0.997 R²   (0.996 R² .. 0.999 R²)
-mean                 96.99 ns   (95.78 ns .. 99.23 ns)
-std dev              5.175 ns   (3.660 ns .. 7.767 ns)
-variance introduced by outliers: 73% (severely inflated)
-
-benchmarking con/LocallyNameless.ParOpt/con/2
-time                 162.5 ns   (161.1 ns .. 163.9 ns)
-                     0.999 R²   (0.999 R² .. 1.000 R²)
-mean                 162.1 ns   (161.0 ns .. 163.3 ns)
-std dev              3.766 ns   (3.141 ns .. 4.891 ns)
-variance introduced by outliers: 33% (moderately inflated)
-
-benchmarking con/LocallyNameless.ParOpt/con/3
-time                 256.7 ns   (254.2 ns .. 260.2 ns)
+benchmarking nf/Simple/
+time                 1.810 s    (1.733 s .. 1.976 s)
                      0.999 R²   (0.998 R² .. 1.000 R²)
-mean                 258.1 ns   (255.8 ns .. 261.7 ns)
-std dev              9.313 ns   (6.219 ns .. 17.95 ns)
-variance introduced by outliers: 53% (severely inflated)
-
-benchmarking con/LocallyNameless.ParOpt/con/4
-time                 342.6 ns   (340.9 ns .. 344.3 ns)
-                     1.000 R²   (0.999 R² .. 1.000 R²)
-mean                 347.4 ns   (344.2 ns .. 355.7 ns)
-std dev              16.17 ns   (9.130 ns .. 29.51 ns)
-variance introduced by outliers: 65% (severely inflated)
-
-benchmarking con/LocallyNameless.ParOpt/con/5
-time                 484.2 ns   (482.1 ns .. 486.4 ns)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 487.2 ns   (484.6 ns .. 495.3 ns)
-std dev              13.94 ns   (4.384 ns .. 28.56 ns)
-variance introduced by outliers: 41% (moderately inflated)
-
-benchmarking con/LocallyNameless.ParOpt/con/6
-time                 640.6 ns   (632.0 ns .. 651.1 ns)
-                     0.999 R²   (0.997 R² .. 1.000 R²)
-mean                 636.7 ns   (632.8 ns .. 643.6 ns)
-std dev              17.71 ns   (10.68 ns .. 31.35 ns)
-variance introduced by outliers: 39% (moderately inflated)
-
-benchmarking con/LocallyNameless.ParOpt/con/7
-time                 796.6 ns   (794.8 ns .. 798.5 ns)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 803.1 ns   (797.9 ns .. 819.1 ns)
-std dev              27.59 ns   (12.28 ns .. 52.27 ns)
-variance introduced by outliers: 48% (moderately inflated)
-
-benchmarking con/LocallyNameless.ParOpt/con/8
-time                 989.2 ns   (984.1 ns .. 994.7 ns)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 986.5 ns   (984.0 ns .. 989.7 ns)
-std dev              9.086 ns   (7.266 ns .. 11.24 ns)
-
-benchmarking con/LocallyNameless.ParOpt/con/9
-time                 1.190 μs   (1.184 μs .. 1.198 μs)
-                     0.999 R²   (0.999 R² .. 1.000 R²)
-mean                 1.197 μs   (1.188 μs .. 1.215 μs)
-std dev              44.31 ns   (26.30 ns .. 72.39 ns)
-variance introduced by outliers: 51% (severely inflated)
-
-benchmarking con/LocallyNameless.ParOpt/con/10
-time                 1.442 μs   (1.421 μs .. 1.460 μs)
-                     0.999 R²   (0.999 R² .. 1.000 R²)
-mean                 1.419 μs   (1.412 μs .. 1.429 μs)
-std dev              26.42 ns   (17.94 ns .. 42.62 ns)
-variance introduced by outliers: 21% (moderately inflated)
-
-benchmarking con/LocallyNameless.ParOpt/con/11
-time                 1.671 μs   (1.667 μs .. 1.674 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 1.665 μs   (1.660 μs .. 1.668 μs)
-std dev              14.20 ns   (10.69 ns .. 18.97 ns)
-
-benchmarking con/LocallyNameless.ParOpt/con/12
-time                 1.959 μs   (1.945 μs .. 1.975 μs)
-                     1.000 R²   (0.999 R² .. 1.000 R²)
-mean                 1.955 μs   (1.948 μs .. 1.972 μs)
-std dev              36.42 ns   (18.49 ns .. 72.25 ns)
-variance introduced by outliers: 20% (moderately inflated)
-
-benchmarking con/LocallyNameless.ParOpt/con/13
-time                 2.262 μs   (2.249 μs .. 2.282 μs)
-                     0.999 R²   (0.997 R² .. 1.000 R²)
-mean                 2.278 μs   (2.258 μs .. 2.336 μs)
-std dev              97.67 ns   (38.34 ns .. 178.6 ns)
-variance introduced by outliers: 57% (severely inflated)
-
-benchmarking con/LocallyNameless.ParOpt/con/14
-time                 2.571 μs   (2.555 μs .. 2.597 μs)
-                     1.000 R²   (0.999 R² .. 1.000 R²)
-mean                 2.562 μs   (2.556 μs .. 2.574 μs)
-std dev              27.52 ns   (12.56 ns .. 53.95 ns)
-
-benchmarking con/LocallyNameless.ParOpt/con/15
-time                 3.088 μs   (3.010 μs .. 3.170 μs)
-                     0.996 R²   (0.993 R² .. 0.998 R²)
-mean                 2.961 μs   (2.903 μs .. 3.024 μs)
-std dev              200.1 ns   (173.9 ns .. 267.5 ns)
-variance introduced by outliers: 77% (severely inflated)
-
-benchmarking con/LocallyNameless.ParOpt/con/16
-time                 3.380 μs   (3.295 μs .. 3.517 μs)
-                     0.993 R²   (0.991 R² .. 0.996 R²)
-mean                 3.495 μs   (3.422 μs .. 3.609 μs)
-std dev              305.9 ns   (233.7 ns .. 468.0 ns)
-variance introduced by outliers: 85% (severely inflated)
-
-benchmarking con/LocallyNameless.ParOpt/con/17
-time                 3.662 μs   (3.620 μs .. 3.724 μs)
-                     0.999 R²   (0.998 R² .. 1.000 R²)
-mean                 3.649 μs   (3.632 μs .. 3.677 μs)
-std dev              70.91 ns   (47.88 ns .. 112.6 ns)
-variance introduced by outliers: 20% (moderately inflated)
-
-benchmarking con/LocallyNameless.ParOpt/con/18
-time                 4.154 μs   (4.087 μs .. 4.219 μs)
-                     0.998 R²   (0.998 R² .. 0.999 R²)
-mean                 4.114 μs   (4.075 μs .. 4.167 μs)
-std dev              152.8 ns   (121.1 ns .. 208.2 ns)
-variance introduced by outliers: 48% (moderately inflated)
-
-benchmarking con/LocallyNameless.ParOpt/con/19
-time                 4.483 μs   (4.460 μs .. 4.507 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 4.489 μs   (4.466 μs .. 4.512 μs)
-std dev              73.01 ns   (61.91 ns .. 90.64 ns)
-variance introduced by outliers: 15% (moderately inflated)
-
-benchmarking con/LocallyNameless.ParOpt/con/20
-time                 5.270 μs   (5.173 μs .. 5.375 μs)
-                     0.997 R²   (0.995 R² .. 0.999 R²)
-mean                 5.165 μs   (5.090 μs .. 5.258 μs)
-std dev              273.7 ns   (219.8 ns .. 340.3 ns)
-variance introduced by outliers: 65% (severely inflated)
-
-benchmarking con/LocallyNameless.Typed/con/1
-time                 42.72 ns   (41.46 ns .. 43.89 ns)
-                     0.996 R²   (0.995 R² .. 0.998 R²)
-mean                 41.59 ns   (41.05 ns .. 42.23 ns)
-std dev              1.910 ns   (1.513 ns .. 2.600 ns)
-variance introduced by outliers: 68% (severely inflated)
-
-benchmarking con/LocallyNameless.Typed/con/2
-time                 82.25 ns   (80.92 ns .. 83.40 ns)
-                     0.998 R²   (0.998 R² .. 0.999 R²)
-mean                 81.68 ns   (80.72 ns .. 82.90 ns)
-std dev              3.618 ns   (3.101 ns .. 4.350 ns)
-variance introduced by outliers: 66% (severely inflated)
-
-benchmarking con/LocallyNameless.Typed/con/3
-time                 125.2 ns   (122.8 ns .. 127.4 ns)
-                     0.998 R²   (0.998 R² .. 0.999 R²)
-mean                 126.0 ns   (124.6 ns .. 127.7 ns)
-std dev              5.532 ns   (4.733 ns .. 6.727 ns)
-variance introduced by outliers: 64% (severely inflated)
-
-benchmarking con/LocallyNameless.Typed/con/4
-time                 178.2 ns   (175.1 ns .. 182.3 ns)
-                     0.995 R²   (0.992 R² .. 0.998 R²)
-mean                 189.1 ns   (184.9 ns .. 194.9 ns)
-std dev              17.75 ns   (13.53 ns .. 22.42 ns)
-variance introduced by outliers: 89% (severely inflated)
-
-benchmarking con/LocallyNameless.Typed/con/5
-time                 226.9 ns   (223.3 ns .. 231.0 ns)
-                     0.998 R²   (0.998 R² .. 0.999 R²)
-mean                 223.6 ns   (221.5 ns .. 226.4 ns)
-std dev              8.211 ns   (6.729 ns .. 10.70 ns)
-variance introduced by outliers: 55% (severely inflated)
-
-benchmarking con/LocallyNameless.Typed/con/6
-time                 303.2 ns   (295.6 ns .. 309.7 ns)
-                     0.997 R²   (0.996 R² .. 0.999 R²)
-mean                 297.6 ns   (293.9 ns .. 302.1 ns)
-std dev              12.97 ns   (10.00 ns .. 17.38 ns)
-variance introduced by outliers: 63% (severely inflated)
-
-benchmarking con/LocallyNameless.Typed/con/7
-time                 380.9 ns   (375.1 ns .. 387.4 ns)
-                     0.997 R²   (0.994 R² .. 0.998 R²)
-mean                 396.3 ns   (386.3 ns .. 407.9 ns)
-std dev              37.95 ns   (30.07 ns .. 48.55 ns)
-variance introduced by outliers: 89% (severely inflated)
-
-benchmarking con/LocallyNameless.Typed/con/8
-time                 452.7 ns   (445.7 ns .. 464.4 ns)
-                     0.996 R²   (0.993 R² .. 0.999 R²)
-mean                 463.2 ns   (453.1 ns .. 478.5 ns)
-std dev              39.78 ns   (30.31 ns .. 49.83 ns)
-variance introduced by outliers: 87% (severely inflated)
-
-benchmarking con/LocallyNameless.Typed/con/9
-time                 550.7 ns   (546.1 ns .. 557.7 ns)
-                     0.999 R²   (0.999 R² .. 1.000 R²)
-mean                 548.3 ns   (546.4 ns .. 551.8 ns)
-std dev              8.450 ns   (5.799 ns .. 13.50 ns)
-variance introduced by outliers: 16% (moderately inflated)
-
-benchmarking con/LocallyNameless.Typed/con/10
-time                 663.2 ns   (646.7 ns .. 685.3 ns)
-                     0.996 R²   (0.993 R² .. 1.000 R²)
-mean                 655.1 ns   (648.5 ns .. 667.4 ns)
-std dev              29.01 ns   (18.77 ns .. 42.96 ns)
-variance introduced by outliers: 62% (severely inflated)
-
-benchmarking con/LocallyNameless.Typed/con/11
-time                 742.2 ns   (737.5 ns .. 747.9 ns)
-                     1.000 R²   (0.999 R² .. 1.000 R²)
-mean                 748.1 ns   (742.6 ns .. 753.3 ns)
-std dev              18.69 ns   (15.42 ns .. 23.50 ns)
-variance introduced by outliers: 33% (moderately inflated)
-
-benchmarking con/LocallyNameless.Typed/con/12
-time                 854.4 ns   (847.7 ns .. 863.3 ns)
-                     0.999 R²   (0.999 R² .. 0.999 R²)
-mean                 871.4 ns   (863.1 ns .. 880.8 ns)
-std dev              29.75 ns   (25.59 ns .. 35.62 ns)
-variance introduced by outliers: 48% (moderately inflated)
-
-benchmarking con/LocallyNameless.Typed/con/13
-time                 976.0 ns   (962.1 ns .. 991.4 ns)
-                     0.999 R²   (0.998 R² .. 1.000 R²)
-mean                 965.0 ns   (959.6 ns .. 972.2 ns)
-std dev              21.06 ns   (14.40 ns .. 28.15 ns)
-variance introduced by outliers: 27% (moderately inflated)
-
-benchmarking con/LocallyNameless.Typed/con/14
-time                 1.122 μs   (1.101 μs .. 1.143 μs)
-                     0.997 R²   (0.995 R² .. 0.998 R²)
-mean                 1.132 μs   (1.116 μs .. 1.155 μs)
-std dev              62.63 ns   (46.56 ns .. 87.98 ns)
-variance introduced by outliers: 71% (severely inflated)
-
-benchmarking con/LocallyNameless.Typed/con/15
-time                 1.267 μs   (1.252 μs .. 1.283 μs)
-                     0.998 R²   (0.996 R² .. 0.999 R²)
-mean                 1.243 μs   (1.227 μs .. 1.264 μs)
-std dev              61.67 ns   (44.06 ns .. 90.13 ns)
-variance introduced by outliers: 65% (severely inflated)
-
-benchmarking con/LocallyNameless.Typed/con/16
-time                 1.350 μs   (1.342 μs .. 1.363 μs)
-                     0.998 R²   (0.997 R² .. 0.999 R²)
-mean                 1.398 μs   (1.373 μs .. 1.441 μs)
-std dev              107.8 ns   (68.05 ns .. 159.9 ns)
-variance introduced by outliers: 82% (severely inflated)
-
-benchmarking con/LocallyNameless.Typed/con/17
-time                 1.512 μs   (1.492 μs .. 1.539 μs)
-                     0.998 R²   (0.998 R² .. 0.999 R²)
-mean                 1.536 μs   (1.518 μs .. 1.558 μs)
-std dev              62.23 ns   (51.63 ns .. 78.83 ns)
-variance introduced by outliers: 55% (severely inflated)
-
-benchmarking con/LocallyNameless.Typed/con/18
-time                 1.637 μs   (1.622 μs .. 1.655 μs)
-                     0.999 R²   (0.998 R² .. 0.999 R²)
-mean                 1.673 μs   (1.646 μs .. 1.706 μs)
-std dev              94.37 ns   (73.00 ns .. 120.4 ns)
-variance introduced by outliers: 70% (severely inflated)
-
-benchmarking con/LocallyNameless.Typed/con/19
-time                 1.809 μs   (1.786 μs .. 1.837 μs)
-                     0.998 R²   (0.998 R² .. 0.999 R²)
-mean                 1.818 μs   (1.796 μs .. 1.849 μs)
-std dev              88.94 ns   (64.27 ns .. 149.1 ns)
-variance introduced by outliers: 64% (severely inflated)
-
-benchmarking con/LocallyNameless.Typed/con/20
-time                 1.971 μs   (1.932 μs .. 2.022 μs)
-                     0.998 R²   (0.997 R² .. 0.999 R²)
-mean                 1.980 μs   (1.957 μs .. 2.009 μs)
-std dev              81.85 ns   (69.29 ns .. 101.3 ns)
-variance introduced by outliers: 55% (severely inflated)
-
-benchmarking capt/LocallyNameless.Opt/capt/1
-time                 105.8 ns   (105.0 ns .. 106.6 ns)
-                     0.999 R²   (0.998 R² .. 0.999 R²)
-mean                 108.6 ns   (107.0 ns .. 111.3 ns)
-std dev              6.982 ns   (4.841 ns .. 10.94 ns)
-variance introduced by outliers: 80% (severely inflated)
-
-benchmarking capt/LocallyNameless.Opt/capt/2
-time                 139.7 ns   (137.7 ns .. 141.6 ns)
-                     0.999 R²   (0.998 R² .. 0.999 R²)
-mean                 141.3 ns   (139.9 ns .. 143.3 ns)
-std dev              5.915 ns   (4.804 ns .. 7.892 ns)
-variance introduced by outliers: 62% (severely inflated)
-
-benchmarking capt/LocallyNameless.Opt/capt/3
-time                 165.2 ns   (163.1 ns .. 167.5 ns)
-                     0.997 R²   (0.996 R² .. 0.998 R²)
-mean                 170.9 ns   (167.7 ns .. 174.5 ns)
-std dev              11.12 ns   (9.609 ns .. 12.87 ns)
-variance introduced by outliers: 80% (severely inflated)
-
-benchmarking capt/LocallyNameless.Opt/capt/4
-time                 193.8 ns   (191.0 ns .. 196.2 ns)
-                     0.999 R²   (0.999 R² .. 0.999 R²)
-mean                 194.2 ns   (192.2 ns .. 196.5 ns)
-std dev              7.701 ns   (5.764 ns .. 10.75 ns)
-variance introduced by outliers: 59% (severely inflated)
-
-benchmarking capt/LocallyNameless.Opt/capt/5
-time                 224.2 ns   (218.9 ns .. 230.8 ns)
-                     0.995 R²   (0.993 R² .. 0.998 R²)
-mean                 225.3 ns   (221.6 ns .. 230.3 ns)
-std dev              14.08 ns   (11.21 ns .. 17.44 ns)
-variance introduced by outliers: 78% (severely inflated)
-
-benchmarking capt/LocallyNameless.Opt/capt/6
-time                 250.1 ns   (247.7 ns .. 253.6 ns)
-                     0.999 R²   (0.999 R² .. 1.000 R²)
-mean                 251.6 ns   (249.1 ns .. 257.3 ns)
-std dev              12.27 ns   (6.289 ns .. 20.62 ns)
-variance introduced by outliers: 68% (severely inflated)
-
-benchmarking capt/LocallyNameless.Opt/capt/7
-time                 311.0 ns   (302.7 ns .. 319.8 ns)
-                     0.995 R²   (0.992 R² .. 0.997 R²)
-mean                 304.3 ns   (298.8 ns .. 311.1 ns)
-std dev              20.66 ns   (17.57 ns .. 24.09 ns)
-variance introduced by outliers: 80% (severely inflated)
-
-benchmarking capt/LocallyNameless.Opt/capt/8
-time                 343.7 ns   (338.7 ns .. 350.5 ns)
-                     0.997 R²   (0.996 R² .. 0.998 R²)
-mean                 356.7 ns   (349.5 ns .. 364.9 ns)
-std dev              25.53 ns   (22.74 ns .. 29.99 ns)
-variance introduced by outliers: 82% (severely inflated)
-
-benchmarking capt/LocallyNameless.Opt/capt/9
-time                 413.5 ns   (403.1 ns .. 422.6 ns)
-                     0.997 R²   (0.996 R² .. 0.999 R²)
-mean                 415.9 ns   (410.2 ns .. 420.2 ns)
-std dev              16.71 ns   (13.09 ns .. 20.53 ns)
-variance introduced by outliers: 58% (severely inflated)
-
-benchmarking capt/LocallyNameless.TypedOpt/capt/1
-time                 120.1 ns   (117.5 ns .. 124.2 ns)
-                     0.995 R²   (0.993 R² .. 0.996 R²)
-mean                 128.8 ns   (126.3 ns .. 130.9 ns)
-std dev              8.077 ns   (6.739 ns .. 9.379 ns)
-variance introduced by outliers: 79% (severely inflated)
-
-benchmarking capt/LocallyNameless.TypedOpt/capt/2
-time                 151.6 ns   (147.6 ns .. 156.6 ns)
-                     0.995 R²   (0.993 R² .. 0.998 R²)
-mean                 153.0 ns   (150.7 ns .. 155.7 ns)
-std dev              8.590 ns   (6.965 ns .. 10.56 ns)
-variance introduced by outliers: 75% (severely inflated)
-
-benchmarking capt/LocallyNameless.TypedOpt/capt/3
-time                 179.6 ns   (176.2 ns .. 183.2 ns)
-                     0.998 R²   (0.997 R² .. 0.999 R²)
-mean                 178.1 ns   (176.6 ns .. 180.0 ns)
-std dev              5.751 ns   (4.408 ns .. 7.658 ns)
-variance introduced by outliers: 48% (moderately inflated)
-
-benchmarking capt/LocallyNameless.TypedOpt/capt/4
-time                 219.1 ns   (214.9 ns .. 223.2 ns)
-                     0.998 R²   (0.997 R² .. 0.999 R²)
-mean                 219.2 ns   (215.7 ns .. 223.4 ns)
-std dev              13.01 ns   (10.15 ns .. 17.28 ns)
-variance introduced by outliers: 76% (severely inflated)
-
-benchmarking capt/LocallyNameless.TypedOpt/capt/5
-time                 269.4 ns   (258.1 ns .. 277.1 ns)
-                     0.994 R²   (0.993 R² .. 0.996 R²)
-mean                 257.0 ns   (253.1 ns .. 262.4 ns)
-std dev              14.79 ns   (11.30 ns .. 18.61 ns)
-variance introduced by outliers: 75% (severely inflated)
-
-benchmarking capt/LocallyNameless.TypedOpt/capt/6
-time                 290.6 ns   (285.3 ns .. 296.0 ns)
-                     0.998 R²   (0.997 R² .. 0.999 R²)
-mean                 289.4 ns   (285.7 ns .. 293.6 ns)
-std dev              13.68 ns   (10.88 ns .. 19.98 ns)
-variance introduced by outliers: 66% (severely inflated)
-
-benchmarking capt/LocallyNameless.TypedOpt/capt/7
-time                 339.1 ns   (334.9 ns .. 342.8 ns)
-                     0.999 R²   (0.999 R² .. 0.999 R²)
-mean                 338.2 ns   (334.5 ns .. 342.2 ns)
-std dev              12.67 ns   (10.49 ns .. 16.90 ns)
-variance introduced by outliers: 55% (severely inflated)
-
-benchmarking capt/LocallyNameless.TypedOpt/capt/8
-time                 381.3 ns   (376.1 ns .. 386.2 ns)
-                     0.999 R²   (0.998 R² .. 0.999 R²)
-mean                 381.6 ns   (377.6 ns .. 386.9 ns)
-std dev              15.54 ns   (12.98 ns .. 20.88 ns)
-variance introduced by outliers: 59% (severely inflated)
-
-benchmarking capt/LocallyNameless.TypedOpt/capt/9
-time                 402.8 ns   (398.0 ns .. 408.2 ns)
-                     0.999 R²   (0.998 R² .. 0.999 R²)
-mean                 407.3 ns   (402.6 ns .. 413.5 ns)
-std dev              18.00 ns   (13.92 ns .. 23.07 ns)
-variance introduced by outliers: 62% (severely inflated)
-
-benchmarking capt/LocallyNameless.Ott/capt/1
-time                 118.3 ns   (117.0 ns .. 119.4 ns)
-                     0.999 R²   (0.998 R² .. 0.999 R²)
-mean                 116.6 ns   (115.6 ns .. 118.0 ns)
-std dev              4.079 ns   (3.370 ns .. 5.014 ns)
-variance introduced by outliers: 53% (severely inflated)
-
-benchmarking capt/LocallyNameless.Ott/capt/2
-time                 185.8 ns   (183.4 ns .. 188.0 ns)
-                     0.998 R²   (0.998 R² .. 0.999 R²)
-mean                 189.2 ns   (186.4 ns .. 191.9 ns)
-std dev              9.160 ns   (7.887 ns .. 11.22 ns)
-variance introduced by outliers: 68% (severely inflated)
-
-benchmarking capt/LocallyNameless.Ott/capt/3
-time                 241.8 ns   (240.3 ns .. 243.5 ns)
-                     1.000 R²   (0.999 R² .. 1.000 R²)
-mean                 243.1 ns   (241.2 ns .. 245.3 ns)
-std dev              6.870 ns   (5.414 ns .. 9.651 ns)
-variance introduced by outliers: 41% (moderately inflated)
-
-benchmarking capt/LocallyNameless.Ott/capt/4
-time                 386.9 ns   (377.2 ns .. 397.3 ns)
-                     0.993 R²   (0.988 R² .. 0.997 R²)
-mean                 366.8 ns   (357.0 ns .. 378.2 ns)
-std dev              33.61 ns   (27.79 ns .. 43.40 ns)
-variance introduced by outliers: 88% (severely inflated)
-
-benchmarking capt/LocallyNameless.Ott/capt/5
-time                 429.3 ns   (417.7 ns .. 447.0 ns)
-                     0.992 R²   (0.991 R² .. 0.995 R²)
-mean                 444.6 ns   (435.6 ns .. 454.6 ns)
-std dev              32.34 ns   (29.03 ns .. 36.39 ns)
-variance introduced by outliers: 82% (severely inflated)
-
-benchmarking capt/LocallyNameless.Ott/capt/6
-time                 535.8 ns   (527.1 ns .. 543.3 ns)
-                     0.998 R²   (0.997 R² .. 0.999 R²)
-mean                 533.4 ns   (528.6 ns .. 541.5 ns)
-std dev              19.93 ns   (14.26 ns .. 31.36 ns)
-variance introduced by outliers: 53% (severely inflated)
-
-benchmarking capt/LocallyNameless.Ott/capt/7
-time                 654.3 ns   (646.0 ns .. 660.9 ns)
-                     0.999 R²   (0.998 R² .. 0.999 R²)
-mean                 639.4 ns   (632.9 ns .. 647.1 ns)
-std dev              23.46 ns   (19.19 ns .. 29.38 ns)
-variance introduced by outliers: 52% (severely inflated)
-
-benchmarking capt/LocallyNameless.Ott/capt/8
-time                 782.9 ns   (774.9 ns .. 790.7 ns)
-                     0.999 R²   (0.999 R² .. 0.999 R²)
-mean                 782.8 ns   (775.4 ns .. 790.8 ns)
-std dev              24.88 ns   (20.73 ns .. 30.51 ns)
-variance introduced by outliers: 44% (moderately inflated)
-
-benchmarking capt/LocallyNameless.Ott/capt/9
-time                 928.6 ns   (918.5 ns .. 940.3 ns)
-                     0.999 R²   (0.998 R² .. 0.999 R²)
-mean                 933.1 ns   (922.8 ns .. 944.0 ns)
-std dev              34.20 ns   (28.50 ns .. 46.24 ns)
-variance introduced by outliers: 52% (severely inflated)
-
-benchmarking capt/LocallyNameless.Par/capt/1
-time                 178.7 ns   (176.9 ns .. 180.8 ns)
-                     0.999 R²   (0.999 R² .. 1.000 R²)
-mean                 177.9 ns   (176.9 ns .. 179.2 ns)
-std dev              3.947 ns   (3.112 ns .. 5.224 ns)
-variance introduced by outliers: 31% (moderately inflated)
-
-benchmarking capt/LocallyNameless.Par/capt/2
-time                 260.6 ns   (259.6 ns .. 261.6 ns)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 260.4 ns   (259.2 ns .. 261.7 ns)
-std dev              4.269 ns   (3.333 ns .. 6.059 ns)
+mean                 1.905 s    (1.856 s .. 1.940 s)
+std dev              49.10 ms   (19.16 ms .. 61.99 ms)
 variance introduced by outliers: 19% (moderately inflated)
 
-benchmarking capt/LocallyNameless.Par/capt/3
-time                 377.2 ns   (375.0 ns .. 379.8 ns)
+benchmarking aeq/SimpleH
+time                 5.563 μs   (5.487 μs .. 5.639 μs)
+                     0.999 R²   (0.998 R² .. 0.999 R²)
+mean                 5.574 μs   (5.521 μs .. 5.647 μs)
+std dev              209.2 ns   (152.3 ns .. 337.2 ns)
+variance introduced by outliers: 48% (moderately inflated)
+
+benchmarking aeq/SimpleB
+time                 5.009 μs   (4.882 μs .. 5.128 μs)
+                     0.997 R²   (0.996 R² .. 1.000 R²)
+mean                 4.921 μs   (4.880 μs .. 4.978 μs)
+std dev              162.5 ns   (102.0 ns .. 256.3 ns)
+variance introduced by outliers: 42% (moderately inflated)
+
+benchmarking aeq/Simple
+time                 29.03 μs   (28.73 μs .. 29.39 μs)
                      0.999 R²   (0.998 R² .. 1.000 R²)
-mean                 382.6 ns   (378.3 ns .. 393.5 ns)
-std dev              20.26 ns   (7.593 ns .. 35.25 ns)
-variance introduced by outliers: 71% (severely inflated)
+mean                 29.16 μs   (28.93 μs .. 29.47 μs)
+std dev              907.7 ns   (728.6 ns .. 1.142 μs)
+variance introduced by outliers: 34% (moderately inflated)
 
-benchmarking capt/LocallyNameless.Par/capt/4
-time                 474.1 ns   (470.2 ns .. 480.1 ns)
-                     0.999 R²   (0.998 R² .. 0.999 R²)
-mean                 487.1 ns   (480.6 ns .. 495.1 ns)
-std dev              23.73 ns   (17.17 ns .. 31.53 ns)
-variance introduced by outliers: 67% (severely inflated)
-
-benchmarking capt/LocallyNameless.Par/capt/5
-time                 613.1 ns   (604.2 ns .. 621.8 ns)
+benchmarking con/SimpleH/con/1
+time                 65.80 ns   (64.56 ns .. 66.97 ns)
                      0.998 R²   (0.997 R² .. 0.999 R²)
-mean                 615.6 ns   (607.1 ns .. 623.6 ns)
-std dev              27.36 ns   (22.55 ns .. 33.23 ns)
-variance introduced by outliers: 62% (severely inflated)
+mean                 64.83 ns   (64.12 ns .. 65.77 ns)
+std dev              2.703 ns   (2.157 ns .. 3.440 ns)
+variance introduced by outliers: 63% (severely inflated)
 
-benchmarking capt/LocallyNameless.Par/capt/6
-time                 820.8 ns   (746.6 ns .. 889.5 ns)
-                     0.971 R²   (0.957 R² .. 0.992 R²)
-mean                 746.3 ns   (726.3 ns .. 782.4 ns)
-std dev              85.83 ns   (51.96 ns .. 139.4 ns)
-variance introduced by outliers: 92% (severely inflated)
+benchmarking con/SimpleH/con/2
+time                 160.9 ns   (158.9 ns .. 162.7 ns)
+                     0.998 R²   (0.997 R² .. 0.999 R²)
+mean                 160.6 ns   (158.4 ns .. 163.6 ns)
+std dev              9.184 ns   (6.862 ns .. 12.30 ns)
+variance introduced by outliers: 75% (severely inflated)
 
-benchmarking capt/LocallyNameless.Par/capt/7
-time                 925.5 ns   (907.4 ns .. 952.3 ns)
-                     0.996 R²   (0.995 R² .. 0.997 R²)
-mean                 976.5 ns   (960.4 ns .. 989.4 ns)
-std dev              51.27 ns   (42.58 ns .. 62.21 ns)
-variance introduced by outliers: 69% (severely inflated)
-
-benchmarking capt/LocallyNameless.Par/capt/8
-time                 1.047 μs   (1.029 μs .. 1.065 μs)
-                     0.999 R²   (0.998 R² .. 1.000 R²)
-mean                 1.037 μs   (1.029 μs .. 1.052 μs)
-std dev              36.23 ns   (25.11 ns .. 60.45 ns)
-variance introduced by outliers: 49% (moderately inflated)
-
-benchmarking capt/LocallyNameless.Par/capt/9
-time                 1.131 μs   (1.124 μs .. 1.140 μs)
-                     0.999 R²   (0.999 R² .. 1.000 R²)
-mean                 1.149 μs   (1.139 μs .. 1.163 μs)
-std dev              39.24 ns   (30.72 ns .. 57.91 ns)
-variance introduced by outliers: 47% (moderately inflated)
-
-benchmarking capt/LocallyNameless.ParOpt/capt/1
-time                 241.9 ns   (240.5 ns .. 243.4 ns)
-                     1.000 R²   (0.999 R² .. 1.000 R²)
-mean                 242.7 ns   (241.1 ns .. 244.7 ns)
-std dev              5.627 ns   (4.319 ns .. 7.591 ns)
-variance introduced by outliers: 32% (moderately inflated)
-
-benchmarking capt/LocallyNameless.ParOpt/capt/2
-time                 341.4 ns   (335.5 ns .. 346.4 ns)
+benchmarking con/SimpleH/con/3
+time                 247.6 ns   (244.4 ns .. 252.8 ns)
                      0.998 R²   (0.996 R² .. 0.999 R²)
-mean                 338.0 ns   (333.7 ns .. 346.0 ns)
-std dev              20.09 ns   (9.637 ns .. 31.67 ns)
-variance introduced by outliers: 76% (severely inflated)
-
-benchmarking capt/LocallyNameless.ParOpt/capt/3
-time                 505.1 ns   (496.3 ns .. 516.6 ns)
-                     0.997 R²   (0.995 R² .. 0.998 R²)
-mean                 522.8 ns   (513.0 ns .. 534.0 ns)
-std dev              36.16 ns   (26.21 ns .. 50.27 ns)
-variance introduced by outliers: 80% (severely inflated)
-
-benchmarking capt/LocallyNameless.ParOpt/capt/4
-time                 683.7 ns   (662.2 ns .. 706.0 ns)
-                     0.995 R²   (0.992 R² .. 0.998 R²)
-mean                 656.3 ns   (646.5 ns .. 671.6 ns)
-std dev              41.45 ns   (32.70 ns .. 54.49 ns)
-variance introduced by outliers: 77% (severely inflated)
-
-benchmarking capt/LocallyNameless.ParOpt/capt/5
-time                 856.8 ns   (843.4 ns .. 869.4 ns)
-                     0.998 R²   (0.997 R² .. 0.999 R²)
-mean                 855.4 ns   (845.1 ns .. 866.3 ns)
-std dev              37.71 ns   (30.62 ns .. 50.22 ns)
-variance introduced by outliers: 61% (severely inflated)
-
-benchmarking capt/LocallyNameless.ParOpt/capt/6
-time                 1.052 μs   (1.035 μs .. 1.070 μs)
-                     0.997 R²   (0.994 R² .. 0.999 R²)
-mean                 1.072 μs   (1.056 μs .. 1.099 μs)
-std dev              72.36 ns   (45.04 ns .. 126.9 ns)
-variance introduced by outliers: 78% (severely inflated)
-
-benchmarking capt/LocallyNameless.ParOpt/capt/7
-time                 1.252 μs   (1.234 μs .. 1.266 μs)
-                     0.999 R²   (0.998 R² .. 0.999 R²)
-mean                 1.239 μs   (1.224 μs .. 1.255 μs)
-std dev              48.74 ns   (41.51 ns .. 57.99 ns)
-variance introduced by outliers: 54% (severely inflated)
-
-benchmarking capt/LocallyNameless.ParOpt/capt/8
-time                 1.481 μs   (1.458 μs .. 1.500 μs)
-                     0.998 R²   (0.997 R² .. 0.999 R²)
-mean                 1.496 μs   (1.476 μs .. 1.517 μs)
-std dev              69.83 ns   (55.84 ns .. 89.92 ns)
-variance introduced by outliers: 62% (severely inflated)
-
-benchmarking capt/LocallyNameless.ParOpt/capt/9
-time                 1.725 μs   (1.695 μs .. 1.755 μs)
-                     0.998 R²   (0.997 R² .. 0.999 R²)
-mean                 1.686 μs   (1.665 μs .. 1.712 μs)
-std dev              75.40 ns   (64.29 ns .. 88.11 ns)
-variance introduced by outliers: 60% (severely inflated)
-
-benchmarking capt/LocallyNameless.Typed/capt/1
-time                 129.5 ns   (127.7 ns .. 132.1 ns)
-                     0.998 R²   (0.996 R² .. 0.999 R²)
-mean                 133.1 ns   (131.2 ns .. 135.2 ns)
-std dev              6.368 ns   (5.582 ns .. 7.500 ns)
-variance introduced by outliers: 68% (severely inflated)
-
-benchmarking capt/LocallyNameless.Typed/capt/2
-time                 191.0 ns   (187.7 ns .. 194.4 ns)
-                     0.998 R²   (0.997 R² .. 0.999 R²)
-mean                 192.6 ns   (190.5 ns .. 195.3 ns)
-std dev              7.854 ns   (6.416 ns .. 9.967 ns)
-variance introduced by outliers: 60% (severely inflated)
-
-benchmarking capt/LocallyNameless.Typed/capt/3
-time                 244.8 ns   (241.2 ns .. 248.3 ns)
-                     0.999 R²   (0.998 R² .. 0.999 R²)
-mean                 244.5 ns   (242.5 ns .. 247.3 ns)
-std dev              8.081 ns   (6.441 ns .. 10.83 ns)
-variance introduced by outliers: 49% (moderately inflated)
-
-benchmarking capt/LocallyNameless.Typed/capt/4
-time                 317.4 ns   (312.3 ns .. 323.5 ns)
-                     0.998 R²   (0.997 R² .. 0.999 R²)
-mean                 320.8 ns   (316.8 ns .. 324.7 ns)
-std dev              13.52 ns   (11.77 ns .. 16.46 ns)
-variance introduced by outliers: 61% (severely inflated)
-
-benchmarking capt/LocallyNameless.Typed/capt/5
-time                 394.9 ns   (388.2 ns .. 402.2 ns)
-                     0.998 R²   (0.998 R² .. 0.999 R²)
-mean                 392.9 ns   (388.6 ns .. 398.3 ns)
-std dev              15.93 ns   (14.09 ns .. 18.58 ns)
-variance introduced by outliers: 59% (severely inflated)
-
-benchmarking capt/LocallyNameless.Typed/capt/6
-time                 486.4 ns   (478.2 ns .. 493.9 ns)
-                     0.998 R²   (0.998 R² .. 0.999 R²)
-mean                 474.6 ns   (469.5 ns .. 480.5 ns)
-std dev              18.07 ns   (14.76 ns .. 22.01 ns)
+mean                 249.2 ns   (247.1 ns .. 253.4 ns)
+std dev              9.249 ns   (5.953 ns .. 16.17 ns)
 variance introduced by outliers: 55% (severely inflated)
 
-benchmarking capt/LocallyNameless.Typed/capt/7
-time                 554.6 ns   (551.1 ns .. 558.1 ns)
+benchmarking con/SimpleH/con/4
+time                 339.9 ns   (329.6 ns .. 351.9 ns)
+                     0.993 R²   (0.989 R² .. 0.998 R²)
+mean                 337.0 ns   (329.8 ns .. 344.5 ns)
+std dev              25.78 ns   (20.43 ns .. 32.71 ns)
+variance introduced by outliers: 84% (severely inflated)
+
+benchmarking con/SimpleH/con/5
+time                 427.2 ns   (417.4 ns .. 437.1 ns)
+                     0.996 R²   (0.994 R² .. 0.998 R²)
+mean                 420.4 ns   (413.9 ns .. 428.2 ns)
+std dev              24.42 ns   (19.57 ns .. 31.74 ns)
+variance introduced by outliers: 74% (severely inflated)
+
+benchmarking con/SimpleH/con/6
+time                 507.1 ns   (496.6 ns .. 521.3 ns)
+                     0.996 R²   (0.994 R² .. 0.997 R²)
+mean                 525.9 ns   (515.8 ns .. 537.3 ns)
+std dev              35.75 ns   (29.54 ns .. 53.12 ns)
+variance introduced by outliers: 79% (severely inflated)
+
+benchmarking con/SimpleH/con/7
+time                 587.8 ns   (572.4 ns .. 602.0 ns)
+                     0.997 R²   (0.996 R² .. 0.998 R²)
+mean                 590.2 ns   (581.2 ns .. 603.9 ns)
+std dev              38.15 ns   (33.13 ns .. 49.50 ns)
+variance introduced by outliers: 78% (severely inflated)
+
+benchmarking con/SimpleH/con/8
+time                 628.3 ns   (622.7 ns .. 635.0 ns)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 631.0 ns   (625.4 ns .. 637.1 ns)
+std dev              20.60 ns   (16.38 ns .. 27.74 ns)
+variance introduced by outliers: 46% (moderately inflated)
+
+benchmarking con/SimpleH/con/9
+time                 732.0 ns   (712.4 ns .. 753.6 ns)
+                     0.996 R²   (0.994 R² .. 0.998 R²)
+mean                 723.1 ns   (712.0 ns .. 738.3 ns)
+std dev              44.22 ns   (35.12 ns .. 56.11 ns)
+variance introduced by outliers: 75% (severely inflated)
+
+benchmarking con/SimpleH/con/10
+time                 791.8 ns   (777.8 ns .. 812.4 ns)
+                     0.995 R²   (0.992 R² .. 0.998 R²)
+mean                 833.6 ns   (813.9 ns .. 853.1 ns)
+std dev              68.68 ns   (61.06 ns .. 83.66 ns)
+variance introduced by outliers: 85% (severely inflated)
+
+benchmarking con/SimpleH/con/11
+time                 874.3 ns   (850.8 ns .. 901.9 ns)
+                     0.996 R²   (0.994 R² .. 0.999 R²)
+mean                 880.5 ns   (866.7 ns .. 901.9 ns)
+std dev              56.12 ns   (43.45 ns .. 77.04 ns)
+variance introduced by outliers: 76% (severely inflated)
+
+benchmarking con/SimpleH/con/12
+time                 940.1 ns   (928.8 ns .. 960.9 ns)
+                     0.995 R²   (0.993 R² .. 0.998 R²)
+mean                 1.009 μs   (986.3 ns .. 1.035 μs)
+std dev              84.97 ns   (77.51 ns .. 96.72 ns)
+variance introduced by outliers: 85% (severely inflated)
+
+benchmarking con/SimpleH/con/13
+time                 1.008 μs   (994.1 ns .. 1.025 μs)
+                     0.998 R²   (0.997 R² .. 1.000 R²)
+mean                 1.025 μs   (1.012 μs .. 1.046 μs)
+std dev              52.73 ns   (35.75 ns .. 82.41 ns)
+variance introduced by outliers: 67% (severely inflated)
+
+benchmarking con/SimpleH/con/14
+time                 1.076 μs   (1.063 μs .. 1.091 μs)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 1.080 μs   (1.075 μs .. 1.087 μs)
+std dev              20.88 ns   (17.00 ns .. 26.06 ns)
+variance introduced by outliers: 22% (moderately inflated)
+
+benchmarking con/SimpleH/con/15
+time                 1.195 μs   (1.178 μs .. 1.214 μs)
+                     0.998 R²   (0.997 R² .. 0.999 R²)
+mean                 1.188 μs   (1.174 μs .. 1.204 μs)
+std dev              53.53 ns   (42.06 ns .. 67.98 ns)
+variance introduced by outliers: 61% (severely inflated)
+
+benchmarking con/SimpleH/con/16
+time                 1.230 μs   (1.217 μs .. 1.247 μs)
+                     0.998 R²   (0.997 R² .. 0.999 R²)
+mean                 1.261 μs   (1.245 μs .. 1.286 μs)
+std dev              72.88 ns   (54.58 ns .. 97.29 ns)
+variance introduced by outliers: 72% (severely inflated)
+
+benchmarking con/SimpleH/con/17
+time                 1.300 μs   (1.295 μs .. 1.305 μs)
                      1.000 R²   (0.999 R² .. 1.000 R²)
-mean                 553.7 ns   (550.1 ns .. 557.5 ns)
-std dev              12.14 ns   (9.547 ns .. 16.72 ns)
+mean                 1.297 μs   (1.289 μs .. 1.311 μs)
+std dev              37.34 ns   (24.93 ns .. 61.39 ns)
+variance introduced by outliers: 38% (moderately inflated)
+
+benchmarking con/SimpleH/con/18
+time                 1.357 μs   (1.347 μs .. 1.366 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 1.358 μs   (1.350 μs .. 1.365 μs)
+std dev              25.00 ns   (19.95 ns .. 31.38 ns)
+variance introduced by outliers: 20% (moderately inflated)
+
+benchmarking con/SimpleH/con/19
+time                 1.446 μs   (1.431 μs .. 1.459 μs)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 1.434 μs   (1.426 μs .. 1.441 μs)
+std dev              26.81 ns   (21.27 ns .. 33.34 ns)
+variance introduced by outliers: 21% (moderately inflated)
+
+benchmarking con/SimpleH/con/20
+time                 1.511 μs   (1.496 μs .. 1.530 μs)
+                     0.999 R²   (0.998 R² .. 0.999 R²)
+mean                 1.516 μs   (1.501 μs .. 1.532 μs)
+std dev              52.15 ns   (44.04 ns .. 61.82 ns)
+variance introduced by outliers: 47% (moderately inflated)
+
+benchmarking con/SimpleB/con/1
+time                 39.48 ns   (38.50 ns .. 40.70 ns)
+                     0.995 R²   (0.994 R² .. 0.998 R²)
+mean                 39.24 ns   (38.62 ns .. 40.13 ns)
+std dev              2.529 ns   (1.908 ns .. 3.253 ns)
+variance introduced by outliers: 81% (severely inflated)
+
+benchmarking con/SimpleB/con/2
+time                 102.6 ns   (102.0 ns .. 103.5 ns)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 102.0 ns   (101.3 ns .. 102.5 ns)
+std dev              2.084 ns   (1.582 ns .. 2.911 ns)
 variance introduced by outliers: 28% (moderately inflated)
 
-benchmarking capt/LocallyNameless.Typed/capt/8
-time                 661.1 ns   (654.4 ns .. 669.9 ns)
-                     0.999 R²   (0.998 R² .. 1.000 R²)
-mean                 660.9 ns   (656.1 ns .. 667.8 ns)
-std dev              18.77 ns   (13.56 ns .. 28.44 ns)
-variance introduced by outliers: 39% (moderately inflated)
+benchmarking con/SimpleB/con/3
+time                 201.5 ns   (195.7 ns .. 208.4 ns)
+                     0.994 R²   (0.992 R² .. 0.997 R²)
+mean                 197.5 ns   (194.2 ns .. 201.9 ns)
+std dev              13.18 ns   (10.66 ns .. 15.55 ns)
+variance introduced by outliers: 80% (severely inflated)
 
-benchmarking capt/LocallyNameless.Typed/capt/9
-time                 800.2 ns   (781.9 ns .. 816.7 ns)
+benchmarking con/SimpleB/con/4
+time                 247.9 ns   (246.5 ns .. 249.6 ns)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 247.7 ns   (246.6 ns .. 249.4 ns)
+std dev              4.511 ns   (3.063 ns .. 7.122 ns)
+variance introduced by outliers: 22% (moderately inflated)
+
+benchmarking con/SimpleB/con/5
+time                 315.1 ns   (310.0 ns .. 320.9 ns)
                      0.998 R²   (0.997 R² .. 0.999 R²)
-mean                 779.1 ns   (771.7 ns .. 789.3 ns)
-std dev              28.70 ns   (22.27 ns .. 38.24 ns)
-variance introduced by outliers: 52% (severely inflated)
+mean                 323.5 ns   (318.3 ns .. 327.9 ns)
+std dev              15.27 ns   (13.80 ns .. 17.47 ns)
+variance introduced by outliers: 66% (severely inflated)
+
+benchmarking con/SimpleB/con/6
+time                 395.6 ns   (382.7 ns .. 411.2 ns)
+                     0.993 R²   (0.992 R² .. 0.996 R²)
+mean                 399.3 ns   (391.9 ns .. 406.9 ns)
+std dev              27.02 ns   (23.62 ns .. 31.42 ns)
+variance introduced by outliers: 80% (severely inflated)
+
+benchmarking con/SimpleB/con/7
+time                 454.3 ns   (441.4 ns .. 465.1 ns)
+                     0.997 R²   (0.996 R² .. 0.999 R²)
+mean                 439.1 ns   (434.9 ns .. 444.9 ns)
+std dev              16.64 ns   (11.13 ns .. 22.40 ns)
+variance introduced by outliers: 55% (severely inflated)
+
+benchmarking con/SimpleB/con/8
+time                 508.7 ns   (492.5 ns .. 522.0 ns)
+                     0.997 R²   (0.996 R² .. 0.999 R²)
+mean                 494.2 ns   (489.1 ns .. 501.2 ns)
+std dev              20.10 ns   (14.26 ns .. 26.27 ns)
+variance introduced by outliers: 58% (severely inflated)
+
+benchmarking con/SimpleB/con/9
+time                 567.4 ns   (552.6 ns .. 580.8 ns)
+                     0.998 R²   (0.997 R² .. 1.000 R²)
+mean                 555.5 ns   (551.8 ns .. 561.6 ns)
+std dev              16.09 ns   (10.13 ns .. 25.35 ns)
+variance introduced by outliers: 41% (moderately inflated)
+
+benchmarking con/SimpleB/con/10
+time                 621.0 ns   (608.0 ns .. 635.5 ns)
+                     0.998 R²   (0.997 R² .. 1.000 R²)
+mean                 613.7 ns   (610.5 ns .. 620.0 ns)
+std dev              14.48 ns   (7.115 ns .. 23.08 ns)
+variance introduced by outliers: 31% (moderately inflated)
+
+benchmarking con/SimpleB/con/11
+time                 719.7 ns   (694.4 ns .. 742.2 ns)
+                     0.995 R²   (0.994 R² .. 0.997 R²)
+mean                 708.1 ns   (697.0 ns .. 720.4 ns)
+std dev              40.58 ns   (35.28 ns .. 46.40 ns)
+variance introduced by outliers: 73% (severely inflated)
+
+benchmarking con/SimpleB/con/12
+time                 756.7 ns   (749.8 ns .. 769.2 ns)
+                     0.996 R²   (0.994 R² .. 0.998 R²)
+mean                 802.7 ns   (785.6 ns .. 822.7 ns)
+std dev              65.78 ns   (60.07 ns .. 70.53 ns)
+variance introduced by outliers: 84% (severely inflated)
+
+benchmarking con/SimpleB/con/13
+time                 937.4 ns   (925.3 ns .. 950.0 ns)
+                     0.997 R²   (0.996 R² .. 0.999 R²)
+mean                 929.7 ns   (910.1 ns .. 950.5 ns)
+std dev              66.35 ns   (52.65 ns .. 85.91 ns)
+variance introduced by outliers: 80% (severely inflated)
+
+benchmarking con/SimpleB/con/14
+time                 1.016 μs   (997.9 ns .. 1.027 μs)
+                     0.995 R²   (0.992 R² .. 0.997 R²)
+mean                 942.7 ns   (915.9 ns .. 970.8 ns)
+std dev              90.65 ns   (83.80 ns .. 109.3 ns)
+variance introduced by outliers: 88% (severely inflated)
+
+benchmarking con/SimpleB/con/15
+time                 984.4 ns   (946.7 ns .. 1.013 μs)
+                     0.995 R²   (0.994 R² .. 0.998 R²)
+mean                 945.2 ns   (935.0 ns .. 962.5 ns)
+std dev              43.98 ns   (31.36 ns .. 62.38 ns)
+variance introduced by outliers: 63% (severely inflated)
+
+benchmarking con/SimpleB/con/16
+time                 1.048 μs   (1.022 μs .. 1.080 μs)
+                     0.996 R²   (0.994 R² .. 0.997 R²)
+mean                 1.087 μs   (1.067 μs .. 1.109 μs)
+std dev              69.90 ns   (61.67 ns .. 80.13 ns)
+variance introduced by outliers: 77% (severely inflated)
+
+benchmarking con/SimpleB/con/17
+time                 1.161 μs   (1.118 μs .. 1.191 μs)
+                     0.994 R²   (0.993 R² .. 0.996 R²)
+mean                 1.128 μs   (1.107 μs .. 1.158 μs)
+std dev              80.67 ns   (65.68 ns .. 118.0 ns)
+variance introduced by outliers: 80% (severely inflated)
+
+benchmarking con/SimpleB/con/18
+time                 1.167 μs   (1.139 μs .. 1.204 μs)
+                     0.995 R²   (0.995 R² .. 0.997 R²)
+mean                 1.149 μs   (1.131 μs .. 1.170 μs)
+std dev              64.86 ns   (52.17 ns .. 75.08 ns)
+variance introduced by outliers: 71% (severely inflated)
+
+benchmarking con/SimpleB/con/19
+time                 1.321 μs   (1.286 μs .. 1.347 μs)
+                     0.997 R²   (0.994 R² .. 0.998 R²)
+mean                 1.293 μs   (1.267 μs .. 1.320 μs)
+std dev              86.57 ns   (75.35 ns .. 110.5 ns)
+variance introduced by outliers: 78% (severely inflated)
+
+benchmarking con/SimpleB/con/20
+time                 1.393 μs   (1.347 μs .. 1.435 μs)
+                     0.993 R²   (0.992 R² .. 0.996 R²)
+mean                 1.336 μs   (1.304 μs .. 1.372 μs)
+std dev              115.8 ns   (107.8 ns .. 123.9 ns)
+variance introduced by outliers: 86% (severely inflated)
+
+benchmarking con/Simple/con/1
+time                 40.19 ns   (38.90 ns .. 41.66 ns)
+                     0.995 R²   (0.993 R² .. 0.999 R²)
+mean                 40.42 ns   (39.82 ns .. 41.42 ns)
+std dev              2.517 ns   (1.801 ns .. 3.390 ns)
+variance introduced by outliers: 80% (severely inflated)
+
+benchmarking con/Simple/con/2
+time                 83.88 ns   (81.42 ns .. 86.52 ns)
+                     0.995 R²   (0.992 R² .. 0.998 R²)
+mean                 83.27 ns   (81.76 ns .. 85.18 ns)
+std dev              5.388 ns   (4.189 ns .. 6.849 ns)
+variance introduced by outliers: 80% (severely inflated)
+
+benchmarking con/Simple/con/3
+time                 105.9 ns   (103.6 ns .. 108.1 ns)
+                     0.997 R²   (0.996 R² .. 0.998 R²)
+mean                 103.0 ns   (101.7 ns .. 104.9 ns)
+std dev              5.053 ns   (4.241 ns .. 6.046 ns)
+variance introduced by outliers: 70% (severely inflated)
+
+benchmarking con/Simple/con/4
+time                 121.6 ns   (119.0 ns .. 124.6 ns)
+                     0.996 R²   (0.995 R² .. 0.998 R²)
+mean                 121.9 ns   (119.9 ns .. 123.8 ns)
+std dev              6.568 ns   (5.673 ns .. 7.595 ns)
+variance introduced by outliers: 73% (severely inflated)
+
+benchmarking con/Simple/con/5
+time                 154.5 ns   (151.5 ns .. 158.5 ns)
+                     0.996 R²   (0.994 R² .. 0.997 R²)
+mean                 154.5 ns   (151.1 ns .. 158.5 ns)
+std dev              11.55 ns   (10.16 ns .. 12.90 ns)
+variance introduced by outliers: 84% (severely inflated)
+
+benchmarking con/Simple/con/6
+time                 171.9 ns   (166.2 ns .. 178.5 ns)
+                     0.993 R²   (0.989 R² .. 0.997 R²)
+mean                 175.1 ns   (171.3 ns .. 179.8 ns)
+std dev              13.63 ns   (12.10 ns .. 18.64 ns)
+variance introduced by outliers: 85% (severely inflated)
+
+benchmarking con/Simple/con/7
+time                 190.2 ns   (184.8 ns .. 196.0 ns)
+                     0.995 R²   (0.995 R² .. 0.997 R²)
+mean                 185.7 ns   (183.0 ns .. 189.6 ns)
+std dev              10.10 ns   (8.277 ns .. 12.14 ns)
+variance introduced by outliers: 73% (severely inflated)
+
+benchmarking con/Simple/con/8
+time                 208.8 ns   (204.8 ns .. 213.2 ns)
+                     0.997 R²   (0.997 R² .. 0.998 R²)
+mean                 205.8 ns   (203.3 ns .. 209.2 ns)
+std dev              9.225 ns   (7.317 ns .. 11.14 ns)
+variance introduced by outliers: 65% (severely inflated)
+
+benchmarking con/Simple/con/9
+time                 227.0 ns   (223.5 ns .. 231.6 ns)
+                     0.997 R²   (0.997 R² .. 0.998 R²)
+mean                 227.4 ns   (224.1 ns .. 231.1 ns)
+std dev              11.62 ns   (10.35 ns .. 13.76 ns)
+variance introduced by outliers: 70% (severely inflated)
+
+benchmarking con/Simple/con/10
+time                 265.1 ns   (256.4 ns .. 272.2 ns)
+                     0.996 R²   (0.994 R² .. 0.998 R²)
+mean                 262.7 ns   (257.2 ns .. 266.8 ns)
+std dev              14.88 ns   (13.15 ns .. 17.82 ns)
+variance introduced by outliers: 74% (severely inflated)
+
+benchmarking con/Simple/con/11
+time                 284.6 ns   (275.2 ns .. 293.5 ns)
+                     0.994 R²   (0.993 R² .. 0.996 R²)
+mean                 280.6 ns   (275.0 ns .. 287.6 ns)
+std dev              20.90 ns   (16.95 ns .. 30.42 ns)
+variance introduced by outliers: 83% (severely inflated)
+
+benchmarking con/Simple/con/12
+time                 287.0 ns   (280.1 ns .. 296.6 ns)
+                     0.996 R²   (0.994 R² .. 0.999 R²)
+mean                 285.9 ns   (280.5 ns .. 292.6 ns)
+std dev              20.55 ns   (14.21 ns .. 29.93 ns)
+variance introduced by outliers: 82% (severely inflated)
+
+benchmarking con/Simple/con/13
+time                 321.0 ns   (312.1 ns .. 330.6 ns)
+                     0.995 R²   (0.994 R² .. 0.997 R²)
+mean                 326.6 ns   (319.3 ns .. 333.7 ns)
+std dev              22.83 ns   (20.08 ns .. 26.74 ns)
+variance introduced by outliers: 81% (severely inflated)
+
+benchmarking con/Simple/con/14
+time                 314.5 ns   (312.7 ns .. 316.2 ns)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 314.4 ns   (312.7 ns .. 315.9 ns)
+std dev              5.317 ns   (4.192 ns .. 6.635 ns)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking con/Simple/con/15
+time                 349.3 ns   (340.5 ns .. 359.6 ns)
+                     0.996 R²   (0.994 R² .. 0.998 R²)
+mean                 343.3 ns   (338.4 ns .. 349.3 ns)
+std dev              18.55 ns   (15.26 ns .. 23.73 ns)
+variance introduced by outliers: 72% (severely inflated)
+
+benchmarking con/Simple/con/16
+time                 370.6 ns   (361.3 ns .. 377.5 ns)
+                     0.997 R²   (0.997 R² .. 0.998 R²)
+mean                 357.0 ns   (352.6 ns .. 362.7 ns)
+std dev              16.44 ns   (13.13 ns .. 19.39 ns)
+variance introduced by outliers: 65% (severely inflated)
+
+benchmarking con/Simple/con/17
+time                 396.1 ns   (384.8 ns .. 404.9 ns)
+                     0.997 R²   (0.996 R² .. 0.998 R²)
+mean                 381.3 ns   (376.5 ns .. 387.5 ns)
+std dev              18.55 ns   (15.06 ns .. 21.77 ns)
+variance introduced by outliers: 67% (severely inflated)
+
+benchmarking con/Simple/con/18
+time                 432.1 ns   (417.6 ns .. 445.1 ns)
+                     0.994 R²   (0.992 R² .. 0.997 R²)
+mean                 412.9 ns   (403.2 ns .. 424.0 ns)
+std dev              34.21 ns   (30.57 ns .. 37.80 ns)
+variance introduced by outliers: 86% (severely inflated)
+
+benchmarking con/Simple/con/19
+time                 423.8 ns   (411.8 ns .. 434.9 ns)
+                     0.996 R²   (0.996 R² .. 0.998 R²)
+mean                 410.4 ns   (406.1 ns .. 416.6 ns)
+std dev              17.12 ns   (12.07 ns .. 22.39 ns)
+variance introduced by outliers: 60% (severely inflated)
+
+benchmarking con/Simple/con/20
+time                 450.7 ns   (437.4 ns .. 459.4 ns)
+                     0.997 R²   (0.996 R² .. 0.998 R²)
+mean                 434.6 ns   (429.8 ns .. 441.5 ns)
+std dev              18.94 ns   (15.08 ns .. 23.30 ns)
+variance introduced by outliers: 62% (severely inflated)
 

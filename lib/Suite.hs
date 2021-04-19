@@ -7,64 +7,65 @@ module Suite where
 import Control.Monad.State (evalState)
 import Core.Nf
 import qualified Data.Map.Strict as M
-import DeBruijnPar.B
-import DeBruijnPar.F
-import DeBruijnPar.FB
-import DeBruijnPar.L
-import DeBruijnPar.P
-import DeBruijnPar.Scoped
+import DeBruijn.Bound
+import DeBruijn.Kit
+import DeBruijn.Par.B
+import DeBruijn.Par.F
+import DeBruijn.Par.FB
+import DeBruijn.Par.L
+import DeBruijn.Par.P
+import DeBruijn.Par.Scoped
 import Id
 import IdInt
 import Impl
-import Impl.BoundDB
-import Impl.DeBruijn
-import Impl.HOAS
-import Impl.Kit
-import Impl.Simple
-import qualified Impl.SimpleB
-import qualified Impl.SimpleH
-import qualified Impl.SimpleM
-import Impl.Unbound
-import Impl.UnboundGenerics
-import Impl.Unique
 import Imports
 import Lambda
+import Lennart.DeBruijn
+import Lennart.HOAS
+import Lennart.Simple
+import Lennart.Unique
 import qualified LocallyNameless.Opt
 import qualified LocallyNameless.Ott
 import qualified LocallyNameless.Par
 import qualified LocallyNameless.ParOpt
 import qualified LocallyNameless.Typed
 import qualified LocallyNameless.TypedOpt
+import LocallyNameless.Unbound
+import LocallyNameless.UnboundGenerics
 import qualified Misc
+import qualified Named.SimpleB as SimpleB
+import qualified Named.SimpleH as SimpleH
+import qualified Named.SimpleM as SimpleM
 
 impls :: [LambdaImpl]
 impls =
-  [ --Impl.HOAS.impl,
-    -- LocallyNameless.Opt.impl,
-    -- LocallyNameless.TypedOpt.impl,
-    -- Impl.DeBruijn.impl,
-    -- DeBruijnPar.F.impl,
-    -- DeBruijnPar.FB.impl,
-    -- DeBruijnPar.L.impl,
-    -- DeBruijnPar.P.impl
-    -- DeBruijnPar.Scoped.impl,
-    -- DeBruijnPar.B.impl,
-    -- Impl.Kit.impl,
-    -- Impl.BoundDB.impl
-    -- LocallyNameless.Ott.impl,
-    -- LocallyNameless.Par.impl,
-    -- LocallyNameless.ParOpt.impl,
-    -- LocallyNameless.Typed.impl,
-    --Impl.SimpleH.impl
-    Impl.SimpleB.impl
-    --Impl.SimpleM.impl
-    --Impl.Simple.impl
-    --Impl.UnboundGenerics.impl
-    -- Impl.Unbound.impl
-    -- Impl.Unique.impl
-    -- Core.Nf.impl,
-    -- Impl.NominalG.impl -- generally too slow (12s vs. <200 ms for everything else)
-  ]
+  []
+
+{- Lennart.HOAS.impl,
+LocallyNameless.Opt.impl,
+LocallyNameless.TypedOpt.impl,
+Lennart.DeBruijn.impl,
+DeBruijn.Par.F.impl,
+DeBruijn.Par.FB.impl,
+DeBruijn.Par.L.impl,
+DeBruijn.Par.P.impl, -}
+--DeBruijn.Par.Scoped.impl
+{- DeBruijn.Par.B.impl,
+DeBruijn.Kit.impl,
+DeBruijn.Bound.impl,
+LocallyNameless.Ott.impl,
+LocallyNameless.Par.impl,
+LocallyNameless.ParOpt.impl,
+LocallyNameless.Typed.impl,
+SimpleH.impl,
+SimpleB.impl -- BROKEN
+SimpleM.impl,
+Lennart.Simple.impl,
+LocallyNameless.UnboundGenerics.impl,
+LocallyNameless.Unbound.impl,
+Lennart.Unique.impl,
+Core.Nf.impl, -}
+-- Named.NominalG.impl -- generally too slow (12s vs. <200 ms for everything else)
 
 -- Convert a lambda-calculus to
 

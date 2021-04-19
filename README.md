@@ -16,6 +16,7 @@ This is derived from Lennart Augustsson's unpublished draft paper
 
 lib/
   DeBruijnPar/
+  LocallyNameless/
   IdInt.lhs
   IdInt/
   Impl/

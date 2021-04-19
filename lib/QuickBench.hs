@@ -9,12 +9,12 @@ module QuickBench where
 
 import Control.Monad
 import qualified Data.List as List
-import qualified DeBruijnPar.Scoped as Scoped
+import qualified DeBruijn.Par.Scoped as Scoped
 import Id
 import IdInt
 import Impl
-import qualified Impl.Simple as Simple
-import qualified Impl.Unique as Unique
+import qualified Lennart.Simple as Simple
+import qualified Lennart.Unique as Unique
 import Lambda
 import Misc
 import Suite

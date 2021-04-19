@@ -5,7 +5,7 @@ import qualified Abstract.DeBruijnPar as A
 import Abstract.Simple
 import Data.Functor.Identity
 import Data.List (elemIndex)
-import qualified DeBruijnPar.Subst as S
+import qualified DeBruijn.Par.Subst as S
 import Imports
 
 type Sub = S.Sub

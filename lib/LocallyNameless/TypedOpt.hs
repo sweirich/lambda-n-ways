@@ -461,7 +461,7 @@ nfd e = State.evalState (nf' e) firstBoundId
 
 nf' :: Exp Z -> N (Exp Z)
 nf' e@(Var_f _) = return e
-nf' e@(Var_b _) = error "should not reach this"
+--nf' e@(Var_b _) = error "should not reach this"
 nf' (Abs b) = do
   x <- newVar
   b' <- nf' (open b (Var_f x))
@@ -475,7 +475,7 @@ nf' (App f a) = do
 -- Compute the weak head normal form.
 whnf :: Exp Z -> N (Exp Z)
 whnf e@(Var_f _) = return e
-whnf e@(Var_b _) = error "BUG"
+--whnf e@(Var_b _) = error "BUG"
 whnf e@(Abs _) = return e
 whnf (App f a) = do
   f' <- whnf f
@@ -493,7 +493,7 @@ type NM a = State.StateT IdInt Maybe a
 nfi' :: Int -> (Exp Z) -> NM (Exp Z)
 nfi' 0 _ = State.lift Nothing
 nfi' n e@(Var_f _) = return e
-nfi' n e@(Var_b _) = error "should not reach this"
+--nfi' n e@(Var_b _) = error "should not reach this"
 nfi' n (Abs e) = do
   x <- newVar
   e' <- nfi' (n - 1) (open e (Var_f x))
@@ -508,7 +508,7 @@ nfi' n (App f a) = do
 whnfi :: Int -> Exp Z -> NM (Exp Z)
 whnfi 0 _ = State.lift Nothing
 whnfi n e@(Var_f _) = return e
-whnfi n e@(Var_b _) = error "BUG"
+--whnfi n e@(Var_b _) = error "BUG"
 whnfi n e@(Abs _) = return e
 whnfi n (App f a) = do
   f' <- whnfi (n -1) f

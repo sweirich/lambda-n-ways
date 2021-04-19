@@ -11,8 +11,8 @@
 > import IdInt
 > import Impl
 > import Suite
-> import qualified Impl.Simple as Simple
-> import qualified Impl.Unique as Unique
+> import qualified Lennart.Simple as Simple
+> import qualified Lennart.Unique as Unique
 > import Test.QuickCheck
 
 > import Criterion.Main

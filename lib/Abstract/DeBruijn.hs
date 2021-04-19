@@ -6,7 +6,7 @@ import Abstract.Simple
 import Control.Monad.Identity
 import Data.Functor.Identity
 import Data.List (elemIndex)
-import qualified DeBruijnPar.Subst as S
+import qualified DeBruijn.Par.Subst as S
 import Imports
 
 newtype DB = DB Int
