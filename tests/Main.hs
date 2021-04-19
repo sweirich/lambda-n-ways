@@ -140,11 +140,11 @@ nfUnitTests = do
 -- should produce result equal to false
 main :: IO ()
 main = do
-  nfRandoms <- mapM nfRandomTests [] -- "random", "random2", "random25", "random35", "lams100"]
-  nfLamTests <- mapM nfRandomTests ["t1", "t2", "t3", "t4"]
-  nfSimple <- mapM nfRandomTests ["simpleclosed"]
-  nfMoreTests <- mapM nfRandomTests ["tests", "onesubst", "twosubst", "threesubst", "foursubst"]
+  nfRandoms <- mapM nfRandomTests ["random", "random2", "random25", "random35", "lams100"]
+  --nfLamTests <- mapM nfRandomTests ["t1", "t2", "t3", "t4", "t5", "t6"]
+  -- nfSimple <- mapM nfRandomTests ["simpleclosed", "capture10", "constructed10"]
+  -- nfMoreTests <- mapM nfRandomTests ["tests", "onesubst", "twosubst", "threesubst", "foursubst"]
   lennart <- nfUnitTests
-  defaultMain $ testGroup "tests" ([rtQCs, aeqQCs, nfQCs] ++ nfRandoms ++ nfLamTests ++ nfSimple ++ nfMoreTests ++ [lennart])
+  defaultMain $ testGroup "tests" ([rtQCs, aeqQCs, nfQCs] ++ nfRandoms ++ [lennart])
 
--- defaultMain $ testGroup "tests" nfSimple
+-- defaultMain $ testGroup "tests" [nfLamTests ++ nfSimple ++ nfMoreTests]

@@ -57,7 +57,7 @@
 -- numSubsts:  1
 -- bind depth: 2
 -- depth:      3
-\x2.(\x2.x1) x2
+\x1.(\x2.x1) x2
 -- numSubsts:  1
 -- bind depth: 2
 -- depth:      3
