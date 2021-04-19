@@ -182,3 +182,9 @@ addNf str = do
   lams2 <- readLams str
   nfs <- nfTerms lams2
   printNfTerms str nfs
+
+readNfPrint :: String -> IO ()
+readNfPrint str = do
+  lams <- readLams str
+  nfs <- nfTerms lams
+  printNfTerms str nfs
