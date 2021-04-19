@@ -12,7 +12,7 @@ import Misc
 import Suite
 import System.Exit (exitFailure)
 import Test.QuickCheck
-import Test.Tasty
+import Test.Tasty (TestTree, defaultMain, testGroup)
 import Test.Tasty.HUnit
 import Test.Tasty.QuickCheck as QC
 
@@ -141,10 +141,10 @@ nfUnitTests = do
 main :: IO ()
 main = do
   nfRandoms <- mapM nfRandomTests ["random", "random2", "random25", "random35", "lams100"]
-  --nfLamTests <- mapM nfRandomTests ["t1", "t2", "t3", "t4", "t5", "t6"]
-  -- nfSimple <- mapM nfRandomTests ["simpleclosed", "capture10", "constructed10"]
-  -- nfMoreTests <- mapM nfRandomTests ["tests", "onesubst", "twosubst", "threesubst", "foursubst"]
+  nfLamTests <- mapM nfRandomTests ["t1", "t2", "t3", "t4", "t5", "t6", "t7"]
+  nfSimple <- mapM nfRandomTests ["simpleclosed", "capture10", "constructed10"]
+  nfMoreTests <- mapM nfRandomTests ["tests", "onesubst", "twosubst", "threesubst", "foursubst"]
   lennart <- nfUnitTests
-  defaultMain $ testGroup "tests" ([rtQCs, aeqQCs, nfQCs] ++ nfRandoms ++ [lennart])
+  defaultMain $ testGroup "tests" ([rtQCs, aeqQCs, nfQCs] ++ nfRandoms ++ nfLamTests ++ nfSimple ++ nfMoreTests ++ [lennart])
 
 -- defaultMain $ testGroup "tests" [nfLamTests ++ nfSimple ++ nfMoreTests]
