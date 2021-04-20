@@ -55,7 +55,6 @@ library
       Named.SimpleB
       Named.SimpleH
       Named.SimpleM
-      Impl.DeBruijnC
       Core.Core
       Core.Unique
       Core.FV

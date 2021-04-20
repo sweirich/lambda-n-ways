@@ -17,7 +17,7 @@
 -- lambda-expressions.
 
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-module Impl.DeBruijnC (nf,Impl.DeBruijnC.aeq,nfd,fromLC,toLC, impl) where
+module DeBruijnC (nf,Impl.DeBruijnC.aeq,nfd,fromLC,toLC, impl) where
 
 import Lambda
 import IdInt
