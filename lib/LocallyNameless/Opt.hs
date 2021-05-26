@@ -14,7 +14,7 @@ import Impl (LambdaImpl (..))
 import Imports hiding (S, lift)
 import qualified Lambda as LC
 
--- 0. Original (Ott)
+-- 0. Original (Ott derived version)
 -- lennart: 1.03s
 -- random: 0.807 ms
 
@@ -42,7 +42,7 @@ import qualified Lambda as LC
 -------------------------------------------------------------------
 
 instance (NFData a) => NFData (Bind a) where
-  rnf (BindOpen k s a) = rnf k `seq` rnf s `seq` rnf a
+  rnf (BindOpen s a) = rnf s `seq` rnf a
   rnf (Bind a) = rnf a
   rnf (BindClose k v a) =
     rnf k
@@ -58,7 +58,7 @@ instance (NFData a) => NFData (Bind a) where
 
 data Bind a where
   Bind :: !a -> Bind a
-  BindOpen :: !Int -> ![a] -> !a -> Bind a
+  BindOpen :: ![a] -> !a -> Bind a
   BindClose :: !Int -> ![IdInt] -> !a -> Bind a
 
 -- create a binding by "abstracting a variable"
@@ -68,14 +68,23 @@ bind = Bind
 
 unbind :: Bind Exp -> Exp
 unbind (Bind a) = a
-unbind (BindOpen k ss a) =
-  multi_open_exp_wrt_exp_rec k ss a
+unbind (BindOpen ss a) =
+  multi_open_exp_wrt_exp_rec 0 ss a
 unbind (BindClose k vs a) =
   multi_close_exp_wrt_exp_rec k vs a
 {-# INLINEABLE unbind #-}
 
 instance (Eq Exp) => Eq (Bind Exp) where
   b1 == b2 = unbind b1 == unbind b2
+
+substBind :: Exp -> IdInt -> Bind Exp -> Bind Exp
+substBind u x (Bind a) = Bind (subst u x a)
+substBind u x (BindOpen as a) = BindOpen (fmap (subst u x) as) (subst u x a)
+substBind u x b@(BindClose i xs a) =
+--  if x `elem` xs then
+--    Bind (subst u x (unbind b))
+--  else
+    BindClose i xs (subst u x a)
 
 data Exp where
   Var_b :: !Int -> Exp
@@ -98,10 +107,10 @@ multi_open_exp_wrt_exp_rec k vn e =
   case e of
     Var_b i -> openIdx i k vn
     Var_f x -> Var_f x
-    Abs (BindOpen nk1 vm b) ->
-      Abs (BindOpen (k + nk1) (vm <> vn) b)
+    Abs (BindOpen vm b) ->
+      Abs (BindOpen (vm <> vn) b)
     Abs b ->
-      Abs (BindOpen (k + 1) vn (unbind b))
+      Abs (BindOpen vn (unbind b))
     (App e1 e2) ->
       App
         (multi_open_exp_wrt_exp_rec k vn e1)
@@ -110,13 +119,13 @@ multi_open_exp_wrt_exp_rec k vn e =
 -- when we find a bound variable, determine whether we should
 -- leave it alone or replace it
 openIdx :: Int -> Int -> [Exp] -> Exp
-openIdx i j v
-  | i >= j = v !! (i - j)
+openIdx i k v
+  | i >= k = v !! (i - k)
   | otherwise = Var_b 0
 {-# INLINEABLE openIdx #-}
 
 open :: Bind Exp -> Exp -> Exp
-open (BindOpen k vs e) u = multi_open_exp_wrt_exp_rec 0 (u : vs) e
+open (BindOpen vs e) u = multi_open_exp_wrt_exp_rec 0 (u : vs) e  -- this needs to be 0
 open b u = multi_open_exp_wrt_exp_rec 0 [u] (unbind b)
 {-# INLINEABLE open #-}
 
@@ -208,6 +217,8 @@ subst u y e = subst0 e
     subst0 e = case e of
       (Var_b n) -> Var_b n
       (Var_f x) -> (if x == y then u else (Var_f x))
+--      (Abs b) -> Abs (substBind u y b)
+-- the version w/o substBind is actually faster for some reason
       (Abs b) -> Abs (bind (subst0 (unbind b)))
       (App e1 e2) -> App (subst0 e1) (subst0 e2)
 

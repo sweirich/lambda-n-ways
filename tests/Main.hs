@@ -3,11 +3,11 @@
 module Main where
 
 import Control.Monad
+import qualified DeBruijn.Lennart as DeBruijn
 import IdInt
 import Impl
-import qualified Impl.DeBruijn as DeBruijn
-import qualified Impl.Unique as Unique
 import Lambda
+import qualified Lennart.Unique as Unique
 import Misc
 import Suite
 import System.Exit (exitFailure)
@@ -147,4 +147,4 @@ main = do
   lennart <- nfUnitTests
   defaultMain $ testGroup "tests" ([rtQCs, aeqQCs, nfQCs] ++ nfRandoms ++ nfLamTests ++ nfSimple ++ nfMoreTests ++ [lennart])
 
--- defaultMain $ testGroup "tests" [nfLamTests ++ nfSimple ++ nfMoreTests]
+--defaultMain $ testGroup "tests" (nfLamTests ++ nfSimple)

@@ -24,6 +24,7 @@ module DeBruijn.Kit (impl) where
 import Control.DeepSeq
 import Control.Monad.State
 import Data.Bifunctor (second)
+import Data.Kind (Type)
 import Data.Maybe (fromJust)
 import IdInt
 import Impl

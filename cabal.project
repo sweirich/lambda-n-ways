@@ -1,6 +1,7 @@
 packages: .
 packages: ../replib/RepLib
 packages: ../replib/Unbound
+packages: ../unbound-generics-revised
 
 -- If you don't have replib checked out:
 
@@ -9,3 +10,6 @@ packages: ../replib/Unbound
 --   location: git@github.com:sweirich/replib.git
 --   tag: 0c7a400d2f275fe8ac8d946ef80f269e7f37c078
 --   subdir: RepLib Unbound
+
+
+   

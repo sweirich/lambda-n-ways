@@ -9,6 +9,7 @@ import Core.Nf
 import qualified Data.Map.Strict as M
 import DeBruijn.Bound
 import DeBruijn.Kit
+import DeBruijn.Lennart
 import DeBruijn.Par.B
 import DeBruijn.Par.F
 import DeBruijn.Par.FB
@@ -20,7 +21,6 @@ import IdInt
 import Impl
 import Imports
 import Lambda
-import Lennart.DeBruijn
 import Lennart.HOAS
 import Lennart.Simple
 import Lennart.Unique
@@ -33,13 +33,25 @@ import qualified LocallyNameless.TypedOpt
 import LocallyNameless.Unbound
 import LocallyNameless.UnboundGenerics
 import qualified Misc
+--import qualified Named.Nom as Nom
+import qualified Named.NominalG as NominalG
 import qualified Named.SimpleB as SimpleB
 import qualified Named.SimpleH as SimpleH
 import qualified Named.SimpleM as SimpleM
 
 impls :: [LambdaImpl]
 impls =
-  []
+  [ --Lennart.HOAS.impl,
+    DeBruijn.Lennart.impl,
+    DeBruijn.Par.B.impl,
+    DeBruijn.Kit.impl
+    --DeBruijn.Bound.impl,
+    --LocallyNameless.Opt.impl,
+    --LocallyNameless.ParOpt.impl,
+    --SimpleM.impl
+    --LocallyNameless.UnboundGenerics.impl
+    -- LocallyNameless.Unbound.impl
+  ]
 
 {- Lennart.HOAS.impl,
 LocallyNameless.Opt.impl,
@@ -53,7 +65,7 @@ DeBruijn.Par.P.impl, -}
 {- DeBruijn.Par.B.impl,
 DeBruijn.Kit.impl,
 DeBruijn.Bound.impl,
-LocallyNameless.Ott.impl,
+LocallyNameless.Opt.impl,
 LocallyNameless.Par.impl,
 LocallyNameless.ParOpt.impl,
 LocallyNameless.Typed.impl,
@@ -61,8 +73,6 @@ SimpleH.impl,
 SimpleB.impl -- BROKEN
 SimpleM.impl,
 Lennart.Simple.impl,
-LocallyNameless.UnboundGenerics.impl,
-LocallyNameless.Unbound.impl,
 Lennart.Unique.impl,
 Core.Nf.impl, -}
 -- Named.NominalG.impl -- generally too slow (12s vs. <200 ms for everything else)

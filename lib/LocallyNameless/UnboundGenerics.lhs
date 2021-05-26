@@ -6,6 +6,7 @@
 >           , GADTs
 >           , ScopedTypeVariables
 >  #-}
+> {-# OPTIONS_GHC -fcross-module-specialise #-}
 
 > module LocallyNameless.UnboundGenerics(impl) where
 
@@ -15,6 +16,7 @@
 > import qualified Control.DeepSeq as DS
 > import GHC.Generics(Generic)
 > import Unbound.Generics.LocallyNameless as U
+> import Unbound.Generics.PermM as U
 
 > import Impl
 
@@ -51,6 +53,7 @@ provides alpha-equivalence and free variable calculation.
 > aeqd = U.aeq
 
 > instance U.Alpha Exp
+
 
 -- | The subst class uses generic programming to implement capture
 -- avoiding substitution. It just needs to know where the variables

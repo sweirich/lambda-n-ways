@@ -1,7 +1,5 @@
--- | This module is trying to make a "delayed" substitution version
--- of the "Simple" implementation.
--- currently broken
-module Named.SimpleB (impl) where
+-- | This module uses nominal logic
+module Named.Nominal (impl) where
 
 import IdInt (IdInt)
 import qualified IdInt.Map as M
@@ -21,7 +19,7 @@ import qualified Text.PrettyPrint.HughesPJ as PP
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "SimpleB",
+    { impl_name = "Nominal",
       impl_fromLC = toExp,
       impl_toLC = fromExp,
       impl_nf = nfd,

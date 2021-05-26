@@ -23,7 +23,7 @@ Implementation using the Nominal library (available from hackage)
 >           , impl_toLC   = toLC
 >           , impl_nf     = nf
 >           , impl_nfi    = nfi
->           , impl_aeq    = aeq
+>           , impl_aeq    = (==)
 >        }
 
 > -- Untyped lambda terms, up to alpha-equivalence.
