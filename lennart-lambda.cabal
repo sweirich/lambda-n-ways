@@ -30,7 +30,11 @@ library
       IdInt.Map
       IdInt.Set
       DeBruijn.Lennart
+      DeBruijn.Lift
+      DeBruijn.List
       DeBruijn.Bound
+      DeBruijn.Nested
+      DeBruijn.Nested2
       DeBruijn.Kit
       DeBruijn.Par.P
       DeBruijn.Par.B

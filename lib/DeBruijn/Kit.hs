@@ -103,15 +103,6 @@ refl = id
 top :: forall d g. Included g d -> Included g ('S d)
 top inc = VS . inc
 
-{-
-pop :: forall d g. Included g d -> Included ('S g) ('S d)
-pop _   VZ     = VZ
-pop inc (VS v) = VS $ inc v
-
-trans :: Included g h -> Included h i -> Included g i
-trans inc1 inc2 = inc2 . inc1
--}
-
 data Semantics (e :: Con -> *) (m :: Con -> *) = Semantics
   { weak :: forall g d. Included g d -> e g -> e d,
     embed :: forall g. Var g -> e g,

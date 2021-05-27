@@ -10,6 +10,10 @@ import qualified Data.Map.Strict as M
 import DeBruijn.Bound
 import DeBruijn.Kit
 import DeBruijn.Lennart
+import DeBruijn.Lift
+import DeBruijn.List
+import DeBruijn.Nested
+import DeBruijn.Nested2
 import DeBruijn.Par.B
 import DeBruijn.Par.F
 import DeBruijn.Par.FB
@@ -43,8 +47,11 @@ impls :: [LambdaImpl]
 impls =
   [ --Lennart.HOAS.impl,
     DeBruijn.Lennart.impl,
-    DeBruijn.Par.B.impl,
-    DeBruijn.Kit.impl
+    DeBruijn.Lift.impl,
+    DeBruijn.List.impl,
+    DeBruijn.Nested.impl,
+    DeBruijn.Nested2.impl
+    --DeBruijn.Par.F.impl
     --DeBruijn.Bound.impl,
     --LocallyNameless.Opt.impl,
     --LocallyNameless.ParOpt.impl,

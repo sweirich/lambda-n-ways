@@ -1,5 +1,5 @@
 The DeBruijn module implements the Normal Form function by
-using de Bruijn indicies.
+using de Bruijn indicies and takes advantage of the "Bound" library by Ed Kmett.
 
 > {-# LANGUAGE DeriveGeneric #-}
 > {-# LANGUAGE DeriveTraversable #-}
