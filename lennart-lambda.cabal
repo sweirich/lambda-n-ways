@@ -29,6 +29,7 @@ library
       QuickBench
       IdInt.Map
       IdInt.Set
+      Util.Nat
       DeBruijn.Cornell
       DeBruijn.Chlipala
       DeBruijn.Lennart
@@ -55,7 +56,6 @@ library
       LocallyNameless.Unbound
       LocallyNameless.UnboundGenerics
       Lennart.Simple
-
       Lennart.Unique
       Lennart.HOAS
 --      Named.Nom

@@ -12,47 +12,7 @@ This is a general purpose library for defining substitution for debruijn indices
 >
 > import Data.Kind (Type)
 > import Control.DeepSeq
-
-> ------------------------------------
-
-> data Nat = Z | S Nat
->   deriving (Eq,Show)
->
-> data SNat n where
->   SZ :: SNat Z
->   SS :: SNat n -> SNat (S n)
->
-> type family Plus n m where
->    Plus Z n     = n
->    Plus (S m) n = S (Plus m n)
-
-> instance Show (SNat m) where
->    show SZ     = "SZ"
->    show (SS n) = "(SS " ++ show n ++ ")"
-
-> ------------------------------------
-
-> data Idx :: Nat -> Type where
->    FZ :: Idx (S n)
->    FS :: Idx n -> Idx (S n)
-
-> instance Eq (Idx n) where
->    FZ == FZ = True
->    (FS n) == (FS m) = n == m
->    _ == _ = False
-
-> instance Show (Idx n) where
->    show FZ = "FZ"
->    show (FS n) = "(FS " ++ show n ++ ")"
-
-> toInt :: Idx n -> Int
-> toInt FZ     = 0
-> toInt (FS n) = 1 + toInt n
-
-
-> shift :: SNat m -> Idx n -> Idx (Plus m n)
-> shift SZ x = x
-> shift (SS m) x = FS (shift m x)
+> import Util.Nat
 
 
 > ------------------------------------
@@ -140,10 +100,3 @@ This is a general purpose library for defining substitution for debruijn indices
 > instance (forall n. NFData (a n)) => NFData (Bind a m) where
 >   rnf (Bind s a) = rnf s `seq` rnf a
 
-> instance NFData (Idx a) where
->   rnf FZ = ()
->   rnf (FS s) = rnf s
-
-> instance NFData (SNat a) where
->   rnf SZ = ()
->   rnf (SS s) = rnf s

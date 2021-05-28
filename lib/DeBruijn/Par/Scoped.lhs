@@ -19,6 +19,8 @@ It uses parallel substitutions and explcit substitutions stored in the term.
 > import Data.Maybe(fromJust)
 
 > import Impl
+> import Util.Nat
+
 > impl :: LambdaImpl
 > impl = LambdaImpl {
 >             impl_name   = "Scoped"

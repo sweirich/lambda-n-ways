@@ -1,13 +1,7 @@
 # Lambda-Calculus cooked **n**-ways
 
-This repository is a simple demonstration of various ways to implement
-variable binding in Haskell.
-
-It "benchmarks" several different representations of variable binding and
-substitution in the untyped lambda calculus using a single pathological case:
-computing the normal form of `factorial 6 == sum [1..37] + 17`. (Spoiler
-alert, these terms are not equal, so the normal form is the encoding of
-false).
+This repository is a simple demonstration of multiple ways to implement
+variable binding in Haskell as well as a benchmark suite of correctness and performance tests.
 
 This is derived from Lennart Augustsson's unpublished draft paper
 "Lambda-calculus Cooked Four Ways".
@@ -15,11 +9,14 @@ This is derived from Lennart Augustsson's unpublished draft paper
 ## File structure
 
 lib/
-  DeBruijnPar/
+  DeBruijn/
+    Par/
   LocallyNameless/
+  Named/
+  Lennart/
   IdInt.lhs
   IdInt/
-  Impl/
+  
 
 bench/
 test/
@@ -40,6 +37,8 @@ lib/
      - General Definition of a `LambdaImpl` structure
   Misc.lhs
   Suite.lhs
+  QuickBench.lhs 
+    - Tools for generating benchmarks and test suites
 
 
 
@@ -66,52 +65,84 @@ lib/
 
   DeBruijn indices that shift during substitution.
 
-2. Contributed by Bertram Felgenhauer (not part of benchmark)
+## DeBrujn-index based implementations
 
-- DeBruijnC [DB_C]
+* Debruijn index based implementations:
 
-  DeBruijn indices without substitutions. Adds a "closure" form to the
-  language and uses an environment during normalization.
+- Bound
 
-3. Added by SCW
+  Uses Kmett's [bound](https://hackage.haskell.org/package/bound) library.
+  Nested datatypes ensure that terms stay well-scoped.
 
-- DeBruijnParF [DB_F]
+- Kit
+
+  Based on code distributed with this paper
+  https://dl.acm.org/doi/10.1145/3018610.3018613
+
+- DeBruijn.Par.F [DB_F]
   
   Parallel substitution version, representing substitutions as functions. 
 
-- DeBruijnParF [DB_FB]
+- DeBruijn.Par.F [DB_FB]
   
   Parallel substitution version, representing substitutions as functions. 
   Introduces a 'Bind' abstract type to cache substitutions at binders.
 
-- DeBruijnPar [DB_P]
+- DeBruijn.Par.P [DB_P]
 
   Parallel substitution version (with reified substs). Based on
   https://github.com/sweirich/challenge/blob/canon/debruijn/debruijn1.md
 
-- DeBruijnParB [DB_B]
+- DeBruijn.Par.B [DB_B]
 
   Parallel substitution version with reified substs, but caches a substitution in terms.
   Uses general the purpose library in [Subst](Subst.hs)
   Optimized version described here
   https://github.com/sweirich/challenge/tree/canon/debruijn
 
-- DeBruijnScoped [Scoped]
+- DeBruijn.Par.Scoped [Scoped]
 
   Above, but also uses a GADT to enforce that the syntax is well-scoped.
 
-- BoundDB 
-
-  Uses Kmett's [bound](https://hackage.haskell.org/package/bound) library.
+## Locally-Nameless implementations
 
 - Unbound
 
   Uses the [unbound](https://hackage.haskell.org/package/unbound) library
   
+- UnboundGenerics
+
+  Uses the GHC.Generics port of Unbound
+
+- Ott/Opt/Par/ParOpt
+
+  Uses output of Ott's locally nameless backend
+
+- Typed/TypedOpt
+
+  Version of above with types to ensure that terms are locally closed
+
+
+## Named representations
+
 - SimpleB
 
-  Optimizes the "simple" approach by caching the substitution and free variable set 
-  at binders. Not at all simple. Took a long time to get this one correct.
+  Optimizes the "simple" approach by caching the substitution and free variable set at binders. Not at all simple. Took a long time to get this one correct. Actually it isn't correct.
+
+- SimpleH
+
+  Corrected version of SimpleB.
+
+- SimpleM
+
+  Version of SimpleH that uses a freshness monad to generate fresh variables.
+
+- NominalG
+
+  Uses nominal package & generic programming
+  https://hackage.haskell.org/package/nominal
+
+## Other
 
 - Core
 
@@ -120,13 +151,9 @@ lib/
   Does not add any explicit substitutions to the term.
   Uses Data.IntMap instead of lists to keep track of the substitution. 
   
-- NominalG
 
-  Uses nominal package & generic programming
   
-- Kit
 
-  https://dl.acm.org/doi/10.1145/3018610.3018613
 
 - 
 
@@ -167,6 +194,13 @@ The microbenchmark is full normalization of the lambda-calculus
 term: `factorial 6 == sum [1..37] + 17` represented with a Scott-encoding of
 the datatypes. See [lennart.lam](lams/lennart.lam) for the definition of this term.
 
+This "benchmarks" several different representations of variable binding and
+substitution in the untyped lambda calculus using a single pathological case:
+computing the normal form of `factorial 6 == sum [1..37] + 17`. (Spoiler
+alert, these terms are not equal, so the normal form is the encoding of
+false).
+
+
 By full normalization, we mean computing the following partial function that 
 repeatedly performs beta-reduction on the leftmost redex.
 
@@ -198,20 +232,23 @@ respectively). However, benchmarking uses the unfueled version.
 
 ## Testing the benchmarks
 
-Unit tests:
-- Verifies that each implementation correctly normalizes the pathological term.
-- Verifies that each implementation correctly normalizes the random lambda terms
-      random.lam -> random.nf2.lam
+`stack test`
 
-QC:
+The directory `lams/` contains files of non-normalized lambda-calculus terms. In each case, if the file is `test.lam` then a matching file 
+`test.nf.lam` contains the normalized version of the term.
+
+Unit tests:
+- pathological term (lennart.lam).
+- random terms with a small number of substitutions during normalization (onesubst, twosubst...)
+- random terms with a large number of substitutions during normalization (random25, random35,lams100)
+- constructed terms (capture10, constructed, 
+- terms that reveal a bug in some implementation (tX, tests, regression)
+
+QuickChecks
 - conversion from/to named representation is identity on lambda terms
 - freshened version of random lambda term is AEQ
 - nf on random lambda term matches reference version (DB)
    (This test is only for impls with a "fueled version" of normalization)
-
-- 
-
-     stack test
 
 ## References
 
@@ -221,9 +258,19 @@ QC:
 
 ## Missing implementations
 
-Optimized version of locally nameless
-
 Optimized version of nominal logic
+
+DeBruijn levels
+
+Locally-named implementation
+
+GHC Core type-level substitution
+
+Canonically-named 
+https://link.springer.com/article/10.1007/s10817-011-9229-y
+
 
 https://arxiv.org/pdf/1111.0085.pdf
 
+https://www.mimuw.edu.pl/~szynwelski/nlambda/doc/
+Module supports computations over infinite structures using logical formulas and SMT solving.

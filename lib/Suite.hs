@@ -52,8 +52,8 @@ impls =
     DeBruijn.Lift.impl,
     DeBruijn.List.impl,
     DeBruijn.Cornell.impl,
-    DeBruijn.Chlipala.impl,
-    DeBruijn.Nested.impl
+    DeBruijn.Chlipala.impl
+    --DeBruijn.Nested.impl
     --DeBruijn.Nested2.impl
     --DeBruijn.Par.F.impl
     --DeBruijn.Bound.impl,
