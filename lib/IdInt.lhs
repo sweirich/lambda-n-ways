@@ -37,7 +37,7 @@ are free variables.
 > instance Show IdInt where
 >    show (IdInt i) = if i < 0 then "f" ++ show (-i) else "x" ++ show i
 > instance Read IdInt where
->    -- skip "x" then read int
+>    -- skip "x" or "f" then read int
 >    readsPrec _ (_:str) = coerce ((readsPrec 0 str)::[(Int,String)])
 
 

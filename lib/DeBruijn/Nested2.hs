@@ -6,7 +6,8 @@
 -- extracted from "de Bruijn notation as a nested datatype",
 -- by Richard S. Bird and Ross Paterson
 -- renamed and adapted to benchmark framework
--- This is their extended version, but it doesn't work.
+-- This is their extended version, but it doesn't pass the test cases.
+-- I don't know why
 
 module DeBruijn.Nested2 (impl) where
 

@@ -29,6 +29,8 @@ library
       QuickBench
       IdInt.Map
       IdInt.Set
+      DeBruijn.Cornell
+      DeBruijn.Chlipala
       DeBruijn.Lennart
       DeBruijn.Lift
       DeBruijn.List

@@ -1,10 +1,13 @@
-The DeBruijn module implements the Normal Form function by
-using de Bruijn indicies. 
+This version is an adaptation of Lennart's Debruijn implementation.
+Instead of adjusting the indices of variables at each occurrence of the term, 
+it lifts the substitution as it goes under each binder.
 
-It is originally from Lennart Augustsson's repository
-but has been modified to to fit into this setting.
+This version is a variant of the 'Lift' implementation found in the Cornell lecture notes:
+https://www.cs.cornell.edu/courses/cs4110/2018fa/lectures/lecture15.pdf
 
-> module DeBruijn.Lennart(impl, toDB, fromDB, nfd, nfi) where
+It separates substitution from instantiation
+
+> module DeBruijn.Cornell(impl, toDB, fromDB, nfd, nfi) where
 > import Data.List(elemIndex)
 > import Lambda
 > import IdInt
@@ -14,7 +17,7 @@ but has been modified to to fit into this setting.
 
 > impl :: LambdaImpl
 > impl = LambdaImpl {
->             impl_name   = "DeBruijn.Lennart"
+>             impl_name   = "DeBruijn.Cornell"
 >           , impl_fromLC = toDB
 >           , impl_toLC   = fromDB
 >           , impl_nf     = nfd
@@ -79,8 +82,12 @@ Bounded versions
 
 
 > instantiate :: DB -> DB -> DB
-> instantiate b a = subst (sub a) b
+> instantiate b a = shift (-1) (subst (sub (shift 1 a)) b) 
 > {-# INLINE instantiate #-}
+
+If we are going to be adjusting the terms in the substitution, 
+it is important to do that *lazily*. We don't want to adjust terms that 
+aren't actually used in the expression.
 
 > data Sub = Sub {-# UNPACK #-} !Int DB
 > sub :: DB -> Sub 
@@ -89,34 +96,31 @@ Bounded versions
 
 > subst :: Sub -> DB -> DB
 > subst s (DVar i) = apply s i
+>
 > subst s (DLam e) = DLam (subst (lift s) e)
 > subst s (DApp f a) = DApp (subst s f) (subst s a)
 
-> -- | increment all "free" variables by `o`
-> -- initially, this operation should be called with n=0
 > adjust :: Int -> DB -> Int -> DB
 > adjust o e@(DVar j) n | j >= n = DVar (j+o)
 >                       | otherwise = e
 > adjust o (DLam e) n = DLam (adjust o e (n+1))
 > adjust o (DApp f a) n = DApp (adjust o f n) (adjust o a n)
 
+> shift :: Int -> DB -> DB
+> shift n x = adjust n x 0
+
 > lift :: Sub -> Sub
-> lift (Sub o b) = Sub (o+1) b 
+> lift (Sub o b) = Sub (o+1) (shift 1 b) 
 > {-# INLINE lift #-}
 
 > apply :: Sub -> Int -> DB
 > apply (Sub o a) i
->  | i == o    = adjust o a 0
->  | i >  o    = DVar (i-1)
+>  | i == o    = a   -- already adjusted in lift
+>  --   | i >  o    = DVar (i-1) -- in instantiate
 >  | otherwise = DVar i
 > {-# INLINE apply #-}
 
-Substitution needs to adjust the inserted expression
-so the free variables refer to the correct binders.
-This must happen for each occurrence of the substituted term
-(as they could be at different binding depths).
 
--------
 
 Convert to deBruijn indicies.  Do this by keeping a list of the bound
 variable so the depth can be found of all variables.  Do not touch

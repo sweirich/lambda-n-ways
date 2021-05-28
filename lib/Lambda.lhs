@@ -19,8 +19,6 @@ print in a nice way.
 > import qualified Data.Map as M
 
 
-> -- import IdInt
-
 The LC type of $\lambda$ term is parametrized over the type of the variables.
 It has constructors for variables, $\lambda$-abstraction, and application.
 

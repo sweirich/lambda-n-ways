@@ -8,6 +8,8 @@ import Control.Monad.State (evalState)
 import Core.Nf
 import qualified Data.Map.Strict as M
 import DeBruijn.Bound
+import DeBruijn.Chlipala
+import DeBruijn.Cornell
 import DeBruijn.Kit
 import DeBruijn.Lennart
 import DeBruijn.Lift
@@ -49,8 +51,10 @@ impls =
     DeBruijn.Lennart.impl,
     DeBruijn.Lift.impl,
     DeBruijn.List.impl,
-    DeBruijn.Nested.impl,
-    DeBruijn.Nested2.impl
+    DeBruijn.Cornell.impl,
+    DeBruijn.Chlipala.impl,
+    DeBruijn.Nested.impl
+    --DeBruijn.Nested2.impl
     --DeBruijn.Par.F.impl
     --DeBruijn.Bound.impl,
     --LocallyNameless.Opt.impl,

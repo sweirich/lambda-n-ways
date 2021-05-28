@@ -33,7 +33,7 @@ import Lambda
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "Kit",
+    { impl_name = "DeBruijn.Kit",
       impl_fromLC = fromLC,
       impl_toLC = toLC,
       impl_nf = nfd,
