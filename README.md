@@ -22,35 +22,48 @@ The source module [Suite](lib/Suite.hs) imports all of the various implementatio
 
 ## Running the test suite 
 
-The correctness of the various implementation is ensured through unit testing. 
+The correctness of the various implementation is ensured through quickcheck and unit testing. The module [Main](test/Main.hs) in the `test/` subdirectory defines these tests.
+
+    stack test
+
+The directory `lams/` contains files of non-normalized lambda-calculus terms. In each case, if the file is `test.lam` then a matching file 
+`test.nf.lam` contains the normalized version of the term.
+
+Unit tests:
+- pathological term (lennart.lam).
+- random terms with a small number of substitutions during normalization (onesubst, twosubst...)
+- random terms with a large number of substitutions during normalization (random25, random35,lams100)
+- constructed terms (capture10, constructed, 
+- terms that reveal a bug in some implementation (tX, tests, regression)
+
+QuickChecks
+- conversion from/to named representation is identity on lambda terms
+- freshened version of random lambda term is AEQ
+- nf on random lambda term matches reference version (DB)
+   (This test is only for impls with a "fueled version" of normalization)
 
 ## Running the benchmark suite
 
-make timing
-
-
-
+    make timing
 
 # Benchmark suite
 
+The benchmark suite is defined in the module [Main](bench/Main.hs) in the `bench/` subdirectory. It defines several benchmark groups. 
 
-Download the html files to see the Criterion graphs. Or look at the
-[raw results](results/output.txt).
- 
 1. Normalization of random lambda terms: 
 [rand_bench.html](results/rand_bench.html).
 
-These 25 random terms stored in the file [random2.lam](lams/random2.lam).  They are
+The 25 randomly-generated terms stored in the file [random.lam](lams/random.lam).  They are
 generated via `genScopedLam` in [Lambda.lhs](lib/Lambda.lhs) with size
 parameter `100000`, and so are closed and contain lots of
-lambdas. Normalizing these terms requires between 26-36 calls to `subst`. The
-terms themselves have total depth from 23-60 and binding depth from 13-46.
+lambdas. Normalizing these terms requires between 26-177 calls to `subst`. The
+terms themselves have total depth from 36-73 and binding depth from 23-57.
 
 2. Conversion to representation: [conv_bench.html](results/conv_bench.html). How long
    does it take to convert a parsed named representation to the internal
    representation of the implementation? alpha-converts the pathological term.
    
-3. Normalization of pathological lambda term:
+3. Normalization of a pathological lambda term:
   [nf_bench.html](results/nf_bench.html). See below.
 
 ```
@@ -59,7 +72,7 @@ terms themselves have total depth from 23-60 and binding depth from 13-46.
    num substs: 119697
 ```
 
-4. Alpha-equivalence of pathological lambda term:
+4. Alpha-equivalence of a pathological lambda term:
    [aeq_bench.html](results/aeq_bench.html)
    
 
@@ -90,7 +103,7 @@ repeatedly performs beta-reduction on the leftmost redex.
                     (whnf e1) e2            otherwise
 
 Note: the goal of this operation is to benchmark the *substitution* function,
-written above as {e2/x}e1.  As a result, even though some lambda calulus
+written above as {e2/x}e1.  As a result, even though some lambda calculus
 implementations may support more efficient ways of computing the normal form
 of a term (i.e. by normalizing e2 at most once) we are not interested in
 enabling that computation. Instead, we want the computation to be as close to the 
@@ -101,11 +114,9 @@ forms), for testing, each implementation also should support a "fueled"
 version of the `nf` and `whnf` functions (called `nfi` and `whnfi`,
 respectively). However, benchmarking uses the unfueled version.
 
-
-
 # Contents
 
-1. Original four implementations from Lennart Augustsson's paper:
+Original four implementations from Lennart Augustsson's paper:
 
 - Simple
 
@@ -128,8 +139,6 @@ respectively). However, benchmarking uses the unfueled version.
 
 ## DeBrujn-index based implementations
 
-* Debruijn index based implementations:
-
 - Bound
 
   Uses Kmett's [bound](https://hackage.haskell.org/package/bound) library.
@@ -140,30 +149,52 @@ respectively). However, benchmarking uses the unfueled version.
   Based on code distributed with this paper
   https://dl.acm.org/doi/10.1145/3018610.3018613
 
-- DeBruijn.Par.F [DB_F]
+- Chlipala
+
+  From Adam Chlipala's book "Certified Programming with Dependent Types"
+  Originally in Coq, but translated to Haskell. Uses DataKinds to ensure that 
+  the representation is well-scoped.
+
+- Lift/Cornell
+
+Two versions of an implementation found in the Cornell lecture notes:
+https://www.cs.cornell.edu/courses/cs4110/2018fa/lectures/lecture15.pdf
+
+- Nested 
+
+Extracted from "de Bruijn notation as a nested datatype",
+by Richard S. Bird and Ross Paterson
+(renamed and adapted to this benchmark framework).
+
+- DeBruijn.Par.F 
   
   Parallel substitution version, representing substitutions as functions. 
 
-- DeBruijn.Par.F [DB_FB]
+- DeBruijn.Par.L
+
+  Represents substitutions as infinite lists
+
+- DeBruijn.Par.FB 
   
   Parallel substitution version, representing substitutions as functions. 
   Introduces a 'Bind' abstract type to cache substitutions at binders.
 
-- DeBruijn.Par.P [DB_P]
+- DeBruijn.Par.P 
 
   Parallel substitution version (with reified substs). Based on
   https://github.com/sweirich/challenge/blob/canon/debruijn/debruijn1.md
 
-- DeBruijn.Par.B [DB_B]
+- DeBruijn.Par.B 
 
   Parallel substitution version with reified substs, but caches a substitution in terms.
   Uses general the purpose library in [Subst](Subst.hs)
   Optimized version described here
   https://github.com/sweirich/challenge/tree/canon/debruijn
 
-- DeBruijn.Par.Scoped [Scoped]
+- DeBruijn.Par.Scoped 
 
   Above, but also uses a GADT to enforce that the syntax is well-scoped.
+
 
 ## Locally-Nameless implementations
 
@@ -173,77 +204,49 @@ respectively). However, benchmarking uses the unfueled version.
   
 - UnboundGenerics
 
-  Uses the GHC.Generics port of Unbound
+  Uses the [unbound-generics] library (a port of Unbound that uses GHC.Generics)
 
 - Ott/Opt/Par/ParOpt
 
-  Uses output of Ott's locally nameless backend
+  Various versions that start with the output of Ott's locally nameless backend, and then 
+  optimize the deBruijn index portion similar to the Par implementations above.
 
 - Typed/TypedOpt
 
-  Version of above with types to ensure that terms are locally closed
-
+  Version of the Ott etc versions with types to ensure that terms are locally closed.
 
 ## Named representations
 
-- SimpleB
+- NominalG 
 
-  Optimizes the "simple" approach by caching the substitution and free variable set at binders. Not at all simple. Took a long time to get this one correct. Actually it isn't correct.
+  Uses [nominal](https://hackage.haskell.org/package/nominal) package & generic programming
 
 - SimpleH
 
-  Corrected version of SimpleB.
+  Optimizes the "simple" approach by caching the substitution and free variable set at binders. 
 
 - SimpleM
 
   Version of SimpleH that uses a freshness monad to generate fresh variables.
 
-- NominalG
-
-  Uses nominal package & generic programming
-  https://hackage.haskell.org/package/nominal
 
 ## Other
 
 - Core
 
   Uses the FV and Substitution functions ripped out of GHC Core (HEAD as of 5/28/20)
-  Like DB_C, this file uses a delayed substitution (e.g. environment) during normalization. 
+  This file uses a delayed substitution (e.g. environment) during normalization. 
   Does not add any explicit substitutions to the term.
   Uses Data.IntMap instead of lists to keep track of the substitution. 
   
-- 
 
-
-## Testing the benchmarks
-
-`stack test`
-
-The directory `lams/` contains files of non-normalized lambda-calculus terms. In each case, if the file is `test.lam` then a matching file 
-`test.nf.lam` contains the normalized version of the term.
-
-Unit tests:
-- pathological term (lennart.lam).
-- random terms with a small number of substitutions during normalization (onesubst, twosubst...)
-- random terms with a large number of substitutions during normalization (random25, random35,lams100)
-- constructed terms (capture10, constructed, 
-- terms that reveal a bug in some implementation (tX, tests, regression)
-
-QuickChecks
-- conversion from/to named representation is identity on lambda terms
-- freshened version of random lambda term is AEQ
-- nf on random lambda term matches reference version (DB)
-   (This test is only for impls with a "fueled version" of normalization)
-
-## References
+# References
 
 - repo this is forked from (and Lennart's draft paper)
 - https://www.schoolofhaskell.com/user/edwardk/bound
 - https://gitlab.haskell.org/ghc/ghc
 
 ## Missing implementations
-
-Optimized version of nominal logic
 
 DeBruijn levels
 
@@ -253,7 +256,6 @@ GHC Core type-level substitution
 
 Canonically-named 
 https://link.springer.com/article/10.1007/s10817-011-9229-y
-
 
 https://arxiv.org/pdf/1111.0085.pdf
 
