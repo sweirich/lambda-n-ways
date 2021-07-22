@@ -23,7 +23,7 @@ variables are unique.
 > import Impl
 > impl :: LambdaImpl
 > impl = LambdaImpl {
->             impl_name   = "Unique"
+>             impl_name   = "Lennart.Unique"
 >           , impl_fromLC = toUnique
 >           , impl_toLC   = fromUnique
 >           , impl_nf     = nfd

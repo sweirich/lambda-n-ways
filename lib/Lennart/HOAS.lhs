@@ -13,7 +13,7 @@ This makes it possible to use the native substitution of Haskell.
 > import Impl
 > impl :: LambdaImpl
 > impl = LambdaImpl {
->            impl_name   = "HOAS"
+>            impl_name   = "Lennart.HOAS"
 >          , impl_fromLC = fromLC
 >          , impl_toLC   = toLC
 >          , impl_nf     = nfh

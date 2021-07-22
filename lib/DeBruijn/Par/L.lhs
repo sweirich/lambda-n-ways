@@ -12,7 +12,7 @@ Substitutions are represented as infinite lists
 > import Impl
 > impl :: LambdaImpl
 > impl = LambdaImpl {
->             impl_name   = "DB_L"
+>             impl_name   = "DeBruijn.Par.L"
 >           , impl_fromLC = toDB
 >           , impl_toLC   = fromDB
 >           , impl_nf     = nfd

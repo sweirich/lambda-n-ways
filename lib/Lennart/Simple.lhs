@@ -20,7 +20,7 @@ capture a free variable.
 
 > impl :: LambdaImpl
 > impl = LambdaImpl { 
->             impl_name   = "Simple"
+>             impl_name   = "Lennart.Simple"
 >           , impl_fromLC = id
 >           , impl_toLC   = id
 >           , impl_nf     = nf

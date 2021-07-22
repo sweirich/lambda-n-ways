@@ -34,7 +34,7 @@
 
 > impl :: LambdaImpl
 > impl = LambdaImpl {
->             impl_name   = "UnboundG"
+>             impl_name   = "LocallyNameless.UnboundGenerics"
 >           , impl_fromLC = toDB
 >           , impl_toLC   = fromDB
 >           , impl_nf     = nfu

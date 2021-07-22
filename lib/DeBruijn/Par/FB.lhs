@@ -18,7 +18,7 @@ This version uses Haskell functions to represent substitutions, but introduces
 > import Impl
 > impl :: LambdaImpl
 > impl = LambdaImpl {
->             impl_name   = "DB_FB"
+>             impl_name   = "DeBruijn.Par.FB"
 >           , impl_fromLC = toDB
 >           , impl_toLC   = fromDB
 >           , impl_nf     = nfd

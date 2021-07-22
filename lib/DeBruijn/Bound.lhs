@@ -18,7 +18,7 @@ using de Bruijn indicies and takes advantage of the "Bound" library by Ed Kmett.
 > import Impl
 > impl :: LambdaImpl
 > impl = LambdaImpl {
->            impl_name   = "Bound"
+>            impl_name   = "DeBruijn.Bound"
 >          , impl_fromLC = toDB
 >          , impl_toLC   = fromDB
 >          , impl_nf     = nfd

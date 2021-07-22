@@ -1,50 +1,111 @@
 # Lambda-Calculus cooked **n**-ways
 
-This repository is a simple demonstration of multiple ways to implement
-variable binding in Haskell as well as a benchmark suite of correctness and performance tests.
+This repository is an experiment in implementing capture-avoiding substitution and alpha-equivalence for the untyped lambda calculus.  It contains benchmarks and implementations of many different implementation strategies and existing libraries for binding support. 
 
-This is derived from Lennart Augustsson's unpublished draft paper
-"Lambda-calculus Cooked Four Ways".
+History: This repo is derived from Lennart Augustsson's unpublished draft paper
+"Lambda-calculus Cooked Four Ways" and was originally forked from https://github.com/steshaw/lennart-lambda. 
 
-## File structure
+## Compiling the library
 
-lib/
-  DeBruijn/
-    Par/
-  LocallyNameless/
-  Named/
-  Lennart/
-  IdInt.lhs
-  IdInt/
-  
+This library can be compiled using the stack tool, using resolver: https://www.stackage.org/lts-15.14
+This pins the implementation to GHC version 8.8.3, which is the most recent implementation of GHC supported by the RepLib and Unbound libraries. More recent versions of GHC can be used for benchmarking if Unbound is removed from the test suite. 
 
-bench/
-test/
+The command:
 
-## Basic implementation organization
+    stack build
 
-lib/
-  Imports.hs 
-     - rexports common modules
-  IdInt.lhs 
-     - Identifiers based on a newtype for Ints
-     - Includes FreshM state monad for generating new IdInts
-  Lambda.lhs  
-     - Lambda calculus parameterized by type of binder/variable (v)
-     - Same type must be used in both locations. 
-     - Includes ReadP, show, fv, aeq, 
-  Impl.lhs
-     - General Definition of a `LambdaImpl` structure
-  Misc.lhs
-  Suite.lhs
-  QuickBench.lhs 
-    - Tools for generating benchmarks and test suites
+will compile the library and produce the `LC` executable that can be used for benchmarking.
+
+## Selecting the implementations 
+
+The source module [Suite](lib/Suite.hs) imports all of the various implementations and creates the test suite. Modify this file to include or exclude various implementations from testing and benchmarking. 
+
+## Running the test suite 
+
+The correctness of the various implementation is ensured through unit testing. 
+
+## Running the benchmark suite
+
+make timing
 
 
 
-## Contents
 
-1. Original four from Lennart Augustsson's paper:
+# Benchmark suite
+
+
+Download the html files to see the Criterion graphs. Or look at the
+[raw results](results/output.txt).
+ 
+1. Normalization of random lambda terms: 
+[rand_bench.html](results/rand_bench.html).
+
+These 25 random terms stored in the file [random2.lam](lams/random2.lam).  They are
+generated via `genScopedLam` in [Lambda.lhs](lib/Lambda.lhs) with size
+parameter `100000`, and so are closed and contain lots of
+lambdas. Normalizing these terms requires between 26-36 calls to `subst`. The
+terms themselves have total depth from 23-60 and binding depth from 13-46.
+
+2. Conversion to representation: [conv_bench.html](results/conv_bench.html). How long
+   does it take to convert a parsed named representation to the internal
+   representation of the implementation? alpha-converts the pathological term.
+   
+3. Normalization of pathological lambda term:
+  [nf_bench.html](results/nf_bench.html). See below.
+
+```
+   bind depth: 25
+   depth:      53
+   num substs: 119697
+```
+
+4. Alpha-equivalence of pathological lambda term:
+   [aeq_bench.html](results/aeq_bench.html)
+   
+
+### Normalization microbenchmark
+
+The microbenchmark is full normalization of the lambda-calculus
+term: `factorial 6 == sum [1..37] + 17` represented with a Scott-encoding of
+the datatypes. See [lennart.lam](lams/lennart.lam) for the definition of this term.
+
+This "benchmarks" several different representations of variable binding and
+substitution in the untyped lambda calculus using a single pathological case:
+computing the normal form of `factorial 6 == sum [1..37] + 17`. (Spoiler
+alert, these terms are not equal, so the normal form is the encoding of
+false).
+
+
+By full normalization, we mean computing the following partial function that 
+repeatedly performs beta-reduction on the leftmost redex.
+
+      nf x         = x
+      nf (\x.e)    = \x. nf e
+      nf (e1 e2)   = nf ({e2/x}e1')         when whnf e1 = \x.e1'
+                    (nf (whnf e1)) (nf e2)       otherwise
+
+      whnf x       = x
+      whnf (\x.e)  = \x.e
+      whnf (e1 e2) = whnf ({e2/x} e1') when whnf e1 = \x.e1'
+                    (whnf e1) e2            otherwise
+
+Note: the goal of this operation is to benchmark the *substitution* function,
+written above as {e2/x}e1.  As a result, even though some lambda calulus
+implementations may support more efficient ways of computing the normal form
+of a term (i.e. by normalizing e2 at most once) we are not interested in
+enabling that computation. Instead, we want the computation to be as close to the 
+implementation above as possible.
+
+Because this function is partial (not all lambda-calculus terms have normal
+forms), for testing, each implementation also should support a "fueled"
+version of the `nf` and `whnf` functions (called `nfi` and `whnfi`,
+respectively). However, benchmarking uses the unfueled version.
+
+
+
+# Contents
+
+1. Original four implementations from Lennart Augustsson's paper:
 
 - Simple
 
@@ -151,84 +212,8 @@ lib/
   Does not add any explicit substitutions to the term.
   Uses Data.IntMap instead of lists to keep track of the substitution. 
   
-
-  
-
-
 - 
 
-## Benchmarks
-
-Download the html files to see the Criterion graphs. Or look at the
-[raw results](results/output.txt).
- 
-1. Normalization of random lambda terms: 
-[rand_bench.html](results/rand_bench.html).
-
-These 25 random terms stored in the file [random2.lam](lams/random2.lam).  They are
-generated via `genScopedLam` in [Lambda.lhs](lib/Lambda.lhs) with size
-parameter `100000`, and so are closed and contain lots of
-lambdas. Normalizing these terms requires between 26-36 calls to `subst`. The
-terms themselves have total depth from 23-60 and binding depth from 13-46.
-
-2. Conversion to representation: [conv_bench.html](results/conv_bench.html). How long
-   does it take to convert a parsed named representation to the internal
-   representation of the implementation? alpha-converts the pathological term.
-   
-3. Normalization of pathological lambda term:
-  [nf_bench.html](results/nf_bench.html). See below.
-
-```
-   bind depth: 25
-   depth:      53
-   num substs: 119697
-```
-
-4. Alpha-equivalence of pathological lambda term:
-   [aeq_bench.html](results/aeq_bench.html)
-   
-
-### Normalization microbenchmark
-
-The microbenchmark is full normalization of the lambda-calculus
-term: `factorial 6 == sum [1..37] + 17` represented with a Scott-encoding of
-the datatypes. See [lennart.lam](lams/lennart.lam) for the definition of this term.
-
-This "benchmarks" several different representations of variable binding and
-substitution in the untyped lambda calculus using a single pathological case:
-computing the normal form of `factorial 6 == sum [1..37] + 17`. (Spoiler
-alert, these terms are not equal, so the normal form is the encoding of
-false).
-
-
-By full normalization, we mean computing the following partial function that 
-repeatedly performs beta-reduction on the leftmost redex.
-
-      nf x         = x
-      nf (\x.e)    = \x. nf e
-      nf (e1 e2)   = nf ({e2/x}e1')         when whnf e1 = \x.e1'
-                    (nf (whnf e1)) (nf e2)       otherwise
-
-      whnf x       = x
-      whnf (\x.e)  = \x.e
-      whnf (e1 e2) = whnf ({e2/x} e1') when whnf e1 = \x.e1'
-                    (whnf e1) e2            otherwise
-
-Note: the goal of this operation is to benchmark the *substitution* function,
-written above as {e2/x}e1.  As a result, even though some lambda calulus
-implementations may support more efficient ways of computing the normal form
-of a term (i.e. by normalizing e2 at most once) we are not interested in
-enabling that computation. Instead, we want the computation to be as close to the 
-implementation above as possible.
-
-Because this function is partial (not all lambda-calculus terms have normal
-forms), for testing, each implementation also should support a "fueled"
-version of the `nf` and `whnf` functions (called `nfi` and `whnfi`,
-respectively). However, benchmarking uses the unfueled version.
-
-## Running the benchmarks
-
-     make timing
 
 ## Testing the benchmarks
 

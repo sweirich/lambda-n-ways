@@ -23,7 +23,7 @@ It uses parallel substitutions and explcit substitutions stored in the term.
 
 > impl :: LambdaImpl
 > impl = LambdaImpl {
->             impl_name   = "Scoped"
+>             impl_name   = "DeBruijn.Par.Scoped"
 >           , impl_fromLC = toDB
 >           , impl_toLC   = fromDB
 >           , impl_nf     = nfd

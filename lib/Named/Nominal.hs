@@ -7,6 +7,7 @@ import qualified IdInt.Set as S
 import Impl (LambdaImpl (..))
 import Imports
 import qualified Lambda as LC
+import qualified Named.SimpleB
 import qualified Text.PrettyPrint.HughesPJ as PP
   ( Doc,
     parens,
@@ -19,7 +20,7 @@ import qualified Text.PrettyPrint.HughesPJ as PP
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "Nominal",
+    { impl_name = "Named.Nominal",
       impl_fromLC = toExp,
       impl_toLC = fromExp,
       impl_nf = nfd,
@@ -35,7 +36,7 @@ lookupMax vs = if S.null vs then Nothing else Just $ S.findMax vs
 -- Get a variable which is not in the given set.
 
 newId :: VarSet -> IdInt
-newId vs = case Named.SimpleB.lookupMax vs of
+newId vs = case lookupMax vs of
   Just v -> succ v
   Nothing -> toEnum 0
 
@@ -108,7 +109,7 @@ instantiate (Bind s _fv x a) b =
 {-# INLINEABLE instantiate #-}
 
 varSetMax :: VarSet -> IdInt
-varSetMax s = maybe (toEnum 0) succ (Named.SimpleB.lookupMax s)
+varSetMax s = maybe (toEnum 0) succ (lookupMax s)
 {-# INLINEABLE varSetMax #-}
 
 instance (FreeVars e) => FreeVars (Bind e) where

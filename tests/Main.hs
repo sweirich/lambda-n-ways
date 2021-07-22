@@ -136,8 +136,6 @@ nfUnitTests = do
     testGroup "NF Unit Test (Lennart) " $
       map (\i -> testCase (impl_name i) $ test_impl i) impls
 
--- test the correctness by normalizing the benchmarking term
--- should produce result equal to false
 main :: IO ()
 main = do
   nfRandoms <- mapM nfRandomTests ["random", "random2", "random25", "random35", "lams100"]
@@ -146,5 +144,3 @@ main = do
   nfMoreTests <- mapM nfRandomTests ["tests", "onesubst", "twosubst", "threesubst", "foursubst"]
   lennart <- nfUnitTests
   defaultMain $ testGroup "tests" ([rtQCs, aeqQCs, nfQCs] ++ nfRandoms ++ nfLamTests ++ nfSimple ++ nfMoreTests ++ [lennart])
-
---defaultMain $ testGroup "tests" (nfLamTests ++ nfSimple)

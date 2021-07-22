@@ -1,9 +1,5 @@
 module Suite where
 
---import Impl.NominalG
-
--- import Impl.DeBruijnC
-
 import Control.Monad.State (evalState)
 import Core.Nf
 import qualified Data.Map.Strict as M
@@ -39,56 +35,54 @@ import qualified LocallyNameless.TypedOpt
 import LocallyNameless.Unbound
 import LocallyNameless.UnboundGenerics
 import qualified Misc
---import qualified Named.Nom as Nom
-import qualified Named.NominalG as NominalG
-import qualified Named.SimpleB as SimpleB
-import qualified Named.SimpleH as SimpleH
-import qualified Named.SimpleM as SimpleM
+-- import qualified Named.Nom
+import qualified Named.Nominal
+import qualified Named.NominalG
+import qualified Named.SimpleB
+import qualified Named.SimpleH
+import qualified Named.SimpleM
 
 impls :: [LambdaImpl]
 impls =
-  [ --Lennart.HOAS.impl,
+  [ -- deBruijn index-based implementations
     DeBruijn.Lennart.impl,
+    DeBruijn.Par.B.impl,
+    DeBruijn.Par.F.impl,
+    DeBruijn.Par.FB.impl,
+    DeBruijn.Par.L.impl,
+    DeBruijn.Par.P.impl,
+    DeBruijn.Par.Scoped.impl,
+    DeBruijn.Bound.impl,
+    DeBruijn.Chlipala.impl,
+    DeBruijn.Cornell.impl,
+    DeBruijn.Kit.impl,
     DeBruijn.Lift.impl,
     DeBruijn.List.impl,
-    DeBruijn.Cornell.impl,
-    DeBruijn.Chlipala.impl
-    --DeBruijn.Nested.impl
-    --DeBruijn.Nested2.impl
-    --DeBruijn.Par.F.impl
-    --DeBruijn.Bound.impl,
-    --LocallyNameless.Opt.impl,
-    --LocallyNameless.ParOpt.impl,
-    --SimpleM.impl
-    --LocallyNameless.UnboundGenerics.impl
-    -- LocallyNameless.Unbound.impl
+    DeBruijn.Nested.impl,
+    -- DeBruijn.Nested2.impl, --fails test suite
+    -- Locally Nameless based implmentations
+    LocallyNameless.Opt.impl,
+    LocallyNameless.Ott.impl,
+    LocallyNameless.Par.impl,
+    LocallyNameless.ParOpt.impl,
+    LocallyNameless.Typed.impl,
+    LocallyNameless.TypedOpt.impl,
+    LocallyNameless.Unbound.impl, -- unbound
+    LocallyNameless.UnboundGenerics.impl, -- unbound-generics
+
+    -- Name based/nominal implementations
+    Lennart.Simple.impl,
+    Lennart.Unique.impl,
+    -- Named.Nom.impl, doesn't compile
+    -- Named.Nominal.impl, -- fails test suite
+    Named.NominalG.impl, -- generally too slow (12s vs. <200 ms for everything else)
+    -- Named.SimpleB.impl, -- fails test suite
+    Named.SimpleH.impl,
+    Named.SimpleM.impl,
+    -- Other
+    Lennart.HOAS.impl,
+    Core.Nf.impl
   ]
-
-{- Lennart.HOAS.impl,
-LocallyNameless.Opt.impl,
-LocallyNameless.TypedOpt.impl,
-Lennart.DeBruijn.impl,
-DeBruijn.Par.F.impl,
-DeBruijn.Par.FB.impl,
-DeBruijn.Par.L.impl,
-DeBruijn.Par.P.impl, -}
---DeBruijn.Par.Scoped.impl
-{- DeBruijn.Par.B.impl,
-DeBruijn.Kit.impl,
-DeBruijn.Bound.impl,
-LocallyNameless.Opt.impl,
-LocallyNameless.Par.impl,
-LocallyNameless.ParOpt.impl,
-LocallyNameless.Typed.impl,
-SimpleH.impl,
-SimpleB.impl -- BROKEN
-SimpleM.impl,
-Lennart.Simple.impl,
-Lennart.Unique.impl,
-Core.Nf.impl, -}
--- Named.NominalG.impl -- generally too slow (12s vs. <200 ms for everything else)
-
--- Convert a lambda-calculus to
 
 toIdInt :: (Ord v) => LC v -> LC IdInt
 toIdInt e = evalState (conv e) (0, fvmap)

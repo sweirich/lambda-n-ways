@@ -19,22 +19,6 @@ instance S.SubstC (LC DB) where
       go _s (Lam b) = Lam (S.substBind s b)
       go _s (App f a) = App (go s f) (go s a)
 
-{-# SPECIALIZE S.applySub :: Sub (LC DB) -> Int -> LC DB #-}
-
-{-# SPECIALIZE S.nil :: Sub (LC DB) #-}
-
-{-# SPECIALIZE S.comp :: Sub (LC DB) -> Sub (LC DB) -> Sub (LC DB) #-}
-
-{-# SPECIALIZE S.lift :: Sub (LC DB) -> Sub (LC DB) #-}
-
-{-# SPECIALIZE S.single :: LC DB -> Sub (LC DB) #-}
-
-{-# SPECIALIZE S.unbind :: S.Bind (LC DB) -> LC DB #-}
-
-{-# SPECIALIZE S.instantiate :: S.Bind (LC DB) -> LC DB -> LC DB #-}
-
-{-# SPECIALIZE S.substBind :: Sub (LC DB) -> S.Bind (LC DB) -> S.Bind (LC DB) #-}
-
 newtype DB = DB Int
   deriving (Eq, Ord, Show, Read, Num, Arbitrary, NFData)
 

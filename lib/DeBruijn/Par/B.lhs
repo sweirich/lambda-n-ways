@@ -37,7 +37,7 @@ user	0m0.009s
 > import Impl
 > impl :: LambdaImpl
 > impl = LambdaImpl {
->             impl_name   = "DB_B"
+>             impl_name   = "DeBruijn.Par.B"
 >           , impl_fromLC = toDB
 >           , impl_toLC   = fromDB
 >           , impl_nf     = nfd

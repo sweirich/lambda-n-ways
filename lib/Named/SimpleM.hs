@@ -27,7 +27,7 @@ import qualified Text.PrettyPrint.HughesPJ as PP
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "SimpleM",
+    { impl_name = "Named.SimpleM",
       impl_fromLC = toExp,
       impl_toLC = fromExp,
       impl_nf = nf,

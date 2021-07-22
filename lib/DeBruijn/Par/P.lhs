@@ -10,7 +10,7 @@ using de Bruijn indicies.
 > import Impl
 > impl :: LambdaImpl
 > impl = LambdaImpl {
->             impl_name   = "DB_P"
+>             impl_name   = "DeBruijn.Par.P"
 >           , impl_fromLC = toDB
 >           , impl_toLC   = fromDB
 >           , impl_nf     = nfd

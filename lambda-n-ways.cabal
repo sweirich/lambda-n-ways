@@ -1,20 +1,14 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.33.0.
---
--- see: https://github.com/sol/hpack
---
--- hash: 86e559d14a59a55b7ed0344ba1fa1a93d8d6e9a3c27022bcd8ae32d8d9fb4f04
-
-name:           lennart-lambda
-version:        0.0.0
-homepage:       https://github.com/steshaw/lennart-lambda#readme
-bug-reports:    https://github.com/steshaw/lennart-lambda/issues
+name:           lambda-n-ways
+version:        0.0.1
+homepage:       https://github.com/sweirich/lambda-n-ways
+bug-reports:    https://github.com/sweirich/lambda-n-ways
 build-type:     Simple
 
 source-repository head
   type: git
-  location: https://github.com/sweirich/lennart-lambda
+  location: https://github.com/sweirich/lambda-n-ways
 
 library
   hs-source-dirs: lib
@@ -58,7 +52,8 @@ library
       Lennart.Simple
       Lennart.Unique
       Lennart.HOAS
---      Named.Nom
+      -- Named.Nom  -- doesn't compile
+      Named.Nominal
       Named.NominalG
       Named.SimpleB
       Named.SimpleH
@@ -135,7 +130,7 @@ executable LC
                , criterion
                , deepseq >= 1.4.4.0
                , deriving-compat
-               , lennart-lambda
+               , lambda-n-ways
                , mtl
                , pretty
                , tasty >= 1.2.3
@@ -157,6 +152,7 @@ executable LC
                 , TypeFamilies
                 , TypeApplications
                 , UndecidableInstances
+                
 test-suite test-timing
   default-language: Haskell2010
   hs-source-dirs: tests
@@ -164,7 +160,7 @@ test-suite test-timing
   type:    exitcode-stdio-1.0
   build-depends:
                   base >= 4.13
-                , lennart-lambda
+                , lambda-n-ways
                 , QuickCheck >= 2.13.2
                 , tasty >= 0.7
                 , tasty >= 1.2.3

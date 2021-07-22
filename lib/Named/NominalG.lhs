@@ -18,7 +18,7 @@ Implementation using the Nominal library (available from hackage)
 >
 > impl :: LambdaImpl
 > impl = LambdaImpl {
->             impl_name   = "Nominal (Generic)"
+>             impl_name   = "Named.NominalG"
 >           , impl_fromLC = fromLC
 >           , impl_toLC   = toLC
 >           , impl_nf     = nf

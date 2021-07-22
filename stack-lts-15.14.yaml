@@ -1,8 +1,0 @@
-# 14.27
-# uses ghc 8.10.4
-resolver: lts-15.14
-packages:
-- '.'
-extra-deps: 
-flags: {}
-extra-package-dbs: []
