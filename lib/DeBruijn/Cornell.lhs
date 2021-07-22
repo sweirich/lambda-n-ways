@@ -5,7 +5,7 @@ it lifts the substitution as it goes under each binder.
 This version is a variant of the 'Lift' implementation found in the Cornell lecture notes:
 https://www.cs.cornell.edu/courses/cs4110/2018fa/lectures/lecture15.pdf
 
-It separates substitution from instantiation
+It separates substitution from instantiation.
 
 > module DeBruijn.Cornell(impl, toDB, fromDB, nfd, nfi) where
 > import Data.List(elemIndex)

@@ -33,14 +33,14 @@ Unit tests:
 - pathological term (lennart.lam).
 - random terms with a small number of substitutions during normalization (onesubst, twosubst...)
 - random terms with a large number of substitutions during normalization (random25, random35,lams100)
-- constructed terms (capture10, constructed, 
+- constructed terms (capture10, constructed20) 
 - terms that reveal a bug in some implementation (tX, tests, regression)
 
 QuickChecks
 - conversion from/to named representation is identity on lambda terms
-- freshened version of random lambda term is AEQ
-- nf on random lambda term matches reference version (DB)
-   (This test is only for impls with a "fueled version" of normalization)
+- freshened version of random lambda term is alpha-equivalent to original
+- nf on random lambda term matches a reference version (DeBruijn.Lennart)
+   (This test uses a "fueled version" of normalization)
 
 ## Running the benchmark suite
 
@@ -119,6 +119,31 @@ Because this function is partial (not all lambda-calculus terms have normal
 forms), for testing, each implementation also should support a "fueled"
 version of the `nf` and `whnf` functions (called `nfi` and `whnfi`,
 respectively). However, benchmarking uses the unfueled version.
+
+# Anatomy of an implementation:
+
+Every implementation in this suite matches the following interface:
+
+    data LambdaImpl = forall a.
+         NFData a =>
+         LambdaImpl
+         { impl_name :: String,
+           impl_fromLC :: LC IdInt -> a,
+           impl_toLC :: a -> LC IdInt,
+           impl_nf :: a -> a,
+           impl_nfi :: Int -> a -> Maybe a,
+           impl_aeq :: a -> a -> Bool
+         }
+
+Given some type for the implementation 'a', we need to be able to convert 
+to and from that type to a "fully named" representation of lambda-terms. 
+(Where the names are just represented by integers).
+
+    data LC v = Var v | Lam v (LC v) | App (LC v) (LC v)
+
+Furthermore, we need to be able to normalize it, using the algorithm specified 
+above, and limited by some amount of fuel (for testing). We also need a definition 
+of alpha-equivalence for this representation.
 
 # The n implementations
 

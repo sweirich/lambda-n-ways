@@ -25,7 +25,7 @@ module Imports
     Type,
 
     -- * Text.ParserCombinators.ReadP
-    ReadP (..),
+    ReadP,
     Doc,
     State,
     MonadState (..),
@@ -49,5 +49,5 @@ import Data.Set (Set)
 import Data.Tuple (curry, fst, snd, swap, uncurry)
 import GHC.Generics
 import Test.QuickCheck
-import Text.ParserCombinators.ReadP (ReadP (..))
+import Text.ParserCombinators.ReadP (ReadP)
 import Text.PrettyPrint.HughesPJ (Doc)

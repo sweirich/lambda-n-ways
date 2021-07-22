@@ -59,7 +59,7 @@ debruijn =
     DeBruijn.Par.L.impl,
     DeBruijn.Par.P.impl,
     DeBruijn.Par.Scoped.impl,
-    DeBruijn.Bound.impl,
+    DeBruijn.Bound.impl, -- bound
     DeBruijn.Chlipala.impl,
     DeBruijn.Cornell.impl,
     DeBruijn.Kit.impl,
@@ -87,7 +87,7 @@ named :: [LambdaImpl]
 named =
   [ -- Named.Nom.impl, doesn't compile
     -- Named.Nominal.impl, -- fails test suite
-    Named.NominalG.impl, -- generally too slow (12s vs. <200 ms for everything else)
+    Named.NominalG.impl, -- nominal, generally too slow (12s vs. <200 ms for everything else)
     -- Named.SimpleB.impl, -- fails test suite
     Named.SimpleH.impl,
     Named.SimpleM.impl
@@ -115,7 +115,7 @@ fast_debruijn =
     DeBruijn.Par.B.impl,
     DeBruijn.Par.FB.impl,
     DeBruijn.Par.Scoped.impl,
-    DeBruijn.Bound.impl,
+    DeBruijn.Bound.impl, -- bound
     DeBruijn.Chlipala.impl,
     DeBruijn.Cornell.impl,
     DeBruijn.Kit.impl,
@@ -152,7 +152,7 @@ slow =
   ]
 
 really_slow :: [LambdaImpl]
-really_slow = [Named.NominalG.impl]
+really_slow = [Named.NominalG.impl] -- nominal
 
 --------------------------------------------------------------
 --------------------------------------------------------------
