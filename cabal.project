@@ -1,9 +1,5 @@
 packages: .
--- packages: ../replib/RepLib
--- packages: ../replib/Unbound
 packages: ../unbound-generics-revised
-
--- If you don't have replib checked out:
 
 source-repository-package
    type: git
