@@ -50,7 +50,7 @@ QuickChecks
 
 The benchmark suite is defined in the module [Main](bench/Main.hs) in the `bench/` subdirectory. It defines several benchmark groups. 
 
-1. Normalization of random lambda terms: 
+1. `rand`: Normalization of random lambda terms: 
 [rand_bench.html](results/rand_bench.html).
 
 The 25 randomly-generated terms stored in the file [random.lam](lams/random.lam).  They are
@@ -59,11 +59,11 @@ parameter `100000`, and so are closed and contain lots of
 lambdas. Normalizing these terms requires between 26-177 calls to `subst`. The
 terms themselves have total depth from 36-73 and binding depth from 23-57.
 
-2. Conversion to representation: [conv_bench.html](results/conv_bench.html). How long
+2. `conv`: Conversion to representation: [conv_bench.html](results/conv_bench.html). How long
    does it take to convert a parsed named representation to the internal
    representation of the implementation? alpha-converts the pathological term.
    
-3. Normalization of a pathological lambda term:
+3. `nf`:  Normalization of a pathological lambda term:
   [nf_bench.html](results/nf_bench.html). See below.
 
 ```
@@ -72,9 +72,15 @@ terms themselves have total depth from 36-73 and binding depth from 23-57.
    num substs: 119697
 ```
 
-4. Alpha-equivalence of a pathological lambda term:
+4. `aeq`: Alpha-equivalence of a pathological lambda term:
    [aeq_bench.html](results/aeq_bench.html)
    
+5. `con`: Normalization for 20 constructed lambda terms
+See [file](lams/constructed20.lam).
+Each term does a single substitution for an incrementally deeper free variable. This benchmark can be used to estimate the time complexity of the implementation in terms of the binding depth.
+
+6. `capt`: Normalization for 10 capturing lambda terms
+See [file](lams/capture10.lam). This file substitutes, at increasing depth, a lambda term with a free variable that could be captured.
 
 ### Normalization microbenchmark
 
@@ -114,7 +120,7 @@ forms), for testing, each implementation also should support a "fueled"
 version of the `nf` and `whnf` functions (called `nfi` and `whnfi`,
 respectively). However, benchmarking uses the unfueled version.
 
-# Contents
+# The n implementations
 
 Original four implementations from Lennart Augustsson's paper:
 

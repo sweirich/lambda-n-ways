@@ -42,8 +42,8 @@ import qualified Named.SimpleB
 import qualified Named.SimpleH
 import qualified Named.SimpleM
 
-impls :: [LambdaImpl]
-impls =
+debruijn :: [LambdaImpl]
+debruijn =
   [ -- deBruijn index-based implementations
     DeBruijn.Lennart.impl,
     DeBruijn.Par.B.impl,
@@ -58,31 +58,100 @@ impls =
     DeBruijn.Kit.impl,
     DeBruijn.Lift.impl,
     DeBruijn.List.impl,
-    DeBruijn.Nested.impl,
+    DeBruijn.Nested.impl
     -- DeBruijn.Nested2.impl, --fails test suite
-    -- Locally Nameless based implmentations
-    LocallyNameless.Opt.impl,
+  ]
+
+-- Locally Nameless based implmentations
+locallyNameless :: [LambdaImpl]
+locallyNameless =
+  [ LocallyNameless.Opt.impl,
     LocallyNameless.Ott.impl,
     LocallyNameless.Par.impl,
     LocallyNameless.ParOpt.impl,
     LocallyNameless.Typed.impl,
     LocallyNameless.TypedOpt.impl,
     LocallyNameless.Unbound.impl, -- unbound
-    LocallyNameless.UnboundGenerics.impl, -- unbound-generics
+    LocallyNameless.UnboundGenerics.impl -- unbound-generics
+  ]
 
-    -- Name based/nominal implementations
-    Lennart.Simple.impl,
-    Lennart.Unique.impl,
-    -- Named.Nom.impl, doesn't compile
+-- Name based/nominal implementations
+named :: [LambdaImpl]
+named =
+  [ -- Named.Nom.impl, doesn't compile
     -- Named.Nominal.impl, -- fails test suite
     Named.NominalG.impl, -- generally too slow (12s vs. <200 ms for everything else)
     -- Named.SimpleB.impl, -- fails test suite
     Named.SimpleH.impl,
-    Named.SimpleM.impl,
-    -- Other
+    Named.SimpleM.impl
+  ]
+
+other :: [LambdaImpl]
+other =
+  [ -- Other
     Lennart.HOAS.impl,
     Core.Nf.impl
   ]
+
+all_impls :: [LambdaImpl]
+all_impls =
+  debruijn ++ locallyNameless ++ named
+    ++ other
+
+fast_impls :: [LambdaImpl]
+fast_impls =
+  fast_debruijn ++ fast_locally_nameless ++ fast_named
+    ++ other
+
+---
+
+fast_debruijn :: [LambdaImpl]
+fast_debruijn =
+  [ DeBruijn.Lennart.impl,
+    DeBruijn.Par.B.impl,
+    DeBruijn.Par.FB.impl,
+    DeBruijn.Par.Scoped.impl,
+    DeBruijn.Bound.impl,
+    DeBruijn.Chlipala.impl,
+    DeBruijn.Cornell.impl,
+    DeBruijn.Kit.impl,
+    DeBruijn.Lift.impl,
+    DeBruijn.List.impl,
+    DeBruijn.Nested.impl
+  ]
+
+fast_locally_nameless :: [LambdaImpl]
+fast_locally_nameless =
+  [ LocallyNameless.Opt.impl,
+    LocallyNameless.Ott.impl,
+    LocallyNameless.ParOpt.impl,
+    LocallyNameless.TypedOpt.impl,
+    LocallyNameless.UnboundGenerics.impl -- unbound-generics
+  ]
+
+fast_named :: [LambdaImpl]
+fast_named =
+  [ Named.SimpleH.impl,
+    Named.SimpleM.impl
+  ]
+
+slow :: [LambdaImpl]
+slow =
+  [ DeBruijn.Par.L.impl,
+    DeBruijn.Par.F.impl,
+    DeBruijn.Par.P.impl,
+    LocallyNameless.Par.impl,
+    LocallyNameless.Typed.impl,
+    LocallyNameless.Unbound.impl, -- unbound
+    Lennart.Simple.impl,
+    Lennart.Unique.impl
+  ]
+
+really_slow :: [LambdaImpl]
+really_slow = [Named.NominalG.impl]
+
+impls :: [LambdaImpl]
+impls = all_impls
 
 toIdInt :: (Ord v) => LC v -> LC IdInt
 toIdInt e = evalState (conv e) (0, fvmap)
@@ -114,20 +183,6 @@ getTerms filename = do
   contents <- readFile filename
   let ss = filter (/= "") (lines (Misc.stripComments contents))
   return $ map (toIdInt . (read :: String -> LC Id)) ss
-
-{-
--- Convenience functions for creating test cases
-infixl 5 @@
-
-(@@) :: LC IdInt -> LC IdInt -> LC IdInt
-a @@ b = App a b
-
-lam :: Int -> LC IdInt -> LC IdInt
-lam i = Lam (IdInt i)
-
-var :: Int -> LC IdInt
-var i = Var (IdInt i)
--}
 
 lambdaTrue :: LC IdInt
 lambdaTrue = Lam (IdInt 0) (Lam (IdInt 1) (Var (IdInt 0)))
