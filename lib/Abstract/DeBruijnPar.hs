@@ -5,7 +5,7 @@ import Abstract.Simple
 import Data.Coerce
 import Data.List (elemIndex)
 import IdInt
-import Imports
+import Util.Imports
 
 -- Generic conversion function for de Bruijn indices
 toDB :: forall v. (BindingImpl v, Coercible v Int) => LC IdInt -> LC v

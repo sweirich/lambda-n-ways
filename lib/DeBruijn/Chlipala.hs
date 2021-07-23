@@ -13,8 +13,8 @@ import Control.DeepSeq
 import Data.Maybe (fromJust)
 import Data.Type.Equality
 import IdInt
-import Impl
-import Lambda
+import Util.Impl
+import Util.Lambda
 import Util.Nat
 
 impl :: LambdaImpl
@@ -29,42 +29,12 @@ impl =
     }
 
 -------------------------------------------------------
-
-{-
-data Nat where
-  Z :: Nat
-  S :: Nat -> Nat
-
-type family Pred (n :: Nat) :: Nat where
-  Pred (S n) = n
-
-data Idx n where
-  FZ :: Idx (S n)
-  FS :: Idx n -> Idx (S n)
-
-toInt :: Idx n -> Int
-toInt FZ = 0
-toInt (FS n) = 1 + toInt n
-
-instance Eq (Idx n) where
-  FZ == FZ = True
-  (FS n) == (FS m) = n == m
-  _ == _ = False
-
-instance Show (Idx n) where
-  show FZ = "FZ"
-  show (FS n) = "(FS " ++ show n ++ ")"
-
-instance NFData (Idx a) where
-  rnf FZ = ()
-  rnf (FS s) = rnf s
--}
 -------------------------------------------------------
 
 data DB (n :: Nat) where
-  DVar :: (Idx n) -> DB n
-  DApp :: (DB n) -> (DB n) -> DB n
-  DLam :: (DB (S n)) -> DB n
+  DVar :: !(Idx n) -> DB n
+  DApp :: !(DB n) -> !(DB n) -> DB n
+  DLam :: !(DB ('S n)) -> DB n
 
 {-
 The classic implementation of substitution in de Bruijn terms requires an auxiliary operation, lifting, which increments the indices of all free variables in an expression. We need to lift whenever we "go under a binder." It is useful to write an auxiliary function liftVar that lifts a variable; that is, liftVar x y will return y + 1 if y >= x, and it will return y otherwise. This simple description uses numbers rather than our dependent fin family, so the actual specification is more involved.
@@ -85,7 +55,7 @@ liftVar x y =
 Now it is easy to implement the main lifting operation.
 -}
 
-lift :: DB n -> Idx (S n) -> DB (S n)
+lift :: DB n -> Idx ('S n) -> DB ('S n)
 lift e = case e of
   DVar f' -> \f -> DVar (liftVar f f')
   DApp e1 e2 -> \f -> DApp (lift e1 f) (lift e2 f)

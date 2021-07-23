@@ -4,13 +4,13 @@ This makes it possible to use the native substitution of Haskell.
 
 > module Lennart.HOAS(nf,nfh,fromLC,toLC, impl) where
 > import qualified Data.Map as M
-> import Lambda
+> import Util.Lambda
 > import IdInt
 > import Control.DeepSeq
 > import Data.Maybe(fromMaybe)
 
 
-> import Impl
+> import Util.Impl
 > impl :: LambdaImpl
 > impl = LambdaImpl {
 >            impl_name   = "Lennart.HOAS"
@@ -18,7 +18,7 @@ This makes it possible to use the native substitution of Haskell.
 >          , impl_toLC   = toLC
 >          , impl_nf     = nfh
 >          , impl_nfi    = error "cannot implement nfi for HOAS"
->          , impl_aeq    = \x y -> Lambda.aeq (Lennart.HOAS.toLC x) (Lennart.HOAS.toLC y)
+>          , impl_aeq    = \x y -> Util.Lambda.aeq (Lennart.HOAS.toLC x) (Lennart.HOAS.toLC y)
 >       }
 
 

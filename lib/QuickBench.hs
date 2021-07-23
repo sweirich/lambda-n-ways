@@ -10,16 +10,16 @@ module QuickBench where
 import Control.Monad
 import qualified Data.List as List
 import qualified DeBruijn.Par.Scoped as Scoped
-import Id
+import Util.Id
 import IdInt
-import Impl
 import qualified Lennart.Simple as Simple
 import qualified Lennart.Unique as Unique
-import Lambda
-import Misc
 import Suite
 import System.IO
 import Test.QuickCheck
+import Util.Impl
+import Util.Lambda
+import Util.Misc
 
 -- Stats for random.lam
 -- sz: 100000
@@ -89,7 +89,7 @@ nfTerms tms = do
     let stm = Scoped.toDB tm
     case Simple.iNf 2000 tm of
       Just (tm', ss) ->
-        if not (tm `Lambda.aeq` tm')
+        if not (tm `Util.Lambda.aeq` tm')
           then do
             return $
               NfTerm
@@ -123,7 +123,7 @@ arbitraryNfTerms sz = do
       let stm = Scoped.toDB tm
       case Simple.iNf 2000 tm of
         Just (tm', ss) ->
-          if not (tm `Lambda.aeq` tm') && Simple.numSubsts ss == 4
+          if not (tm `Util.Lambda.aeq` tm') && Simple.numSubsts ss == 4
             then do
               putStrLn $ "Generation:" ++ show n
               let x =

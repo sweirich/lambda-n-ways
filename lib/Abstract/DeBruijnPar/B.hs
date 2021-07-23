@@ -6,7 +6,7 @@ import Abstract.Simple
 import Data.Functor.Identity
 import Data.List (elemIndex)
 import qualified DeBruijn.Par.Subst as S
-import Imports
+import Util.Imports
 
 type Sub = S.Sub
 

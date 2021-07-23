@@ -5,11 +5,11 @@ Substitutions are represented as functions.
 
 > module DeBruijn.Par.F(nf,DeBruijn.Par.F.aeq,nfd,toDB,fromDB,nfi, impl) where
 > import Data.List(elemIndex)
-> import Lambda
+> import Util.Lambda
 > import IdInt
 > import Control.DeepSeq
 >
-> import Impl
+> import Util.Impl
 > impl :: LambdaImpl
 > impl = LambdaImpl {
 >             impl_name   = "DeBruijn.Par.F"

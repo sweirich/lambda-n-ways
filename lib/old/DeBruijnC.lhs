@@ -19,12 +19,12 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module DeBruijnC (nf,Impl.DeBruijnC.aeq,nfd,fromLC,toLC, impl) where
 
-import Lambda
+import Util.Lambda
 import IdInt
 import Data.List
 import Control.DeepSeq hiding (force)
 
-import Impl
+import Util.Impl
 impl :: LambdaImpl
 impl = LambdaImpl {
             impl_name   = "DB_C"

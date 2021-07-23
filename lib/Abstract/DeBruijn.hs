@@ -7,7 +7,7 @@ import Control.Monad.Identity
 import Data.Functor.Identity
 import Data.List (elemIndex)
 import qualified DeBruijn.Par.Subst as S
-import Imports
+import Util.Imports
 
 newtype DB = DB Int
   deriving (Eq, Ord, Show, Read, Num, Arbitrary, NFData)

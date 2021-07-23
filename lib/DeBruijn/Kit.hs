@@ -1,11 +1,6 @@
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE EmptyCase #-}
 {-# OPTIONS  -Wall -fno-warn-unticked-promoted-constructors  #-}
-{-# LANGUAGE GADTs #-}
-{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE TypeFamilies #-}
 
 {-
 This implementation is derived from Allais et al. below but modified to
@@ -20,14 +15,10 @@ Guillaume Allais, James Chapman, Conor McBride, James McKinna
 
 module DeBruijn.Kit (impl, prettyPrint) where
 
-import Control.DeepSeq
-import Control.Monad.State
-import Data.Bifunctor (second)
-import Data.Kind (Type)
-import Data.Maybe (fromJust)
 import IdInt
-import Impl
-import Lambda
+import Util.Impl
+import Util.Imports
+import Util.Lambda
 import Util.Nat
 
 impl :: LambdaImpl
@@ -48,9 +39,9 @@ type SCon = SNat
 -- A variable is a fancy de Bruijn index
 
 data Term :: Nat -> Type where
-  DVar :: Idx g -> Term g
-  DLam :: Term ('S g) -> Term g
-  DApp :: Term g -> Term g -> Term g
+  DVar :: (Idx g) -> Term g
+  DLam :: (Term ('S g)) -> Term g
+  DApp :: (Term g) -> (Term g) -> Term g
 
 instance NFData (Term a) where
   rnf (DVar i) = rnf i
@@ -66,7 +57,7 @@ instance Eq (Term n) where
 -- An (evaluation) environment is a collection of environment
 -- values covering a given context `g`.
 
-type Environment (d :: Con) (e :: Con -> *) (g :: Con) =
+type Environment (d :: Con) (e :: Con -> Type) (g :: Con) =
   Idx g -> e d
 
 envNull :: Environment d e 'Z
@@ -84,7 +75,7 @@ refl = id
 top :: forall d g. Included g d -> Included g ('S d)
 top inc = FS . inc
 
-data Semantics (e :: Con -> *) (m :: Con -> *) = Semantics
+data Semantics (e :: Con -> Type) (m :: Con -> Type) = Semantics
   { weak :: forall g d. Included g d -> e g -> e d,
     embed :: forall g. Idx g -> e g,
     var :: forall g. e g -> m g,
@@ -152,7 +143,7 @@ substitution =
 substTe :: Subst g d -> Term g -> Term d
 substTe sub t = semanticsTerm substitution t sub
 
-singleSub :: Term g -> Subst (S g) g
+singleSub :: Term g -> Subst ('S g) g
 singleSub a FZ = a
 singleSub _a (FS m) = DVar m
 
@@ -231,7 +222,7 @@ mapSnd :: (a -> b) -> [(c, a)] -> [(c, b)]
 mapSnd f = map (second f)
 
 ------------------------------------------------------------------------
--- Benchmark normalization function
+-- Benchmark normalization function (SCW)
 ------------------------------------------------------------------------
 
 nfd :: Term n -> Term n
@@ -250,5 +241,5 @@ whnf (DApp f a) =
     DLam b -> whnf (instantiate b a)
     f' -> DApp f' a
 
-instantiate :: Term (S n) -> Term n -> Term n
+instantiate :: Term ('S n) -> Term n -> Term n
 instantiate t u = substTe (singleSub u) t

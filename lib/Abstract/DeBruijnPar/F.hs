@@ -5,7 +5,7 @@ import qualified Abstract.DeBruijnPar as A
 import Abstract.Simple
 import Data.Functor.Identity
 import Data.List (elemIndex)
-import Imports
+import Util.Imports
 
 newtype DB = DB Int
   deriving (Eq, Ord, Show, Read, Num, Arbitrary, NFData)

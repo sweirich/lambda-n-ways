@@ -11,9 +11,9 @@ import qualified Data.IntMap as IM
 import Data.List (elemIndex)
 import qualified Data.Set as Set
 import IdInt (IdInt (..), firstBoundId)
-import Impl (LambdaImpl (..))
-import Imports hiding (S, lift)
-import qualified Lambda as LC
+import Util.Impl (LambdaImpl (..))
+import Util.Imports hiding (S, lift)
+import qualified Util.Lambda as LC
 
 -- 1. Adding strictness annotations to the datatype definition:
 -- lennart: 1.03 s

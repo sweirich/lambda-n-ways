@@ -26,7 +26,7 @@ user	0m0.009s
 
 > module DeBruijn.Par.B(nf,DeBruijn.Par.B.aeq,toDB,fromDB,nfd,nfi, impl) where
 > import Data.List(elemIndex)
-> import Lambda
+> import Util.Lambda
 > import IdInt
 > import Control.DeepSeq
 >
@@ -34,7 +34,7 @@ user	0m0.009s
 >            (<+>), parens)
 > import qualified Text.PrettyPrint.HughesPJ as PP
 
-> import Impl
+> import Util.Impl
 > impl :: LambdaImpl
 > impl = LambdaImpl {
 >             impl_name   = "DeBruijn.Par.B"

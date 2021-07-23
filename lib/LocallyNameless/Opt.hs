@@ -10,9 +10,9 @@ import qualified Data.IntMap as IM
 import Data.List (elemIndex)
 import qualified Data.Set as Set
 import IdInt (IdInt (..), firstBoundId)
-import Impl (LambdaImpl (..))
-import Imports hiding (S, lift)
-import qualified Lambda as LC
+import Util.Impl (LambdaImpl (..))
+import Util.Imports hiding (S, lift)
+import qualified Util.Lambda as LC
 
 -- 0. Original (Ott derived version)
 -- lennart: 1.03s
@@ -81,10 +81,10 @@ substBind :: Exp -> IdInt -> Bind Exp -> Bind Exp
 substBind u x (Bind a) = Bind (subst u x a)
 substBind u x (BindOpen as a) = BindOpen (fmap (subst u x) as) (subst u x a)
 substBind u x b@(BindClose i xs a) =
---  if x `elem` xs then
---    Bind (subst u x (unbind b))
---  else
-    BindClose i xs (subst u x a)
+  --  if x `elem` xs then
+  --    Bind (subst u x (unbind b))
+  --  else
+  BindClose i xs (subst u x a)
 
 data Exp where
   Var_b :: !Int -> Exp
@@ -125,7 +125,7 @@ openIdx i k v
 {-# INLINEABLE openIdx #-}
 
 open :: Bind Exp -> Exp -> Exp
-open (BindOpen vs e) u = multi_open_exp_wrt_exp_rec 0 (u : vs) e  -- this needs to be 0
+open (BindOpen vs e) u = multi_open_exp_wrt_exp_rec 0 (u : vs) e -- this needs to be 0
 open b u = multi_open_exp_wrt_exp_rec 0 [u] (unbind b)
 {-# INLINEABLE open #-}
 
@@ -217,8 +217,8 @@ subst u y e = subst0 e
     subst0 e = case e of
       (Var_b n) -> Var_b n
       (Var_f x) -> (if x == y then u else (Var_f x))
---      (Abs b) -> Abs (substBind u y b)
--- the version w/o substBind is actually faster for some reason
+      --      (Abs b) -> Abs (substBind u y b)
+      -- the version w/o substBind is actually faster for some reason
       (Abs b) -> Abs (bind (subst0 (unbind b)))
       (App e1 e2) -> App (subst0 e1) (subst0 e2)
 

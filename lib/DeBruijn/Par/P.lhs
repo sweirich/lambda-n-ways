@@ -3,11 +3,11 @@ using de Bruijn indicies.
 
 > module DeBruijn.Par.P(nf,DeBruijn.Par.P.aeq,nfd,aeqd,toDB,fromDB,impl) where
 > import Data.List(elemIndex)
-> import Lambda
+> import Util.Lambda
 > import IdInt
 > import Control.DeepSeq
 
-> import Impl
+> import Util.Impl
 > impl :: LambdaImpl
 > impl = LambdaImpl {
 >             impl_name   = "DeBruijn.Par.P"

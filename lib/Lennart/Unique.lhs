@@ -9,7 +9,7 @@ variables are unique.
 > {-# LANGUAGE ScopedTypeVariables #-}
 > module Lennart.Unique(nf,Lennart.Unique.aeq, 
 >                       toUnique, fromUnique, impl, Unique) where
-> import Lambda as LC
+> import Util.Lambda as LC
 > import qualified Data.Map as M
 > import Control.Monad.State
 > import IdInt
@@ -20,7 +20,7 @@ variables are unique.
 > import Test.QuickCheck
 
 
-> import Impl
+> import Util.Impl
 > impl :: LambdaImpl
 > impl = LambdaImpl {
 >             impl_name   = "Lennart.Unique"

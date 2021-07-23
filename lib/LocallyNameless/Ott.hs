@@ -6,9 +6,9 @@ import qualified Control.Monad.State as State
 import Data.List (elemIndex)
 import qualified Data.Set as Set
 import IdInt (IdInt (..), firstBoundId)
-import Impl (LambdaImpl (..))
-import Imports
-import qualified Lambda as LC
+import Util.Impl (LambdaImpl (..))
+import Util.Imports
+import qualified Util.Lambda as LC
 
 impl :: LambdaImpl
 impl =

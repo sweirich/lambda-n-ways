@@ -12,9 +12,6 @@ import qualified Control.Monad.State as State
 import IdInt (IdInt)
 import qualified IdInt.Map as M
 import qualified IdInt.Set as S
-import Impl (LambdaImpl (..))
-import Imports
-import qualified Lambda as LC
 import qualified Text.PrettyPrint.HughesPJ as PP
   ( Doc,
     parens,
@@ -23,6 +20,9 @@ import qualified Text.PrettyPrint.HughesPJ as PP
     text,
     (<+>),
   )
+import Util.Impl (LambdaImpl (..))
+import Util.Imports
+import qualified Util.Lambda as LC
 
 impl :: LambdaImpl
 impl =

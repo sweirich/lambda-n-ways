@@ -1,4 +1,4 @@
-module Imports
+module Util.Imports
   ( module Control.Applicative,
     module Control.Monad,
     module GHC.Generics,
@@ -10,6 +10,12 @@ module Imports
     Map,
     Seq,
     Set,
+
+    -- * Data.Bifunctor
+    second,
+
+    -- * Data.Maybe
+    fromJust,
 
     -- * "Data.Tuple" reexports
     curry,
@@ -27,8 +33,15 @@ module Imports
     -- * Text.ParserCombinators.ReadP
     ReadP,
     Doc,
+
+    -- * Control.Monad.State
     State,
+    evalState,
+    runState,
+    execState,
     MonadState (..),
+
+    -- * Control.Monad.Error
     MonadError (..),
   )
 where
@@ -37,12 +50,14 @@ import Control.Applicative
 import Control.DeepSeq
 import Control.Monad
 import Control.Monad.Except (MonadError (..))
-import Control.Monad.State (MonadState (..), State)
+import Control.Monad.State
+import Data.Bifunctor (second)
 import Data.Coerce (coerce)
 import Data.IntMap.Strict (IntMap)
 import Data.IntSet (IntSet)
 import Data.Kind (Type)
 import Data.Map.Strict (Map)
+import Data.Maybe (fromJust)
 import Data.Proxy
 import Data.Sequence (Seq)
 import Data.Set (Set)

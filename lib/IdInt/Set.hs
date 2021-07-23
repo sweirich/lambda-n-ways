@@ -1,5 +1,4 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-
+-- | A Finite set of IdInt, based on Data.IntSet
 module IdInt.Set
   ( IdIntSet (..),
     empty,
@@ -14,7 +13,7 @@ module IdInt.Set
     notMember,
     isSubsetOf,
     insert,
-    freeVars,
+    newIdInt,
   )
 where
 
@@ -22,11 +21,9 @@ import Control.DeepSeq
 import Data.Coerce
 import qualified Data.IntSet as IntSet
 import IdInt
-import Lambda hiding (freeVars)
+import Util.Lambda hiding (freeVars)
 
--- A set of IdInts, based on Data.IntSet
-
-newtype IdIntSet = IdIntSet IntSet.IntSet deriving (Eq, Show, Semigroup, Monoid, NFData)
+newtype IdIntSet = IdIntSet IntSet.IntSet deriving (Eq, Ord, Show, Semigroup, Monoid, NFData)
 
 empty :: IdIntSet
 empty = coerce IntSet.empty
@@ -64,7 +61,7 @@ isSubsetOf = coerce IntSet.isSubsetOf
 insert :: IdInt -> IdIntSet -> IdIntSet
 insert = coerce IntSet.insert
 
-freeVars :: LC IdInt -> IdIntSet
-freeVars (Var v) = singleton v
-freeVars (Lam v e) = freeVars e \\ singleton v
-freeVars (App f a) = freeVars f `union` freeVars a
+newIdInt :: IdIntSet -> IdInt
+newIdInt (IdIntSet s)
+  | IntSet.null s = firstBoundId
+  | otherwise = succ (coerce (IntSet.findMax s))

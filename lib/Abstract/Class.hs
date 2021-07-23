@@ -39,9 +39,9 @@ import Data.List (union, (\\))
 import qualified Data.Map as M
 import qualified Data.Set as S
 import IdInt
-import Imports
 import qualified Text.ParserCombinators.ReadP as RP
 import qualified Text.PrettyPrint.HughesPJ as PP
+import Util.Imports
 
 -- Datatype for lambda calculus terms, parameterized by
 -- a "binding implmentation v" (See Impl class below).

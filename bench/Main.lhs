@@ -6,10 +6,10 @@
 >  -}
 > module Main where
 > import qualified Data.List as List
-> import Misc
-> import Lambda
+> import Util.Misc
+> import Util.Lambda
 > import IdInt
-> import Impl
+> import Util.Impl
 > import Suite
 > import qualified Lennart.Simple as Simple
 > import qualified Lennart.Unique as Unique

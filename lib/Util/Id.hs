@@ -1,8 +1,8 @@
--- String based identifiers
-module Id where
+-- | String based identifiers
+module Util.Id where
 
 import Data.Char (isAlphaNum)
-import Imports
+import Util.Imports
 
 newtype Id = Id String
   deriving (Eq, Ord, NFData, Generic)

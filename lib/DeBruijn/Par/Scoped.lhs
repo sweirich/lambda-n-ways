@@ -8,7 +8,7 @@ It uses parallel substitutions and explcit substitutions stored in the term.
 > {-# LANGUAGE TypeFamilies #-}
 > {-# LANGUAGE UndecidableInstances #-}
 > module DeBruijn.Par.Scoped(nf,DeBruijn.Par.Scoped.aeq, toDB, fromDB, nfd, nfi, impl) where
-> import Lambda
+> import Util.Lambda
 > import IdInt
 > import DeBruijn.Par.SubstScoped
 > import Control.DeepSeq
@@ -18,7 +18,7 @@ It uses parallel substitutions and explcit substitutions stored in the term.
 > import qualified Text.PrettyPrint.HughesPJ as PP
 > import Data.Maybe(fromJust)
 
-> import Impl
+> import Util.Impl
 > import Util.Nat
 
 > impl :: LambdaImpl

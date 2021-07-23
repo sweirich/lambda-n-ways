@@ -1,18 +1,16 @@
-{-
-The Simple module implements the Normal Form function by
-using a na\"{i}ve version of substitution. In otherwords, this version
-alpha-renames bound variables during substitution if they would ever
-capture a free variable.
--}
+-- | The Simple module implements the Normal Form function by
+-- using a na\"{i}ve version of substitution. In otherwords, this version
+-- alpha-renames bound variables during substitution if they would ever
+-- capture a free variable.
 
 > {-# LANGUAGE FlexibleContexts #-}
 > {-# LANGUAGE ScopedTypeVariables #-}
 > module Lennart.Simple(nf,whnf,nfi,impl,iNf,St(..),subst) where
 > import Data.List(union, (\\))
-> import Lambda ( aeq, allVars, freeVars, LC(..) )
+> import Util.Lambda ( aeq, allVars, freeVars, LC(..) )
 > import IdInt ( newId, IdInt )  
-> import Impl ( LambdaImpl(..) )
-> import Imports
+> import Util.Impl ( LambdaImpl(..) )
+> import Util.Imports
 > import qualified Data.Map as M
 >
 > import qualified Control.Monad.State as State
@@ -25,7 +23,7 @@ capture a free variable.
 >           , impl_toLC   = id
 >           , impl_nf     = nf
 >           , impl_nfi    = nfi
->           , impl_aeq    = Lambda.aeq
+>           , impl_aeq    = Util.Lambda.aeq
 >        }
 
 

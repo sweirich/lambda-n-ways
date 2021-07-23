@@ -1,6 +1,4 @@
-{-# LANGUAGE TypeApplications #-}
-
-module Impl where
+module Util.Impl where
 
 {-
 Every lambda calculus implementation must have a way to convert to and from
@@ -11,11 +9,13 @@ in a data structure.
 
 import Control.Monad.State
 import qualified Data.Map.Strict as M
-import Id
+import Util.Id
 import IdInt
-import Imports
-import Lambda
-import Misc
+import IdInt.Set (IdIntSet)
+import qualified IdInt.Set as IdIntSet
+import Util.Imports
+import Util.Lambda
+import qualified Util.Misc as Misc
 import Prelude hiding (abs)
 
 data LambdaImpl = forall a.
@@ -27,35 +27,17 @@ data LambdaImpl = forall a.
     impl_nf :: a -> a,
     impl_nfi :: Int -> a -> Maybe a,
     impl_aeq :: a -> a -> Bool
-    --           impl_fvs    :: a -> IdIntSet,
-    --           impl_subst  :: a -> IdInt -> a -> a
   }
 
+---------------------------------------------------------
+---------------------------------------------------------
+
 {-
-unabs :: A.LC IdInt -> LC IdInt
-unabs (A.Var x) = Var x
-unabs (A.Lam bnd) = let (x, a) = A.unbind' bnd in Lam x (unabs a)
-unabs (A.App a b) = App (unabs a) (unabs b)
-
-abs :: LC IdInt -> A.LC IdInt
-abs (Var x) = A.Var x
-abs (Lam x a) = A.lam' x (abs a)
-abs (App a b) = A.App (abs a) (abs b)
-
-fromBindingImpl :: forall v. A.BindingImpl v => Proxy v -> String -> LambdaImpl
-fromBindingImpl _ name =
-  LambdaImpl
-    { impl_name = name,
-      impl_fromLC = A.runBindM @v . A.fromLC . abs,
-      impl_toLC = A.runBindM @v . fmap unabs . A.toLC,
-      impl_nf = A.nf @v,
-      impl_nfi = A.instrNormalize,
-      impl_aeq = \x y -> A.runBindM @v (A.aeq x y)
-    }
+freeVars :: LC IdInt -> IdIntSet
+freeVars (Var v) = singleton v
+freeVars (Lam v e) = freeVars e \\ singleton v
+freeVars (App f a) = freeVars f `union` freeVars a
 -}
-
----------------------------------------------------------
----------------------------------------------------------
 
 toIdInt :: (Ord v) => LC v -> LC IdInt
 toIdInt e = evalState (conv e) (0, fvmap)
@@ -64,7 +46,7 @@ toIdInt e = evalState (conv e) (0, fvmap)
       Prelude.foldr
         (\(v, i) m -> M.insert v (IdInt i) m)
         M.empty
-        (zip (Lambda.freeVars e) [1 ..])
+        (zip (Util.Lambda.freeVars e) [1 ..])
 
     conv :: (Ord v) => LC v -> FreshM v (LC IdInt)
     conv (Var v) = Var <$> convVar v

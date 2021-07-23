@@ -1,14 +1,11 @@
-{-# LANGUAGE DeriveTraversable #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE TypeApplications #-}
-
+-- | A Finite map, key'ed by IdInts
+-- Underneath this is just a coerced Data.IntMap
 module IdInt.Map where
 
 import Control.DeepSeq (NFData)
 import Data.Coerce (coerce)
-import qualified Data.IntMap as M
-import IdInt (IdInt (..))
+import qualified Data.IntMap.Strict as M
+import IdInt (IdInt (..), firstBoundId)
 import IdInt.Set (IdIntSet (..))
 
 newtype IdIntMap a = IdIntMap (M.IntMap a)
@@ -42,4 +39,11 @@ singleton :: forall a. IdInt -> a -> IdIntMap a
 singleton = coerce $ M.singleton @a
 
 findWithDefault :: forall a. a -> IdInt -> IdIntMap a -> a
-findWithDefault = coerce $ M.findWithDefault @a
+findWithDefault =
+  coerce $
+    M.findWithDefault @a
+
+newIdInt :: IdIntMap a -> IdInt
+newIdInt (IdIntMap s)
+  | M.null s = firstBoundId
+  | otherwise = succ (coerce (fst (M.findMax s)))

@@ -1,42 +1,63 @@
 {-# LANGUAGE CPP #-}
 {-# OPTIONS_GHC -Wno-incomplete-record-updates #-}
-module Core.Subst (
-        -- * Main data types
-        Subst(..), -- Implementation exported for supercompiler's Renaming.hs only
-        IdSubstEnv, InScopeSet,
 
-        -- ** Substituting into expressions and related types
-        --deShadowBinds, substSpec, substRulesForImportedIds,
-        --substTy, substCo, 
-        substExpr, substExprSC, 
-        --substBind, substBindSC,
-        --substUnfolding, substUnfoldingSC,
-        lookupIdSubst, 
-        --lookupTCvSubst, 
-        substIdType, substIdOcc,
-        --substTickish, substDVarSet, substIdInfo,
+module Core.Subst
+  ( -- * Main data types
+    Subst (..), -- Implementation exported for supercompiler's Renaming.hs only
+    IdSubstEnv,
+    InScopeSet,
 
-        -- ** Operations on substitutions
-        emptySubst, mkEmptySubst, mkSubst, mkOpenSubst, substInScope, isEmptySubst,
-        extendIdSubst, extendIdSubstList, --extendTCvSubst, extendTvSubstList,
-        extendSubst, extendSubstList, extendSubstWithVar, zapSubstEnv,
-        addInScopeSet, extendInScope, extendInScopeList, extendInScopeIds,
-        isInScope, setInScope, --getTCvSubst, extendTvSubst, extendCvSubst,
-        delBndr, delBndrs,
+    -- ** Substituting into expressions and related types
 
-        -- ** Substituting and cloning binders
-        substBndr, substBndrs, substRecBndrs, --substTyVarBndr, substCoVarBndr,
-        --cloneBndr, cloneBndrs, cloneIdBndr, cloneIdBndrs, cloneRecIdBndrs,
+    --deShadowBinds, substSpec, substRulesForImportedIds,
+    --substTy, substCo,
+    substExpr,
+    substExprSC,
+    --substBind, substBindSC,
+    --substUnfolding, substUnfoldingSC,
+    lookupIdSubst,
+    --lookupTCvSubst,
+    substIdType,
+    substIdOcc,
+    --substTickish, substDVarSet, substIdInfo,
 
-    ) where
- 
-import Data.List (mapAccumL)
-import qualified Lambda as LC
+    -- ** Operations on substitutions
+    emptySubst,
+    mkEmptySubst,
+    mkSubst,
+    mkOpenSubst,
+    substInScope,
+    isEmptySubst,
+    extendIdSubst,
+    extendIdSubstList, --extendTCvSubst, extendTvSubstList,
+    extendSubst,
+    extendSubstList,
+    extendSubstWithVar,
+    zapSubstEnv,
+    addInScopeSet,
+    extendInScope,
+    extendInScopeList,
+    extendInScopeIds,
+    isInScope,
+    setInScope, --getTCvSubst, extendTvSubst, extendCvSubst,
+    delBndr,
+    delBndrs,
+
+    -- ** Substituting and cloning binders
+    substBndr,
+    substBndrs,
+    substRecBndrs, --substTyVarBndr, substCoVarBndr,
+    --cloneBndr, cloneBndrs, cloneIdBndr, cloneIdBndrs, cloneRecIdBndrs,
+  )
+where
+
 import Core.Core
 import Core.CoreFVs
+import Core.Unique
 import Core.VarEnv
 import Core.VarSet
-import Core.Unique
+import Data.List (mapAccumL)
+import qualified Util.Lambda as LC
 
 {-
 
@@ -68,29 +89,28 @@ import Data.List
 
 -}
 
-
 data Subst
-  = Subst InScopeSet  -- Variables in in scope (both Ids and TyVars) /after/
-                      -- applying the substitution
-          IdSubstEnv  -- Substitution from NcIds to CoreExprs
-          
+  = Subst
+      InScopeSet -- Variables in in scope (both Ids and TyVars) /after/
+      -- applying the substitution
+      IdSubstEnv -- Substitution from NcIds to CoreExprs
 
 -- | An environment for substituting for 'Id's
-type IdSubstEnv = IdEnv CoreExpr   -- Domain is NcIds, i.e. not coercions
+type IdSubstEnv = IdEnv CoreExpr -- Domain is NcIds, i.e. not coercions
 
 ----------------------------
 isEmptySubst :: Subst -> Bool
-isEmptySubst (Subst _ id_env)
-  = isEmptyVarEnv id_env 
+isEmptySubst (Subst _ id_env) =
+  isEmptyVarEnv id_env
 
 emptySubst :: Subst
 emptySubst = Subst emptyInScopeSet emptyVarEnv
 
 mkEmptySubst :: InScopeSet -> Subst
-mkEmptySubst in_scope = Subst in_scope emptyVarEnv 
+mkEmptySubst in_scope = Subst in_scope emptyVarEnv
 
 mkSubst :: InScopeSet -> IdSubstEnv -> Subst
-mkSubst in_scope  ids = Subst in_scope ids 
+mkSubst in_scope ids = Subst in_scope ids
 
 -- | Find the in-scope set: see TyCoSubst Note [The substitution invariant]
 substInScope :: Subst -> InScopeSet
@@ -106,60 +126,61 @@ zapSubstEnv (Subst in_scope _) = Subst in_scope emptyVarEnv
 -- holds after extending the substitution like this
 extendIdSubst :: Subst -> Id -> CoreExpr -> Subst
 -- ToDo: add an ASSERT that fvs(subst-result) is already in the in-scope set
-extendIdSubst (Subst in_scope ids ) v r
-  = 
-    Subst in_scope (extendVarEnv ids v r) 
+extendIdSubst (Subst in_scope ids) v r =
+  Subst in_scope (extendVarEnv ids v r)
 
 -- | Adds multiple 'Id' substitutions to the 'Subst': see also 'extendIdSubst'
 extendIdSubstList :: Subst -> [(Id, CoreExpr)] -> Subst
-extendIdSubstList (Subst in_scope ids ) prs
-  = 
-    Subst in_scope (extendVarEnvList ids prs) 
+extendIdSubstList (Subst in_scope ids) prs =
+  Subst in_scope (extendVarEnvList ids prs)
+
 -- | Add a substitution appropriate to the thing being substituted
 --   (whether an expression, type, or coercion). See also
 --   'extendIdSubst', 'extendTvSubst', 'extendCvSubst'
 extendSubst :: Subst -> Var -> CoreArg -> Subst
-extendSubst subst var arg
-  = extendIdSubst subst var arg
+extendSubst subst var arg =
+  extendIdSubst subst var arg
 
 extendSubstWithVar :: Subst -> Var -> Var -> Subst
-extendSubstWithVar subst v1 v2
-     = extendIdSubst subst v1 (LC.Var v2)
+extendSubstWithVar subst v1 v2 =
+  extendIdSubst subst v1 (LC.Var v2)
 
 -- | Add a substitution as appropriate to each of the terms being
 --   substituted (whether expressions, types, or coercions). See also
 --   'extendSubst'.
-extendSubstList :: Subst -> [(Var,CoreArg)] -> Subst
-extendSubstList subst []              = subst
-extendSubstList subst ((var,rhs):prs) = extendSubstList (extendSubst subst var rhs) prs
+extendSubstList :: Subst -> [(Var, CoreArg)] -> Subst
+extendSubstList subst [] = subst
+extendSubstList subst ((var, rhs) : prs) = extendSubstList (extendSubst subst var rhs) prs
 
 -- | Find the substitution for an 'Id' in the 'Subst'
 lookupIdSubst :: String -> Subst -> Id -> CoreExpr
 lookupIdSubst doc (Subst in_scope ids) v
   | not (isLocalId v) = LC.Var v
-  | Just e  <- lookupVarEnv ids       v = e
+  | Just e <- lookupVarEnv ids v = e
   | Just v' <- lookupInScope in_scope v = LC.Var v'
-        -- Vital! See Note [Extending the Subst]
+  -- Vital! See Note [Extending the Subst]
   | otherwise = LC.Var v
-{-# INLINABLE lookupIdSubst #-}
-
+{-# INLINEABLE lookupIdSubst #-}
 
 delBndr :: Subst -> Var -> Subst
-delBndr (Subst in_scope ids ) v
-  = Subst in_scope (delVarEnv ids v) 
+delBndr (Subst in_scope ids) v =
+  Subst in_scope (delVarEnv ids v)
 
 delBndrs :: Subst -> [Var] -> Subst
-delBndrs (Subst in_scope ids ) vs
-  = Subst in_scope (delVarEnvList ids vs) 
-      -- Easiest thing is just delete all from all!
+delBndrs (Subst in_scope ids) vs =
+  Subst in_scope (delVarEnvList ids vs)
+
+-- Easiest thing is just delete all from all!
 
 -- | Simultaneously substitute for a bunch of variables
 --   No left-right shadowing
 --   ie the substitution for   (\x \y. e) a1 a2
---      so neither x nor y scope over a1 a2 
-mkOpenSubst :: InScopeSet -> [(Var,CoreArg)] -> Subst
-mkOpenSubst in_scope pairs = Subst in_scope
-                                   (mkVarEnv [(id,e)  | (id, e) <- pairs, isId id])
+--      so neither x nor y scope over a1 a2
+mkOpenSubst :: InScopeSet -> [(Var, CoreArg)] -> Subst
+mkOpenSubst in_scope pairs =
+  Subst
+    in_scope
+    (mkVarEnv [(id, e) | (id, e) <- pairs, isId id])
 
 ------------------------------
 isInScope :: Var -> Subst -> Bool
@@ -168,32 +189,34 @@ isInScope v (Subst in_scope _) = v `elemInScopeSet` in_scope
 -- | Add the 'Var' to the in-scope set, but do not remove
 -- any existing substitutions for it
 addInScopeSet :: Subst -> VarSet -> Subst
-addInScopeSet (Subst in_scope ids ) vs
-  = Subst (in_scope `extendInScopeSetSet` vs) ids 
+addInScopeSet (Subst in_scope ids) vs =
+  Subst (in_scope `extendInScopeSetSet` vs) ids
 
 -- | Add the 'Var' to the in-scope set: as a side effect,
 -- and remove any existing substitutions for it
 extendInScope :: Subst -> Var -> Subst
-extendInScope (Subst in_scope ids ) v
-  = Subst (in_scope `extendInScopeSet` v)
-          (ids `delVarEnv` v) 
+extendInScope (Subst in_scope ids) v =
+  Subst
+    (in_scope `extendInScopeSet` v)
+    (ids `delVarEnv` v)
 
 -- | Add the 'Var's to the in-scope set: see also 'extendInScope'
 extendInScopeList :: Subst -> [Var] -> Subst
-extendInScopeList (Subst in_scope ids ) vs
-  = Subst (in_scope `extendInScopeSetList` vs)
-          (ids `delVarEnvList` vs)
+extendInScopeList (Subst in_scope ids) vs =
+  Subst
+    (in_scope `extendInScopeSetList` vs)
+    (ids `delVarEnvList` vs)
 
 -- | Optimized version of 'extendInScopeList' that can be used if you are certain
 -- all the things being added are 'Id's and hence none are 'TyVar's or 'CoVar's
 extendInScopeIds :: Subst -> [Id] -> Subst
-extendInScopeIds (Subst in_scope ids ) vs
-  = Subst (in_scope `extendInScopeSetList` vs)
-          (ids `delVarEnvList` vs) 
+extendInScopeIds (Subst in_scope ids) vs =
+  Subst
+    (in_scope `extendInScopeSetList` vs)
+    (ids `delVarEnvList` vs)
 
 setInScope :: Subst -> InScopeSet -> Subst
 setInScope (Subst _ ids) in_scope = Subst in_scope ids
-
 
 {-
 ************************************************************************
@@ -212,23 +235,22 @@ setInScope (Subst _ ids) in_scope = Subst in_scope ids
 substExprSC :: String -> Subst -> CoreExpr -> CoreExpr
 substExprSC doc subst orig_expr
   | isEmptySubst subst = orig_expr
-  | otherwise          = -- pprTrace "enter subst-expr" (doc $$ ppr orig_expr) $
-                         subst_expr doc subst orig_expr
+  | otherwise -- pprTrace "enter subst-expr" (doc $$ ppr orig_expr) $
+    =
+    subst_expr doc subst orig_expr
 
 substExpr :: String -> Subst -> CoreExpr -> CoreExpr
 substExpr doc subst orig_expr = subst_expr doc subst orig_expr
 
 subst_expr :: String -> Subst -> CoreExpr -> CoreExpr
-subst_expr doc subst expr
-  = go expr
+subst_expr doc subst expr =
+  go expr
   where
-    go (LC.Var v)         = lookupIdSubst ("subst_expr") subst v
-    go (LC.App fun arg)   = LC.App (go fun) (go arg)
-
+    go (LC.Var v) = lookupIdSubst ("subst_expr") subst v
+    go (LC.App fun arg) = LC.App (go fun) (go arg)
     go (LC.Lam bndr body) = LC.Lam bndr' (subst_expr doc subst' body)
-                       where
-                         (subst', bndr') = substBndr subst bndr
-
+      where
+        (subst', bndr') = substBndr subst bndr
 
 -- | De-shadowing the program is sometimes a useful pre-pass. It can be done simply
 -- by running over the bindings with an empty substitution, because substitution
@@ -239,8 +261,8 @@ subst_expr doc subst expr
 --
 -- [Aug 09] This function is not used in GHC at the moment, but seems so
 --          short and simple that I'm going to leave it here
---deShadowBinds :: CoreProgram -> CoreProgram
---deShadowBinds binds = snd (mapAccumL substBind emptySubst binds)
+-- deShadowBinds :: CoreProgram -> CoreProgram
+-- deShadowBinds binds = snd (mapAccumL substBind emptySubst binds)
 
 {-
 ************************************************************************
@@ -259,8 +281,8 @@ preserve occ info in rules.
 -- the result and an updated 'Subst' that should be used by subsequent substitutions.
 -- 'IdInfo' is preserved by this process, although it is substituted into appropriately.
 substBndr :: Subst -> Var -> (Subst, Var)
-substBndr subst bndr
-  = substIdBndr ("var-bndr") subst subst bndr
+substBndr subst bndr =
+  substIdBndr ("var-bndr") subst subst bndr
 
 -- | Applies 'substBndr' to a number of 'Var's, accumulating a new 'Subst' left-to-right
 substBndrs :: Subst -> [Var] -> (Subst, [Var])
@@ -268,41 +290,46 @@ substBndrs subst bndrs = mapAccumL substBndr subst bndrs
 
 -- | Substitute in a mutually recursive group of 'Id's
 substRecBndrs :: Subst -> [Id] -> (Subst, [Id])
-substRecBndrs subst bndrs
-  = (new_subst, new_bndrs)
-  where         -- Here's the reason we need to pass rec_subst to subst_id
+substRecBndrs subst bndrs =
+  (new_subst, new_bndrs)
+  where
+    -- Here's the reason we need to pass rec_subst to subst_id
     (new_subst, new_bndrs) = mapAccumL (substIdBndr ("rec-bndr") new_subst) subst bndrs
 
-substIdBndr :: String
-            -> Subst            -- ^ Substitution to use for the IdInfo
-            -> Subst -> Id      -- ^ Substitution and Id to transform
-            -> (Subst, Id)      -- ^ Transformed pair
-                                -- NB: unfolding may be zapped
-
-substIdBndr _doc rec_subst subst@(Subst in_scope env ) old_id
-  = -- pprTrace "substIdBndr" (doc $$ ppr old_id $$ ppr in_scope) $
-    (Subst (in_scope `extendInScopeSet` new_id) new_env , new_id)
+substIdBndr ::
+  String ->
+  -- | Substitution to use for the IdInfo
+  Subst ->
+  Subst ->
+  -- | Substitution and Id to transform
+  Id ->
+  -- | Transformed pair
+  -- NB: unfolding may be zapped
+  (Subst, Id)
+substIdBndr _doc rec_subst subst@(Subst in_scope env) old_id =
+  -- pprTrace "substIdBndr" (doc $$ ppr old_id $$ ppr in_scope) $
+  (Subst (in_scope `extendInScopeSet` new_id) new_env, new_id)
   where
-    id1 = uniqAway in_scope old_id      -- id1 is cloned if necessary
-    id2 = id1 
+    id1 = uniqAway in_scope old_id -- id1 is cloned if necessary
+    id2 = id1
 
-    
-
-        -- new_id has the right IdInfo
-        -- The lazy-set is because we're in a loop here, with
-        -- rec_subst, when dealing with a mutually-recursive group
+    -- new_id has the right IdInfo
+    -- The lazy-set is because we're in a loop here, with
+    -- rec_subst, when dealing with a mutually-recursive group
     new_id = id2
     --mb_new_info = substIdInfo rec_subst id2 (idInfo id2)
-        -- NB: unfolding info may be zapped
+    -- NB: unfolding info may be zapped
 
-        -- Extend the substitution if the unique has changed
-        -- See the notes with substTyVarBndr for the delVarEnv
-    new_env | no_change = delVarEnv env old_id
-            | otherwise = extendVarEnv env old_id (LC.Var new_id)
+    -- Extend the substitution if the unique has changed
+    -- See the notes with substTyVarBndr for the delVarEnv
+    new_env
+      | no_change = delVarEnv env old_id
+      | otherwise = extendVarEnv env old_id (LC.Var new_id)
 
     no_change = id1 == old_id
-        -- See Note [Extending the Subst]
-        -- it's /not/ necessary to check mb_new_info and no_type_change
+
+-- See Note [Extending the Subst]
+-- it's /not/ necessary to check mb_new_info and no_type_change
 
 {-
 Now a variant that unconditionally allocates a new unique.
@@ -372,9 +399,8 @@ substIdType subst@(Subst _ _) id = id
 substIdOcc :: Subst -> Id -> Id
 -- These Ids should not be substituted to non-Ids
 substIdOcc subst v = case lookupIdSubst ("substIdOcc") subst v of
-                        LC.Var v' -> v'
-                        other  -> error $  "substIdOcc" 
-
+  LC.Var v' -> v'
+  other -> error $ "substIdOcc"
 
 ------------------
 {-}
@@ -399,7 +425,6 @@ looked at the idInfo for 'f'; result <<loop>>.
 
 In any case we don't need to optimise the RHS of rules, or unfoldings,
 because the simplifier will do that.
-
 
 Note [substTickish]
 ~~~~~~~~~~~~~~~~~~~~~~

@@ -5,7 +5,7 @@ using de Bruijn indicies and takes advantage of the "Bound" library by Ed Kmett.
 > {-# LANGUAGE DeriveTraversable #-}
 > {-# LANGUAGE StandaloneDeriving #-}
 > module DeBruijn.Bound(nf,DeBruijn.Bound.aeq,toDB,fromDB,nfd, impl) where
-> import Lambda
+> import Util.Lambda
 > import IdInt
 > import Data.Functor.Classes (Eq1(..))
 
@@ -15,7 +15,7 @@ using de Bruijn indicies and takes advantage of the "Bound" library by Ed Kmett.
 > 
 > import Bound
 
-> import Impl
+> import Util.Impl
 > impl :: LambdaImpl
 > impl = LambdaImpl {
 >            impl_name   = "DeBruijn.Bound"
@@ -31,7 +31,7 @@ Variables are represented by their binding depth, i.e., how many
 $\lambda$s out the binding $\lambda$ is.  Free variables are represented
 by negative numbers.
 
-> data DB a = DVar a | DLam (Scope () DB a) | DApp (DB a) (DB a)
+> data DB a = DVar a | DLam !(Scope () DB a) | DApp !(DB a) !(DB a)
 >   deriving (Functor, Foldable, Traversable, Generic)
 
 > instance NFData a => NFData (DB a)

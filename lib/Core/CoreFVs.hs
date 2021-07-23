@@ -7,49 +7,52 @@ Taken quite directly from the Peyton Jones/Lester paper.
 {-# LANGUAGE CPP #-}
 
 -- | A module concerned with finding the free variables of an expression.
-module Core.CoreFVs ( 
-        -- * Free variables of expressions and binding groups
-        exprFreeVars,
-        --exprFreeVarsDSet,
-        exprFreeVarsList,
-        exprFreeIds,
-        --exprFreeIdsDSet, 
-        exprFreeIdsList, 
-        --exprsFreeIdsDSet,
-        exprsFreeIdsList,
-        exprsFreeVars,
-        exprsFreeVarsList,
-        --bindFreeVars,
+module Core.CoreFVs
+  ( -- * Free variables of expressions and binding groups
+    exprFreeVars,
+    --exprFreeVarsDSet,
+    exprFreeVarsList,
+    exprFreeIds,
+    --exprFreeIdsDSet,
+    exprFreeIdsList,
+    --exprsFreeIdsDSet,
+    exprsFreeIdsList,
+    exprsFreeVars,
+    exprsFreeVarsList,
+    --bindFreeVars,
 
-        -- * Selective free variables of expressions
-        InterestingVarFun,
-        exprSomeFreeVars, exprsSomeFreeVars,
-        exprSomeFreeVarsList, exprsSomeFreeVarsList,
+    -- * Selective free variables of expressions
+    InterestingVarFun,
+    exprSomeFreeVars,
+    exprsSomeFreeVars,
+    exprSomeFreeVarsList,
+    exprsSomeFreeVarsList,
 
-        -- * Free variables of Rules, Vars and Ids
-        --idFreeVars, dIdFreeVars,
-        --idFVs,
+    -- * Free variables of Rules, Vars and Ids
 
-        expr_fvs,
+    --idFreeVars, dIdFreeVars,
+    --idFVs,
 
-        {- 
-        -- * Core syntax tree annotation with free variables
-        FVAnn,                  -- annotation, abstract
-        CoreExprWithFVs,        -- = AnnExpr Id FVAnn
-        CoreExprWithFVs',       -- = AnnExpr' Id FVAnn
-        CoreBindWithFVs,        -- = AnnBind Id FVAnn
-        CoreAltWithFVs,         -- = AnnAlt Id FVAnn
-        freeVars,               -- CoreExpr -> CoreExprWithFVs
-        freeVarsBind,           -- CoreBind -> DVarSet -> (DVarSet, CoreBindWithFVs)
-        freeVarsOf,             -- CoreExprWithFVs -> DIdSet
-        freeVarsOfAnn
-        -}
-    ) where
+    expr_fvs,
+    {-
+    -- * Core syntax tree annotation with free variables
+    FVAnn,                  -- annotation, abstract
+    CoreExprWithFVs,        -- = AnnExpr Id FVAnn
+    CoreExprWithFVs',       -- = AnnExpr' Id FVAnn
+    CoreBindWithFVs,        -- = AnnBind Id FVAnn
+    CoreAltWithFVs,         -- = AnnAlt Id FVAnn
+    freeVars,               -- CoreExpr -> CoreExprWithFVs
+    freeVarsBind,           -- CoreBind -> DVarSet -> (DVarSet, CoreBindWithFVs)
+    freeVarsOf,             -- CoreExprWithFVs -> DIdSet
+    freeVarsOfAnn
+    -}
+  )
+where
 
-import qualified Lambda as LC
-import Core.Core   
-import Core.VarSet
+import Core.Core
 import Core.FV as FV
+import Core.VarSet
+import qualified Util.Lambda as LC
 
 {-
 import GHC.Prelude
@@ -75,9 +78,7 @@ import GHC.Utils.Misc
 import GHC.Types.Basic( Activation )
 import GHC.Utils.Outputable
 import GHC.Utils.FV as FV
--} 
- 
-
+-}
 
 {-
 ************************************************************************
@@ -98,7 +99,7 @@ but not those that are free in the type of variable occurrence.
 -- | Find all locally-defined free Ids or type variables in an expression
 -- returning a non-deterministic set.
 exprFreeVars :: CoreExpr -> VarSet
-exprFreeVars = fvVarSet . exprFVs 
+exprFreeVars = fvVarSet . exprFVs
 
 -- | Find all locally-defined free Ids or type variables in an expression
 -- returning a composable FV computation. See Note [FV naming conventions] in GHC.Utils.FV
@@ -108,8 +109,8 @@ exprFVs = filterFV isLocalVar . expr_fvs
 
 -- | Find all locally-defined free Ids or type variables in an expression
 -- returning a deterministic set.
---exprFreeVarsDSet :: CoreExpr -> DVarSet
---exprFreeVarsDSet = fvDVarSet . exprFVs
+-- exprFreeVarsDSet :: CoreExpr -> DVarSet
+-- exprFreeVarsDSet = fvDVarSet . exprFVs
 
 -- | Find all locally-defined free Ids or type variables in an expression
 -- returning a deterministically ordered list.
@@ -117,13 +118,13 @@ exprFreeVarsList :: CoreExpr -> [Var]
 exprFreeVarsList = fvVarList . exprFVs
 
 -- | Find all locally-defined free Ids in an expression
-exprFreeIds :: CoreExpr -> IdSet        -- Find all locally-defined free Ids
+exprFreeIds :: CoreExpr -> IdSet -- Find all locally-defined free Ids
 exprFreeIds = exprSomeFreeVars isLocalId
 
 -- | Find all locally-defined free Ids in an expression
 -- returning a deterministic set.
---exprFreeIdsDSet :: CoreExpr -> DIdSet -- Find all locally-defined free Ids
---exprFreeIdsDSet = exprSomeFreeVarsDSet isLocalId
+-- exprFreeIdsDSet :: CoreExpr -> DIdSet -- Find all locally-defined free Ids
+-- exprFreeIdsDSet = exprSomeFreeVarsDSet isLocalId
 
 -- | Find all locally-defined free Ids in an expression
 -- returning a deterministically ordered list.
@@ -132,12 +133,12 @@ exprFreeIdsList = exprSomeFreeVarsList isLocalId
 
 -- | Find all locally-defined free Ids in several expressions
 -- returning a deterministic set.
---exprsFreeIdsDSet :: [CoreExpr] -> DIdSet -- Find all locally-defined free Ids
---exprsFreeIdsDSet = exprsSomeFreeVarsDSet isLocalId
+-- exprsFreeIdsDSet :: [CoreExpr] -> DIdSet -- Find all locally-defined free Ids
+-- exprsFreeIdsDSet = exprsSomeFreeVarsDSet isLocalId
 
 -- | Find all locally-defined free Ids in several expressions
 -- returning a deterministically ordered list.
-exprsFreeIdsList :: [CoreExpr] -> [Id]   -- Find all locally-defined free Ids
+exprsFreeIdsList :: [CoreExpr] -> [Id] -- Find all locally-defined free Ids
 exprsFreeIdsList = exprsSomeFreeVarsList isLocalId
 
 -- | Find all locally-defined free Ids or type variables in several expressions
@@ -156,22 +157,26 @@ exprsFVs exprs = mapUnionFV exprFVs exprs
 exprsFreeVarsList :: [CoreExpr] -> [Var]
 exprsFreeVarsList = fvVarList . exprsFVs
 
-
 -- | Finds free variables in an expression selected by a predicate
-exprSomeFreeVars :: InterestingVarFun   -- ^ Says which 'Var's are interesting
-                 -> CoreExpr
-                 -> VarSet
+exprSomeFreeVars ::
+  -- | Says which 'Var's are interesting
+  InterestingVarFun ->
+  CoreExpr ->
+  VarSet
 exprSomeFreeVars fv_cand e = fvVarSet $ filterFV fv_cand $ expr_fvs e
 
 -- | Finds free variables in an expression selected by a predicate
 -- returning a deterministically ordered list.
-exprSomeFreeVarsList :: InterestingVarFun -- ^ Says which 'Var's are interesting
-                     -> CoreExpr
-                     -> [Var]
+exprSomeFreeVarsList ::
+  -- | Says which 'Var's are interesting
+  InterestingVarFun ->
+  CoreExpr ->
+  [Var]
 exprSomeFreeVarsList fv_cand e = fvVarList $ filterFV fv_cand $ expr_fvs e
 
 -- | Finds free variables in an expression selected by a predicate
 -- returning a deterministic set.
+
 {-
 exprSomeFreeVarsDSet :: InterestingVarFun -- ^ Says which 'Var's are interesting
                      -> CoreExpr
@@ -180,22 +185,25 @@ exprSomeFreeVarsDSet fv_cand e = fvDVarSet $ filterFV fv_cand $ expr_fvs e
 -}
 
 -- | Finds free variables in several expressions selected by a predicate
-exprsSomeFreeVars :: InterestingVarFun  -- Says which 'Var's are interesting
-                  -> [CoreExpr]
-                  -> VarSet
+exprsSomeFreeVars ::
+  InterestingVarFun -> -- Says which 'Var's are interesting
+  [CoreExpr] ->
+  VarSet
 exprsSomeFreeVars fv_cand es =
   fvVarSet $ filterFV fv_cand $ mapUnionFV expr_fvs es
 
 -- | Finds free variables in several expressions selected by a predicate
 -- returning a deterministically ordered list.
-exprsSomeFreeVarsList :: InterestingVarFun  -- Says which 'Var's are interesting
-                      -> [CoreExpr]
-                      -> [Var]
+exprsSomeFreeVarsList ::
+  InterestingVarFun -> -- Says which 'Var's are interesting
+  [CoreExpr] ->
+  [Var]
 exprsSomeFreeVarsList fv_cand es =
   fvVarList $ filterFV fv_cand $ mapUnionFV expr_fvs es
 
 -- | Finds free variables in several expressions selected by a predicate
 -- returning a deterministic set.
+
 {-
 exprsSomeFreeVarsDSet :: InterestingVarFun -- ^ Says which 'Var's are interesting
                       -> [CoreExpr]
@@ -233,11 +241,15 @@ exprsSomeFreeVarsDSet fv_cand e =
 --      SLPJ Feb06
 
 addBndr :: CoreBndr -> FV -> FV
-addBndr bndr fv fv_cand in_scope acc
-  = (-- varTypeTyCoFVs bndr `unionFV`
-        -- Include type variables in the binder's type
-        --      (not just Ids; coercion variables too!)
-     FV.delFV bndr fv) fv_cand in_scope acc
+addBndr bndr fv fv_cand in_scope acc =
+  ( -- varTypeTyCoFVs bndr `unionFV`
+    -- Include type variables in the binder's type
+    --      (not just Ids; coercion variables too!)
+    FV.delFV bndr fv
+  )
+    fv_cand
+    in_scope
+    acc
 
 --addBndrs :: [CoreBndr] -> FV -> FV
 --addBndrs bndrs fv = foldr addBndr fv bndrs
@@ -248,7 +260,6 @@ expr_fvs (LC.App fun arg) fv_cand in_scope acc =
   (expr_fvs fun `unionFV` expr_fvs arg) fv_cand in_scope acc
 expr_fvs (LC.Lam bndr body) fv_cand in_scope acc =
   addBndr bndr (expr_fvs body) fv_cand in_scope acc
-
 
 ---------
 exprs_fvs :: [CoreExpr] -> FV
@@ -351,7 +362,6 @@ delBinderFV b s = (s `delDVarSet` b) `unionFVs` dVarTypeTyCoVars b
         -- Include coercion variables too!
 -}
 
-
 --idFreeVars :: Id -> VarSet
 --idFreeVars id = fvVarSet $ idFVs id
 
@@ -361,7 +371,7 @@ delBinderFV b s = (s `delDVarSet` b) `unionFVs` dVarTypeTyCoVars b
 {-
 idFVs :: Id -> FV
 -- Type variables, rule variables, and inline variables
-idFVs id = 
+idFVs id =
            varTypeTyCoFVs id `unionFV`
            bndrRuleAndUnfoldingFVs id
 -}
@@ -398,7 +408,6 @@ freeVarsBind (Rec binds) body_fvs
     all_fvs      = rhs_body_fvs `unionFVs` binders_fvs
             -- The "delBinderFV" happens after adding the idSpecVars,
             -- since the latter may add some of the binders as fvs
-
 
 freeVars :: CoreExpr -> CoreExprWithFVs
 -- ^ Annotate a 'CoreExpr' with its (non-global) free type

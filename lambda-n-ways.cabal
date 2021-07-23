@@ -13,12 +13,12 @@ source-repository head
 library
   hs-source-dirs: lib
   exposed-modules:
-      Imports
-      Impl
-      Lambda
-      Misc
+      Util.Imports
+      Util.Impl
+      Util.Lambda
+      Util.Misc
       Suite
-      Id
+      Util.Id
       IdInt
       QuickBench
       IdInt.Map
@@ -69,13 +69,6 @@ library
       Core.UniqDFM
       Core.UniqSet
       Core.Nf
-      Abstract.Class
-      Abstract.Simple
-      Abstract.DeBruijnPar
-      Abstract.DeBruijnPar.F
-      Abstract.DeBruijnPar.B
-      Abstract.DeBruijn
-      Abstract.UnboundGenerics
 --      Kmett.Type
 --      Kmett.IndicesAndLevels
   ghc-options:  -O2 -funfolding-use-threshold=16 -fno-warn-unticked-promoted-constructors
@@ -102,8 +95,11 @@ library
                 , some >= 1.0
                 , constraints >= 0.11
   default-language: Haskell2010
-  default-extensions: 
-                  DeriveGeneric
+  default-extensions:
+                  DataKinds 
+                , DeriveGeneric
+                , DeriveTraversable
+                , EmptyCase
                 , ExistentialQuantification
                 , FlexibleContexts
                 , FlexibleInstances
@@ -111,6 +107,7 @@ library
                 , GeneralizedNewtypeDeriving
                 , InstanceSigs
                 , MultiParamTypeClasses
+                , RankNTypes
                 , ScopedTypeVariables
                 , TupleSections
                 , TypeFamilies
@@ -138,8 +135,11 @@ executable LC
                , tasty-quickcheck >= 0.10.1.1
                , unbound >= 0.5.1.3
   --             , unbound-generics >= 0.4.1
-  default-extensions: 
-                  DeriveGeneric
+  default-extensions:
+                  DataKinds 
+                , DeriveGeneric
+                , DeriveTraversable
+                , EmptyCase
                 , ExistentialQuantification
                 , FlexibleContexts
                 , FlexibleInstances
@@ -147,6 +147,7 @@ executable LC
                 , GeneralizedNewtypeDeriving
                 , InstanceSigs
                 , MultiParamTypeClasses
+                , RankNTypes
                 , ScopedTypeVariables
                 , TupleSections
                 , TypeFamilies
@@ -158,6 +159,7 @@ test-suite test-timing
   hs-source-dirs: tests
   main-is: Main.hs
   type:    exitcode-stdio-1.0
+  ghc-options: -O2 -fno-warn-unticked-promoted-constructors
   build-depends:
                   base >= 4.13
                 , lambda-n-ways
@@ -168,8 +170,11 @@ test-suite test-timing
                 , tasty-hunit >= 0.10.0.2
                 , tasty-quickcheck
                 , tasty-quickcheck >= 0.10.1.1
- default-extensions: 
-                  DeriveGeneric
+ default-extensions:
+                  DataKinds 
+                , DeriveGeneric
+                , DeriveTraversable
+                , EmptyCase
                 , ExistentialQuantification
                 , FlexibleContexts
                 , FlexibleInstances
@@ -178,6 +183,7 @@ test-suite test-timing
                 , InstanceSigs
                 , MultiParamTypeClasses
                 , ScopedTypeVariables
+                , RankNTypes
                 , TupleSections
                 , TypeFamilies
                 , TypeApplications

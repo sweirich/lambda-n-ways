@@ -2,7 +2,7 @@ module LocallyNameless where
 
 import IdInt
 import IdInt.Set
-import Impl
+import Util.Impl
 
 impl :: LambdaImpl
 impl =

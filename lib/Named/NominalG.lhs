@@ -7,14 +7,14 @@ Implementation using the Nominal library (available from hackage)
 
 > module Named.NominalG(nf,nfi,impl) where
 > import Data.List(union, (\\))
-> import qualified Lambda as LC
+> import qualified Util.Lambda as LC
 > import IdInt hiding (Nominal)
 
 > import Nominal
 > import Prelude hiding ((.))
 
 > import Control.DeepSeq
-> import Impl
+> import Util.Impl
 >
 > impl :: LambdaImpl
 > impl = LambdaImpl {

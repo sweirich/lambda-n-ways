@@ -13,10 +13,10 @@ import Data.List (elemIndex)
 import qualified Data.Set as Set
 import Data.Type.Equality (type (:~:) (..))
 import IdInt (IdInt (..), firstBoundId)
-import Impl (LambdaImpl (..))
-import Imports hiding (S, lift)
-import qualified Lambda as LC
 import qualified Unsafe.Coerce as Unsafe
+import Util.Impl (LambdaImpl (..))
+import Util.Imports hiding (S, lift)
+import qualified Util.Lambda as LC
 
 -- 0. (Ott) Original
 -- lennart: 1.03s

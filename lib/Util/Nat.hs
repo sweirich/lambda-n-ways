@@ -1,32 +1,28 @@
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE TypeInType #-}
-
--- Natural numbers for dependent types
+-- | Natural numbers for dependent types
 module Util.Nat where
 
-import Control.DeepSeq
+import Control.DeepSeq (NFData (..))
 import Data.Kind (Type)
 
 data Nat = Z | S Nat
   deriving (Eq, Show)
 
 data Idx :: Nat -> Type where
-  FZ :: Idx (S n)
-  FS :: Idx n -> Idx (S n)
+  FZ :: Idx ('S n)
+  FS :: Idx n -> Idx ('S n)
 
 data SNat n where
-  SZ :: SNat Z
-  SS :: SNat n -> SNat (S n)
+  SZ :: SNat 'Z
+  SS :: SNat n -> SNat ('S n)
 
 -------------------------------------------
 
 type family Plus n m where
-  Plus Z n = n
-  Plus (S m) n = S (Plus m n)
+  Plus 'Z n = n
+  Plus ('S m) n = 'S (Plus m n)
 
 type family Pred (n :: Nat) :: Nat where
-  Pred (S n) = n
+  Pred ('S n) = n
 
 toInt :: Idx n -> Int
 toInt FZ = 0

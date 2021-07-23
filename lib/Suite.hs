@@ -16,8 +16,6 @@ import qualified DeBruijn.Par.FB
 import qualified DeBruijn.Par.L
 import qualified DeBruijn.Par.P
 import qualified DeBruijn.Par.Scoped
-import Impl (LambdaImpl)
-import qualified Lambda
 import qualified Lennart.HOAS
 import qualified Lennart.Simple
 import qualified Lennart.Unique
@@ -35,6 +33,7 @@ import qualified Named.NominalG
 import qualified Named.SimpleB
 import qualified Named.SimpleH
 import qualified Named.SimpleM
+import Util.Impl (LambdaImpl)
 
 -- | Implementations used in the benchmarking/test suite
 impls :: [LambdaImpl]

@@ -5,16 +5,16 @@ module Main where
 import Control.Monad
 import qualified DeBruijn.Lennart as DeBruijn
 import IdInt
-import Impl
-import Lambda
 import qualified Lennart.Unique as Unique
-import Misc
 import Suite
 import System.Exit (exitFailure)
 import Test.QuickCheck
 import Test.Tasty (TestTree, defaultMain, testGroup)
 import Test.Tasty.HUnit
 import Test.Tasty.QuickCheck as QC
+import Util.Impl
+import Util.Lambda
+import Util.Misc
 
 -- | Reference version of aeq
 -- convert to DB indices and use (==)
@@ -140,7 +140,7 @@ main :: IO ()
 main = do
   nfRandoms <- mapM nfRandomTests ["random", "random2", "random25", "random35", "lams100"]
   nfLamTests <- mapM nfRandomTests ["t1", "t2", "t3", "t4", "t5", "t6", "t7"]
-  nfSimple <- mapM nfRandomTests ["simpleclosed", "capture10", "constructed10"]
+  nfSimple <- mapM nfRandomTests ["capture10", "constructed10"]
   nfMoreTests <- mapM nfRandomTests ["tests", "onesubst", "twosubst", "threesubst", "foursubst"]
   lennart <- nfUnitTests
   defaultMain $ testGroup "tests" ([rtQCs, aeqQCs, nfQCs] ++ nfRandoms ++ nfLamTests ++ nfSimple ++ nfMoreTests ++ [lennart])

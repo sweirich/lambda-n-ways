@@ -17,10 +17,10 @@ import qualified Data.Set as Set
 import Data.Type.Equality
 import Debug.Trace
 import IdInt
-import Impl
-import Imports hiding (S, lift)
-import qualified Lambda as LC
 import qualified Unsafe.Coerce as Unsafe
+import Util.Impl
+import Util.Imports hiding (S, lift)
+import qualified Util.Lambda as LC
 
 -- 0. Original
 -- lennart: 1.03s
