@@ -83,7 +83,7 @@ Compute the weak head normal form.
 Bounded versions
 
 > nfi :: Int -> DB -> Maybe DB
-> nfi 0 e = Nothing
+> nfi 0 _ = Nothing
 > nfi _n e@(DVar _) = return e
 > nfi n (DLam b) = DLam . bind <$> nfi (n-1) (unbind b)
 > nfi n (DApp f a) = do

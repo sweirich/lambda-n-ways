@@ -177,12 +177,12 @@ Convert back from deBruijn to the LC type.
 > ppLC p (DLam b) = pparens (p>0) $ text "\\." PP.<> ppLC 0 (unbind b)
 > ppLC p (DApp f a) = pparens (p>1) $ ppLC 1 f <+> ppLC 2 a
 
-
+> {-
 > ppS :: Sub DB -> Doc
 > ppS (Inc k)     = text ("+" ++ show k)
 > ppS (Cons t s)  = ppLC 0 t <+> text "<|" <+> ppS s
 > ppS (s1 :<> s2) = ppS s1 <+> text "<>" <+> ppS s2
-
+> -}
 
 > pparens :: Bool -> Doc -> Doc
 > pparens True d = parens d

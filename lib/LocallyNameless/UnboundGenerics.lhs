@@ -20,9 +20,9 @@
 
 > import Util.Impl
 
-> data Exp = Var (U.Name Exp)
->          | Lam (U.Bind (U.Name Exp) Exp)
->          | App Exp Exp
+> data Exp = Var !(U.Name Exp)
+>          | Lam !(U.Bind (U.Name Exp) Exp)
+>          | App !Exp !Exp
 >  deriving (Show, Generic)
 >
 > instance DS.NFData Exp where

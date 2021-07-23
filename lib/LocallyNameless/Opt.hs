@@ -87,7 +87,7 @@ substBind u x b@(BindClose i xs a) =
   BindClose i xs (subst u x a)
 
 data Exp where
-  Var_b :: !Int -> Exp
+  Var_b :: {-# UNPACK #-} !Int -> Exp
   Var_f :: !IdInt -> Exp
   Abs :: !(Bind Exp) -> Exp
   App :: !Exp -> !Exp -> Exp

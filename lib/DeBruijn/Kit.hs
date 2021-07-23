@@ -39,9 +39,9 @@ type SCon = SNat
 -- A variable is a fancy de Bruijn index
 
 data Term :: Nat -> Type where
-  DVar :: (Idx g) -> Term g
-  DLam :: (Term ('S g)) -> Term g
-  DApp :: (Term g) -> (Term g) -> Term g
+  DVar :: !(Idx g) -> Term g
+  DLam :: !(Term ('S g)) -> Term g
+  DApp :: !(Term g) -> !(Term g) -> Term g
 
 instance NFData (Term a) where
   rnf (DVar i) = rnf i
