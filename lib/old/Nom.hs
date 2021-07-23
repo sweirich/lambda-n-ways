@@ -11,15 +11,15 @@ module Named.Nom where
 import Data.Generics hiding (Generic, typeOf)
 import GHC.Generics
 import IdInt (IdInt (..))
-import Impl (LambdaImpl (..))
-import Imports
-import qualified Lambda as LC
 import Language.Nominal.Abs
 import Language.Nominal.Binder
 import Language.Nominal.Name
 import Language.Nominal.Nom
 import Language.Nominal.Sub
 import Language.Nominal.Utilities
+import Util.Impl (LambdaImpl (..))
+import Util.Imports
+import qualified Util.Lambda as LC
 
 impl :: LambdaImpl
 impl =
@@ -135,9 +135,11 @@ fromLC = go []
   where
     go :: [(IdInt, Name IdInt)] -> LC.LC IdInt -> Exp
     go xs (LC.Var x) = V (getVar x xs)
-    go xs (LC.Lam x t) = 
-        absFresh x 
-        Lam (y :@> go ((x, y) : xs) t)
+    go xs (LC.Lam x t) =
+      absFresh
+        x
+        Lam
+        (y :@> go ((x, y) : xs) t)
       where
         y = Name x ()
     go xs (LC.App t s) = go xs t :@ go xs s

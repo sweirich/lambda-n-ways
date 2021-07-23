@@ -15,8 +15,8 @@ import Data.Functor.Classes (Eq1 (..))
 import Data.Maybe
 import Data.Traversable
 import IdInt
-import Impl
-import Lambda
+import Util.Impl
+import Util.Lambda
 
 -- show Var
 data Var b a
