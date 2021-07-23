@@ -8,7 +8,7 @@ Implementation using the Nominal library (available from hackage)
 > module Named.NominalG(nf,nfi,impl) where
 > import Data.List(union, (\\))
 > import qualified Util.Lambda as LC
-> import Util.IdInt hiding (Nominal)
+> import Util.IdInt ( IdInt )
 
 > import Nominal
 > import Prelude hiding ((.))
@@ -32,6 +32,7 @@ Implementation using the Nominal library (available from hackage)
 >
 > instance NFData Atom where
 >    rnf x = length (show x) == 0 `seq` ()
+
 > instance NFData (Bind Atom Term) where
 >    rnf (x :. s) = rnf x `seq` rnf s
 > instance NFData Term

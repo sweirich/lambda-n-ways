@@ -12,18 +12,18 @@ import Data.List (union, (\\))
 import qualified Data.Map as M
 import Util.Imports
 
--- An IdInt is just another name for an Int. We only use the nonnegative Ints though
+-- | An IdInt is just another name for an Int. We only use the nonnegative Ints though
 newtype IdInt = IdInt Int
   deriving (Eq, Ord, Generic)
 
 instance NFData IdInt
 
 -- It is handy to make IdInt enumerable.
-
 instance Enum IdInt where
   toEnum i = IdInt i
   fromEnum (IdInt i) = i
 
+-- 0 is the smallest identifier
 firstBoundId :: IdInt
 firstBoundId = toEnum 0
 
@@ -46,7 +46,7 @@ instance Arbitrary IdInt where
   shrink (IdInt 0) = []
   shrink (IdInt n) = [IdInt (n -1)]
 
--- Freshening IdInts
+-- Converting IdInts
 
 -- Find a new identifier not in a given set
 
@@ -71,5 +71,3 @@ convVar v = do
 newId :: [IdInt] -> IdInt
 newId [] = firstBoundId
 newId vs = succ (maximum vs)
-
-------------------------------------------------

@@ -32,13 +32,6 @@ data LambdaImpl = forall a.
 ---------------------------------------------------------
 ---------------------------------------------------------
 
-{-
-freeVars :: LC IdInt -> IdIntSet
-freeVars (Var v) = singleton v
-freeVars (Lam v e) = freeVars e \\ singleton v
-freeVars (App f a) = freeVars f `union` freeVars a
--}
-
 toIdInt :: (Ord v) => LC v -> LC IdInt
 toIdInt e = evalState (conv e) (0, fvmap)
   where

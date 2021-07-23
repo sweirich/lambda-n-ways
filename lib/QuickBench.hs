@@ -55,7 +55,7 @@ factStats fname = do
   putStrLn $ "   depth:      " ++ show (depth tm)
   let loop n =
         case Simple.iNf n tm of
-          Just (tm', ss) -> do
+          Just (_, ss) -> do
             putStrLn $ "   normalized steps:  " ++ show n
             putStrLn $ "   num substs: " ++ show (Simple.numSubsts ss)
           Nothing -> do
@@ -120,7 +120,6 @@ arbitraryNfTerms sz = do
     loop 0 tms = return tms
     loop n tms = do
       tm <- generate (resize sz (genScopedLam :: Gen (LC IdInt)))
-      let stm = Scoped.toDB tm
       case Simple.iNf 2000 tm of
         Just (tm', ss) ->
           if not (tm `Util.Lambda.aeq` tm') && Simple.numSubsts ss == 4

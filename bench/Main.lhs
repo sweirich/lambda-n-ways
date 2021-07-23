@@ -6,62 +6,49 @@
 >  -}
 > module Main where
 > import qualified Data.List as List
-> import Util.Misc
-> import Util.Lambda
-> import Util.IdInt
-> import Util.Impl
-> import Suite
+> import Util.Misc ()
+> import Util.Lambda ( LC )
+> import Util.IdInt ( IdInt )
+> import Util.Impl ( LambdaImpl(..), toIdInt, getTerm, getTerms )
+> import Suite ( impls )
 > import qualified Lennart.Simple as Simple
 > import qualified Lennart.Unique as Unique
-> import Test.QuickCheck
+> import Test.QuickCheck ()
+> import System.IO.Unsafe ( unsafePerformIO )
 
-> import Criterion.Main
-> import Control.DeepSeq
->
-> 
+> import Criterion.Main ( defaultMain, bench, bgroup, nf, Benchmark )
+> import Control.DeepSeq ( force, NFData(rnf) )
 
+> -- | A benchmark is either a single test, or a named group of tests.
 > data Bench =
 >   forall a. Bench String (a -> ()) a
 >   | BGroup String [Bench]
 
 
-> -- | Benchmarks for timing conversion from named representation to internal representation
+> -- | Benchmarks for timing conversion *from* named representation to internal representation
 > conv_bs :: LC IdInt -> [Bench]
-> conv_bs lc = conv_bss [lc]
-
-> -- | Benchmarks for timing conversion from named representation to internal representation
-> conv_bss :: [LC IdInt] -> [Bench]
-> conv_bss lcs = map impl2nf impls where
+> conv_bs lc = lc `seq` map impl2nf impls where
 >   impl2nf :: LambdaImpl -> Bench
 >   impl2nf LambdaImpl {..} =
->     Bench impl_name (rnf . map (rnf . impl_fromLC)) lcs 
-
-
-> -- | Benchmarks for timing normal form calculation (single term)
-> nf_bs :: LC IdInt -> [Bench]
-> nf_bs lc = map impl2nf impls where
->   impl2nf LambdaImpl {..} =
->     let! tm = force (impl_fromLC lc) in
->     Bench impl_name (rnf . impl_nf) tm
+>     Bench impl_name (rnf . impl_fromLC) lc
 
 > -- | Benchmarks for timing normal form calculation (multiple terms)
-> nf_bss :: String ->[LC IdInt] -> [Bench]
-> nf_bss nm lcs = map impl2nf impls where
+> nf_bss :: [LC IdInt] -> [Bench]
+> nf_bss lcs = map impl2nf impls where
 >   impl2nf LambdaImpl {..} =
 >     let! tms = force (map impl_fromLC lcs) in
->     -- let  pairs = zip lcs (map impl_nf tms) in
->     Bench (impl_name <> "/" <> nm) (rnf . map impl_nf) tms
+>     Bench (impl_name <> "/") (rnf . map impl_nf) tms
 
-> -- | Benchmarks for timing normal form calculation (multiple terms)
+> -- | Benchmarks for timing normal form calculation (multiple groups of multiple terms)
 > constructed_bss :: String ->[LC IdInt] -> [Bench]
 > constructed_bss nm lcs = map impl2nf impls where
 >   impl2nf LambdaImpl {..} =
 >     let! tms = force (map impl_fromLC lcs) in
->     let benches = map (\(t,i) -> Bench (show i) (rnf . impl_nf) t) (zip tms [1..]) in
+>     let benches = map (\(t,i) -> Bench (show (i::Int)) (rnf . impl_nf) t) (zip tms [1..]) in
 >     BGroup (impl_name <> "/" <> nm) benches
 
 
-> -- benchmark for alpha-equivalence
+> -- benchmark for comparing alpha-equivalence
 > aeq_bs :: LC IdInt -> LC IdInt -> [Bench]
 > aeq_bs lc1 lc2 = map impl2aeq impls where
 >   impl2aeq LambdaImpl {..} =
@@ -70,35 +57,47 @@
 >     Bench impl_name (\(x,y) -> rnf (impl_aeq x y)) (tm1,tm2)
 
 
+> -- | Freshen Lennart's term and compare for alpha equivalence
+> aeq_fresh_bs :: LC IdInt -> [Bench]
+> aeq_fresh_bs lennart = do 
+>   let tm2 = toIdInt (Unique.fromUnique (Unique.toUnique lennart))
+>   aeq_bs lennart tm2
+
+
 > runBench :: Bench -> Benchmark
 > runBench (Bench n f x) = bench n $ Criterion.Main.nf f x
 > runBench (BGroup n bs) = bgroup n $ map runBench bs
 
 > main :: IO ()
 > main = do
->   tm <- getTerm "lams/lennart.lam"
->   let tm1 = toIdInt tm
->   return $! rnf tm1
->   let tm2 = toIdInt (Unique.fromUnique (Unique.toUnique tm1))
->   return $! rnf tm2
->   let! convs = conv_bs tm1
->   let! nfs   = nf_bss "" [tm1]
->   let! aeqs  = aeq_bs tm1 tm2
+>   lennart <- toIdInt <$> getTerm "lams/lennart.lam"
 >   random_terms <- getTerms "lams/random.lam"
->   --random_terms <- getTerms "lams/lams100.lam"
->   let! rands = nf_bss "" random_terms
+>   random2_terms <- getTerms "lams/random2.lam"
+>   random25_terms <- getTerms "lams/random25.lam"
+>   random35_terms <- getTerms "lams/random35.lam"
+>   onesubst_terms <- getTerms "lams/onesubst.lam"
+>   twosubst_terms <- getTerms "lams/twosubst.lam"
+>   threesubst_terms <- getTerms "lams/threesubst.lam"
+>   foursubst_terms <- getTerms "lams/foursubst.lam"
+>   id_terms <- getTerms "lams/id.lam"
 >   con_terms <- getTerms "lams/constructed20.lam"
->   let! cons = constructed_bss "con" con_terms
 >   capt_terms <- getTerms "lams/capture10.lam"
->   let! capts = constructed_bss "capt" capt_terms
->   -- let runBench (Bench n f x) = bench n $ Criterion.Main.nf f x
 >   defaultMain [
->     bgroup "rand" $ map runBench rands
->    , bgroup "conv" $ map runBench convs
->    , bgroup "nf"   $ map runBench nfs
->    , bgroup "aeq"  $ map runBench aeqs
->    , bgroup "con"  $ map runBench cons
->    , bgroup "capt" $ map runBench capts
+>      bgroup "random" $ map runBench (nf_bss random_terms)
+>    , bgroup "random2" $ map runBench (nf_bss random2_terms)
+>    , bgroup "random25" $ map runBench (nf_bss random25_terms)
+>    , bgroup "random35" $ map runBench (nf_bss random35_terms)
+>    , bgroup "onesubst" $ map runBench (nf_bss onesubst_terms)
+>    , bgroup "twosubst" $ map runBench (nf_bss twosubst_terms)
+>    , bgroup "threesubst" $ map runBench (nf_bss threesubst_terms)
+>    , bgroup "foursubst" $ map runBench (nf_bss foursubst_terms)
+>    , bgroup "ids" $ map runBench (nf_bss id_terms)
+>    , bgroup "conv" $ map runBench (conv_bs lennart)
+>    , bgroup "nf"   $ map runBench (nf_bss [lennart])
+>    , bgroup "aeq"  $ map runBench (aeq_fresh_bs lennart)
+>    , bgroup "aeqs" $ map runBench (aeq_bs lennart lennart)
+>    , bgroup "con"  $ map runBench (constructed_bss "con" con_terms)
+>    , bgroup "capt" $ map runBench (constructed_bss "capt" capt_terms)
 >    ] 
 >
 >

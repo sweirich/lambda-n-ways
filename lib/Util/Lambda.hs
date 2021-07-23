@@ -207,7 +207,7 @@ shrinkScoped e = lams <$> s (peel e)
     peel _ = error "start with 5 lambda-bound variables"
 
     s :: LC v -> [LC v]
-    s (Lam v e) = [e | v `notElem` freeVars e]
+    s (Lam v e0) = [e | v `notElem` freeVars e0]
     s (Var _x) = []
     s (App e1 e2) = e1 : e2 : [App e1 e2' | e2' <- s e2] ++ [App e1' e2 | e1' <- s e1]
 
