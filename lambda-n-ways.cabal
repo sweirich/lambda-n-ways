@@ -19,10 +19,10 @@ library
       Util.Misc
       Suite
       Util.Id
-      IdInt
+      Util.IdInt
       QuickBench
-      IdInt.Map
-      IdInt.Set
+      Util.IdInt.Map
+      Util.IdInt.Set
       Util.Nat
       DeBruijn.Cornell
       DeBruijn.Chlipala

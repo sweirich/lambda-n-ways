@@ -8,7 +8,7 @@
 > module Lennart.Simple(nf,whnf,nfi,impl,iNf,St(..),subst) where
 > import Data.List(union, (\\))
 > import Util.Lambda ( aeq, allVars, freeVars, LC(..) )
-> import IdInt ( newId, IdInt )  
+> import Util.IdInt ( newId, IdInt )  
 > import Util.Impl ( LambdaImpl(..) )
 > import Util.Imports
 > import qualified Data.Map as M
@@ -39,7 +39,7 @@
 >                                where 
 >                                    v' = newId vs
 >                                    e'' = subst v (Var v') e'
->        sub ss vs (App f a) = App (sub ss vs f) (sub ss vs a)
+>        sub ss vs (App f g) = App (sub ss vs f) (sub ss vs g)
 >        
 >        fvs = freeVars a
 >        vs0 = fvs `union` allVars b `union` [x] -- make sure we don't rename v' to variable we are sub'ing for

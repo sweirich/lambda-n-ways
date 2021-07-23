@@ -5,7 +5,7 @@ This makes it possible to use the native substitution of Haskell.
 > module Lennart.HOAS(nf,nfh,fromLC,toLC, impl) where
 > import qualified Data.Map as M
 > import Util.Lambda
-> import IdInt
+> import Util.IdInt
 > import Control.DeepSeq
 > import Data.Maybe(fromMaybe)
 

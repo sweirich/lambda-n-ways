@@ -7,7 +7,7 @@ This version also uses a memo table so that all occurrences can share the same c
 > module DeBruijn.List(impl, toDB, fromDB, nfd, nfi) where
 > import Data.List(elemIndex)
 > import Util.Lambda
-> import IdInt
+> import Util.IdInt
 > import Control.DeepSeq
 
 > import Util.Impl

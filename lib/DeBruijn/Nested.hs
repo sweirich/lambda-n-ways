@@ -11,7 +11,7 @@ module DeBruijn.Nested (impl) where
 
 import Control.DeepSeq
 import Control.Monad
-import IdInt
+import Util.IdInt
 import Util.Impl
 import Util.Lambda
 

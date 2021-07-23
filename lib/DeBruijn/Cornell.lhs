@@ -10,7 +10,7 @@ It separates substitution from instantiation.
 > module DeBruijn.Cornell(impl, toDB, fromDB, nfd, nfi) where
 > import Data.List(elemIndex)
 > import Util.Lambda
-> import IdInt
+> import Util.IdInt
 > import Control.DeepSeq
 
 > import Util.Impl

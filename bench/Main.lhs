@@ -8,7 +8,7 @@
 > import qualified Data.List as List
 > import Util.Misc
 > import Util.Lambda
-> import IdInt
+> import Util.IdInt
 > import Util.Impl
 > import Suite
 > import qualified Lennart.Simple as Simple

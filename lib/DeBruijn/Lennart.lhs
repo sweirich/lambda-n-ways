@@ -7,7 +7,7 @@ but has been modified to to fit into this setting.
 > module DeBruijn.Lennart(impl, toDB, fromDB, nfd, nfi) where
 > import Data.List(elemIndex)
 > import Util.Lambda
-> import IdInt
+> import Util.IdInt
 > import Control.DeepSeq
 
 > import Util.Impl

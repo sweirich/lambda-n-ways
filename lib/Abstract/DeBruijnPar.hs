@@ -4,7 +4,7 @@ import Abstract.Class
 import Abstract.Simple
 import Data.Coerce
 import Data.List (elemIndex)
-import IdInt
+import Util.IdInt
 import Util.Imports
 
 -- Generic conversion function for de Bruijn indices

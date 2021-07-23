@@ -9,7 +9,7 @@ It uses parallel substitutions and explcit substitutions stored in the term.
 > {-# LANGUAGE UndecidableInstances #-}
 > module DeBruijn.Par.Scoped(nf,DeBruijn.Par.Scoped.aeq, toDB, fromDB, nfd, nfi, impl) where
 > import Util.Lambda
-> import IdInt
+> import Util.IdInt
 > import DeBruijn.Par.SubstScoped
 > import Control.DeepSeq
 

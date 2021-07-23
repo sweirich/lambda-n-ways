@@ -1,5 +1,5 @@
 -- | A fast type of identifiers, Ints, for $\lambda$-expressions.
-module IdInt
+module Util.IdInt
   ( IdInt (..),
     firstBoundId,
     FreshM,
@@ -35,6 +35,7 @@ instance Show IdInt where
 instance Read IdInt where
   -- skip "x" then read int
   readsPrec _ (_ : str) = coerce ((readsPrec 0 str) :: [(Int, String)])
+  readsPrec _ [] = error "no parse IdInt"
 
 -- Generating IdInts
 

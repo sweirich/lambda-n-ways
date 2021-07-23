@@ -12,7 +12,7 @@ variables are unique.
 > import Util.Lambda as LC
 > import qualified Data.Map as M
 > import Control.Monad.State
-> import IdInt
+> import Util.IdInt
 > import Data.Maybe (fromMaybe)
 > import Data.Coerce
 > import Control.DeepSeq

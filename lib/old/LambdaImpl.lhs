@@ -30,7 +30,7 @@ print in a nice way.
 > import Test.QuickCheck
 > import Data.Kind (Type)
 
-> import IdInt
+> import Util.IdInt
 
 > class (Arbitrary v, Ord v, NFData v, Read v, Show v)
 >   => Impl v where

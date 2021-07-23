@@ -1,12 +1,12 @@
 -- | A Finite map, key'ed by IdInts
 -- Underneath this is just a coerced Data.IntMap
-module IdInt.Map where
+module Util.IdInt.Map where
 
 import Control.DeepSeq (NFData)
 import Data.Coerce (coerce)
 import qualified Data.IntMap.Strict as M
-import IdInt (IdInt (..), firstBoundId)
-import IdInt.Set (IdIntSet (..))
+import Util.IdInt (IdInt (..), firstBoundId)
+import Util.IdInt.Set (IdIntSet (..))
 
 newtype IdIntMap a = IdIntMap (M.IntMap a)
   deriving (Eq, Show, Functor, Semigroup, Monoid, NFData, Foldable, Traversable)

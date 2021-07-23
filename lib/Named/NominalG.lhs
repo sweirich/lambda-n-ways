@@ -8,7 +8,7 @@ Implementation using the Nominal library (available from hackage)
 > module Named.NominalG(nf,nfi,impl) where
 > import Data.List(union, (\\))
 > import qualified Util.Lambda as LC
-> import IdInt hiding (Nominal)
+> import Util.IdInt hiding (Nominal)
 
 > import Nominal
 > import Prelude hiding ((.))

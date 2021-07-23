@@ -4,7 +4,6 @@ module Main where
 
 import Control.Monad
 import qualified DeBruijn.Lennart as DeBruijn
-import IdInt
 import qualified Lennart.Unique as Unique
 import Suite
 import System.Exit (exitFailure)
@@ -12,6 +11,7 @@ import Test.QuickCheck
 import Test.Tasty (TestTree, defaultMain, testGroup)
 import Test.Tasty.HUnit
 import Test.Tasty.QuickCheck as QC
+import Util.IdInt
 import Util.Impl
 import Util.Lambda
 import Util.Misc

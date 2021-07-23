@@ -6,7 +6,7 @@ using de Bruijn indicies and takes advantage of the "Bound" library by Ed Kmett.
 > {-# LANGUAGE StandaloneDeriving #-}
 > module DeBruijn.Bound(nf,DeBruijn.Bound.aeq,toDB,fromDB,nfd, impl) where
 > import Util.Lambda
-> import IdInt
+> import Util.IdInt
 > import Data.Functor.Classes (Eq1(..))
 
 > import Control.Monad

@@ -10,7 +10,7 @@ import Core.UniqSet
 import Core.Unique
 import Core.VarEnv
 import Core.VarSet
-import IdInt
+import Util.IdInt
 import Util.Impl
 import Util.Lambda as LC
 

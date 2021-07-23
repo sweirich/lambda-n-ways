@@ -5,7 +5,7 @@ module LocallyNameless.Ott (impl) where
 import qualified Control.Monad.State as State
 import Data.List (elemIndex)
 import qualified Data.Set as Set
-import IdInt (IdInt (..), firstBoundId)
+import Util.IdInt (IdInt (..), firstBoundId)
 import Util.Impl (LambdaImpl (..))
 import Util.Imports
 import qualified Util.Lambda as LC

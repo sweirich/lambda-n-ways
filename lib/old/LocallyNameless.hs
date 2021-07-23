@@ -1,7 +1,7 @@
 module LocallyNameless where
 
-import IdInt
-import IdInt.Set
+import Util.IdInt
+import Util.IdInt.Set
 import Util.Impl
 
 impl :: LambdaImpl

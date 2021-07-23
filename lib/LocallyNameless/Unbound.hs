@@ -7,7 +7,6 @@
 module LocallyNameless.Unbound (nf, LocallyNameless.Unbound.aeq, aeqd, fromDB, toDB, nfu, impl) where
 
 import qualified Control.DeepSeq as DS
-import IdInt hiding (FreshM)
 import Unbound.LocallyNameless as U
   ( Alpha,
     Bind,
@@ -27,6 +26,7 @@ import Unbound.LocallyNameless as U
     unbind,
     type (:*:) ((:*:)),
   )
+import Util.IdInt hiding (FreshM)
 import Util.Impl
 import qualified Util.Lambda as LC
 

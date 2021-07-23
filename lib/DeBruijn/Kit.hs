@@ -15,7 +15,7 @@ Guillaume Allais, James Chapman, Conor McBride, James McKinna
 
 module DeBruijn.Kit (impl, prettyPrint) where
 
-import IdInt
+import Util.IdInt
 import Util.Impl
 import Util.Imports
 import Util.Lambda
@@ -209,14 +209,14 @@ toLC t = evalState (runConstant $ evalTerm toLCsem SZ t) names
     names = [firstBoundId ..]
 
 fromLC :: LC IdInt -> Term Z
-fromLC = to []
+fromLC = toT []
   where
-    to :: [(IdInt, Idx n)] -> LC IdInt -> Term n
-    to vs (Var v) = DVar (fromJust (lookup v vs))
-    to vs (Lam v b) = DLam b'
+    toT :: [(IdInt, Idx n)] -> LC IdInt -> Term n
+    toT vs (Var v) = DVar (fromJust (lookup v vs))
+    toT vs (Lam v b) = DLam b'
       where
-        b' = to ((v, FZ) : mapSnd FS vs) b
-    to vs (App f a) = DApp (to vs f) (to vs a)
+        b' = toT ((v, FZ) : mapSnd FS vs) b
+    toT vs (App f a) = DApp (toT vs f) (toT vs a)
 
 mapSnd :: (a -> b) -> [(c, a)] -> [(c, b)]
 mapSnd f = map (second f)

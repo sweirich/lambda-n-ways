@@ -3,7 +3,7 @@ module Core.Core where
 import Core.Unique
 import Data.List (foldl')
 import Data.Maybe (fromMaybe)
-import IdInt
+import Util.IdInt
 import Util.Lambda
 
 type Var = IdInt

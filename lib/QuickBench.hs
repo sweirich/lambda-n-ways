@@ -10,13 +10,13 @@ module QuickBench where
 import Control.Monad
 import qualified Data.List as List
 import qualified DeBruijn.Par.Scoped as Scoped
-import Util.Id
-import IdInt
 import qualified Lennart.Simple as Simple
 import qualified Lennart.Unique as Unique
 import Suite
 import System.IO
 import Test.QuickCheck
+import Util.Id
+import Util.IdInt
 import Util.Impl
 import Util.Lambda
 import Util.Misc

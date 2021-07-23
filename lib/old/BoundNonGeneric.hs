@@ -14,7 +14,7 @@ import Data.Functor
 import Data.Functor.Classes (Eq1 (..))
 import Data.Maybe
 import Data.Traversable
-import IdInt
+import Util.IdInt
 import Util.Impl
 import Util.Lambda
 

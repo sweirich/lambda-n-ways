@@ -4,7 +4,7 @@ using de Bruijn indicies.
 > module DeBruijn.Par.P(nf,DeBruijn.Par.P.aeq,nfd,aeqd,toDB,fromDB,impl) where
 > import Data.List(elemIndex)
 > import Util.Lambda
-> import IdInt
+> import Util.IdInt
 > import Control.DeepSeq
 
 > import Util.Impl

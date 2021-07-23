@@ -4,9 +4,6 @@
 -- down on the lennart/nf benchmark.
 module Named.SimpleH (impl) where
 
-import IdInt (IdInt)
-import qualified IdInt.Map as M
-import qualified IdInt.Set as S
 import qualified Text.PrettyPrint.HughesPJ as PP
   ( Doc,
     parens,
@@ -15,6 +12,9 @@ import qualified Text.PrettyPrint.HughesPJ as PP
     text,
     (<+>),
   )
+import Util.IdInt (IdInt)
+import qualified Util.IdInt.Map as M
+import qualified Util.IdInt.Set as S
 import Util.Impl (LambdaImpl (..))
 import Util.Imports
 import qualified Util.Lambda as LC

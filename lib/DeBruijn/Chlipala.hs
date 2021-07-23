@@ -12,7 +12,7 @@ module DeBruijn.Chlipala where
 import Control.DeepSeq
 import Data.Maybe (fromJust)
 import Data.Type.Equality
-import IdInt
+import Util.IdInt
 import Util.Impl
 import Util.Lambda
 import Util.Nat

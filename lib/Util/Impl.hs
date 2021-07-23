@@ -10,9 +10,9 @@ in a data structure.
 import Control.Monad.State
 import qualified Data.Map.Strict as M
 import Util.Id
-import IdInt
-import IdInt.Set (IdIntSet)
-import qualified IdInt.Set as IdIntSet
+import Util.IdInt
+import Util.IdInt.Set (IdIntSet)
+import qualified Util.IdInt.Set as IdIntSet
 import Util.Imports
 import Util.Lambda
 import qualified Util.Misc as Misc

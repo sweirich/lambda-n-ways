@@ -85,7 +85,7 @@ NOTE: adding a smart constructor in lift really slows things down!
 >   (<>) = comp
 > instance SubstC a => Monoid (Sub a) where
 >   mempty  = nil
->   mappend = comp
+>   mappend = (<>)
 
 > instance NFData a => NFData (Sub a) where
 >   rnf (Inc i) = rnf i

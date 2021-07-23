@@ -20,7 +20,7 @@
 module DeBruijnC (nf,Impl.DeBruijnC.aeq,nfd,fromLC,toLC, impl) where
 
 import Util.Lambda
-import IdInt
+import Util.IdInt
 import Data.List
 import Control.DeepSeq hiding (force)
 

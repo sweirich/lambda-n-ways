@@ -8,7 +8,7 @@ This version uses Haskell functions to represent substitutions, but introduces
 > module DeBruijn.Par.FB(nf,DeBruijn.Par.FB.aeq,nfd,toDB,fromDB,nfi, impl) where
 > import Data.List(elemIndex)
 > import Util.Lambda
-> import IdInt
+> import Util.IdInt
 > import Control.DeepSeq
 > import Text.PrettyPrint.HughesPJ(Doc, renderStyle, style, text,
 >            (<+>), parens)

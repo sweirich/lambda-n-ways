@@ -10,7 +10,7 @@ import qualified Control.Monad.State as State
 import qualified Data.IntMap as IM
 import Data.List (elemIndex)
 import qualified Data.Set as Set
-import IdInt (IdInt (..), firstBoundId)
+import Util.IdInt (IdInt (..), firstBoundId)
 import Util.Impl (LambdaImpl (..))
 import Util.Imports hiding (S, lift)
 import qualified Util.Lambda as LC

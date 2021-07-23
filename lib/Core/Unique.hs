@@ -54,7 +54,7 @@ import GHC.Exts (indexCharOffAddr#, Char(..), Int(..))
 
 -- | Avoid orphan instance
 
-import IdInt
+import Util.IdInt
 
 instance Uniquable IdInt where
     getUnique (IdInt i) = getUnique i

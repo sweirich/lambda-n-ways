@@ -1,12 +1,12 @@
 -- | A Finite set of IdInt, based on Data.IntSet
-module IdInt.Set
+module Util.IdInt.Set
   ( IdIntSet (..),
     empty,
     singleton,
     union,
     (\\),
     toList,
-    IdInt.Set.null,
+    Util.IdInt.Set.null,
     findMax,
     delete,
     member,
@@ -20,7 +20,7 @@ where
 import Control.DeepSeq
 import Data.Coerce
 import qualified Data.IntSet as IntSet
-import IdInt
+import Util.IdInt
 import Util.Lambda hiding (freeVars)
 
 newtype IdIntSet = IdIntSet IntSet.IntSet deriving (Eq, Ord, Show, Semigroup, Monoid, NFData)

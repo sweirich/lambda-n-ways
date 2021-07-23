@@ -6,7 +6,7 @@ Substitutions are represented as infinite lists
 > module DeBruijn.Par.L(nf,DeBruijn.Par.L.aeq,nfd,toDB,fromDB,nfi, impl) where
 > import Data.List(elemIndex)
 > import Util.Lambda
-> import IdInt
+> import Util.IdInt
 > import Control.DeepSeq
 >
 > import Util.Impl

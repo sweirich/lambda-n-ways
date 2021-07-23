@@ -38,9 +38,9 @@ import Control.Monad.State
 import Data.List (union, (\\))
 import qualified Data.Map as M
 import qualified Data.Set as S
-import IdInt
 import qualified Text.ParserCombinators.ReadP as RP
 import qualified Text.PrettyPrint.HughesPJ as PP
+import Util.IdInt
 import Util.Imports
 
 -- Datatype for lambda calculus terms, parameterized by

@@ -27,7 +27,7 @@ user	0m0.009s
 > module DeBruijn.Par.B(nf,DeBruijn.Par.B.aeq,toDB,fromDB,nfd,nfi, impl) where
 > import Data.List(elemIndex)
 > import Util.Lambda
-> import IdInt
+> import Util.IdInt
 > import Control.DeepSeq
 >
 > import Text.PrettyPrint.HughesPJ(Doc, renderStyle, style, text,

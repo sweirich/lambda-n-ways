@@ -10,13 +10,13 @@ module Named.Nom where
 
 import Data.Generics hiding (Generic, typeOf)
 import GHC.Generics
-import IdInt (IdInt (..))
 import Language.Nominal.Abs
 import Language.Nominal.Binder
 import Language.Nominal.Name
 import Language.Nominal.Nom
 import Language.Nominal.Sub
 import Language.Nominal.Utilities
+import Util.IdInt (IdInt (..))
 import Util.Impl (LambdaImpl (..))
 import Util.Imports
 import qualified Util.Lambda as LC

@@ -11,7 +11,7 @@
 > module LocallyNameless.UnboundGenerics(impl) where
 
 > import qualified Util.Lambda as LC
-> import IdInt
+> import Util.IdInt
 >
 > import qualified Control.DeepSeq as DS
 > import GHC.Generics(Generic)
