@@ -23,7 +23,9 @@ library
       QuickBench
       Util.IdInt.Map
       Util.IdInt.Set
-      Util.Nat
+      Support.Nat
+      Support.Par.Subst
+      Support.Par.SubstScoped
       DeBruijn.Cornell
       DeBruijn.Chlipala
       DeBruijn.Lennart
@@ -38,9 +40,7 @@ library
       DeBruijn.Par.F
       DeBruijn.Par.FB
       DeBruijn.Par.L
-      DeBruijn.Par.SubstScoped
       DeBruijn.Par.Scoped
-      DeBruijn.Par.Subst
       LocallyNameless.Ott
       LocallyNameless.Opt
       LocallyNameless.Par

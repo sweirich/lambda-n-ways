@@ -1,7 +1,7 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 
 -- | Natural numbers for dependent types
-module Util.Nat where
+module Support.Nat where
 
 import Control.DeepSeq (NFData (..))
 import Data.Kind (Type)

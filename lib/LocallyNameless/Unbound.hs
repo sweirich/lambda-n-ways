@@ -31,9 +31,9 @@ import Util.Impl
 import qualified Util.Lambda as LC
 
 data Exp
-  = Var (U.Name Exp)
-  | Lam (U.Bind (U.Name Exp) Exp)
-  | App Exp Exp
+  = Var !(U.Name Exp)
+  | Lam !(U.Bind (U.Name Exp) Exp)
+  | App !Exp !Exp
   deriving (Show)
 
 instance DS.NFData Exp where

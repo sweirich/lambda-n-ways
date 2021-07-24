@@ -10,7 +10,7 @@ It uses parallel substitutions and explcit substitutions stored in the term.
 > module DeBruijn.Par.Scoped(nf,DeBruijn.Par.Scoped.aeq, toDB, fromDB, nfd, nfi, impl) where
 > import Util.Lambda
 > import Util.IdInt
-> import DeBruijn.Par.SubstScoped
+> import Support.Par.SubstScoped
 > import Control.DeepSeq
 
 > import Text.PrettyPrint.HughesPJ(Doc, renderStyle, style, text,
@@ -19,7 +19,7 @@ It uses parallel substitutions and explcit substitutions stored in the term.
 > import Data.Maybe(fromJust)
 
 > import Util.Impl
-> import Util.Nat
+> import Support.Nat
 
 > impl :: LambdaImpl
 > impl = LambdaImpl {

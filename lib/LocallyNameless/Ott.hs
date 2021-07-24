@@ -40,10 +40,10 @@ fromDB = from firstBoundId
     from n (App f a) = LC.App (from n f) (from n a)
 
 data Exp
-  = Var_b Int
-  | Var_f IdInt
-  | Abs Exp
-  | App Exp Exp
+  = Var_b {-# UNPACK #-} !Int
+  | Var_f !IdInt
+  | Abs !Exp
+  | App !Exp !Exp
   deriving (Eq, Ord, Generic)
 
 instance NFData Exp where

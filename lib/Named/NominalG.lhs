@@ -27,7 +27,7 @@ Implementation using the Nominal library (available from hackage)
 >        }
 
 > -- Untyped lambda terms, up to alpha-equivalence.
-> data Term = Var Atom | App Term Term | Lam (Bind Atom Term)
+> data Term = Var !Atom | App !Term !Term | Lam !(Bind Atom Term)
 >    deriving (Generic, Nominal,Eq)
 >
 > instance NFData Atom where

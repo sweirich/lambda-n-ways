@@ -15,11 +15,11 @@ Guillaume Allais, James Chapman, Conor McBride, James McKinna
 
 module DeBruijn.Kit (impl, prettyPrint) where
 
+import Support.Nat
 import Util.IdInt
 import Util.Impl
 import Util.Imports
 import Util.Lambda
-import Util.Nat
 
 impl :: LambdaImpl
 impl =
