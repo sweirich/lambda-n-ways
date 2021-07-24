@@ -2,9 +2,9 @@ This version is an adaptation of Lennart's Debruijn implementation.
 Instead of adjusting the indices of variables at each occurrence of the term, 
 it lifts the substitution as it goes under each binder.
 
-This version also uses a memo table so that all occurrences can share the same computation.
+This version uses a memo table so that all occurrences can share the same computation.
 
-> module DeBruijn.List(impl, toDB, fromDB, nfd, nfi) where
+> module DeBruijn.List(impl) where
 > import Data.List(elemIndex)
 > import Util.Lambda
 > import Util.IdInt

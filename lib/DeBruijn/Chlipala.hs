@@ -1,11 +1,8 @@
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE GADTs #-}
-{-# LANGUAGE PolyKinds #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE TypeInType #-}
-{-# LANGUAGE TypeOperators #-}
-
--- Adapted from CPDT
+-- | Adapted from CPDT by Adam Chlipala
+-- 
+-- This version is intended to demonstrate dependently-typed programming for well-scoped
+-- de Bruijn indices
+-- Compare this version to Par.Scoped
 
 module DeBruijn.Chlipala where
 
@@ -29,12 +26,12 @@ impl =
     }
 
 -------------------------------------------------------
--------------------------------------------------------
+-- NOTE: for comparison with Par.Scoped, we don't make the index strict. But maybe we should.
 
 data DB (n :: Nat) where
-  DVar :: !(Idx n) -> DB n
-  DApp :: !(DB n) -> !(DB n) -> DB n
+  DVar :: (Idx n) -> DB n
   DLam :: !(DB ('S n)) -> DB n
+  DApp :: !(DB n) -> !(DB n) -> DB n
 
 {-
 The classic implementation of substitution in de Bruijn terms requires an auxiliary operation, lifting, which increments the indices of all free variables in an expression. We need to lift whenever we "go under a binder." It is useful to write an auxiliary function liftVar that lifts a variable; that is, liftVar x y will return y + 1 if y >= x, and it will return y otherwise. This simple description uses numbers rather than our dependent fin family, so the actual specification is more involved.
@@ -43,15 +40,21 @@ Combining a number of dependent types tricks, we wind up with this concrete real
 -}
 
 liftVar :: Idx n -> Idx (Pred n) -> Idx n
+liftVar FZ y = FS y
+liftVar (FS _) FZ = FZ
+liftVar (FS x') (FS y') = FS (liftVar x' y')
+
+{-
+liftVar :: Idx n -> Idx (Pred n) -> Idx n
 liftVar x y =
   case x of
     FZ -> FS y
     FS x' -> case y of
       FZ -> FZ
       FS y' -> FS (liftVar x' y')
+-}
 
 {-
-
 Now it is easy to implement the main lifting operation.
 -}
 
@@ -69,17 +72,17 @@ nzf :: Idx n -> S (Pred n) :~: n
 nzf FZ = Refl
 nzf (FS _) = Refl
 
+substVar :: Idx n -> Idx n -> Maybe (Idx (Pred n))
+substVar FZ FZ = Nothing
+substVar FZ (FS f') = Just f'
+substVar (FS x') FZ
+  | Refl <- nzf x'  = Just FZ
+substVar (FS x') (FS y')
+  | Refl <- nzf y'  = do
+      f <- substVar x' y'
+      Just $ FS f
+
 {-
-Now we define a notation to streamline our cast expressions. The code f[ return n, r for e] denotes a cast of expression e whose type can be obtained by substituting some number n1 for n in r. f should be a proof that n1 = n2, for any n2. In that case, the type of the cast expression is r with n2 substituted for n.
-
-Notation "[ f 'return' n , r 'for' e ]" :=
-  match f in _ = n return r with
-    | refl_equal => e
-  end.
-
-This notation is useful in defining a variable substitution operation. The idea is that substVar x y returns None if x = y; otherwise, it returns a "squished" version of y with a smaller fin index, reflecting that variable x has been substituted away. Without dependent types, this would be a simple definition. With dependency, it is reasonably intricate, and our main task in automating proofs about it will be hiding that intricacy.
--}
-
 substVar :: Idx n -> Idx n -> Maybe (Idx (Pred n))
 substVar x = case x of
   FZ -> \y ->
@@ -88,12 +91,13 @@ substVar x = case x of
       FS f' -> Just f'
   FS x' -> \y ->
     ( case y of
-        FZ -> Just $ case (nzf x') of Refl -> FZ -- [nzf x' return n, fin n for FZ]
+        FZ -> Just $ case (nzf x') of Refl -> FZ 
         FS y' ->
           case substVar x' y' of
             Nothing -> Nothing
-            Just f -> Just $ case (nzf y') of Refl -> FS f -- [nzf y' return n, fin n for FS f]
+            Just f -> Just $ case (nzf y') of Refl -> FS f 
     )
+-}
 
 {-
 
@@ -111,7 +115,7 @@ subst e f v = case e of
     case (nzf f) of
       Refl -> DLam (subst e1 (FS f) (lift v FZ))
 
-instantiate :: DB (S n) -> DB n -> DB n
+instantiate :: DB ('S n) -> DB n -> DB n
 instantiate b a = subst b FZ a
 
 -----------------------------------------------------
@@ -121,11 +125,11 @@ instance NFData (DB a) where
   rnf (DLam d) = rnf d
   rnf (DApp a b) = rnf a `seq` rnf b
 
-instance Eq (DB n) where
-  DVar x == DVar y = x == y
-  DLam x == DLam y = x == y
-  DApp x1 x2 == DApp y1 y2 = x1 == y1 && x2 == y2
-  _ == _ = False
+-- standalone b/c GADT
+-- alpha equivalence is (==)
+deriving instance Eq (DB n)
+
+-------------------------------------------------------
 
 nfd :: DB n -> DB n
 nfd e@(DVar _) = e
@@ -143,9 +147,11 @@ whnf (DApp f a) =
     DLam b -> whnf (instantiate b a)
     f' -> DApp f' a
 
+-------------------------------------------------------
+
 nfi :: Int -> DB n -> Maybe (DB n)
-nfi 0 e = Nothing
-nfi n e@(DVar _) = return e
+nfi 0 _e = Nothing
+nfi _n e@(DVar _) = return e
 nfi n (DLam b) = DLam <$> nfi (n -1) b
 nfi n (DApp f a) = do
   f' <- whnfi (n -1) f
@@ -154,16 +160,18 @@ nfi n (DApp f a) = do
     _ -> DApp <$> nfi n f' <*> nfi n a
 
 whnfi :: Int -> DB n -> Maybe (DB n)
-whnfi 0 e = Nothing
-whnfi n e@(DVar _) = return e
-whnfi n e@(DLam _) = return e
+whnfi 0 _e = Nothing
+whnfi _n e@(DVar _) = return e
+whnfi _n e@(DLam _) = return e
 whnfi n (DApp f a) = do
   f' <- whnfi (n -1) f
   case whnf f' of
     DLam b -> whnfi (n -1) (instantiate b a)
     _ -> return $ DApp f' a
 
-toDB :: LC IdInt -> DB Z
+-------------------------------------------------------
+
+toDB :: LC IdInt -> DB 'Z
 toDB = to []
   where
     to :: [(IdInt, Idx n)] -> LC IdInt -> DB n
@@ -183,15 +191,6 @@ fromDB = from firstBoundId
       | otherwise = Var (IdInt (n - (toInt i) -1))
     from n (DLam b) = Lam n (from (succ n) b)
     from n (DApp f a) = App (from n f) (from n a)
-
-{-
- > next :: [(Idx n, IdInt)] -> (IdInt, [(Idx (S n), IdInt)])
-> next []             = (firstBoundId, [(FZ, firstBoundId)])
-> next ((_n, i):rest) = (succ i,        (FZ, succ i): mapFst FS rest)
-
-> mapFst :: (a -> b) -> [(a,c)] -> [(b,c)]
-> mapFst f = map (\ (v,i) -> (f v, i))
-> -}
 
 mapSnd :: (a -> b) -> [(c, a)] -> [(c, b)]
 mapSnd f = map (\(v, i) -> (v, f i))

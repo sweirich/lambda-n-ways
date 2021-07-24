@@ -78,6 +78,36 @@ Bounded versions
 >         _ -> return $ DApp f' a
 
 
+-----------------------------------------------------------
+
+Convert to deBruijn indicies.  Do this by keeping a list of the bound
+variable so the depth can be found of all variables.  Do not touch
+free variables.
+
+> toDB :: LC IdInt -> DB
+> toDB = to []
+>   where to vs (Var v@(IdInt i)) = maybe (DVar i) DVar (elemIndex v vs)
+>         to vs (Lam x b) = DLam (to (x:vs) b)
+>         to vs (App f a) = DApp (to vs f) (to vs a)
+
+Convert back from deBruijn to the LC type.
+
+> fromDB :: DB -> LC IdInt
+> fromDB = from firstBoundId
+>   where from (IdInt n) (DVar i) | i < 0     = Var (IdInt i)
+>                                 | i >= n    = Var (IdInt i)
+>                                 | otherwise = Var (IdInt (n-i-1))
+>         from n (DLam b) = Lam n (from (succ n) b)
+>         from n (DApp f a) = App (from n f) (from n a)
+
+----------------------------------------------------------
+
+Substitution needs to adjust the inserted expression
+so the free variables refer to the correct binders.
+This must happen for each occurrence of the substituted term
+(as they could be at different binding depths).
+(See the 'apply' function.)
+
 > instantiate :: DB -> DB -> DB
 > instantiate b a = subst (sub a) b
 > {-# INLINE instantiate #-}
@@ -107,33 +137,6 @@ Bounded versions
 > apply :: Sub -> Int -> DB
 > apply (Sub o a) i
 >  | i == o    = adjust o a 0
->  | i >  o    = DVar (i-1)
+>  | i >  o    = DVar (i-1)    -- adjust free variables down (we only call subst through instantiate)
 >  | otherwise = DVar i
 > {-# INLINE apply #-}
-
-Substitution needs to adjust the inserted expression
-so the free variables refer to the correct binders.
-This must happen for each occurrence of the substituted term
-(as they could be at different binding depths).
-
--------
-
-Convert to deBruijn indicies.  Do this by keeping a list of the bound
-variable so the depth can be found of all variables.  Do not touch
-free variables.
-
-> toDB :: LC IdInt -> DB
-> toDB = to []
->   where to vs (Var v@(IdInt i)) = maybe (DVar i) DVar (elemIndex v vs)
->         to vs (Lam x b) = DLam (to (x:vs) b)
->         to vs (App f a) = DApp (to vs f) (to vs a)
-
-Convert back from deBruijn to the LC type.
-
-> fromDB :: DB -> LC IdInt
-> fromDB = from firstBoundId
->   where from (IdInt n) (DVar i) | i < 0     = Var (IdInt i)
->                                 | i >= n    = Var (IdInt i)
->                                 | otherwise = Var (IdInt (n-i-1))
->         from n (DLam b) = Lam n (from (succ n) b)
->         from n (DApp f a) = App (from n f) (from n a)

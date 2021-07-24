@@ -107,11 +107,14 @@ library
                 , GeneralizedNewtypeDeriving
                 , InstanceSigs
                 , MultiParamTypeClasses
+                , PolyKinds
                 , RankNTypes
                 , ScopedTypeVariables
+                , StandaloneDeriving
                 , TupleSections
                 , TypeFamilies
                 , TypeApplications
+                , TypeOperators
                 , UndecidableInstances
 
 executable LC
@@ -147,11 +150,14 @@ executable LC
                 , GeneralizedNewtypeDeriving
                 , InstanceSigs
                 , MultiParamTypeClasses
+                , PolyKinds
                 , RankNTypes
                 , ScopedTypeVariables
+                , StandaloneDeriving
                 , TupleSections
                 , TypeFamilies
                 , TypeApplications
+                , TypeOperators
                 , UndecidableInstances
                 
 test-suite test-timing
@@ -182,9 +188,12 @@ test-suite test-timing
                 , GeneralizedNewtypeDeriving
                 , InstanceSigs
                 , MultiParamTypeClasses
+                , PolyKinds
                 , ScopedTypeVariables
                 , RankNTypes
+                , StandaloneDeriving
                 , TupleSections
                 , TypeFamilies
                 , TypeApplications
+                , TypeOperators
                 , UndecidableInstances

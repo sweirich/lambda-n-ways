@@ -2,6 +2,8 @@ This version is an adaptation of Lennart's Debruijn implementation.
 Instead of adjusting the indices of variables at each occurrence of the term, 
 it lifts the substitution as it goes under each binder.
 
+Compare this version to Lennart's version and the one called "Cornell".
+
 > module DeBruijn.Lift(impl, toDB, fromDB, nfd, nfi) where
 > import Data.List(elemIndex)
 > import Util.Lambda
