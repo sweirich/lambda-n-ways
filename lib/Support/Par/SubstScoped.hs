@@ -1,11 +1,7 @@
 
 -- This is a general purpose library for defining substitution for debruijn indices
+-- Works will well-scoped representations
 
-{-# LANGUAGE GADTs #-}
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE QuantifiedConstraints #-}
 
 module Support.Par.SubstScoped where
@@ -17,13 +13,13 @@ import Support.Nat
 ------------------------------------
 
 data Bind a n where
-   Bind :: !(Sub a m n) -> !(a (S m)) -> Bind a n
+   Bind :: !(Sub a m n) -> !(a ('S m)) -> Bind a n
 
-bind :: a (S n) -> Bind a n
+bind :: a ('S n) -> Bind a n
 bind x = Bind (Inc SZ) x
 {-# INLINABLE bind #-}
 
-unbind :: SubstC a => Bind a n -> a (S n)
+unbind :: SubstC a => Bind a n -> a ('S n)
 unbind (Bind s a) = subst (lift s) a
 {-# INLINABLE unbind #-}
 
@@ -36,15 +32,15 @@ substBind :: SubstC a => Sub a n m -> Bind a n -> Bind a m
 substBind s2 (Bind s1 e) = Bind (comp s1 s2) e
 {-# INLINABLE substBind #-}
 
-instance (SubstC a, Eq (a (S n))) => Eq (Bind a n) where
+instance (SubstC a, Eq (a ('S n))) => Eq (Bind a n) where
    (Bind s1 x) == (Bind s2 y) = subst (lift s1) x == subst (lift s2) y
 
 ------------------------------------
 
 data Sub (a :: Nat -> Type) (n :: Nat) (m :: Nat) where
    Inc   :: !(SNat m) -> Sub a n (Plus m n)              --  increment by m
-   Cons  :: (a m) -> !(Sub a n m) -> Sub a (S n) m        --  extend a substitution (like cons)
-   (:<>) :: !(Sub a m n) -> !(Sub a n p) -> Sub a m p     --  compose substitutions
+   Cons  :: (a m) -> !(Sub a n m) -> Sub a ('S n) m      --  extend a substitution (like cons)
+   (:<>) :: !(Sub a m n) -> !(Sub a n p) -> Sub a m p    --  compose substitutions
 
 infixr :<>    -- like usual composition  (.)
 
@@ -66,15 +62,15 @@ nil :: SubstC a => Sub a n n
 nil = Inc SZ
 {-# INLINABLE nil #-}
 
-lift :: SubstC a => Sub a n m -> Sub a (S n) (S m)
+lift :: SubstC a => Sub a n m -> Sub a ('S n) ('S m)
 lift s   = Cons (var FZ) (s :<> Inc (SS SZ))
 {-# INLINABLE lift #-}
 
-single :: SubstC a => a n -> Sub a (S n) n
+single :: SubstC a => a n -> Sub a ('S n) n
 single t = Cons t (Inc SZ)
 {-# INLINABLE single #-}
 
-incSub :: Sub a n (S n)
+incSub :: Sub a n ('S n)
 incSub = Inc (SS SZ)
 {-# INLINABLE incSub #-}
 
@@ -83,7 +79,7 @@ comp :: SubstC a => Sub a m n -> Sub a n p  -> Sub a m p
 -- this one is difficult to type check
 -- comp (Inc k1) (Inc k2)  = Inc (k1 + k2)
 comp (Inc SZ) s       = s
-comp (Inc (SS n)) (Cons t s) = comp (Inc n) s
+comp (Inc (SS n)) (Cons _t s) = comp (Inc n) s
 comp s (Inc SZ)   = s
 comp (s1 :<> s2) s3 = comp s1 (comp s2 s3)
 comp (Cons t s1) s2 = Cons (subst s2 t) (comp s1 s2)
