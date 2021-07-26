@@ -13,7 +13,7 @@ Type-and-Scope Safe Programs and Their Proofs
 Guillaume Allais, James Chapman, Conor McBride, James McKinna
 -}
 
-module DeBruijn.Kit (impl, prettyPrint) where
+module DeBruijn.Lazy.Kit (impl, prettyPrint) where
 
 import Support.Nat
 import Util.IdInt
@@ -24,7 +24,7 @@ import Util.Lambda
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "DeBruijn.Kit",
+    { impl_name = "DeBruijn.Lazy.Kit",
       impl_fromLC = fromLC,
       impl_toLC = toLC,
       impl_nf = nfd,
@@ -40,8 +40,8 @@ type SCon = SNat
 
 data Term :: Nat -> Type where
   DVar :: (Idx g) -> Term g
-  DLam :: !(Term ('S g)) -> Term g
-  DApp :: !(Term g) -> !(Term g) -> Term g
+  DLam :: (Term ('S g)) -> Term g
+  DApp :: (Term g) -> (Term g) -> Term g
 
 instance NFData (Term a) where
   rnf (DVar i) = rnf i

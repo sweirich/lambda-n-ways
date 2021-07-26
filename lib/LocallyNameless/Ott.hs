@@ -41,7 +41,7 @@ fromDB = from firstBoundId
 
 data Exp
   = Var_b {-# UNPACK #-} !Int
-  | Var_f !IdInt
+  | Var_f {-# UNPACK #-} !IdInt
   | Abs !Exp
   | App !Exp !Exp
   deriving (Eq, Ord, Generic)

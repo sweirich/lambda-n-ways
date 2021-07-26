@@ -5,6 +5,22 @@ import qualified DeBruijn.Bound
 import qualified DeBruijn.Chlipala
 import qualified DeBruijn.Cornell
 import qualified DeBruijn.Kit
+import qualified DeBruijn.Lazy.Bound
+import qualified DeBruijn.Lazy.Chlipala
+import qualified DeBruijn.Lazy.Cornell
+import qualified DeBruijn.Lazy.Kit
+import qualified DeBruijn.Lazy.Lennart
+import qualified DeBruijn.Lazy.Lift
+import qualified DeBruijn.Lazy.List
+import qualified DeBruijn.Lazy.Nested
+--import qualified DeBruijn.Nested2
+import qualified DeBruijn.Lazy.Par.B
+import qualified DeBruijn.Lazy.Par.F
+import qualified DeBruijn.Lazy.Par.FB
+import qualified DeBruijn.Lazy.Par.L
+import qualified DeBruijn.Lazy.Par.P
+import qualified DeBruijn.Lazy.Par.Scoped
+import qualified DeBruijn.Lazy.TAPL
 import qualified DeBruijn.Lennart
 import qualified DeBruijn.Lift
 import qualified DeBruijn.List
@@ -16,6 +32,7 @@ import qualified DeBruijn.Par.FB
 import qualified DeBruijn.Par.L
 import qualified DeBruijn.Par.P
 import qualified DeBruijn.Par.Scoped
+import qualified DeBruijn.TAPL
 import qualified Lennart.HOAS
 import qualified Lennart.Simple
 import qualified Lennart.Unique
@@ -37,7 +54,11 @@ import Util.Impl (LambdaImpl)
 
 -- | Implementations used in the benchmarking/test suite
 impls :: [LambdaImpl]
-impls = fast_impls
+impls = fast_debruijn
+
+interleave :: [a] -> [a] -> [a]
+interleave (a1 : a1s) (a2 : a2s) = a1 : a2 : interleave a1s a2s
+interleave _ _ = []
 
 --------------------------------------------------------------------------
 --------------------------------------------------------------------------
@@ -51,21 +72,47 @@ all_impls =
 -- | deBruijn index-based implementations
 debruijn :: [LambdaImpl]
 debruijn =
-  [ DeBruijn.Lennart.impl,
+  [ -- single substitutions
+    DeBruijn.TAPL.impl,
+    DeBruijn.List.impl,
+    DeBruijn.Lennart.impl,
+    DeBruijn.Cornell.impl,
+    DeBruijn.Lift.impl,
+    -- parallel substitutions
     DeBruijn.Par.B.impl,
-    DeBruijn.Par.F.impl,
     DeBruijn.Par.FB.impl,
-    DeBruijn.Par.L.impl,
     DeBruijn.Par.P.impl,
+    DeBruijn.Par.F.impl,
+    DeBruijn.Par.L.impl,
+    -- Well-scoped
     DeBruijn.Par.Scoped.impl,
     DeBruijn.Bound.impl, -- bound
+    DeBruijn.Nested.impl,
     DeBruijn.Chlipala.impl,
-    DeBruijn.Cornell.impl,
-    DeBruijn.Kit.impl,
-    DeBruijn.Lift.impl,
-    DeBruijn.List.impl,
-    DeBruijn.Nested.impl
+    DeBruijn.Kit.impl
     -- DeBruijn.Nested2.impl, --fails test suite
+  ]
+
+debruijn_lazy :: [LambdaImpl]
+debruijn_lazy =
+  [ -- single substitutions
+    DeBruijn.Lazy.TAPL.impl,
+    DeBruijn.Lazy.List.impl,
+    DeBruijn.Lazy.Lennart.impl,
+    DeBruijn.Lazy.Cornell.impl,
+    DeBruijn.Lazy.Lift.impl,
+    -- parallel substitutions
+    DeBruijn.Lazy.Par.B.impl,
+    DeBruijn.Lazy.Par.FB.impl,
+    DeBruijn.Lazy.Par.P.impl,
+    DeBruijn.Lazy.Par.F.impl,
+    DeBruijn.Lazy.Par.L.impl,
+    -- Well-scoped
+    DeBruijn.Lazy.Par.Scoped.impl,
+    DeBruijn.Lazy.Bound.impl, -- bound
+    DeBruijn.Lazy.Nested.impl,
+    DeBruijn.Lazy.Chlipala.impl,
+    DeBruijn.Lazy.Kit.impl
   ]
 
 -- | Locally Nameless based implmentations
@@ -113,12 +160,9 @@ fast_debruijn =
   [ DeBruijn.Lennart.impl,
     DeBruijn.Par.B.impl,
     DeBruijn.Par.FB.impl,
-    DeBruijn.Par.Scoped.impl,
     DeBruijn.Bound.impl, -- bound
     DeBruijn.Chlipala.impl,
-    DeBruijn.Cornell.impl,
     DeBruijn.Kit.impl,
-    DeBruijn.Lift.impl,
     DeBruijn.List.impl,
     DeBruijn.Nested.impl
   ]

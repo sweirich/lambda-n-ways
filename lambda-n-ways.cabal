@@ -41,6 +41,23 @@ library
       DeBruijn.Par.FB
       DeBruijn.Par.L
       DeBruijn.Par.Scoped
+      DeBruijn.TAPL
+      DeBruijn.Lazy.Cornell
+      DeBruijn.Lazy.Chlipala
+      DeBruijn.Lazy.Lennart
+      DeBruijn.Lazy.Lift
+      DeBruijn.Lazy.List
+      DeBruijn.Lazy.Bound
+      DeBruijn.Lazy.Nested
+      -- DeBruijn.Lazy.Nested2
+      DeBruijn.Lazy.TAPL
+      DeBruijn.Lazy.Kit
+      DeBruijn.Lazy.Par.P
+      DeBruijn.Lazy.Par.B
+      DeBruijn.Lazy.Par.F
+      DeBruijn.Lazy.Par.FB
+      DeBruijn.Lazy.Par.L
+      DeBruijn.Lazy.Par.Scoped
       LocallyNameless.Ott
       LocallyNameless.Opt
       LocallyNameless.Par

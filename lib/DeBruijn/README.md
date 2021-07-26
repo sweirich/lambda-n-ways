@@ -2,6 +2,7 @@ Overview of DeBruijn index based implementations.
 
 * Variants for "Single substitution"
 
++ TAPL
 + Lennart
 + Lift
 + Cornell 
@@ -14,15 +15,15 @@ Many of these variants can be seen as an adaptation of lambda-sigma
 https://www.hpl.hp.com/techreports/Compaq-DEC/SRC-RR-54.pdf
 
 + DeBruijn.Par.F
-  - substitutions are functions
+  - substitutions are functions 
 + DeBruijn.Par.L
-  - substitutions are infinite lists 
+  - substitutions are infinite lists  (deBruijn's version)
 + DeBruijn.Par.P
   - substs are defunctionalized
 + DeBruijn.Par.FB
   - functions delayed at binders
 + DeBruijn.Par.B
-  - defunctionalized and delayed at binders
+  - defunctionalized and delayed at binders, optimizied composition
 
 * Well-scoped versions
 

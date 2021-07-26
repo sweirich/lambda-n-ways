@@ -2,9 +2,9 @@ This version is an adaptation of Lennart's Debruijn implementation.
 Instead of adjusting the indices of variables at each occurrence of the term, 
 it lifts the substitution as it goes under each binder.
 
-Compare this version to Lennart's version and the one called "Cornell".
+This version uses a memo table so that all occurrences can share the same computation.
 
-> module DeBruijn.Lift(impl, toDB, fromDB, nfd, nfi) where
+> module DeBruijn.Lazy.List(impl) where
 > import Data.List(elemIndex)
 > import Util.Lambda
 > import Util.IdInt
@@ -14,7 +14,7 @@ Compare this version to Lennart's version and the one called "Cornell".
 
 > impl :: LambdaImpl
 > impl = LambdaImpl {
->             impl_name   = "DeBruijn.Lift"
+>             impl_name   = "DeBruijn.Lazy.List"
 >           , impl_fromLC = toDB
 >           , impl_toLC   = fromDB
 >           , impl_nf     = nfd
@@ -26,7 +26,7 @@ Compare this version to Lennart's version and the one called "Cornell".
 Variables are represented by their binding depth, i.e., how many
 $\lambda$s out the binding $\lambda$ is.  
 
-> data DB = DVar {-# unpack #-} !Int | DLam !DB | DApp !DB !DB
+> data DB = DVar Int | DLam DB | DApp DB DB
 >   deriving (Eq)
 
 > instance NFData DB where
@@ -86,9 +86,10 @@ If we are going to be adjusting the terms in the substitution,
 it is important to do that *lazily*. We don't want to adjust terms that 
 aren't actually used in the expression.
 
-> data Sub = Sub {-# UNPACK #-} !Int DB
+> data Sub = Sub {-# UNPACK #-} !Int [DB]
+
 > sub :: DB -> Sub 
-> sub a = Sub 0 a
+> sub a = Sub 0 [adjust n a 0 | n <- [0 ..]]
 > {-# INLINE sub #-}
 
 > subst :: Sub -> DB -> DB
@@ -103,12 +104,12 @@ aren't actually used in the expression.
 > adjust o (DApp f a) n = DApp (adjust o f n) (adjust o a n)
 
 > lift :: Sub -> Sub
-> lift (Sub o b) = Sub (o+1) (adjust 1 b 0) 
+> lift (Sub o bs) = Sub (o+1) bs
 > {-# INLINE lift #-}
 
 > apply :: Sub -> Int -> DB
 > apply (Sub o a) i
->  | i == o    = a   -- already adjusted in lift
+>  | i == o    = a !! o  
 >  | i >  o    = DVar (i-1)
 >  | otherwise = DVar i
 > {-# INLINE apply #-}

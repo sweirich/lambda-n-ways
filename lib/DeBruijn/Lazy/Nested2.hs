@@ -111,6 +111,8 @@ nfd (AppE (f, a)) =
     LamE b -> nfd (applyE a b)
     f' -> AppE (nfd f', nfd a)
 
+-- Compute the weak head normal form.
+
 whnf :: DBE a -> DBE a
 whnf e@(VarE _) = e
 whnf e@(LamE _) = e

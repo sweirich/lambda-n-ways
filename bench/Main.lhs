@@ -82,6 +82,7 @@
 >   id_terms <- getTerms "lams/id.lam"
 >   con_terms <- getTerms "lams/constructed20.lam"
 >   capt_terms <- getTerms "lams/capture10.lam"
+>   adjust_terms <- getTerms "lams/adjust.lam"
 >   defaultMain [
 >      bgroup "random" $ map runBench (nf_bss random_terms)
 >    , bgroup "random2" $ map runBench (nf_bss random2_terms)
@@ -91,13 +92,14 @@
 >    , bgroup "twosubst" $ map runBench (nf_bss twosubst_terms)
 >    , bgroup "threesubst" $ map runBench (nf_bss threesubst_terms)
 >    , bgroup "foursubst" $ map runBench (nf_bss foursubst_terms)
->    , bgroup "ids" $ map runBench (nf_bss id_terms)
 >    , bgroup "conv" $ map runBench (conv_bs lennart)
 >    , bgroup "nf"   $ map runBench (nf_bss [lennart])
 >    , bgroup "aeq"  $ map runBench (aeq_fresh_bs lennart)
 >    , bgroup "aeqs" $ map runBench (aeq_bs lennart lennart)
+>    , bgroup "ids" $ map runBench (constructed_bss "ids" id_terms)
 >    , bgroup "con"  $ map runBench (constructed_bss "con" con_terms)
 >    , bgroup "capt" $ map runBench (constructed_bss "capt" capt_terms)
+>    , bgroup "adjust" $ map runBench (constructed_bss "adjust" adjust_terms)
 >    ] 
 >
 >

@@ -1,0 +1,246 @@
+benchmarking con/DeBruijn.Lennart/con/1
+time                 24.39 ns   (23.55 ns .. 25.25 ns)
+                     0.994 R²   (0.992 R² .. 0.997 R²)
+mean                 23.89 ns   (23.57 ns .. 24.36 ns)
+std dev              1.376 ns   (1.057 ns .. 1.798 ns)
+variance introduced by outliers: 78% (severely inflated)
+
+benchmarking con/DeBruijn.Lennart/con/2
+time                 29.73 ns   (29.23 ns .. 30.34 ns)
+                     0.996 R²   (0.995 R² .. 0.998 R²)
+mean                 30.57 ns   (29.99 ns .. 31.30 ns)
+std dev              2.168 ns   (1.886 ns .. 2.441 ns)
+variance introduced by outliers: 84% (severely inflated)
+
+benchmarking con/DeBruijn.Lennart/con/3
+time                 37.51 ns   (36.01 ns .. 38.90 ns)
+                     0.994 R²   (0.993 R² .. 0.997 R²)
+mean                 37.77 ns   (37.05 ns .. 38.62 ns)
+std dev              2.627 ns   (2.424 ns .. 2.854 ns)
+variance introduced by outliers: 84% (severely inflated)
+
+benchmarking con/DeBruijn.Lennart/con/4
+time                 42.52 ns   (41.54 ns .. 43.90 ns)
+                     0.995 R²   (0.993 R² .. 0.998 R²)
+mean                 41.87 ns   (41.19 ns .. 42.83 ns)
+std dev              2.571 ns   (1.855 ns .. 3.261 ns)
+variance introduced by outliers: 79% (severely inflated)
+
+benchmarking con/DeBruijn.Lennart/con/5
+time                 47.35 ns   (46.75 ns .. 48.31 ns)
+                     0.997 R²   (0.995 R² .. 0.998 R²)
+mean                 48.44 ns   (47.60 ns .. 49.49 ns)
+std dev              3.153 ns   (2.612 ns .. 3.601 ns)
+variance introduced by outliers: 81% (severely inflated)
+
+benchmarking con/DeBruijn.Lennart/con/6
+time                 55.05 ns   (52.78 ns .. 56.84 ns)
+                     0.993 R²   (0.993 R² .. 0.996 R²)
+mean                 56.41 ns   (54.91 ns .. 57.82 ns)
+std dev              5.055 ns   (4.699 ns .. 5.485 ns)
+variance introduced by outliers: 89% (severely inflated)
+
+benchmarking con/DeBruijn.Lennart/con/7
+time                 60.33 ns   (58.40 ns .. 62.24 ns)
+                     0.995 R²   (0.994 R² .. 0.997 R²)
+mean                 58.54 ns   (57.78 ns .. 59.79 ns)
+std dev              3.172 ns   (2.324 ns .. 4.015 ns)
+variance introduced by outliers: 75% (severely inflated)
+
+benchmarking con/DeBruijn.Lennart/con/8
+time                 64.94 ns   (63.92 ns .. 66.30 ns)
+                     0.996 R²   (0.995 R² .. 0.998 R²)
+mean                 66.32 ns   (65.00 ns .. 67.83 ns)
+std dev              4.753 ns   (4.172 ns .. 5.210 ns)
+variance introduced by outliers: 84% (severely inflated)
+
+benchmarking con/DeBruijn.Lennart/con/9
+time                 72.48 ns   (69.86 ns .. 74.60 ns)
+                     0.995 R²   (0.994 R² .. 0.997 R²)
+mean                 73.12 ns   (71.72 ns .. 74.60 ns)
+std dev              5.217 ns   (4.955 ns .. 5.556 ns)
+variance introduced by outliers: 84% (severely inflated)
+
+benchmarking con/DeBruijn.Lennart/con/10
+time                 75.88 ns   (74.70 ns .. 77.94 ns)
+                     0.996 R²   (0.995 R² .. 0.998 R²)
+mean                 76.38 ns   (75.22 ns .. 78.03 ns)
+std dev              4.566 ns   (3.563 ns .. 5.412 ns)
+variance introduced by outliers: 78% (severely inflated)
+
+benchmarking con/DeBruijn.Lennart/con/11
+time                 84.00 ns   (81.19 ns .. 86.38 ns)
+                     0.995 R²   (0.994 R² .. 0.996 R²)
+mean                 84.07 ns   (82.37 ns .. 85.88 ns)
+std dev              5.779 ns   (5.345 ns .. 6.235 ns)
+variance introduced by outliers: 82% (severely inflated)
+
+benchmarking con/DeBruijn.Lennart/con/12
+time                 87.55 ns   (85.90 ns .. 90.00 ns)
+                     0.996 R²   (0.994 R² .. 0.998 R²)
+mean                 88.30 ns   (86.75 ns .. 90.17 ns)
+std dev              5.509 ns   (4.610 ns .. 6.243 ns)
+variance introduced by outliers: 79% (severely inflated)
+
+benchmarking con/DeBruijn.Lennart/con/13
+time                 96.30 ns   (93.35 ns .. 99.16 ns)
+                     0.993 R²   (0.992 R² .. 0.995 R²)
+mean                 101.3 ns   (98.27 ns .. 104.0 ns)
+std dev              9.454 ns   (8.653 ns .. 10.50 ns)
+variance introduced by outliers: 90% (severely inflated)
+
+benchmarking con/DeBruijn.Lennart/con/14
+time                 99.59 ns   (96.64 ns .. 102.8 ns)
+                     0.994 R²   (0.992 R² .. 0.997 R²)
+mean                 99.12 ns   (97.37 ns .. 101.4 ns)
+std dev              6.990 ns   (5.263 ns .. 8.860 ns)
+variance introduced by outliers: 83% (severely inflated)
+
+benchmarking con/DeBruijn.Lennart/con/15
+time                 107.5 ns   (103.6 ns .. 111.9 ns)
+                     0.992 R²   (0.990 R² .. 0.996 R²)
+mean                 105.7 ns   (103.7 ns .. 108.2 ns)
+std dev              7.537 ns   (6.339 ns .. 8.690 ns)
+variance introduced by outliers: 83% (severely inflated)
+
+benchmarking con/DeBruijn.Lennart/con/16
+time                 107.9 ns   (106.8 ns .. 108.8 ns)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 107.2 ns   (106.5 ns .. 108.0 ns)
+std dev              2.383 ns   (1.807 ns .. 3.031 ns)
+variance introduced by outliers: 32% (moderately inflated)
+
+benchmarking con/DeBruijn.Lennart/con/17
+time                 118.8 ns   (117.1 ns .. 121.1 ns)
+                     0.999 R²   (0.998 R² .. 1.000 R²)
+mean                 117.6 ns   (117.2 ns .. 118.8 ns)
+std dev              2.014 ns   (603.3 ps .. 3.964 ns)
+variance introduced by outliers: 21% (moderately inflated)
+
+benchmarking con/DeBruijn.Lennart/con/18
+time                 124.5 ns   (119.5 ns .. 128.6 ns)
+                     0.995 R²   (0.994 R² .. 0.997 R²)
+mean                 119.8 ns   (118.3 ns .. 122.3 ns)
+std dev              6.340 ns   (4.207 ns .. 8.303 ns)
+variance introduced by outliers: 73% (severely inflated)
+
+benchmarking con/DeBruijn.Lennart/con/19
+time                 127.3 ns   (124.7 ns .. 130.7 ns)
+                     0.996 R²   (0.994 R² .. 0.998 R²)
+mean                 126.8 ns   (124.7 ns .. 129.2 ns)
+std dev              6.964 ns   (5.281 ns .. 8.405 ns)
+variance introduced by outliers: 74% (severely inflated)
+
+benchmarking con/DeBruijn.Lennart/con/20
+time                 144.1 ns   (139.9 ns .. 147.7 ns)
+                     0.995 R²   (0.994 R² .. 0.997 R²)
+mean                 145.6 ns   (142.5 ns .. 149.0 ns)
+std dev              11.51 ns   (9.886 ns .. 14.07 ns)
+variance introduced by outliers: 86% (severely inflated)
+
+benchmarking con/DeBruijn.Par.B/con/1
+time                 34.60 ns   (33.85 ns .. 35.65 ns)
+                     0.995 R²   (0.994 R² .. 0.997 R²)
+mean                 34.57 ns   (33.89 ns .. 35.31 ns)
+std dev              2.358 ns   (2.130 ns .. 2.553 ns)
+variance introduced by outliers: 83% (severely inflated)
+
+benchmarking con/DeBruijn.Par.B/con/2
+time                 58.46 ns   (57.64 ns .. 59.76 ns)
+                     0.996 R²   (0.994 R² .. 0.997 R²)
+mean                 62.74 ns   (61.53 ns .. 63.92 ns)
+std dev              4.347 ns   (3.858 ns .. 4.713 ns)
+variance introduced by outliers: 83% (severely inflated)
+
+benchmarking con/DeBruijn.Par.B/con/3
+time                 109.4 ns   (105.9 ns .. 111.9 ns)
+                     0.995 R²   (0.994 R² .. 0.997 R²)
+mean                 106.8 ns   (104.9 ns .. 109.0 ns)
+std dev              7.285 ns   (6.720 ns .. 8.356 ns)
+variance introduced by outliers: 82% (severely inflated)
+
+benchmarking con/DeBruijn.Par.B/con/4
+time                 159.3 ns   (155.9 ns .. 163.8 ns)
+                     0.996 R²   (0.995 R² .. 0.998 R²)
+mean                 156.9 ns   (154.7 ns .. 159.9 ns)
+std dev              8.863 ns   (6.987 ns .. 10.76 ns)
+variance introduced by outliers: 75% (severely inflated)
+
+benchmarking con/DeBruijn.Par.B/con/5
+time                 234.7 ns   (227.2 ns .. 242.9 ns)
+                     0.994 R²   (0.992 R² .. 0.996 R²)
+mean                 237.9 ns   (233.2 ns .. 243.5 ns)
+std dev              17.22 ns   (16.18 ns .. 18.35 ns)
+variance introduced by outliers: 83% (severely inflated)
+
+benchmarking con/DeBruijn.Par.B/con/6
+time                 325.2 ns   (316.7 ns .. 335.2 ns)
+                     0.996 R²   (0.994 R² .. 0.998 R²)
+mean                 332.2 ns   (325.7 ns .. 339.3 ns)
+std dev              23.54 ns   (21.39 ns .. 29.01 ns)
+variance introduced by outliers: 82% (severely inflated)
+
+benchmarking con/DeBruijn.Par.B/con/7
+time                 410.3 ns   (396.9 ns .. 423.2 ns)
+                     0.995 R²   (0.994 R² .. 0.998 R²)
+mean                 400.6 ns   (396.3 ns .. 407.7 ns)
+std dev              18.76 ns   (13.25 ns .. 25.67 ns)
+variance introduced by outliers: 65% (severely inflated)
+
+benchmarking con/DeBruijn.Par.B/con/8
+time                 510.2 ns   (496.3 ns .. 527.3 ns)
+                     0.995 R²   (0.994 R² .. 0.996 R²)
+mean                 500.6 ns   (492.2 ns .. 511.7 ns)
+std dev              32.51 ns   (26.81 ns .. 36.67 ns)
+variance introduced by outliers: 78% (severely inflated)
+
+benchmarking con/DeBruijn.Par.B/con/9
+time                 625.5 ns   (605.5 ns .. 645.3 ns)
+                     0.994 R²   (0.992 R² .. 0.996 R²)
+mean                 628.4 ns   (615.0 ns .. 643.6 ns)
+std dev              48.78 ns   (43.13 ns .. 56.39 ns)
+variance introduced by outliers: 83% (severely inflated)
+
+benchmarking con/DeBruijn.Par.B/con/10
+time                 729.6 ns   (710.3 ns .. 751.4 ns)
+                     0.995 R²   (0.994 R² .. 0.998 R²)
+mean                 718.6 ns   (709.6 ns .. 733.3 ns)
+std dev              36.88 ns   (27.39 ns .. 45.54 ns)
+variance introduced by outliers: 68% (severely inflated)
+
+benchmarking con/DeBruijn.Par.B/con/11
+time                 866.2 ns   (849.2 ns .. 885.4 ns)
+                     0.996 R²   (0.995 R² .. 0.997 R²)
+mean                 877.0 ns   (862.0 ns .. 895.0 ns)
+std dev              58.49 ns   (51.95 ns .. 63.66 ns)
+variance introduced by outliers: 78% (severely inflated)
+
+benchmarking con/DeBruijn.Par.B/con/12
+time                 1.003 μs   (968.9 ns .. 1.034 μs)
+                     0.994 R²   (0.993 R² .. 0.997 R²)
+mean                 1.011 μs   (989.3 ns .. 1.032 μs)
+std dev              72.50 ns   (68.20 ns .. 76.30 ns)
+variance introduced by outliers: 81% (severely inflated)
+
+benchmarking con/DeBruijn.Par.B/con/13
+time                 1.116 μs   (1.099 μs .. 1.141 μs)
+                     0.996 R²   (0.995 R² .. 0.998 R²)
+mean                 1.126 μs   (1.105 μs .. 1.149 μs)
+std dev              71.59 ns   (56.39 ns .. 80.87 ns)
+variance introduced by outliers: 76% (severely inflated)
+
+benchmarking con/DeBruijn.Par.B/con/14
+time                 1.276 μs   (1.244 μs .. 1.315 μs)
+                     0.995 R²   (0.994 R² .. 0.997 R²)
+mean                 1.267 μs   (1.246 μs .. 1.293 μs)
+std dev              78.17 ns   (62.93 ns .. 88.38 ns)
+variance introduced by outliers: 75% (severely inflated)
+
+benchmarking con/DeBruijn.Par.B/con/15
+time                 1.456 μs   (1.431 μs .. 1.484 μs)
+                     0.997 R²   (0.995 R² .. 0.998 R²)
+mean                 1.491 μs   (1.463 μs .. 1.522 μs)
+std dev              96.14 ns   (88.75 ns .. 105.3 ns)
+variance introduced by outliers: 76% (severely inflated)
+
+benchmarking con/DeBruijn.Par.B/con/16

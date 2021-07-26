@@ -19,9 +19,12 @@ timing:	LC
 #	stack run -- --output $(OUT)con_bench.html --match prefix "con/" >> $(OUT)output.txt
 #	stack run -- --output $(OUT)capt_bench.html --match prefix "capt/" >> $(OUT)output.txt
 
-id: LC 
-	mkdir -p $(OUT)random/
-	stack run -- --output $(OUT)random/ids_bench.html --match prefix "ids/"  > $(OUT)output.txt
+constructed: LC 
+	mkdir -p $(OUT)constructed/
+	stack run -- --output $(OUT)constructed/ids_bench.html --match prefix "ids/"  > $(OUT)output.txt
+	stack run -- --output $(OUT)constructed/adjust_bench.html --match prefix "adjust/"  > $(OUT)output.txt
+	stack run -- --output $(OUT)constructed/con_bench.html --match prefix "con/"  > $(OUT)output.txt
+	stack run -- --output $(OUT)constructed/capt_bench.html --match prefix "capt/" >> $(OUT)output.txt
 
 random: LC 
 	mkdir -p $(OUT)/random/
@@ -33,6 +36,7 @@ random: LC
 	stack run -- --output $(OUT)/random/twosubst_bench.html --match prefix "twosubst/"  > $(OUT)output.txt
 	stack run -- --output $(OUT)/random/threesubst_bench.html --match prefix "threesubst/"  > $(OUT)output.txt
 	stack run -- --output $(OUT)/random/foursubst_bench.html --match prefix "foursubst/"  > $(OUT)output.txt
+	stack run -- --output $(OUT)/random/nf_bench.html --match prefix "nf/"  >> $(OUT)output.txt
 
 csv: $(RESULTS)
 

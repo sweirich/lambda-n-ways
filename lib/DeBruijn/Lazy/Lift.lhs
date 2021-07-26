@@ -4,7 +4,7 @@ it lifts the substitution as it goes under each binder.
 
 Compare this version to Lennart's version and the one called "Cornell".
 
-> module DeBruijn.Lift(impl, toDB, fromDB, nfd, nfi) where
+> module DeBruijn.Lazy.Lift(impl, toDB, fromDB, nfd, nfi) where
 > import Data.List(elemIndex)
 > import Util.Lambda
 > import Util.IdInt
@@ -14,7 +14,7 @@ Compare this version to Lennart's version and the one called "Cornell".
 
 > impl :: LambdaImpl
 > impl = LambdaImpl {
->             impl_name   = "DeBruijn.Lift"
+>             impl_name   = "DeBruijn.Lazy.Lift"
 >           , impl_fromLC = toDB
 >           , impl_toLC   = fromDB
 >           , impl_nf     = nfd
@@ -26,7 +26,7 @@ Compare this version to Lennart's version and the one called "Cornell".
 Variables are represented by their binding depth, i.e., how many
 $\lambda$s out the binding $\lambda$ is.  
 
-> data DB = DVar {-# unpack #-} !Int | DLam !DB | DApp !DB !DB
+> data DB = DVar Int | DLam DB | DApp DB DB
 >   deriving (Eq)
 
 > instance NFData DB where
@@ -93,6 +93,7 @@ aren't actually used in the expression.
 
 > subst :: Sub -> DB -> DB
 > subst s (DVar i) = apply s i
+>
 > subst s (DLam e) = DLam (subst (lift s) e)
 > subst s (DApp f a) = DApp (subst s f) (subst s a)
 
