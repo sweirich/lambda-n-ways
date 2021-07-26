@@ -2,11 +2,11 @@ module Suite where
 
 import qualified Core.Nf
 import qualified DeBruijn.Bound
-import qualified DeBruijn.Chlipala
+import qualified DeBruijn.CPDT
 import qualified DeBruijn.Cornell
 import qualified DeBruijn.Kit
 import qualified DeBruijn.Lazy.Bound
-import qualified DeBruijn.Lazy.Chlipala
+import qualified DeBruijn.Lazy.CPDT
 import qualified DeBruijn.Lazy.Cornell
 import qualified DeBruijn.Lazy.Kit
 import qualified DeBruijn.Lazy.Lennart
@@ -88,7 +88,7 @@ debruijn =
     DeBruijn.Par.Scoped.impl,
     DeBruijn.Bound.impl, -- bound
     DeBruijn.Nested.impl,
-    DeBruijn.Chlipala.impl,
+    DeBruijn.CPDT.impl,
     DeBruijn.Kit.impl
     -- DeBruijn.Nested2.impl, --fails test suite
   ]
@@ -111,7 +111,7 @@ debruijn_lazy =
     DeBruijn.Lazy.Par.Scoped.impl,
     DeBruijn.Lazy.Bound.impl, -- bound
     DeBruijn.Lazy.Nested.impl,
-    DeBruijn.Lazy.Chlipala.impl,
+    DeBruijn.Lazy.CPDT.impl,
     DeBruijn.Lazy.Kit.impl
   ]
 
@@ -161,7 +161,7 @@ fast_debruijn =
     DeBruijn.Par.B.impl,
     DeBruijn.Par.FB.impl,
     DeBruijn.Bound.impl, -- bound
-    DeBruijn.Chlipala.impl,
+    DeBruijn.CPDT.impl,
     DeBruijn.Kit.impl,
     DeBruijn.List.impl,
     DeBruijn.Nested.impl

@@ -5,16 +5,16 @@
 -- using a na\"{i}ve version of substitution. In otherwords, this version
 -- alpha-renames bound variables during substitution if they would ever
 -- capture a free variable.
-module Lennart.Simple (nf, whnf, nfi, impl, iNf, St (..), subst) where
+module Lennart.Simple (nf, whnf, nfi, impl, iNf, St (..), subst, SubstStat (..), show_stats) where
 
 import Control.Monad.Except
 import qualified Control.Monad.State as State
-import Data.List (union, (\\))
+import Data.List (intersperse, union, (\\))
 import qualified Data.Map as M
 import Util.IdInt (IdInt, newId)
 import Util.Impl (LambdaImpl (..))
 import Util.Imports
-import Util.Lambda (LC (..), aeq, allVars, freeVars)
+import Util.Lambda
 
 impl :: LambdaImpl
 impl =
@@ -104,18 +104,59 @@ whnfi n (App f a) = do
 -- For testing, we can add a "fueled" version. We can also count
 -- the number of beta reductions
 
-data St = St {numSubsts :: Int, tmsIn :: [LC IdInt]}
+data SubstStat = SubstStat
+  { subst_occ :: Int, -- number of occurrences of var we are looking for
+    subst_sizeB :: Int, -- size of term we are replacing with
+    subst_sizeA :: Int, -- size of term we are replacing into
+    subst_capture :: Bool -- does this substitution need to avoid capture?
+  }
+
+instance Show SubstStat where
+  show ss = show (subst_occ ss) ++ "," ++ show (subst_sizeB ss) ++ "," ++ show (subst_sizeA ss) ++ "," ++ show (subst_capture ss)
+
+data St = St {substStats :: [SubstStat], tmsIn :: [LC IdInt]}
+
+-- statistics for b { a / x }
+substStat :: IdInt -> LC IdInt -> LC IdInt -> SubstStat
+substStat x a b =
+  SubstStat
+    { subst_occ = occs x b,
+      subst_sizeB = size b,
+      subst_sizeA = size a,
+      subst_capture = captures [x] x a b
+    }
+
+mean :: [Int] -> Double
+mean xs = fromInteger (toInteger (sum xs)) / fromInteger (toInteger (length xs))
+
+show_stats :: [SubstStat] -> String
+show_stats ss
+  | length ss == 0 = "none"
+  | length ss < 5 = concat (intersperse " " (map show ss))
+  | otherwise =
+    "summary: " ++ show (mean (map subst_occ ss)) ++ ","
+      ++ show (mean (map subst_sizeB ss))
+      ++ ","
+      ++ show (mean (map subst_sizeA ss))
+      ++ ","
+      ++ show
+        ( mean
+            ( map
+                (\x -> if x then 1 else 0)
+                (map subst_capture ss)
+            )
+        )
 
 iSubst :: MonadState St m => IdInt -> LC IdInt -> LC IdInt -> m (LC IdInt)
 iSubst x a b = do
   s <- get
-  put (s {numSubsts = numSubsts s + 1} {tmsIn = a : tmsIn s})
+  put (s {substStats = substStat x a b : substStats s} {tmsIn = a : tmsIn s})
   return (subst x a b)
 
 type M a = State.StateT St (Either String) a
 
 iNf :: Int -> LC IdInt -> Maybe (LC IdInt, St)
-iNf i z = hush $ State.runStateT (nfm i z :: M (LC IdInt)) (St 0 [])
+iNf i z = hush $ State.runStateT (nfm i z :: M (LC IdInt)) (St [] [])
 
 hush :: Either a b -> Maybe b
 hush = either (const Nothing) Just

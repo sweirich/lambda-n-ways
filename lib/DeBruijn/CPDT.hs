@@ -1,10 +1,9 @@
 -- | Adapted from CPDT by Adam Chlipala
--- 
+--
 -- This version is intended to demonstrate dependently-typed programming for well-scoped
 -- de Bruijn indices
 -- Compare this version to Par.Scoped
-
-module DeBruijn.Chlipala where
+module DeBruijn.CPDT where
 
 import Control.DeepSeq
 import Data.Maybe (fromJust)
@@ -76,11 +75,11 @@ substVar :: Idx n -> Idx n -> Maybe (Idx (Pred n))
 substVar FZ FZ = Nothing
 substVar FZ (FS f') = Just f'
 substVar (FS x') FZ
-  | Refl <- nzf x'  = Just FZ
+  | Refl <- nzf x' = Just FZ
 substVar (FS x') (FS y')
-  | Refl <- nzf y'  = do
-      f <- substVar x' y'
-      Just $ FS f
+  | Refl <- nzf y' = do
+    f <- substVar x' y'
+    Just $ FS f
 
 {-
 substVar :: Idx n -> Idx n -> Maybe (Idx (Pred n))
@@ -91,11 +90,11 @@ substVar x = case x of
       FS f' -> Just f'
   FS x' -> \y ->
     ( case y of
-        FZ -> Just $ case (nzf x') of Refl -> FZ 
+        FZ -> Just $ case (nzf x') of Refl -> FZ
         FS y' ->
           case substVar x' y' of
             Nothing -> Nothing
-            Just f -> Just $ case (nzf y') of Refl -> FS f 
+            Just f -> Just $ case (nzf y') of Refl -> FS f
     )
 -}
 

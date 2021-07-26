@@ -12,6 +12,9 @@ module Util.Lambda
     genScopedLam,
     maxBindingDepth,
     depth,
+    size,
+    occs,
+    captures,
   )
 where
 
@@ -236,6 +239,9 @@ genScopedLam = lams <$> sized (gen vars)
         app = App <$> gen xs n' <*> gen xs n'
         var = Var <$> elements xs
 
+---------------------------------------------------------------------
+-- stats
+
 maxBindingDepth :: LC v -> Int
 maxBindingDepth = go
   where
@@ -249,3 +255,24 @@ depth = go
     go (Var _v) = 0
     go (Lam _v t) = 1 + go t
     go (App t s) = 1 + max (go t) (go s)
+
+size :: LC v -> Int
+size (Var v) = 1
+size (Lam _ a) = 1 + size a
+size (App t s) = 1 + size t + size s
+
+occs :: Eq v => v -> LC v -> Int
+occs v (Var w) = if v == w then 1 else 0
+occs v (Lam w a) = if v == w then 0 else occs v a
+occs v (App a b) = occs v a + occs v b
+
+captures :: Eq v => [v] -> v -> LC v -> LC v -> Bool
+captures vs v a (Var w) =
+  if v == w
+    then any (`elem` vs) (freeVars a)
+    else False
+captures vs v a (Lam w b) =
+  if v == w
+    then False
+    else captures (w : vs) v a b
+captures vs v a (App b1 b2) = captures vs v a b1 || captures vs v a b2

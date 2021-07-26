@@ -27,7 +27,7 @@ library
       Support.Par.Subst
       Support.Par.SubstScoped
       DeBruijn.Cornell
-      DeBruijn.Chlipala
+      DeBruijn.CPDT
       DeBruijn.Lennart
       DeBruijn.Lift
       DeBruijn.List
@@ -43,7 +43,7 @@ library
       DeBruijn.Par.Scoped
       DeBruijn.TAPL
       DeBruijn.Lazy.Cornell
-      DeBruijn.Lazy.Chlipala
+      DeBruijn.Lazy.CPDT
       DeBruijn.Lazy.Lennart
       DeBruijn.Lazy.Lift
       DeBruijn.Lazy.List

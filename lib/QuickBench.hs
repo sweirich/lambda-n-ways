@@ -57,7 +57,8 @@ factStats fname = do
         case Simple.iNf n tm of
           Just (_, ss) -> do
             putStrLn $ "   normalized steps:  " ++ show n
-            putStrLn $ "   num substs: " ++ show (Simple.numSubsts ss)
+            putStrLn $ "   num substs: " ++ show (length (Simple.substStats ss))
+            putStrLn $ "   subst " ++ Simple.show_stats (Simple.substStats ss)
           Nothing -> do
             putStrLn $ "   failed for:        " ++ show n
             loop (n * 2)
@@ -72,7 +73,8 @@ data NfTerm = NfTerm
     suite_after :: LC IdInt,
     suite_numSubsts :: Int,
     suite_bindDepth :: Int,
-    suite_depth :: Int
+    suite_depth :: Int,
+    suite_substStats :: [Simple.SubstStat]
   }
 
 readLams :: String -> IO [LC IdInt]
@@ -95,9 +97,10 @@ nfTerms tms = do
               NfTerm
                 { suite_before = tm,
                   suite_after = tm',
-                  suite_numSubsts = Simple.numSubsts ss,
+                  suite_numSubsts = length (Simple.substStats ss),
                   suite_bindDepth = maxBindingDepth tm,
-                  suite_depth = depth tm
+                  suite_depth = depth tm,
+                  suite_substStats = Simple.substStats ss
                 }
           else do
             putStrLn "Term did not change"
@@ -122,16 +125,17 @@ arbitraryNfTerms sz = do
       tm <- generate (resize sz (genScopedLam :: Gen (LC IdInt)))
       case Simple.iNf 2000 tm of
         Just (tm', ss) ->
-          if not (tm `Util.Lambda.aeq` tm') && Simple.numSubsts ss == 4
+          if not (tm `Util.Lambda.aeq` tm') && length (Simple.substStats ss) == 4
             then do
               putStrLn $ "Generation:" ++ show n
               let x =
                     NfTerm
                       { suite_before = tm,
                         suite_after = tm',
-                        suite_numSubsts = Simple.numSubsts ss,
+                        suite_numSubsts = length (Simple.substStats ss),
                         suite_bindDepth = maxBindingDepth tm,
-                        suite_depth = depth tm
+                        suite_depth = depth tm,
+                        suite_substStats = Simple.substStats ss
                       }
               loop (n -1) (x : tms)
             else loop n tms
@@ -148,6 +152,7 @@ printNfTerms fname xs = do
     hPutStrLn f ("-- numSubsts:  " ++ show (suite_numSubsts x))
     hPutStrLn f ("-- bind depth: " ++ show (suite_bindDepth x))
     hPutStrLn f ("-- depth:      " ++ show (suite_depth x))
+    hPutStrLn f ("-- substs:     " ++ Simple.show_stats (suite_substStats x))
     hPrint f (suite_before x)
   forM_ xs $ \x ->
     hPrint fnf (suite_after x)
@@ -166,7 +171,8 @@ readNfTerms fname =
                 suite_after = read nlam,
                 suite_numSubsts = read ss_str,
                 suite_bindDepth = read bd_str,
-                suite_depth = read dp_str
+                suite_depth = read dp_str,
+                suite_substStats = []
               } :
             loop xs ys
         loop (x : xs) (y : ys) = error ("cannot parse " ++ x)

@@ -2,8 +2,8 @@
 --
 -- This version is intended to demonstrate dependently-typed programming for well-scoped
 -- de Bruijn indices
--- Algorithmically, it is most similar to 
-module DeBruijn.Lazy.Chlipala where
+-- Algorithmically, it is most similar to
+module DeBruijn.Lazy.CPDT where
 
 import Control.DeepSeq
 import Data.Maybe (fromJust)

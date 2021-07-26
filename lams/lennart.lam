@@ -1,3 +1,8 @@
+-- bind depth: 25
+-- depth:      53
+-- normalized steps:  4000
+-- num substs: 119697
+-- subst summary: 1.1530614802376,300.27132676675274,362.1600207189821,0.0
 let False = \f.\t.f;
     True = \f.\t.t;
     if = \b.\t.\f.b f t;
