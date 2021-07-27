@@ -5,7 +5,7 @@
 -- using a na\"{i}ve version of substitution. In otherwords, this version
 -- alpha-renames bound variables during substitution if they would ever
 -- capture a free variable.
-module Lennart.Simple (nf, whnf, nfi, impl, iNf, St (..), subst, SubstStat (..), show_stats) where
+module Lennart.Simple (nf, whnf, nfi, impl, iNf, St (..), subst, SubstStat (..), show_stats, mean) where
 
 import Control.Monad.Except
 import qualified Control.Monad.State as State
@@ -134,11 +134,12 @@ show_stats ss
   | length ss == 0 = "none"
   | length ss < 5 = concat (intersperse " " (map show ss))
   | otherwise =
-    "summary: " ++ show (mean (map subst_occ ss)) ++ ","
+    "summary: occs=" ++ show (mean (map subst_occ ss))
+      ++ ",sizeB="
       ++ show (mean (map subst_sizeB ss))
-      ++ ","
+      ++ ",sizeA="
       ++ show (mean (map subst_sizeA ss))
-      ++ ","
+      ++ ",capt="
       ++ show
         ( mean
             ( map

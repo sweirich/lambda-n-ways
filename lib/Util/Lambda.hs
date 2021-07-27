@@ -10,6 +10,7 @@ module Util.Lambda
     genScoped,
     shrinkScoped,
     genScopedLam,
+    genScopedRed,
     maxBindingDepth,
     depth,
     size,
@@ -238,6 +239,36 @@ genScopedLam = lams <$> sized (gen vars)
           Lam x <$> gen (x : xs) n
         app = App <$> gen xs n' <*> gen xs n'
         var = Var <$> elements xs
+
+-- | This version produces explicit beta reductions but does not
+-- overly favor lambda expressions
+genScopedRed :: forall v. (Enum v, Arbitrary v) => Gen (LC v)
+genScopedRed = lams <$> sized (gen vars)
+  where
+    vars :: [v]
+    vars = take 5 [(toEnum 0) ..]
+
+    lams :: LC v -> LC v
+    lams body = foldr Lam body vars
+
+    gen :: [v] -> Int -> Gen (LC v)
+    gen xs n
+      | not (null xs) && n <= 1 = var
+      | null xs = oneof [lam' 0 xs, app]
+      | otherwise = oneof [var, lam' 0 xs, app, red 1, red 2]
+      where
+        n' = n `div` 2
+        app = app' 0 (gen xs n')
+        var = Var <$> elements xs
+        red m = app' m (lam' m xs)
+        app' 0 a = App <$> a <*> gen xs n'
+        app' m a = App <$> app' (m - 1) a <*> gen xs n'
+        lam' 0 ys = do
+          let y = succ (head ys)
+          Lam y <$> gen (y : ys) n
+        lam' m ys = do
+          let y = succ (head ys)
+          Lam y <$> lam' (m - 1) (y : ys)
 
 ---------------------------------------------------------------------
 -- stats

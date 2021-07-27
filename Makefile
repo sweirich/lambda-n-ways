@@ -28,15 +28,9 @@ constructed: LC
 
 random: LC 
 	mkdir -p $(OUT)/random/
-	stack run -- --output $(OUT)/random/random_bench.html --match prefix "random/"  > $(OUT)output.txt
-	stack run -- --output $(OUT)/random/random2_bench.html --match prefix "random2/"  > $(OUT)output.txt
-	stack run -- --output $(OUT)/random/random25_bench.html --match prefix "random25/"  > $(OUT)output.txt
-	stack run -- --output $(OUT)/random/random35_bench.html --match prefix "random35/"  > $(OUT)output.txt
-	stack run -- --output $(OUT)/random/onesubst_bench.html --match prefix "onesubst/"  > $(OUT)output.txt
-	stack run -- --output $(OUT)/random/twosubst_bench.html --match prefix "twosubst/"  > $(OUT)output.txt
-	stack run -- --output $(OUT)/random/threesubst_bench.html --match prefix "threesubst/"  > $(OUT)output.txt
-	stack run -- --output $(OUT)/random/foursubst_bench.html --match prefix "foursubst/"  > $(OUT)output.txt
-	stack run -- --output $(OUT)/random/nf_bench.html --match prefix "nf/"  >> $(OUT)output.txt
+	stack run -- --output $(OUT)/random/random15_bench.html --match prefix "random15/"  > $(OUT)output.txt
+	stack run -- --output $(OUT)/random/random20_bench.html --match prefix "random20/"  > $(OUT)output.txt
+	
 
 csv: $(RESULTS)
 

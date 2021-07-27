@@ -71,8 +71,8 @@
 > main :: IO ()
 > main = do
 >   lennart <- toIdInt <$> getTerm "lams/lennart.lam"
->   random_terms <- getTerms "lams/random.lam"
->   random2_terms <- getTerms "lams/random2.lam"
+>   random15_terms <- getTerms "lams/random15.lam"
+>   random20_terms <- getTerms "lams/random20.lam"
 >   random25_terms <- getTerms "lams/random25.lam"
 >   random35_terms <- getTerms "lams/random35.lam"
 >   onesubst_terms <- getTerms "lams/onesubst.lam"
@@ -84,8 +84,8 @@
 >   capt_terms <- getTerms "lams/capture10.lam"
 >   adjust_terms <- getTerms "lams/adjust.lam"
 >   defaultMain [
->      bgroup "random" $ map runBench (nf_bss random_terms)
->    , bgroup "random2" $ map runBench (nf_bss random2_terms)
+>      bgroup "random15" $ map runBench (nf_bss random15_terms)
+>    , bgroup "random20" $ map runBench (nf_bss random20_terms)
 >    , bgroup "random25" $ map runBench (nf_bss random25_terms)
 >    , bgroup "random35" $ map runBench (nf_bss random35_terms)
 >    , bgroup "onesubst" $ map runBench (nf_bss onesubst_terms)

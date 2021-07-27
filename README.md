@@ -180,6 +180,10 @@ Original four implementations from Lennart Augustsson's paper:
   Based on code distributed with this paper
   https://dl.acm.org/doi/10.1145/3018610.3018613
 
+- TAPL
+
+  The algorithm given in Pierce's Types and Programming Languages.
+
 - Chlipala
 
   From Adam Chlipala's book "Certified Programming with Dependent Types"
