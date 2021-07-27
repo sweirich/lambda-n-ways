@@ -1,28 +1,8 @@
-benchmarking random20/DeBruijn.Lennart/
-time                 2.366 s    (2.271 s .. 2.445 s)
-                     1.000 R²   (0.999 R² .. 1.000 R²)
-mean                 2.332 s    (2.301 s .. 2.347 s)
-std dev              29.15 ms   (13.68 ms .. 36.05 ms)
+benchmarking random15/DeBruijn.Lennart/
+time                 324.7 ms   (257.9 ms .. 385.9 ms)
+                     0.992 R²   (0.992 R² .. 1.000 R²)
+mean                 351.6 ms   (336.1 ms .. 361.0 ms)
+std dev              15.59 ms   (6.631 ms .. 21.73 ms)
 variance introduced by outliers: 19% (moderately inflated)
 
-benchmarking random20/DeBruijn.Par.B/
-time                 1.344 ms   (1.335 ms .. 1.352 ms)
-                     0.999 R²   (0.999 R² .. 1.000 R²)
-mean                 1.346 ms   (1.339 ms .. 1.362 ms)
-std dev              32.87 μs   (21.13 μs .. 57.32 μs)
-variance introduced by outliers: 13% (moderately inflated)
-
-benchmarking random20/DeBruijn.Par.FB/
-time                 4.368 ms   (4.353 ms .. 4.394 ms)
-                     0.999 R²   (0.996 R² .. 1.000 R²)
-mean                 4.416 ms   (4.393 ms .. 4.484 ms)
-std dev              116.4 μs   (61.74 μs .. 215.2 μs)
-variance introduced by outliers: 11% (moderately inflated)
-
-benchmarking random20/DeBruijn.Bound/
-time                 9.726 ms   (9.625 ms .. 9.822 ms)
-                     0.999 R²   (0.999 R² .. 1.000 R²)
-mean                 9.697 ms   (9.651 ms .. 9.766 ms)
-std dev              146.3 μs   (108.8 μs .. 225.0 μs)
-
-benchmarking random20/DeBruijn.Chlipala/
+benchmarking random15/DeBruijn.Par.B/
