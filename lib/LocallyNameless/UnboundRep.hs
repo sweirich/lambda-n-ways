@@ -48,7 +48,7 @@ $(U.derive [''Exp])
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "LocallyNameless.Unbound",
+    { impl_name = "LocallyNameless.UnboundRep",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
       impl_nf = nfu,
