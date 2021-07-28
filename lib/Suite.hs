@@ -15,8 +15,8 @@ import qualified DeBruijn.Lazy.List
 import qualified DeBruijn.Lazy.Nested
 --import qualified DeBruijn.Nested2
 import qualified DeBruijn.Lazy.Par.B
-import qualified DeBruijn.Lazy.Par.F
 import qualified DeBruijn.Lazy.Par.FB
+import qualified DeBruijn.Lazy.Par.Fun
 import qualified DeBruijn.Lazy.Par.L
 import qualified DeBruijn.Lazy.Par.P
 import qualified DeBruijn.Lazy.Par.Scoped
@@ -27,8 +27,8 @@ import qualified DeBruijn.List
 import qualified DeBruijn.Nested
 -- import qualified DeBruijn.Nested2
 import qualified DeBruijn.Par.B
-import qualified DeBruijn.Par.F
 import qualified DeBruijn.Par.FB
+import qualified DeBruijn.Par.Fun
 import qualified DeBruijn.Par.L
 import qualified DeBruijn.Par.P
 import qualified DeBruijn.Par.Scoped
@@ -82,7 +82,7 @@ debruijn =
     DeBruijn.Par.B.impl,
     DeBruijn.Par.FB.impl,
     DeBruijn.Par.P.impl,
-    DeBruijn.Par.F.impl,
+    DeBruijn.Par.Fun.impl,
     DeBruijn.Par.L.impl,
     -- Well-scoped
     DeBruijn.Par.Scoped.impl,
@@ -105,7 +105,7 @@ debruijn_lazy =
     DeBruijn.Lazy.Par.B.impl,
     DeBruijn.Lazy.Par.FB.impl,
     DeBruijn.Lazy.Par.P.impl,
-    DeBruijn.Lazy.Par.F.impl,
+    DeBruijn.Lazy.Par.Fun.impl,
     DeBruijn.Lazy.Par.L.impl,
     -- Well-scoped
     DeBruijn.Lazy.Par.Scoped.impl,
@@ -188,7 +188,7 @@ fast_named =
 slow :: [LambdaImpl]
 slow =
   [ DeBruijn.Par.L.impl,
-    DeBruijn.Par.F.impl,
+    DeBruijn.Par.Fun.impl,
     DeBruijn.Par.P.impl,
     LocallyNameless.ParScoped.impl,
     LocallyNameless.TypedOtt.impl,

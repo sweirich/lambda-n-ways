@@ -1,5 +1,5 @@
 -- | Parallel (explicit) substitutions, represented as functions (from index to term)
-module DeBruijn.Lazy.Par.F (impl) where
+module DeBruijn.Par.Fun (impl) where
 
 import Control.DeepSeq
 import Data.List (elemIndex)
@@ -10,7 +10,7 @@ import Util.Lambda
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "DeBruijn.Lazy.Par.F",
+    { impl_name = "DeBruijn.Par.Fun",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
       impl_nf = nf,
@@ -19,9 +19,9 @@ impl =
     }
 
 data DB
-  = DVar Int
-  | DLam DB
-  | DApp DB DB
+  = DVar {-# UNPACK #-} !Int
+  | DLam !DB
+  | DApp !DB !DB
   deriving (Eq)
 
 instance NFData DB where
