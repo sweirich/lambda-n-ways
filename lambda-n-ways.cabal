@@ -33,7 +33,7 @@ library
       DeBruijn.List
       DeBruijn.Bound
       DeBruijn.Nested
-      DeBruijn.Nested2
+--      DeBruijn.Nested2
       DeBruijn.Kit
       DeBruijn.Par.P
       DeBruijn.Par.B
@@ -70,9 +70,9 @@ library
       Lennart.Unique
       Lennart.HOAS
       -- Named.Nom  -- doesn't compile
-      Named.Nominal
+--      Named.Nominal
       Named.NominalG
-      Named.SimpleB
+--      Named.SimpleB
       Named.SimpleH
       Named.SimpleM
       Core.Core
