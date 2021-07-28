@@ -6,7 +6,7 @@
 
 -- | Based directly on transliteration of Coq output for Ott Locally Nameless Backend
 -- Then with types addded to make sure that terms stay locally closed (when they need to be)
-module LocallyNameless.Typed (impl, subst, fv) where
+module LocallyNameless.TypedOtt (impl, subst, fv) where
 
 import qualified Control.Monad.State as State
 import qualified Data.IntMap as IM
@@ -109,7 +109,7 @@ close x e = bind (close_exp_wrt_exp_rec FZ x e)
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "LocallyNameless.Typed",
+    { impl_name = "LocallyNameless.TypedOtt",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
       impl_nf = nfd,

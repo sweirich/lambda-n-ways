@@ -38,12 +38,12 @@ import qualified Lennart.Simple
 import qualified Lennart.Unique
 import qualified LocallyNameless.Opt
 import qualified LocallyNameless.Ott
-import qualified LocallyNameless.Par
 import qualified LocallyNameless.ParOpt
-import qualified LocallyNameless.Typed
+import qualified LocallyNameless.ParScoped
 import qualified LocallyNameless.TypedOpt
-import qualified LocallyNameless.Unbound
+import qualified LocallyNameless.TypedOtt
 import qualified LocallyNameless.UnboundGenerics
+import qualified LocallyNameless.UnboundRep
 -- import qualified Named.Nom
 --import qualified Named.Nominal
 import qualified Named.NominalG
@@ -120,11 +120,11 @@ locallyNameless :: [LambdaImpl]
 locallyNameless =
   [ LocallyNameless.Opt.impl,
     LocallyNameless.Ott.impl,
-    LocallyNameless.Par.impl,
+    LocallyNameless.ParScoped.impl,
     LocallyNameless.ParOpt.impl,
-    LocallyNameless.Typed.impl,
+    LocallyNameless.TypedOtt.impl,
     LocallyNameless.TypedOpt.impl,
-    LocallyNameless.Unbound.impl, -- unbound
+    LocallyNameless.UnboundRep.impl, -- unbound
     LocallyNameless.UnboundGenerics.impl -- unbound-generics
   ]
 
@@ -157,8 +157,7 @@ fast_impls =
 
 fast_debruijn :: [LambdaImpl]
 fast_debruijn =
-  [ 
-    DeBruijn.Par.B.impl,
+  [ DeBruijn.Par.B.impl,
     DeBruijn.Par.FB.impl,
     DeBruijn.Bound.impl, -- bound
     DeBruijn.Nested.impl
@@ -166,13 +165,11 @@ fast_debruijn =
 
 fast_debruijn_lazy :: [LambdaImpl]
 fast_debruijn_lazy =
-  [ 
-    DeBruijn.Lazy.Par.B.impl,
+  [ DeBruijn.Lazy.Par.B.impl,
     DeBruijn.Lazy.Par.FB.impl,
     DeBruijn.Lazy.Bound.impl, -- bound
     DeBruijn.Lazy.Nested.impl
   ]
-
 
 fast_locally_nameless :: [LambdaImpl]
 fast_locally_nameless =
@@ -193,9 +190,9 @@ slow =
   [ DeBruijn.Par.L.impl,
     DeBruijn.Par.F.impl,
     DeBruijn.Par.P.impl,
-    LocallyNameless.Par.impl,
-    LocallyNameless.Typed.impl,
-    LocallyNameless.Unbound.impl, -- unbound
+    LocallyNameless.ParScoped.impl,
+    LocallyNameless.TypedOtt.impl,
+    LocallyNameless.UnboundRep.impl, -- unbound
     Lennart.Simple.impl,
     Lennart.Unique.impl
   ]

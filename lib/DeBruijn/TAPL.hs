@@ -57,8 +57,9 @@ tmMap onvar = walk
     walk c (App t1 t2) = App (walk c t1) (walk c t2)
 
 termShiftAbove :: Int -> Int -> Term -> Term
-termShiftAbove d = tmMap f where
-  f c (V x) = if x >= c then Var (V (x + d)) else Var (V x)
+termShiftAbove d = tmMap f
+  where
+    f c (V x) = if x >= c then Var (V (x + d)) else Var (V x)
 {-# INLINE termShiftAbove #-}
 
 termShift :: Int -> Term -> Term
@@ -66,8 +67,9 @@ termShift d t = termShiftAbove d 0 t
 {-# INLINE termShift #-}
 
 termSubst :: Var -> Term -> Term -> Term
-termSubst (V j) s t = tmMap f where
-  f c (V x) = if x == j + c then termShift c s else Var (V x)) 0 t
+termSubst (V j) t = tmMap f 0
+  where
+    f c (V x) = if x == j + c then termShiftAbove c 0 t else Var (V x)
 {-# INLINE termSubst #-}
 
 termSubstTop :: Term -> Term -> Term

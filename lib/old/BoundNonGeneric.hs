@@ -1,10 +1,11 @@
+-- This is a "behinf the scenes" version of Bound.
 {-# LANGUAGE DeriveFoldable #-}
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DeriveTraversable #-}
 {-# LANGUAGE StandaloneDeriving #-}
 
-module DeBruijn.BoundNonGeneric (nf, DeBruijn.BoundNonGeneric.aeq, toDB, fromDB, nfd, impl) where
+module DeBruijn.BoundNonGeneric (impl) where
 
 import Control.DeepSeq
 import Control.Monad

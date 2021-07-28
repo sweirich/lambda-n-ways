@@ -60,11 +60,11 @@ library
       DeBruijn.Lazy.Par.Scoped
       LocallyNameless.Ott
       LocallyNameless.Opt
-      LocallyNameless.Par
+      LocallyNameless.ParScoped
       LocallyNameless.ParOpt
-      LocallyNameless.Typed
+      LocallyNameless.TypedOtt
       LocallyNameless.TypedOpt
-      LocallyNameless.Unbound
+      LocallyNameless.UnboundRep
       LocallyNameless.UnboundGenerics
       Lennart.Simple
       Lennart.Unique
