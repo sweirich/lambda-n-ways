@@ -13,7 +13,7 @@ import Util.Lambda (LC (..))
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "DeBruijn.TAPL",
+    { impl_name = "DeBruijn.Lazy.TAPL",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
       impl_nf = nf,

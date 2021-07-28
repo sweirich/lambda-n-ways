@@ -1,57 +1,63 @@
-GHC = ghc
 OUT = results/
 DB_SUITE = $(wildcard lib/DeBruijn/*.lhs lib/DeBruijn/*.hs lib/DeBruijn/*/*.lhs lib/DeBruijn/*/*.hs lib/DeBruijn/Lazy/*.hs lib/DeBruijn/Lazy/*.lhs lib/DeBruijn/Lazy/*/*.hs)
 LN_SUITE = $(wildcard lib/LocallyNameless/*.hs lib/DeBruijn/*/*.hs)
 NM_SUITE = $(wildcard lib/Named/*.hs lib/Named/*.lhs)
 SUITE = $(DB_SUITE) $(LN_SUITE) $(NM_SUITE)
-RESULTS = $(subst lib,results,$(subst .hs,.csv,$(subst .lhs,.csv,$(SUITE))))
-
-db_suite: Makefile
-	@echo $(DB_SUITE)
+RESULTS_CONSTRUCTED = $(subst lib,results/constructed,$(subst .hs,.csv,$(subst .lhs,.csv,$(SUITE))))
+RESULTS_NF = $(subst lib,results/nf,$(subst .hs,.csv,$(subst .lhs,.csv,$(SUITE))))
+RESULTS_RANDOM = $(subst lib,results/random,$(subst .hs,.csv,$(subst .lhs,.csv,$(SUITE))))
 
 LC:	lib/*.hs lib/*/*.lhs bench/*.lhs 
-#	$(GHC) -package mtl -O2 -Wall --make Main.lhs -o LC
-	stack build --copy-bins --local-bin-path .
+	stack build 
 
 .PHONY: timing
+
+################ Everything in a single chart
+
 timing:	LC
-	stack run -- --output $(OUT)rand_bench.html --match prefix "random/"  > $(OUT)output.txt
+	uname -a > $(OUT)output.txt
 	stack run -- --output $(OUT)conv_bench.html --match prefix "conv/"  >> $(OUT)output.txt
 	stack run -- --output $(OUT)nf_bench.html --match prefix "nf/"  >> $(OUT)output.txt
 	stack run -- --output $(OUT)aeq_bench.html --match prefix "aeq/" >> $(OUT)output.txt
-#	stack run -- --output $(OUT)con_bench.html --match prefix "con/" >> $(OUT)output.txt
-#	stack run -- --output $(OUT)capt_bench.html --match prefix "capt/" >> $(OUT)output.txt
 
 constructed: LC 
 	mkdir -p $(OUT)constructed/
-	stack run -- --output $(OUT)constructed/ids_bench.html --match prefix "ids/"  > $(OUT)output.txt
-	stack run -- --output $(OUT)constructed/adjust_bench.html --match prefix "adjust/"  > $(OUT)output.txt
-	stack run -- --output $(OUT)constructed/con_bench.html --match prefix "con/"  > $(OUT)output.txt
-	stack run -- --output $(OUT)constructed/capt_bench.html --match prefix "capt/" >> $(OUT)output.txt
+	uname -a > $(OUT)constructed/output.txt
+	stack run -- --output $(OUT)constructed/ids_bench.html --match prefix "ids/"  >> $(OUT)constructed/output.txt
+	stack run -- --output $(OUT)constructed/adjust_bench.html --match prefix "adjust/"  >> $(OUT)constructed/output.txt
+	stack run -- --output $(OUT)constructed/con_bench.html --match prefix "con/"  >> $(OUT)constructed/output.txt
+	stack run -- --output $(OUT)constructed/capt_bench.html --match prefix "capt/" >> $(OUT)constructed/output.txt
 
 random: LC 
-	mkdir -p $(OUT)/random/
-	stack run -- --output $(OUT)/random/random15_bench.html --match prefix "random15/"  > $(OUT)output.txt
-	stack run -- --output $(OUT)/random/random20_bench.html --match prefix "random20/"  > $(OUT)output.txt
-	
+	mkdir -p $(OUT)random/
+	uname -a > $(OUT)random/output.txt
+	stack run -- --output $(OUT)random/random15_bench.html --match prefix "random15/"  >> $(OUT)random/output.txt
+	stack run -- --output $(OUT)random/random20_bench.html --match prefix "random20/"  >> $(OUT)random/output.txt
 
-csv: $(RESULTS)
+################ Separate CSV files for each benchmark, plus individual charts for the constructed ones
 
-results/%.csv : Makefile $(SUITE)
+# Suite.hs must list *all* known benchmarks or this part will fail.
+#
+# It is a good idea to modify bench/Main.lhs to only contain the benchmarks you want. Otherwise, finding the benchmark
+# can be pretty slow
+
+csv: $(RESULTS_RANDOM)
+
+results/nf/%.csv : Makefile $(SUITE)
 	mkdir -p $(@D)
 	uname -a > $(@D)/uname.txt
-	stack run -- --output results/$*-adjust.html --csv results/$*-adjust.csv --match prefix "adjust/$(subst /,.,$*)"
-# stack run -- --output results/$*-adjust.html --match prefix "adjust/$(subst /,.,$*)"
-#	stack run -- --csv results/$*-conv.csv --match prefix "conv/$(subst /,.,$*)"
-#	stack run -- --csv results/$*-nf.csv --match prefix "nf/$(subst /,.,$*)"
-#	stack run -- --csv results/$*-aeq.csv --match prefix "aeq/$(subst /,.,$*)"
-#	stack run -- --csv results/$*-con.csv --match prefix "con/$(subst /,.,$*)"
-#	stack run -- --csv results/$*-capt.csv --match prefix "capt/$(subst /,.,$*)"
+	stack run -- --csv results/nf/$*.csv --match prefix "nf/$(subst /,.,$*)"
 
-timing_% : LC lib/$(@D)/$(@F).hs
-	stack run -- --output $(OUT)con_bench.html --match prefix "con/$(@D).$(@F)" >> $(OUT)output.txt
+results/random/%.csv : Makefile $(SUITE)
+	mkdir -p $(@D)
+	uname -a > $(@D)/uname.txt
+	stack run -- --csv results/random/$*-15.csv --match prefix "random15/$(subst /,.,$*)"
+	stack run -- --csv results/random/$*-20.csv --match prefix "random20/$(subst /,.,$*)"
+
+results/constructed/%.csv : Makefile $(SUITE)
+	mkdir -p $(@D)
+	uname -a > $(@D)/uname.txt
+	stack run -- --csv results/constructed/$*-adjust.csv --output results/constructed/$*-adjust.html --match prefix "adjust/$(subst /,.,$*)"
+	stack run -- --csv results/constructed/$*-ids.csv --output results/constructed/$*-ids.html --match prefix "ids/$(subst /,.,$*)"
 
 
-.PHONY:	clean
-clean:
-	rm -f *.hi *.o LC 

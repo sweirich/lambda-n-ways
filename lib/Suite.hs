@@ -25,7 +25,7 @@ import qualified DeBruijn.Lennart
 import qualified DeBruijn.Lift
 import qualified DeBruijn.List
 import qualified DeBruijn.Nested
-import qualified DeBruijn.Nested2
+-- import qualified DeBruijn.Nested2
 import qualified DeBruijn.Par.B
 import qualified DeBruijn.Par.F
 import qualified DeBruijn.Par.FB
@@ -45,9 +45,9 @@ import qualified LocallyNameless.TypedOpt
 import qualified LocallyNameless.Unbound
 import qualified LocallyNameless.UnboundGenerics
 -- import qualified Named.Nom
-import qualified Named.Nominal
+--import qualified Named.Nominal
 import qualified Named.NominalG
-import qualified Named.SimpleB
+--import qualified Named.SimpleB
 import qualified Named.SimpleH
 import qualified Named.SimpleM
 import Util.Impl (LambdaImpl)
@@ -67,7 +67,7 @@ interleave _ _ = []
 
 all_impls :: [LambdaImpl]
 all_impls =
-  debruijn ++ locallyNameless ++ named ++ other
+  debruijn ++ debruijn_lazy ++ locallyNameless ++ named ++ other
 
 -- | deBruijn index-based implementations
 debruijn :: [LambdaImpl]
@@ -152,25 +152,31 @@ other =
 
 fast_impls :: [LambdaImpl]
 fast_impls =
-  fast_debruijn ++ fast_locally_nameless ++ fast_named
+  fast_debruijn ++ fast_debruijn_lazy ++ fast_locally_nameless ++ fast_named
     ++ other
 
 fast_debruijn :: [LambdaImpl]
 fast_debruijn =
-  [ DeBruijn.Lennart.impl,
+  [ 
     DeBruijn.Par.B.impl,
     DeBruijn.Par.FB.impl,
     DeBruijn.Bound.impl, -- bound
-    DeBruijn.CPDT.impl,
-    DeBruijn.Kit.impl,
-    DeBruijn.List.impl,
     DeBruijn.Nested.impl
   ]
+
+fast_debruijn_lazy :: [LambdaImpl]
+fast_debruijn_lazy =
+  [ 
+    DeBruijn.Lazy.Par.B.impl,
+    DeBruijn.Lazy.Par.FB.impl,
+    DeBruijn.Lazy.Bound.impl, -- bound
+    DeBruijn.Lazy.Nested.impl
+  ]
+
 
 fast_locally_nameless :: [LambdaImpl]
 fast_locally_nameless =
   [ LocallyNameless.Opt.impl,
-    LocallyNameless.Ott.impl,
     LocallyNameless.ParOpt.impl,
     LocallyNameless.TypedOpt.impl,
     LocallyNameless.UnboundGenerics.impl -- unbound-generics

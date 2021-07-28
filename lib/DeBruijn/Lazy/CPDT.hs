@@ -16,7 +16,7 @@ import Util.Lambda
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "DeBruijn.Lazy.Chlipala",
+    { impl_name = "DeBruijn.Lazy.CPDT",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
       impl_nf = nfd,

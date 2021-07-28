@@ -1,8 +1,96 @@
-benchmarking random15/DeBruijn.Lennart/
-time                 324.7 ms   (257.9 ms .. 385.9 ms)
-                     0.992 R²   (0.992 R² .. 1.000 R²)
-mean                 351.6 ms   (336.1 ms .. 361.0 ms)
-std dev              15.59 ms   (6.631 ms .. 21.73 ms)
-variance introduced by outliers: 19% (moderately inflated)
+benchmarking random20/DeBruijn.Par.B/
+time                 1.306 ms   (1.303 ms .. 1.309 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 1.306 ms   (1.302 ms .. 1.313 ms)
+std dev              17.22 μs   (12.62 μs .. 29.71 μs)
 
-benchmarking random15/DeBruijn.Par.B/
+benchmarking random20/DeBruijn.Par.FB/
+time                 4.374 ms   (4.355 ms .. 4.394 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 4.379 ms   (4.367 ms .. 4.389 ms)
+std dev              35.49 μs   (29.71 μs .. 46.42 μs)
+
+benchmarking random20/DeBruijn.Bound/
+time                 9.005 ms   (8.953 ms .. 9.058 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 9.046 ms   (9.019 ms .. 9.084 ms)
+std dev              92.88 μs   (62.84 μs .. 139.0 μs)
+
+benchmarking random20/DeBruijn.Nested/
+time                 28.71 ms   (28.54 ms .. 28.85 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 28.67 ms   (28.39 ms .. 28.80 ms)
+std dev              415.6 μs   (187.7 μs .. 719.2 μs)
+
+benchmarking random20/DeBruijn.Lazy.Par.B/
+time                 322.1 μs   (321.9 μs .. 322.3 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 322.1 μs   (322.0 μs .. 322.4 μs)
+std dev              682.3 ns   (377.3 ns .. 1.052 μs)
+
+benchmarking random20/DeBruijn.Lazy.Par.FB/
+time                 681.1 μs   (680.6 μs .. 681.9 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 680.8 μs   (680.3 μs .. 681.7 μs)
+std dev              2.315 μs   (1.522 μs .. 3.828 μs)
+
+benchmarking random20/DeBruijn.Lazy.Bound/
+time                 1.602 ms   (1.601 ms .. 1.603 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 1.603 ms   (1.602 ms .. 1.604 ms)
+std dev              4.261 μs   (3.053 μs .. 5.861 μs)
+
+benchmarking random20/DeBruijn.Lazy.Nested/
+time                 38.04 ms   (37.89 ms .. 38.26 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 38.06 ms   (37.96 ms .. 38.16 ms)
+std dev              211.5 μs   (156.7 μs .. 278.6 μs)
+
+benchmarking random20/LocallyNameless.Opt/
+time                 257.9 μs   (257.7 μs .. 258.2 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 258.0 μs   (257.8 μs .. 258.3 μs)
+std dev              783.3 ns   (500.1 ns .. 1.258 μs)
+
+benchmarking random20/LocallyNameless.ParOpt/
+time                 680.7 μs   (679.7 μs .. 681.8 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 680.6 μs   (680.0 μs .. 681.4 μs)
+std dev              2.319 μs   (1.824 μs .. 2.929 μs)
+
+benchmarking random20/LocallyNameless.TypedOpt/
+time                 321.2 μs   (321.1 μs .. 321.4 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 321.7 μs   (321.5 μs .. 322.3 μs)
+std dev              1.231 μs   (764.8 ns .. 2.073 μs)
+
+benchmarking random20/LocallyNameless.UnboundGenerics/
+time                 24.40 ms   (24.27 ms .. 24.48 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 24.40 ms   (24.32 ms .. 24.50 ms)
+std dev              209.5 μs   (141.9 μs .. 299.5 μs)
+
+benchmarking random20/Named.SimpleH/
+time                 11.00 ms   (10.96 ms .. 11.04 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 11.01 ms   (10.98 ms .. 11.05 ms)
+std dev              92.86 μs   (68.53 μs .. 150.9 μs)
+
+benchmarking random20/Named.SimpleM/
+time                 92.15 ms   (91.63 ms .. 92.65 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 92.11 ms   (91.90 ms .. 92.34 ms)
+std dev              354.6 μs   (234.1 μs .. 537.2 μs)
+
+benchmarking random20/Lennart.HOAS/
+time                 1.191 μs   (1.189 μs .. 1.192 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 1.190 μs   (1.189 μs .. 1.191 μs)
+std dev              2.889 ns   (2.153 ns .. 3.766 ns)
+
+benchmarking random20/Core/
+time                 1.633 ms   (1.632 ms .. 1.633 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 1.634 ms   (1.634 ms .. 1.635 ms)
+std dev              2.689 μs   (2.044 μs .. 3.528 μs)
+
