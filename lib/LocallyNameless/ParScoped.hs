@@ -4,7 +4,7 @@
 
 -- | Locally nameless version that uses (typed) parallel substitution for
 -- opening vound variables.
-module LocallyNameless.Par (impl) where
+module LocallyNameless.ParScoped (impl) where
 
 import qualified Control.Monad.State as State
 import qualified Data.IntMap as IM
@@ -202,7 +202,7 @@ close x e = Bind (close_exp_wrt_exp_rec FZ x e)
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "LocallyNameless.Par",
+    { impl_name = "LocallyNameless.ParScoped",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
       impl_nf = nfd,

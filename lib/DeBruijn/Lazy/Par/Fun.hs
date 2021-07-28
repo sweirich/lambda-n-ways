@@ -1,6 +1,5 @@
--- | Parallel substitutions, represented as infinite, lazy lists
--- This version is my attempt at the closest to the algorithm described in de Bruijn's original paper
-module DeBruijn.Par.L (impl) where
+-- | Parallel (explicit) substitutions, represented as functions (from index to term)
+module DeBruijn.Lazy.Par.Fun (impl) where
 
 import Control.DeepSeq
 import Data.List (elemIndex)
@@ -11,7 +10,7 @@ import Util.Lambda
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "DeBruijn.Par.L",
+    { impl_name = "DeBruijn.Lazy.Par.Fun",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
       impl_nf = nf,
@@ -20,9 +19,9 @@ impl =
     }
 
 data DB
-  = DVar {-# UNPACK #-} !Int
-  | DLam !DB
-  | DApp !DB !DB
+  = DVar Int
+  | DLam DB
+  | DApp DB DB
   deriving (Eq)
 
 instance NFData DB where
@@ -57,16 +56,16 @@ whnf (DApp f a) =
     DLam b -> whnf (instantiate b a)
     f' -> DApp f' a
 
-----------------------------------------------------------
+---------------------------------------------------------
 
 nfi :: Int -> DB -> Maybe DB
 nfi 0 _e = Nothing
 nfi _n e@(DVar _) = return e
-nfi n (DLam b) = DLam <$> nfi (n -1) b
+nfi n (DLam b) = DLam <$> nfi (n - 1) b
 nfi n (DApp f a) = do
-  f' <- whnfi (n -1) f
+  f' <- whnfi (n - 1) f
   case f' of
-    DLam b -> nfi (n -1) (instantiate b a)
+    DLam b -> nfi (n - 1) (instantiate b a)
     _ -> DApp <$> nfi n f' <*> nfi n a
 
 whnfi :: Int -> DB -> Maybe DB
@@ -74,9 +73,9 @@ whnfi 0 _e = Nothing
 whnfi _n e@(DVar _) = return e
 whnfi _n e@(DLam _) = return e
 whnfi n (DApp f a) = do
-  f' <- whnfi (n -1) f
+  f' <- whnfi (n - 1) f
   case whnf f' of
-    DLam b -> whnfi (n -1) (instantiate b a)
+    DLam b -> whnfi (n - 1) (instantiate b a)
     _ -> return $ DApp f' a
 
 ----------------------------------------------------------
@@ -100,42 +99,43 @@ fromDB = from firstBoundId
 
 ----------------------------------------------------------
 
-type Sub = [DB]
+newtype Sub = Sub (Int -> DB)
 
 applySub :: Sub -> Int -> DB
-applySub s i = s !! i
 {-# INLINE applySub #-}
+applySub (Sub f) = f
 
--- identity substitution, leaves all variables alone
-nilSub :: Sub
-nilSub = go 0
-  where
-    go i = DVar i : go (i + 1)
-{-# INLINE nilSub #-}
+lift :: Sub -> Sub
+{-# INLINE lift #-}
+lift s = consSub (DVar 0) (s <> incSub 1)
 
--- increment everything by 1
-weakSub :: Sub
-{-# INLINE weakSub #-}
-weakSub = tail nilSub
-
--- singleton, replace 0 with t, leave everything
--- else alone
 single :: DB -> Sub
 {-# INLINE single #-}
-single t = t `consSub` nilSub
+single t = consSub t idSub
+
+idSub :: Sub
+{-# INLINE idSub #-}
+idSub = Sub DVar
+
+incSub :: Int -> Sub
+{-# INLINE incSub #-}
+incSub y = Sub (\x -> DVar (y + x))
 
 consSub :: DB -> Sub -> Sub
 {-# INLINE consSub #-}
-consSub x s = x : s
+consSub t ts = Sub $ \x ->
+  if x < 0
+    then DVar x
+    else
+      if x == 0
+        then t
+        else applySub ts (x - 1)
 
--- Used in substitution when going under a binder
-lift :: Sub -> Sub
-lift s = DVar 0 : (s `composeSub` weakSub)
-{-# INLINE lift #-}
+instance Semigroup Sub where
+  s1 <> s2 = Sub $ \x -> subst s2 (applySub s1 x)
 
-composeSub :: Sub -> Sub -> Sub
-composeSub s1 s2 = map (subst s2) s1
-{-# INLINE composeSub #-}
+instance Monoid Sub where
+  mempty = idSub
 
 instantiate :: DB -> DB -> DB
 instantiate b a = subst (single a) b

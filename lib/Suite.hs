@@ -15,8 +15,8 @@ import qualified DeBruijn.Lazy.List
 import qualified DeBruijn.Lazy.Nested
 --import qualified DeBruijn.Nested2
 import qualified DeBruijn.Lazy.Par.B
-import qualified DeBruijn.Lazy.Par.F
 import qualified DeBruijn.Lazy.Par.FB
+import qualified DeBruijn.Lazy.Par.Fun
 import qualified DeBruijn.Lazy.Par.L
 import qualified DeBruijn.Lazy.Par.P
 import qualified DeBruijn.Lazy.Par.Scoped
@@ -27,8 +27,8 @@ import qualified DeBruijn.List
 import qualified DeBruijn.Nested
 -- import qualified DeBruijn.Nested2
 import qualified DeBruijn.Par.B
-import qualified DeBruijn.Par.F
 import qualified DeBruijn.Par.FB
+import qualified DeBruijn.Par.Fun
 import qualified DeBruijn.Par.L
 import qualified DeBruijn.Par.P
 import qualified DeBruijn.Par.Scoped
@@ -38,12 +38,12 @@ import qualified Lennart.Simple
 import qualified Lennart.Unique
 import qualified LocallyNameless.Opt
 import qualified LocallyNameless.Ott
-import qualified LocallyNameless.Par
 import qualified LocallyNameless.ParOpt
-import qualified LocallyNameless.Typed
+import qualified LocallyNameless.ParScoped
 import qualified LocallyNameless.TypedOpt
-import qualified LocallyNameless.Unbound
+import qualified LocallyNameless.TypedOtt
 import qualified LocallyNameless.UnboundGenerics
+import qualified LocallyNameless.UnboundRep
 -- import qualified Named.Nom
 --import qualified Named.Nominal
 import qualified Named.NominalG
@@ -82,7 +82,7 @@ debruijn =
     DeBruijn.Par.B.impl,
     DeBruijn.Par.FB.impl,
     DeBruijn.Par.P.impl,
-    DeBruijn.Par.F.impl,
+    DeBruijn.Par.Fun.impl,
     DeBruijn.Par.L.impl,
     -- Well-scoped
     DeBruijn.Par.Scoped.impl,
@@ -105,7 +105,7 @@ debruijn_lazy =
     DeBruijn.Lazy.Par.B.impl,
     DeBruijn.Lazy.Par.FB.impl,
     DeBruijn.Lazy.Par.P.impl,
-    DeBruijn.Lazy.Par.F.impl,
+    DeBruijn.Lazy.Par.Fun.impl,
     DeBruijn.Lazy.Par.L.impl,
     -- Well-scoped
     DeBruijn.Lazy.Par.Scoped.impl,
@@ -120,11 +120,11 @@ locallyNameless :: [LambdaImpl]
 locallyNameless =
   [ LocallyNameless.Opt.impl,
     LocallyNameless.Ott.impl,
-    LocallyNameless.Par.impl,
+    LocallyNameless.ParScoped.impl,
     LocallyNameless.ParOpt.impl,
-    LocallyNameless.Typed.impl,
+    LocallyNameless.TypedOtt.impl,
     LocallyNameless.TypedOpt.impl,
-    LocallyNameless.Unbound.impl, -- unbound
+    LocallyNameless.UnboundRep.impl, -- unbound
     LocallyNameless.UnboundGenerics.impl -- unbound-generics
   ]
 
@@ -157,8 +157,7 @@ fast_impls =
 
 fast_debruijn :: [LambdaImpl]
 fast_debruijn =
-  [ 
-    DeBruijn.Par.B.impl,
+  [ DeBruijn.Par.B.impl,
     DeBruijn.Par.FB.impl,
     DeBruijn.Bound.impl, -- bound
     DeBruijn.Nested.impl
@@ -166,13 +165,11 @@ fast_debruijn =
 
 fast_debruijn_lazy :: [LambdaImpl]
 fast_debruijn_lazy =
-  [ 
-    DeBruijn.Lazy.Par.B.impl,
+  [ DeBruijn.Lazy.Par.B.impl,
     DeBruijn.Lazy.Par.FB.impl,
     DeBruijn.Lazy.Bound.impl, -- bound
     DeBruijn.Lazy.Nested.impl
   ]
-
 
 fast_locally_nameless :: [LambdaImpl]
 fast_locally_nameless =
@@ -191,11 +188,11 @@ fast_named =
 slow :: [LambdaImpl]
 slow =
   [ DeBruijn.Par.L.impl,
-    DeBruijn.Par.F.impl,
+    DeBruijn.Par.Fun.impl,
     DeBruijn.Par.P.impl,
-    LocallyNameless.Par.impl,
-    LocallyNameless.Typed.impl,
-    LocallyNameless.Unbound.impl, -- unbound
+    LocallyNameless.ParScoped.impl,
+    LocallyNameless.TypedOtt.impl,
+    LocallyNameless.UnboundRep.impl, -- unbound
     Lennart.Simple.impl,
     Lennart.Unique.impl
   ]

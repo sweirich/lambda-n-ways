@@ -37,7 +37,7 @@ library
       DeBruijn.Kit
       DeBruijn.Par.P
       DeBruijn.Par.B
-      DeBruijn.Par.F
+      DeBruijn.Par.Fun
       DeBruijn.Par.FB
       DeBruijn.Par.L
       DeBruijn.Par.Scoped
@@ -54,17 +54,17 @@ library
       DeBruijn.Lazy.Kit
       DeBruijn.Lazy.Par.P
       DeBruijn.Lazy.Par.B
-      DeBruijn.Lazy.Par.F
+      DeBruijn.Lazy.Par.Fun
       DeBruijn.Lazy.Par.FB
       DeBruijn.Lazy.Par.L
       DeBruijn.Lazy.Par.Scoped
       LocallyNameless.Ott
       LocallyNameless.Opt
-      LocallyNameless.Par
+      LocallyNameless.ParScoped
       LocallyNameless.ParOpt
-      LocallyNameless.Typed
+      LocallyNameless.TypedOtt
       LocallyNameless.TypedOpt
-      LocallyNameless.Unbound
+      LocallyNameless.UnboundRep
       LocallyNameless.UnboundGenerics
       Lennart.Simple
       Lennart.Unique

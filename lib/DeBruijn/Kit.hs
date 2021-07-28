@@ -4,10 +4,12 @@
 
 {-
 This implementation is derived from Allais et al. below but modified to
-represent the untyped lambda calculus. It is similar to the DeBruijn.Par
-implementations and probably could be optimized in a similar way. The focus of
+represent the untyped lambda calculus. It is similar to the DeBruijn.Par.F
+implementation and probably could be optimized in a similar way. The focus of
 the original paper is on proofs, so it is not clear that this is an
 appropriate implementation for execution.
+
+Another key difference is that
 
 Type-and-Scope Safe Programs and Their Proofs
 Guillaume Allais, James Chapman, Conor McBride, James McKinna

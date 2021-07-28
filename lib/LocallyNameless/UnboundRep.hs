@@ -4,7 +4,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE UndecidableInstances #-}
 
-module LocallyNameless.Unbound (nf, LocallyNameless.Unbound.aeq, aeqd, fromDB, toDB, nfu, impl) where
+module LocallyNameless.UnboundRep (impl) where
 
 import qualified Control.DeepSeq as DS
 import Unbound.LocallyNameless as U
