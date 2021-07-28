@@ -98,12 +98,6 @@ substVar x = case x of
     )
 -}
 
-{-
-
-It is now easy to define our final substitution function. The abstraction case involves two casts, where one uses the sym_eq function to convert a proof of n1 = n2 into a proof of n2 = n1.
-
--}
-
 subst :: DB n -> Idx n -> DB (Pred n) -> DB (Pred n)
 subst e f v = case e of
   DVar f' -> case substVar f f' of
