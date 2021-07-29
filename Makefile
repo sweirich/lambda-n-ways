@@ -1,4 +1,4 @@
-OUT = results/
+OUT = results/`uname -n`/
 DB_SUITE = $(wildcard lib/DeBruijn/*.lhs lib/DeBruijn/*.hs lib/DeBruijn/*/*.lhs lib/DeBruijn/*/*.hs lib/DeBruijn/Lazy/*.hs lib/DeBruijn/Lazy/*.lhs lib/DeBruijn/Lazy/*/*.hs)
 LN_SUITE = $(wildcard lib/LocallyNameless/*.hs lib/DeBruijn/*/*.hs)
 NM_SUITE = $(wildcard lib/Named/*.hs lib/Named/*.lhs)
@@ -32,8 +32,8 @@ constructed: LC
 random: LC 
 	mkdir -p $(OUT)random/
 	uname -a > $(OUT)random/output.txt
-	stack run -- --output $(OUT)random/random15_bench.html --match prefix "random15/"  >> $(OUT)random/output.txt
-	stack run -- --output $(OUT)random/random20_bench.html --match prefix "random20/"  >> $(OUT)random/output.txt
+	stack run -- --output $(OUT)random/fast_random15_bench.html --match prefix "random15/"  >> $(OUT)random/output.txt
+	stack run -- --output $(OUT)random/fast_random20_bench.html --match prefix "random20/"  >> $(OUT)random/output.txt
 
 ################ Separate CSV files for each benchmark, plus individual charts for the constructed ones
 

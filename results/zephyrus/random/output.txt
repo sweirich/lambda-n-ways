@@ -1,0 +1,124 @@
+Linux zephyrus 5.4.0-80-generic #90-Ubuntu SMP Fri Jul 9 22:49:44 UTC 2021 x86_64 x86_64 x86_64 GNU/Linux
+benchmarking random15/Lennart.HOAS/
+time                 1.189 μs   (1.187 μs .. 1.192 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 1.193 μs   (1.190 μs .. 1.198 μs)
+std dev              12.64 ns   (8.393 ns .. 20.80 ns)
+
+benchmarking random15/LocallyNameless.Opt/
+time                 255.9 μs   (255.4 μs .. 256.7 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 257.8 μs   (257.0 μs .. 259.9 μs)
+std dev              3.924 μs   (1.784 μs .. 6.782 μs)
+
+benchmarking random15/DeBruijn.Lazy.Par.Scoped/
+time                 270.1 μs   (269.7 μs .. 270.6 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 269.9 μs   (269.8 μs .. 270.1 μs)
+std dev              487.4 ns   (332.6 ns .. 763.4 ns)
+
+benchmarking random15/LocallyNameless.TypedOpt/
+time                 321.6 μs   (321.3 μs .. 322.0 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 321.5 μs   (321.3 μs .. 321.8 μs)
+std dev              931.0 ns   (750.4 ns .. 1.181 μs)
+
+benchmarking random15/DeBruijn.Lazy.Par.B/
+time                 358.8 μs   (358.3 μs .. 359.1 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 358.9 μs   (358.4 μs .. 359.8 μs)
+std dev              2.248 μs   (1.267 μs .. 4.092 μs)
+
+benchmarking random15/LocallyNameless.ParOpt/
+time                 683.4 μs   (682.4 μs .. 684.3 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 680.5 μs   (679.7 μs .. 681.4 μs)
+std dev              2.915 μs   (2.460 μs .. 3.830 μs)
+
+benchmarking random15/DeBruijn.Par.Scoped/
+time                 877.2 μs   (876.1 μs .. 878.3 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 879.3 μs   (878.2 μs .. 881.8 μs)
+std dev              5.514 μs   (3.155 μs .. 9.924 μs)
+
+benchmarking random15/DeBruijn.Par.B/
+time                 950.0 μs   (948.3 μs .. 952.4 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 960.4 μs   (956.1 μs .. 969.7 μs)
+std dev              20.48 μs   (10.45 μs .. 37.78 μs)
+variance introduced by outliers: 11% (moderately inflated)
+
+benchmarking random15/Named.SimpleH/
+time                 7.718 ms   (7.692 ms .. 7.736 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 7.719 ms   (7.698 ms .. 7.751 ms)
+std dev              74.60 μs   (53.08 μs .. 108.4 μs)
+
+benchmarking random15/DeBruijn.Bound/
+time                 8.396 ms   (8.272 ms .. 8.503 ms)
+                     0.999 R²   (0.998 R² .. 1.000 R²)
+mean                 8.643 ms   (8.545 ms .. 8.878 ms)
+std dev              391.3 μs   (220.4 μs .. 652.3 μs)
+variance introduced by outliers: 20% (moderately inflated)
+
+benchmarking random20/Lennart.HOAS/
+time                 1.198 μs   (1.195 μs .. 1.200 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 1.199 μs   (1.196 μs .. 1.203 μs)
+std dev              12.65 ns   (8.250 ns .. 19.81 ns)
+
+benchmarking random20/LocallyNameless.Opt/
+time                 266.0 μs   (264.8 μs .. 267.1 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 265.2 μs   (264.6 μs .. 265.9 μs)
+std dev              2.124 μs   (1.729 μs .. 2.709 μs)
+
+benchmarking random20/DeBruijn.Lazy.Par.Scoped/
+time                 262.5 μs   (261.6 μs .. 263.6 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 261.8 μs   (261.5 μs .. 262.4 μs)
+std dev              1.465 μs   (789.7 ns .. 2.572 μs)
+
+benchmarking random20/LocallyNameless.TypedOpt/
+time                 325.7 μs   (325.6 μs .. 326.0 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 326.3 μs   (325.9 μs .. 327.2 μs)
+std dev              1.922 μs   (1.019 μs .. 3.413 μs)
+
+benchmarking random20/DeBruijn.Lazy.Par.B/
+time                 344.4 μs   (344.0 μs .. 344.8 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 343.3 μs   (343.0 μs .. 343.6 μs)
+std dev              1.108 μs   (957.2 ns .. 1.370 μs)
+
+benchmarking random20/LocallyNameless.ParOpt/
+time                 682.3 μs   (681.5 μs .. 683.4 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 682.0 μs   (681.5 μs .. 682.6 μs)
+std dev              1.827 μs   (1.337 μs .. 2.520 μs)
+
+benchmarking random20/DeBruijn.Par.Scoped/
+time                 1.410 ms   (1.403 ms .. 1.419 ms)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 1.365 ms   (1.347 ms .. 1.380 ms)
+std dev              50.85 μs   (42.97 μs .. 58.39 μs)
+variance introduced by outliers: 25% (moderately inflated)
+
+benchmarking random20/DeBruijn.Par.B/
+time                 1.314 ms   (1.310 ms .. 1.319 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 1.314 ms   (1.310 ms .. 1.320 ms)
+std dev              17.34 μs   (13.57 μs .. 23.86 μs)
+
+benchmarking random20/Named.SimpleH/
+time                 11.24 ms   (11.16 ms .. 11.38 ms)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 11.23 ms   (11.19 ms .. 11.29 ms)
+std dev              129.0 μs   (95.73 μs .. 196.8 μs)
+
+benchmarking random20/DeBruijn.Bound/
+time                 9.384 ms   (9.344 ms .. 9.419 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 9.428 ms   (9.394 ms .. 9.484 ms)
+std dev              113.6 μs   (70.14 μs .. 190.2 μs)
+
