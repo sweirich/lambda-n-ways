@@ -4,7 +4,7 @@
 
 -- | Locally nameless version that uses (typed) parallel substitution for
 -- opening vound variables.
-module LocallyNameless.ParScoped (impl) where
+module LocallyNameless.Lazy.ParScoped (impl) where
 
 import qualified Control.Monad.State as State
 import qualified Data.IntMap as IM
@@ -14,7 +14,6 @@ import Util.IdInt (IdInt (..), firstBoundId)
 import Util.Impl (LambdaImpl (..))
 import Util.Imports hiding (S, lift)
 import qualified Util.Lambda as LC
-import Support.Nat
 
 -- 1. Adding strictness annotations to the datatype definition:
 -- lennart: 1.03 s
@@ -26,8 +25,49 @@ import Support.Nat
 -- lennart: 3.49s
 -- random: 5.12 ms
 
---------------------------------------------------------------
+-- Index to keep track of bound variable scope
+data Nat = Z | S Nat
 
+data SNat n where
+  SZ :: SNat Z
+  SS :: SNat n -> SNat (S n)
+
+type family Plus n m where
+  Plus Z n = n
+  Plus (S m) n = S (Plus m n)
+
+instance Show (SNat m) where
+  show SZ = "SZ"
+  show (SS n) = "(SS " ++ show n ++ ")"
+
+------------------------------------
+
+-- Bound variable index
+-- Natural number is # of potential variables in scope
+-- Idx Z is a Void type.
+-- Idx (S Z) has a single inhabitant: FZ
+data Idx :: Nat -> Type where
+  FZ :: Idx (S n)
+  FS :: Idx n -> Idx (S n)
+
+instance Eq (Idx n) where
+  FZ == FZ = True
+  (FS n) == (FS m) = n == m
+  _ == _ = False
+
+instance Show (Idx n) where
+  show FZ = "FZ"
+  show (FS n) = "(FS " ++ show n ++ ")"
+
+toInt :: Idx n -> Int
+toInt FZ = 0
+toInt (FS n) = 1 + toInt n
+
+shift :: SNat m -> Idx n -> Idx (Plus m n)
+shift SZ x = x
+shift (SS m) x = FS (shift m x)
+
+--------------------------------------------------------------
 -- A bound variable multi-substitution. Note that in this implementation
 -- even though we only ever replace bound variables with locally closed terms,
 -- we still need to renumber (shift) bound variables as we open and close expressions
@@ -85,11 +125,19 @@ instance (forall n. NFData (a n)) => NFData (Sub a m1 m2) where
 instance (forall n. NFData (a n)) => NFData (Bind a m) where
   rnf (Bind a) = rnf a
 
+instance NFData (Idx a) where
+  rnf FZ = ()
+  rnf (FS s) = rnf s
+
+instance NFData (SNat a) where
+  rnf SZ = ()
+  rnf (SS s) = rnf s
+
 --------------------------------------------------------------
 --------------------------------------------------------------
 
 data Bind a n where
-  Bind :: !(a (S n)) -> Bind a n
+  Bind :: (a (S n)) -> Bind a n
 
 -- create a binding by "abstracting a variable"
 bind :: a (S n) -> Bind a n
@@ -109,10 +157,10 @@ instance (SubstC a, Eq (a (S n))) => Eq (Bind a n) where
 
 -- Exp Z is  locally closed terms
 data Exp (n :: Nat) where
-  Var_b :: !(Idx n) -> Exp n
-  Var_f :: !IdInt -> Exp n
-  Abs :: !(Bind Exp n) -> Exp n
-  App :: !(Exp n) -> !(Exp n) -> Exp n
+  Var_b :: (Idx n) -> Exp n
+  Var_f :: IdInt -> Exp n
+  Abs :: (Bind Exp n) -> Exp n
+  App :: (Exp n) -> (Exp n) -> Exp n
   deriving (Generic)
 
 open :: Bind Exp Z -> Exp Z -> Exp Z
@@ -125,6 +173,15 @@ instance SubstC Exp where
   substBv s (Var_f x) = Var_f x
   substBv s (Abs b) = Abs (substBvBind s b)
   substBv s (App a b) = App (substBv s a) (substBv s b)
+
+-- if n2 is greater than n1 increment it. Otherwise just return it.
+cmpIdx :: Idx (S n) -> Idx n -> Idx (S n)
+cmpIdx n1 n2 =
+  case (n1, n2) of
+    (FS m, FZ) -> FZ
+    (FS m, FS n) -> FS (cmpIdx m n)
+    (FZ, FZ) -> FZ
+    (FZ, FS n) -> FS FZ
 
 -- Create a new "bound index" from a free variable
 -- The index starts at FZ and comes from a larger scope
@@ -145,7 +202,7 @@ close x e = Bind (close_exp_wrt_exp_rec FZ x e)
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "LocallyNameless.ParScoped",
+    { impl_name = "LocallyNameless.Lazy.ParScoped",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
       impl_nf = nfd,
@@ -194,14 +251,14 @@ instance NFData (Exp n) where
 -- This is an identity function, so could also use
 -- unsafeCoerce for this implementation
 weaken :: forall m n. SNat m -> Exp n -> Exp (Plus n m)
-weaken m (Var_b i) = Var_b (weakenIdxR @m i)
+weaken m (Var_b i) = Var_b (weakenIdx m i)
 weaken m (Var_f x) = Var_f x
 weaken m (Abs (Bind a)) = Abs (bind (weaken m a))
 weaken m (App a b) = App (weaken m a) (weaken m b)
 
---weakenIdx :: SNat m -> Idx n -> Idx (Plus n m)
---weakenIdx _ FZ = FZ
---weakenIdx m (FS n) = FS (weakenIdx m n)
+weakenIdx :: SNat m -> Idx n -> Idx (Plus n m)
+weakenIdx _ FZ = FZ
+weakenIdx m (FS n) = FS (weakenIdx m n)
 
 -- free variable substitution
 subst :: Exp Z -> IdInt -> Exp Z -> Exp Z
