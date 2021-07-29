@@ -42,6 +42,12 @@ import qualified LocallyNameless.ParOpt
 import qualified LocallyNameless.ParScoped
 import qualified LocallyNameless.TypedOpt
 import qualified LocallyNameless.TypedOtt
+import qualified LocallyNameless.Lazy.Opt
+import qualified LocallyNameless.Lazy.Ott
+import qualified LocallyNameless.Lazy.ParOpt
+import qualified LocallyNameless.Lazy.ParScoped
+import qualified LocallyNameless.Lazy.TypedOpt
+import qualified LocallyNameless.Lazy.TypedOtt
 import qualified LocallyNameless.UnboundGenerics
 import qualified LocallyNameless.UnboundRep
 -- import qualified Named.Nom
@@ -54,7 +60,8 @@ import Util.Impl (LambdaImpl)
 
 -- | Implementations used in the benchmarking/test suite
 impls :: [LambdaImpl]
-impls = fast_random
+impls = all_impls
+
 
 interleave :: [a] -> [a] -> [a]
 interleave (a1 : a1s) (a2 : a2s) = a1 : a2 : interleave a1s a2s
@@ -124,7 +131,13 @@ locallyNameless =
     LocallyNameless.ParOpt.impl,
     LocallyNameless.TypedOtt.impl,
     LocallyNameless.TypedOpt.impl,
-    LocallyNameless.UnboundRep.impl, -- unbound
+    LocallyNameless.Lazy.Opt.impl,	
+    LocallyNameless.Lazy.Ott.impl,
+    LocallyNameless.Lazy.ParScoped.impl,
+    LocallyNameless.Lazy.ParOpt.impl,
+    LocallyNameless.Lazy.TypedOtt.impl,
+    LocallyNameless.Lazy.TypedOpt.impl,    
+    Locallynameless.UnboundRep.impl, -- unbound
     LocallyNameless.UnboundGenerics.impl -- unbound-generics
   ]
 
