@@ -6,7 +6,7 @@
 
 -- | Based directly on transliteration of Coq output for Ott Locally Nameless Backend
 -- Then with types addded to make sure that terms stay locally closed (when they need to be)
-module LocallyNameless.TypedOtt (impl, subst, fv) where
+module LocallyNameless.Lazy.TypedOtt (impl, subst, fv) where
 
 import qualified Control.Monad.State as State
 import qualified Data.IntMap as IM
@@ -41,7 +41,7 @@ instance (forall n. NFData (a n)) => NFData (Bind a m) where
 -- This means that we do *not* need to shift as much.
 
 data Bind a k where
-  Bind :: !(a ('S k)) -> Bind a k
+  Bind :: (a ('S k)) -> Bind a k
 
 -- create a binding by "abstracting a variable"
 bind :: a ('S k) -> Bind a k
@@ -57,10 +57,10 @@ instance (Eq (Exp ('S n))) => Eq (Bind Exp n) where
 
 -- Exp Z is  locally closed terms
 data Exp (n :: Nat) where
-  Var_b :: !(Idx n) -> Exp n
-  Var_f :: !IdInt -> Exp n
-  Abs :: !(Bind Exp n) -> Exp n
-  App :: !(Exp n) -> !(Exp n) -> Exp n
+  Var_b :: (Idx n) -> Exp n
+  Var_f :: IdInt -> Exp n
+  Abs :: (Bind Exp n) -> Exp n
+  App :: (Exp n) -> (Exp n) -> Exp n
   deriving (Generic)
 
 -- no bound variables to weaken.
@@ -103,7 +103,7 @@ close x e = bind (close_exp_wrt_exp_rec FZ x e)
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "LocallyNameless.TypedOtt",
+    { impl_name = "LocallyNameless.Lazy.TypedOtt",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
       impl_nf = nfd,

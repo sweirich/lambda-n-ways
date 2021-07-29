@@ -42,6 +42,12 @@ import qualified LocallyNameless.ParOpt
 import qualified LocallyNameless.ParScoped
 import qualified LocallyNameless.TypedOpt
 import qualified LocallyNameless.TypedOtt
+import qualified LocallyNameless.Lazy.Opt
+import qualified LocallyNameless.Lazy.Ott
+import qualified LocallyNameless.Lazy.ParOpt
+import qualified LocallyNameless.Lazy.ParScoped
+import qualified LocallyNameless.Lazy.TypedOpt
+import qualified LocallyNameless.Lazy.TypedOtt
 import qualified LocallyNameless.UnboundGenerics
 import qualified LocallyNameless.UnboundRep
 -- import qualified Named.Nom

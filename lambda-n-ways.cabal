@@ -66,6 +66,12 @@ library
       LocallyNameless.TypedOpt
       LocallyNameless.UnboundRep
       LocallyNameless.UnboundGenerics
+      LocallyNameless.Lazy.Ott
+      LocallyNameless.Lazy.Opt
+      LocallyNameless.Lazy.ParScoped
+      LocallyNameless.Lazy.ParOpt
+      LocallyNameless.Lazy.TypedOtt
+      LocallyNameless.Lazy.TypedOpt
       Lennart.Simple
       Lennart.Unique
       Lennart.HOAS

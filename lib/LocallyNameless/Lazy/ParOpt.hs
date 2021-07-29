@@ -3,7 +3,7 @@
 {-# LANGUAGE QuantifiedConstraints #-}
 
 -- | Uses typed, and optimized parallel de Bruijn substitutions
-module LocallyNameless.ParOpt (impl) where
+module LocallyNameless.Lazy.ParOpt (impl) where
 
 import qualified Control.Monad.State as State
 import qualified Data.IntMap as IM
@@ -63,16 +63,18 @@ import Support.Nat
 {-# SPECIALIZE instantiate :: Bind Exp n -> Exp n -> Exp n #-}
 {-# SPECIALIZE substBind :: Sub Exp n m -> Bind Exp n -> Bind Exp m #-}
 
+
+
 substBvBind :: SubstC a => Sub a n m -> Bind a n -> Bind a m
 substBvBind s2 (Bind s1 e) = Bind (s1 `comp` s2) e
 {-# INLINEABLE substBvBind #-}
 
 -- Exp Z is  locally closed terms
 data Exp (n :: Nat) where
-  Var_b :: !(Idx n) -> Exp n
-  Var_f :: !IdInt -> Exp n
+  Var_b :: (Idx n) -> Exp n
+  Var_f :: IdInt -> Exp n
   Abs :: Bind Exp n -> Exp n
-  App :: !(Exp n) -> !(Exp n) -> Exp n
+  App :: (Exp n) -> (Exp n) -> Exp n
   deriving (Generic)
 
 open :: Bind Exp Z -> Exp Z -> Exp Z
@@ -111,7 +113,7 @@ close x e = bind (close_exp_wrt_exp_rec FZ x e)
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "LocallyNameless.ParOpt",
+    { impl_name = "LocallyNameless.Lazy.ParOpt",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
       impl_nf = nfd,
