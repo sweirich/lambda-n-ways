@@ -19,6 +19,7 @@ timing:	LC
 	stack run -- --output $(OUT)conv_bench.html --match prefix "conv/"  >> $(OUT)output.txt
 	stack run -- --output $(OUT)nf_bench.html --match prefix "nf/"  >> $(OUT)output.txt
 	stack run -- --output $(OUT)aeq_bench.html --match prefix "aeq/" >> $(OUT)output.txt
+	stack run -- --output $(OUT)aeqs_bench.html --match prefix "aeqs/" >> $(OUT)output.txt
 
 constructed: LC 
 	mkdir -p $(OUT)constructed/
@@ -41,7 +42,7 @@ random: LC
 # It is a good idea to modify bench/Main.lhs to only contain the benchmarks you want. Otherwise, finding the benchmark
 # can be pretty slow
 
-csv: $(RESULTS_NF)
+csv: $(RESULTS_CONSTRUCTED)
 
 results/nf/%.csv : Makefile $(SUITE)
 	mkdir -p $(@D)
@@ -59,5 +60,8 @@ results/constructed/%.csv : Makefile $(SUITE)
 	uname -a > $(@D)/uname.txt
 	stack run -- --csv results/constructed/$*-adjust.csv --output results/constructed/$*-adjust.html --match prefix "adjust/$(subst /,.,$*)"
 	stack run -- --csv results/constructed/$*-ids.csv --output results/constructed/$*-ids.html --match prefix "ids/$(subst /,.,$*)"
+	stack run -- --csv results/constructed/$*-con.csv --output results/constructed/$*-con.html --match prefix "con/$(subst /,.,$*)"
+	stack run -- --csv results/constructed/$*-capt.csv --output results/constructed/$*-capt.html --match prefix "capt/$(subst /,.,$*)"
+
 
 
