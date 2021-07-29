@@ -41,7 +41,7 @@ random: LC
 # It is a good idea to modify bench/Main.lhs to only contain the benchmarks you want. Otherwise, finding the benchmark
 # can be pretty slow
 
-csv: $(RESULTS_RANDOM)
+csv: $(RESULTS_NF)
 
 results/nf/%.csv : Makefile $(SUITE)
 	mkdir -p $(@D)
