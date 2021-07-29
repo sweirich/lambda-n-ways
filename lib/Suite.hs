@@ -60,7 +60,7 @@ import Util.Impl (LambdaImpl)
 
 -- | Implementations used in the benchmarking/test suite
 impls :: [LambdaImpl]
-impls = all_impls
+impls = fast_random
 
 interleave :: [a] -> [a] -> [a]
 interleave (a1 : a1s) (a2 : a2s) = a1 : a2 : interleave a1s a2s
@@ -156,6 +156,36 @@ other =
 ---------------------------------------------------
 -- same implementations, roughly divided by speed
 
+-- fastest implementation in each category in the NF benchmark
+fast_nf :: [LambdaImpl]
+fast_nf = [
+        LocallyNameless.Opt.impl, -- 2.81
+	DeBruijn.Par.Scoped.impl, -- 2.93
+	LocallyNameless.TypedOpt.impl, -- 3.27
+	DeBruijn.Lazy.Par.Scoped.impl, -- 5.2
+	DeBruijn.Par.B.impl, -- 5.31
+	LocallyNameless.ParOpt.impl, -- 6.13
+	DeBruijn.Bound.impl, -- 7.18
+	DeBruijn.Lazy.Par.B.impl, -- 9.55
+	Lennart.HOAS.impl, -- 17.4
+	Named.SimpleH.impl -- 108
+	]
+
+fast_random :: [LambdaImpl]
+fast_random = [
+	Lennart.HOAS.impl, -- 1
+        LocallyNameless.Opt.impl, -- 254 -- 264
+	DeBruijn.Lazy.Par.Scoped.impl, -- 269 -- 261
+        LocallyNameless.TypedOpt.impl, -- 325 -- 327			
+	DeBruijn.Lazy.Par.B.impl, -- 356 -- 344
+	LocallyNameless.ParOpt.impl, -- 678 -- 684
+	DeBruijn.Par.Scoped.impl, -- 876 -- 1360 
+	DeBruijn.Par.B.impl, -- 954 -- 1310
+	Named.SimpleH.impl, -- 7780 -- 11200
+	DeBruijn.Bound.impl -- 8440 -- 9500
+        ] 
+
+-- Fast implementations overall
 fast_impls :: [LambdaImpl]
 fast_impls =
   fast_debruijn ++ fast_debruijn_lazy ++ fast_locally_nameless ++ fast_named
