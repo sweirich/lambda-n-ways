@@ -4,7 +4,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE UndecidableInstances #-}
 
-module LocallyNameless.UnboundRep (impl) where
+module LocallyNameless.Lazy.UnboundRep (impl) where
 
 import qualified Control.DeepSeq as DS
 import Unbound.LocallyNameless as U
@@ -31,9 +31,9 @@ import Util.Impl
 import qualified Util.Lambda as LC
 
 data Exp
-  = Var !(U.Name Exp)
-  | Lam !(U.Bind (U.Name Exp) Exp)
-  | App !Exp !Exp
+  = Var (U.Name Exp)
+  | Lam (U.Bind (U.Name Exp) Exp)
+  | App Exp Exp
   deriving (Show)
 
 instance DS.NFData Exp where
@@ -48,7 +48,7 @@ $(U.derive [''Exp])
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "LocallyNameless.UnboundRep",
+    { impl_name = "LocallyNameless.Lazy.UnboundRep",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
       impl_nf = nf,
@@ -69,10 +69,11 @@ instance U.Subst Exp Exp where
   isvar (Var x) = Just (U.SubstName x)
   isvar _ = Nothing
 
-nf :: Exp -> Exp
-nf = runFreshM . nfd
+
 
 --Computing the normal form proceeds as usual.
+nf :: Exp -> Exp
+nf = runFreshM . nfd
 
 nfd :: Exp -> FreshM Exp
 nfd e@(Var _) = return e

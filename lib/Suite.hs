@@ -48,6 +48,9 @@ import qualified LocallyNameless.Lazy.ParOpt
 import qualified LocallyNameless.Lazy.ParScoped
 import qualified LocallyNameless.Lazy.TypedOpt
 import qualified LocallyNameless.Lazy.TypedOtt
+import qualified LocallyNameless.Lazy.UnboundGenerics
+import qualified LocallyNameless.Lazy.UnboundRep
+import qualified LocallyNameless.Lazy.UGSubstBind
 import qualified LocallyNameless.UnboundGenerics
 import qualified LocallyNameless.UnboundRep
 import qualified LocallyNameless.UGSubstBind
@@ -74,7 +77,7 @@ interleave _ _ = []
 
 all_impls :: [LambdaImpl]
 all_impls =
-  debruijn ++ debruijn_lazy ++ locallyNameless ++ named ++ other
+  debruijn ++ debruijn_lazy ++ locallyNameless ++ locallyNameless_lazy ++ named ++ other
 
 -- | deBruijn index-based implementations
 debruijn :: [LambdaImpl]
@@ -135,6 +138,19 @@ locallyNameless =
     LocallyNameless.UnboundGenerics.impl, -- unbound-generics
     LocallyNameless.UGSubstBind.impl
   ]
+locallyNameless_lazy :: [LambdaImpl]
+locallyNameless_lazy =
+  [ LocallyNameless.Lazy.Opt.impl,
+    LocallyNameless.Lazy.Ott.impl,
+    LocallyNameless.Lazy.ParScoped.impl,
+    LocallyNameless.Lazy.ParOpt.impl,
+    LocallyNameless.Lazy.TypedOtt.impl,
+    LocallyNameless.Lazy.TypedOpt.impl,
+    LocallyNameless.Lazy.UnboundRep.impl, -- unbound
+    LocallyNameless.Lazy.UnboundGenerics.impl, -- unbound-generics
+    LocallyNameless.Lazy.UGSubstBind.impl
+  ]
+
 
 -- | Name based/nominal implementations
 named :: [LambdaImpl]

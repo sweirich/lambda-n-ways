@@ -73,6 +73,9 @@ library
       LocallyNameless.Lazy.ParOpt
       LocallyNameless.Lazy.TypedOtt
       LocallyNameless.Lazy.TypedOpt
+      LocallyNameless.Lazy.UnboundRep
+      LocallyNameless.Lazy.UnboundGenerics
+      LocallyNameless.Lazy.UGSubstBind
       Lennart.Simple
       Lennart.Unique
       Lennart.HOAS

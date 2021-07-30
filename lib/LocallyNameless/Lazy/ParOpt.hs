@@ -3,7 +3,8 @@
 {-# LANGUAGE QuantifiedConstraints #-}
 
 -- | Uses typed, and optimized parallel de Bruijn substitutions
-module LocallyNameless.Lazy.ParOpt (impl) where
+-- (i.e. SubstScoped library for bound variable subst.)
+module LocallyNameless.Lazy.ParOpt (impl, substFv, fv) where
 
 import qualified Control.Monad.State as State
 import qualified Data.IntMap as IM
@@ -12,16 +13,29 @@ import qualified Data.Set as Set
 import qualified Unsafe.Coerce as Unsafe
 import Util.IdInt (IdInt (..), firstBoundId)
 import Util.Impl (LambdaImpl (..))
-import Util.Imports hiding (S, lift)
+import Util.Imports
+    ( Generic, NFData, Set, State, MonadState(put, get) )
 import qualified Util.Lambda as LC
 import Support.Par.SubstScoped
-import Support.Nat
+    ( SubstC(..),
+      Sub(..),
+      Bind(..),
+      bind,
+      unbind,
+      instantiate,
+      substBind,
+      applyS,
+      nil,
+      lift,
+      single,
+      comp )
+import Support.Nat ( Plus, Idx(..), Nat(..), toInt, cmpIdx )
 
--- 0. (Ott) Original
+-- 0. (Lazy.Ott) Original
 -- lennart: 1.03s
 -- random: 0.807 ms
 
--- 1. Adding strictness annotations to the datatype definition:
+-- 1. (Ott) Adding strictness annotations to the datatype definition:
 -- lennart: 132 ms
 -- random: 3.64 ms
 
@@ -54,19 +68,16 @@ import Support.Nat
 
 -------------------------------------------------------------------
 
-{-# SPECIALIZE applyS :: Sub Exp n m -> Idx n -> Exp m #-}
-{-# SPECIALIZE nil :: Sub Exp n n #-}
-{-# SPECIALIZE comp :: Sub Exp m n -> Sub Exp n p -> Sub Exp m p #-}
-{-# SPECIALIZE lift :: Sub Exp n m -> Sub Exp ('S n) ('S m) #-}
-{- SPECIALIZE single :: Exp n -> Sub Exp ('S n) n -}
-{-# SPECIALIZE unbind :: Bind Exp n -> Exp ('S n) #-}
-{-# SPECIALIZE instantiate :: Bind Exp n -> Exp n -> Exp n #-}
-{-# SPECIALIZE substBind :: Sub Exp n m -> Bind Exp n -> Bind Exp m #-}
-
-
-substBvBind :: SubstC a => Sub a n m -> Bind a n -> Bind a m
-substBvBind s2 (Bind s1 e) = Bind (s1 `comp` s2) e
-{-# INLINEABLE substBvBind #-}
+impl :: LambdaImpl
+impl =
+  LambdaImpl
+    { impl_name = "LocallyNameless.Lazy.ParOpt",
+      impl_fromLC = toDB,
+      impl_toLC = fromDB,
+      impl_nf = nfd,
+      impl_nfi = nfi,
+      impl_aeq = (==)
+    }
 
 -- Exp Z is  locally closed terms
 data Exp (n :: Nat) where
@@ -75,6 +86,49 @@ data Exp (n :: Nat) where
   Abs :: Bind Exp n -> Exp n
   App :: (Exp n) -> (Exp n) -> Exp n
   deriving (Generic)
+
+instance NFData (Exp n) where
+
+deriving instance Eq (Exp n)   
+
+----------------------------------------------------------
+
+
+-- free variable substitution
+substFv :: Exp 'Z -> IdInt -> Exp 'Z -> Exp 'Z
+substFv u y e = subst0 e
+  where
+    subst_ss :: forall m n. Sub Exp m n -> Sub Exp m n
+    subst_ss (Inc k) = Inc k
+    subst_ss (Cons a ss) = Cons (subst0 a) (subst_ss ss)
+    subst_ss (s1 :<> s2) = subst_ss s1 :<> subst_ss s2
+
+    subst0 :: forall n. Exp n -> Exp n
+    subst0 e0 = case e0 of
+      (Var_b n) -> Var_b n
+      (Var_f x) -> (if x == y then weaken @n u else (Var_f x))
+      (Abs (Bind s1 e1)) -> Abs (Bind (subst_ss s1) (subst0 e1))
+      (App e1 e2) -> App (subst0 @n e1) (subst0 @n e2)
+
+    -- no bound variables to weaken.
+    -- NOTE: this operation is only used in subst, and not used in the nf benchmarks
+    weaken :: forall m n. Exp n -> Exp (Plus n m)
+    weaken = Unsafe.unsafeCoerce
+
+fv :: Exp n -> Set IdInt
+fv e =
+  case e of
+    (Var_b _) -> Set.empty
+    (Var_f x) -> Set.singleton x
+    (Abs b) -> fv (unbind b)
+    (App e1 e2) -> fv e1 `Set.union` fv e2
+---------------------------------------------------------------
+
+substBvBind :: SubstC a => Sub a n m -> Bind a n -> Bind a m
+substBvBind s2 (Bind s1 e) = Bind (s1 `comp` s2) e
+{-# INLINEABLE substBvBind #-}
+
+
 
 open :: Bind Exp 'Z -> Exp 'Z -> Exp 'Z
 open (Bind (s1 :: Sub Exp m 'Z) (e :: Exp ('S m))) u = subst s e
@@ -94,7 +148,7 @@ instance SubstC Exp where
 -- The index starts at FZ and comes from a larger scope
 -- All variables that are less than the new index must be incremented.
 
-close_exp_wrt_exp_rec :: Idx (S n) -> IdInt -> Exp n -> Exp (S n)
+close_exp_wrt_exp_rec :: Idx ('S n) -> IdInt -> Exp n -> Exp ('S n)
 close_exp_wrt_exp_rec n1 x1 e1 =
   case e1 of
     Var_f x2 -> if (x1 == x2) then (Var_b n1) else (Var_f x2)
@@ -106,58 +160,9 @@ close_exp_wrt_exp_rec n1 x1 e1 =
     -- here if s1 maps Var_b n1 to Var_f x1 then we can cancel the close out.
     App e2 e3 -> App (close_exp_wrt_exp_rec n1 x1 e2) (close_exp_wrt_exp_rec n1 x1 e3)
 
-close :: IdInt -> Exp Z -> Bind Exp Z
+close :: IdInt -> Exp 'Z -> Bind Exp 'Z
 close x e = bind (close_exp_wrt_exp_rec FZ x e)
-
-impl :: LambdaImpl
-impl =
-  LambdaImpl
-    { impl_name = "LocallyNameless.Lazy.ParOpt",
-      impl_fromLC = toDB,
-      impl_toLC = fromDB,
-      impl_nf = nfd,
-      impl_nfi = nfi,
-      impl_aeq = aeq
-    }
-
-toDB :: LC.LC IdInt -> Exp Z
-toDB = to []
-  where
-    to :: [(IdInt, Idx n)] -> LC.LC IdInt -> Exp n
-    to vs (LC.Var v@(IdInt i)) = maybe (Var_f v) Var_b (lookup v vs)
-    to vs (LC.Lam x b) = Abs (bind b')
-      where
-        b' = to ((x, FZ) : mapSnd FS vs) b
-    to vs (LC.App f a) = App (to vs f) (to vs a)
-
-mapSnd :: (a -> b) -> [(c, a)] -> [(c, b)]
-mapSnd f = map (\(v, i) -> (v, f i))
-
-fromDB :: Exp n -> LC.LC IdInt
-fromDB = from firstBoundId
-  where
-    from :: IdInt -> Exp n -> LC.LC IdInt
-    from n (Var_f v) = LC.Var v
-    from (IdInt n) (Var_b i)
-      | toInt i < 0 = LC.Var (IdInt $ toInt i)
-      | toInt i >= n = LC.Var (IdInt $ toInt i)
-      | otherwise = LC.Var (IdInt (n - (toInt i) -1))
-    from n (Abs b) = LC.Lam n (from (succ n) (unbind b))
-    from n (App f a) = LC.App (from n f) (from n a)
-
-aeq :: Exp n -> Exp n -> Bool
-aeq (Var_b i) (Var_b j) = i == j
-aeq (Var_f i) (Var_f j) = i == j
-aeq (Abs a) (Abs b) = aeq (unbind a) (unbind b)
-aeq (App a b) (App c d) = aeq a c && aeq b d
-
-instance NFData (Exp n) where
-{-  rnf (Var_b i) = rnf i
-  rnf (Var_f i) = rnf i
-  rnf (Abs b) = rnf b
-  rnf (App a b) = rnf a `seq` rnf b -}
-
-
+---------------------------------------------------------------
 
 type N a = State IdInt a
 
@@ -167,10 +172,11 @@ newVar = do
   put (succ i)
   return i
 
-nfd :: Exp Z -> Exp Z
-nfd e = State.evalState (nf' e) firstBoundId
+nfd :: Exp 'Z -> Exp 'Z
+nfd e = State.evalState (nf' e) v where
+  v = succ (Set.findMax (fv e))
 
-nf' :: Exp Z -> N (Exp Z)
+nf' :: Exp 'Z -> N (Exp 'Z)
 nf' e@(Var_f _) = return e
 nf' (Abs b) = do
   x <- newVar
@@ -183,7 +189,7 @@ nf' (App f a) = do
     _ -> App <$> nf' f' <*> nf' a
 
 -- Compute the weak head normal form.
-whnf :: Exp Z -> N (Exp Z)
+whnf :: Exp 'Z -> N (Exp 'Z)
 whnf e@(Var_f _) = return e
 whnf e@(Abs _) = return e
 whnf (App f a) = do
@@ -194,14 +200,15 @@ whnf (App f a) = do
 
 -- Fueled version
 
-nfi :: Int -> Exp Z -> Maybe (Exp Z)
-nfi n e = State.evalStateT (nfi' n e) firstBoundId
+nfi :: Int -> Exp 'Z -> Maybe (Exp 'Z)
+nfi n e = State.evalStateT (nfi' n e) v where
+  v = succ (Set.findMax (fv e))
 
 type NM a = State.StateT IdInt Maybe a
 
-nfi' :: Int -> (Exp Z) -> NM (Exp Z)
+nfi' :: Int -> (Exp 'Z) -> NM (Exp 'Z)
 nfi' 0 _ = State.lift Nothing
-nfi' n e@(Var_f _) = return e
+nfi' _n e@(Var_f _) = return e
 nfi' n (Abs e) = do
   x <- newVar
   e' <- nfi' (n - 1) (open e (Var_f x))
@@ -211,45 +218,52 @@ nfi' n (App f a) = do
   case f' of
     Abs b -> nfi' (n - 1) (open b a)
     _ -> App <$> nfi' (n - 1) f' <*> nfi' (n -1) a
-
+ 
 -- Compute the weak head normal form.
-whnfi :: Int -> Exp Z -> NM (Exp Z)
+whnfi :: Int -> Exp 'Z -> NM (Exp 'Z)
 whnfi 0 _ = State.lift Nothing
-whnfi n e@(Var_f _) = return e
-whnfi n e@(Abs _) = return e
+whnfi _ e@(Var_f _) = return e
+whnfi _n e@(Abs _) = return e
 whnfi n (App f a) = do
   f' <- whnfi (n -1) f
   case f' of
     (Abs b) -> whnfi (n -1) (open b a)
     _ -> return $ App f' a
 
+-----------------------------------------------------
+
+toDB :: LC.LC IdInt -> Exp 'Z
+toDB = to []
+  where
+    to :: [(IdInt, Idx n)] -> LC.LC IdInt -> Exp n
+    to vs (LC.Var v) = maybe (Var_f v) Var_b (lookup v vs)
+    to vs (LC.Lam x b) = Abs (bind b')
+      where
+        b' = to ((x, FZ) : mapSnd FS vs) b
+    to vs (LC.App f a) = App (to vs f) (to vs a)
+
+mapSnd :: (a -> b) -> [(c, a)] -> [(c, b)]
+mapSnd f = map (\(v, i) -> (v, f i))
+
+fromDB :: Exp n -> LC.LC IdInt
+fromDB = from firstBoundId
+  where
+    from :: IdInt -> Exp n -> LC.LC IdInt
+    from _n (Var_f v) = LC.Var v
+    from (IdInt n) (Var_b i)
+      | toInt i < 0 = LC.Var (IdInt $ toInt i)
+      | toInt i >= n = LC.Var (IdInt $ toInt i)
+      | otherwise = LC.Var (IdInt (n - (toInt i) -1))
+    from n (Abs b) = LC.Lam n (from (succ n) (unbind b))
+    from n (App f a) = LC.App (from n f) (from n a)
+
 -----------------------------------------------------------------------
 
--- no bound variables to weaken.
--- NOTE: this operation is only used in subst, and not used in the nf benchmarks
-weaken :: forall m n. Exp n -> Exp (Plus n m)
-weaken = Unsafe.unsafeCoerce
-
--- free variable substitution
-substFv :: Exp Z -> IdInt -> Exp Z -> Exp Z
-substFv u y e = subst0 e
-  where
-    subst_ss :: forall m n. Sub Exp m n -> Sub Exp m n
-    subst_ss (Inc k) = Inc k
-    subst_ss (Cons a ss) = Cons (subst0 a) (subst_ss ss)
-    subst_ss (s1 :<> s2) = subst_ss s1 :<> subst_ss s2
-
-    subst0 :: forall n. Exp n -> Exp n
-    subst0 e = case e of
-      (Var_b n) -> Var_b n
-      (Var_f x) -> (if x == y then weaken @n u else (Var_f x))
-      (Abs (Bind s1 e1)) -> Abs (Bind (subst_ss s1) (subst0 e1))
-      (App e1 e2) -> App (subst0 @n e1) (subst0 @n e2)
-
-fv :: Exp n -> Set IdInt
-fv e =
-  case e of
-    (Var_b nat) -> Set.empty
-    (Var_f x) -> Set.singleton x
-    (Abs b) -> fv (unbind b)
-    (App e1 e2) -> fv e1 `Set.union` fv e2
+{-# SPECIALIZE applyS :: Sub Exp n m -> Idx n -> Exp m #-}
+{-# SPECIALIZE nil :: Sub Exp n n #-}
+{-# SPECIALIZE comp :: Sub Exp m n -> Sub Exp n p -> Sub Exp m p #-}
+{-# SPECIALIZE lift :: Sub Exp n m -> Sub Exp ('S n) ('S m) #-}
+{-# SPECIALIZE single :: Exp n -> Sub Exp ('S n) n #-}
+{-# SPECIALIZE unbind :: Bind Exp n -> Exp ('S n) #-}
+{-# SPECIALIZE instantiate :: Bind Exp n -> Exp n -> Exp n #-}
+{-# SPECIALIZE substBind :: Sub Exp n m -> Bind Exp n -> Bind Exp m #-}

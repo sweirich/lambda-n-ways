@@ -3,7 +3,7 @@
 -- And caching openning substitutions at binders
 -- and caching closing substitutions at binders
 -- and removing types so we can use ints instead of unary nats
-module LocallyNameless.Opt (impl,subst,fv) where
+module LocallyNameless.Opt (impl,substFv,fv) where
 
 import qualified Control.Monad.State as State
 import qualified Data.IntMap as IM
@@ -36,15 +36,50 @@ import qualified Util.Lambda as LC
 -- capt9: 387ns / 386ns
 --- (NOTE: dlists instead of lists slows things down)
 --- What about Data.Sequence???
+
+impl :: LambdaImpl
+impl =
+  LambdaImpl
+    { impl_name = "LocallyNameless.Opt",
+      impl_fromLC = toDB,
+      impl_toLC = fromDB,
+      impl_nf = nfd,
+      impl_nfi = nfi,
+      impl_aeq = (==)
+    }
+
+data Exp where
+  Var_b :: {-# UNPACK #-} !Int -> Exp
+  Var_f :: !IdInt -> Exp
+  Abs :: !(Bind Exp) -> Exp
+  App :: !Exp -> !Exp -> Exp
+  deriving (Generic, Eq)
+
+instance NFData Exp where
+
 -------------------------------------------------------------------
 
-instance (NFData a) => NFData (Bind a) where
-  rnf (BindOpen s a) = rnf s `seq` rnf a
-  rnf (Bind a) = rnf a
-  rnf (BindClose k v a) =
-    rnf k
-      `seq` rnf v
-      `seq` rnf a
+-- free variable substitution
+substFv :: Exp -> IdInt -> Exp -> Exp
+substFv u y = subst0
+  where
+    subst0 :: Exp -> Exp
+    subst0 e0 = case e0 of
+      (Var_b n) -> Var_b n
+      (Var_f x) -> (if x == y then u else (Var_f x))
+      (Abs b) -> Abs (bind (subst0 (unbind b)))
+      -- ALT: (Abs b) -> Abs (substBind u y b)
+      -- the version w/o substBind is actually faster for some reason
+      (App e1 e2) -> App (subst0 e1) (subst0 e2)
+
+fv :: Exp -> Set IdInt
+fv e =
+  case e of
+    (Var_b _) -> Set.empty
+    (Var_f x) -> Set.singleton x
+    (Abs b) -> fv (unbind b)
+    (App e1 e2) -> fv e1 `Set.union` fv e2
+
 
 --------------------------------------------------------------
 -- Caching open/close at binders.
@@ -55,6 +90,18 @@ data Bind a where
   Bind :: !a -> Bind a
   BindOpen :: ![a] -> !a -> Bind a
   BindClose :: !Int -> ![IdInt] -> !a -> Bind a
+
+
+instance (NFData a) => NFData (Bind a) where
+  rnf (BindOpen s a) = rnf s `seq` rnf a
+  rnf (Bind a) = rnf a
+  rnf (BindClose k v a) =
+    rnf k
+      `seq` rnf v
+      `seq` rnf a
+
+instance (Eq Exp) => Eq (Bind Exp) where
+  b1 == b2 = unbind b1 == unbind b2
 
 -- create a binding by "abstracting a variable"
 bind :: Exp -> Bind Exp
@@ -69,24 +116,15 @@ unbind (BindClose k vs a) =
   multi_close_exp_wrt_exp_rec k vs a
 {-# INLINEABLE unbind #-}
 
-instance (Eq Exp) => Eq (Bind Exp) where
-  b1 == b2 = unbind b1 == unbind b2
-
+{-
 substBind :: Exp -> IdInt -> Bind Exp -> Bind Exp
-substBind u x (Bind a) = Bind (subst u x a)
-substBind u x (BindOpen as a) = BindOpen (fmap (subst u x) as) (subst u x a)
-substBind u x (BindClose i xs a) =
+substBind u x (Bind a) = Bind (substFv u x a)
+substBind u x (BindOpen as a) = BindOpen (fmap (substFv u x) as) (substFv u x a)
+substBind u x (BindClose i xs a) = BindClose i xs (substFv u x a)
   --  if x `elem` xs then
   --    Bind (subst u x (unbind b))
   --  else
-  BindClose i xs (subst u x a)
-
-data Exp where
-  Var_b :: {-# UNPACK #-} !Int -> Exp
-  Var_f :: !IdInt -> Exp
-  Abs :: !(Bind Exp) -> Exp
-  App :: !Exp -> !Exp -> Exp
-  deriving (Generic)
+-}
 
 -- keep track of the opening that has been done already
 -- via bound-variable substitution
@@ -149,77 +187,6 @@ multi_close_exp_wrt_exp_rec k xs e =
 close :: IdInt -> Exp -> Bind Exp
 close x e = BindClose 0 [x] e
 {-# INLINEABLE close #-}
-
-impl :: LambdaImpl
-impl =
-  LambdaImpl
-    { impl_name = "LocallyNameless.Opt",
-      impl_fromLC = toDB,
-      impl_toLC = fromDB,
-      impl_nf = nfd,
-      impl_nfi = nfi,
-      impl_aeq = aeq
-    }
-
-{- ------------------------------------------ -}
-
-toDB :: LC.LC IdInt -> Exp
-toDB = to 0 []
-  where
-    to :: Int -> [(IdInt, Int)] -> LC.LC IdInt -> Exp
-    to _k vs (LC.Var v) = maybe (Var_f v) Var_b (lookup v vs)
-    to k vs (LC.Lam x b) = Abs (bind b')
-      where
-        b' = to (k + 1) ((x, 0) : mapSnd (1 +) vs) b
-    to k vs (LC.App f a) = App (to k vs f) (to k vs a)
-
-mapSnd :: (a -> b) -> [(c, a)] -> [(c, b)]
-mapSnd f = map (\(v, i) -> (v, f i))
-
-fromDB :: Exp -> LC.LC IdInt
-fromDB = from firstBoundId
-  where
-    from :: IdInt -> Exp -> LC.LC IdInt
-    from _n (Var_f v) = LC.Var v
-    from (IdInt n) (Var_b i)
-      | i < 0 = LC.Var (IdInt $ i)
-      | i >= n = LC.Var (IdInt $ i)
-      | otherwise = LC.Var (IdInt (n - i -1))
-    from n (Abs b) = LC.Lam n (from (succ n) (unbind b))
-    from n (App f a) = LC.App (from n f) (from n a)
-
-aeq :: Exp -> Exp -> Bool
-aeq (Var_b i) (Var_b j) = i == j
-aeq (Var_f i) (Var_f j) = i == j
-aeq (Abs a) (Abs b) = aeq (unbind a) (unbind b)
-aeq (App a b) (App c d) = aeq a c && aeq b d
-
-instance NFData Exp where
-  rnf (Var_b i) = rnf i
-  rnf (Var_f i) = rnf i
-  rnf (Abs b) = rnf b
-  rnf (App a b) = rnf a `seq` rnf b
-
--- free variable substitution
-subst :: Exp -> IdInt -> Exp -> Exp
-subst u y = subst0
-  where
-    subst0 :: Exp -> Exp
-    subst0 e0 = case e0 of
-      (Var_b n) -> Var_b n
-      (Var_f x) -> (if x == y then u else (Var_f x))
-      --      (Abs b) -> Abs (substBind u y b)
-      -- the version w/o substBind is actually faster for some reason
-      (Abs b) -> Abs (bind (subst0 (unbind b)))
-      (App e1 e2) -> App (subst0 e1) (subst0 e2)
-
-fv :: Exp -> Set IdInt
-fv e =
-  case e of
-    (Var_b _) -> Set.empty
-    (Var_f x) -> Set.singleton x
-    (Abs b) -> fv (unbind b)
-    (App e1 e2) -> fv e1 `Set.union` fv e2
 
 {- --------------------------------------- -}
 
@@ -294,3 +261,31 @@ whnfi n (App f a) = do
   case f' of
     (Abs b) -> whnfi (n -1) (open b a)
     _ -> return $ App f' a
+
+  {- ------------------------------------------ -}
+
+toDB :: LC.LC IdInt -> Exp
+toDB = to 0 []
+  where
+    to :: Int -> [(IdInt, Int)] -> LC.LC IdInt -> Exp
+    to _k vs (LC.Var v) = maybe (Var_f v) Var_b (lookup v vs)
+    to k vs (LC.Lam x b) = Abs (bind b')
+      where
+        b' = to (k + 1) ((x, 0) : mapSnd (1 +) vs) b
+    to k vs (LC.App f a) = App (to k vs f) (to k vs a)
+
+mapSnd :: (a -> b) -> [(c, a)] -> [(c, b)]
+mapSnd f = map (\(v, i) -> (v, f i))
+
+fromDB :: Exp -> LC.LC IdInt
+fromDB = from firstBoundId
+  where
+    from :: IdInt -> Exp -> LC.LC IdInt
+    from _n (Var_f v) = LC.Var v
+    from (IdInt n) (Var_b i)
+      | i < 0 = LC.Var (IdInt $ i)
+      | i >= n = LC.Var (IdInt $ i)
+      | otherwise = LC.Var (IdInt (n - i -1))
+    from n (Abs b) = LC.Lam n (from (succ n) (unbind b))
+    from n (App f a) = LC.App (from n f) (from n a)
+
