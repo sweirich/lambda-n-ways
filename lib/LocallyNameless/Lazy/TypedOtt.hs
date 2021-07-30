@@ -23,7 +23,7 @@ import qualified Util.Lambda as LC
 -- lennart: 1.03s
 -- random: 0.807 ms
 
--- 1. (Typed) Well-typed (slows it down)
+-- 1. (TypedOtt) Well-typed (slows it down)
 -- lennart: 1.43s
 -- random: 1.8ms
 

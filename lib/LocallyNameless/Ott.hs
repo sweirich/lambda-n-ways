@@ -1,13 +1,20 @@
 -- | Based directly on transliteration of Coq output for Ott Locally Nameless Backend
 -- This is the first/simplest implementation in this series
-module LocallyNameless.Ott (impl) where
+-- 0. Ott  (Lennart)
+-- 1. TypedOtt (well-scoped version of Ott)
+-- 1. ParScoped  (like Par.P, but scoped)
+-- 2. ParOpt  (like Par.Scoped)
+-- 3. Opt, like Par.B, but cache close too. Not well-scoped
+-- 4. TypedOpt, well-scoped version of Opt
+
+module LocallyNameless.Ott (impl, substFv, fv) where
 
 import qualified Control.Monad.State as State
 import Data.List (elemIndex)
 import qualified Data.Set as Set
 import Util.IdInt (IdInt (..), firstBoundId)
 import Util.Impl (LambdaImpl (..))
-import Util.Imports
+import Util.Imports hiding (to, from)
 import qualified Util.Lambda as LC
 
 impl :: LambdaImpl
@@ -21,24 +28,6 @@ impl =
       impl_aeq = (==)
     }
 
-toDB :: LC.LC IdInt -> Exp
-toDB = to []
-  where
-    to vs (LC.Var v@(IdInt i)) = maybe (Var_f v) Var_b (elemIndex v vs)
-    to vs (LC.Lam x b) = Abs (to (x : vs) b)
-    to vs (LC.App f a) = App (to vs f) (to vs a)
-
-fromDB :: Exp -> LC.LC IdInt
-fromDB = from firstBoundId
-  where
-    from n (Var_f v) = LC.Var v
-    from (IdInt n) (Var_b i)
-      | i < 0 = LC.Var (IdInt i)
-      | i >= n = LC.Var (IdInt i)
-      | otherwise = LC.Var (IdInt (n - i -1))
-    from n (Abs b) = LC.Lam n (from (succ n) b)
-    from n (App f a) = LC.App (from n f) (from n a)
-
 data Exp
   = Var_b {-# UNPACK #-} !Int
   | Var_f {-# UNPACK #-} !IdInt
@@ -47,35 +36,39 @@ data Exp
   deriving (Eq, Ord, Generic)
 
 instance NFData Exp where
-  rnf (Var_b i) = rnf i
-  rnf (Var_f i) = rnf i
-  rnf (Abs b) = rnf b
-  rnf (App a b) = rnf a `seq` rnf b
 
-subst :: Exp -> IdInt -> Exp -> Exp
-subst u y e =
+-------------------------------------------------------------
+
+substFv :: Exp -> IdInt -> Exp -> Exp
+substFv u y e =
   case e of
     (Var_b n) -> Var_b n
     (Var_f x) -> (if x == y then u else (Var_f x))
-    (Abs e1) -> Abs (subst u y e1)
-    (App e1 e2) -> App (subst u y e1) (subst u y e2)
+    (Abs e1) -> Abs (substFv u y e1)
+    (App e1 e2) -> App (substFv u y e1) (substFv u y e2)
 
 fv :: Exp -> Set IdInt
 fv e =
   case e of
-    (Var_b nat) -> Set.empty
+    (Var_b _) -> Set.empty
     (Var_f x) -> Set.singleton x
-    (Abs e) -> fv e
+    (Abs e0) -> fv e0
     (App e1 e2) -> fv e1 `Set.union` fv e2
 
+-------------------------------------------------------------
+-- This definition of open is similar to the "subst" function 
+-- from DeBruijn.Lennart. However, because substituted terms 
+-- are always locally closed, they do not need to be adjusted/lifted
+-- at each occurrence
+
 open_exp_wrt_exp_rec :: Int -> Exp -> Exp -> Exp
-open_exp_wrt_exp_rec k u e =
-  case e of
+open_exp_wrt_exp_rec k u e0 =
+  case e0 of
     (Var_b n) ->
       case compare n k of
-        LT -> Var_b n
+        LT -> Var_b n 
         EQ -> u
-        GT -> Var_b (n - 1)
+        GT -> Var_b (n - 1)  -- is this dead code?
     (Var_f x) -> Var_f x
     (Abs e) -> Abs (open_exp_wrt_exp_rec (k + 1) u e)
     (App e1 e2) ->
@@ -90,7 +83,7 @@ open e u = open_exp_wrt_exp_rec 0 u e
 -- It starts at 0 and is incremented in each recursive call.
 -- It is *also* the current binding level, i.e. an index greater than any
 -- any bound variable that appears in the term. (Assuming that close is called
--- only with locally closed terms.
+-- only with locally closed terms.)
 close_exp_wrt_exp_rec :: Int -> IdInt -> Exp -> Exp
 close_exp_wrt_exp_rec n1 x1 e1 =
   case e1 of
@@ -102,6 +95,8 @@ close_exp_wrt_exp_rec n1 x1 e1 =
 close :: IdInt -> Exp -> Exp
 close x1 e1 = close_exp_wrt_exp_rec 0 x1 e1
 
+----------------------------------------------------------------
+
 type N a = State IdInt a
 
 newVar :: (MonadState IdInt m) => m IdInt
@@ -111,11 +106,12 @@ newVar = do
   return i
 
 nfd :: Exp -> Exp
-nfd e = State.evalState (nf' e) firstBoundId
+nfd e = State.evalState (nf' e) v where
+  v = succ (Set.findMax (fv e))
 
 nf' :: Exp -> N Exp
 nf' e@(Var_f _) = return e
-nf' e@(Var_b _) = error "should not reach this"
+nf' (Var_b _) = error "should not reach this"
 nf' (Abs e) = do
   x <- newVar
   b' <- nf' (open e (Var_f x))
@@ -129,7 +125,7 @@ nf' (App f a) = do
 -- Compute the weak head normal form.
 whnf :: Exp -> N Exp
 whnf e@(Var_f _) = return e
-whnf e@(Var_b _) = error "should not reach this"
+whnf (Var_b _) = error "should not reach this"
 whnf e@(Abs _) = return e
 whnf (App f a) = do
   f' <- whnf f
@@ -140,14 +136,15 @@ whnf (App f a) = do
 -- Fueled version
 
 nfi :: Int -> Exp -> Maybe Exp
-nfi n e = State.evalStateT (nfi' n e) firstBoundId
+nfi n e = State.evalStateT (nfi' n e) v where
+  v = succ (Set.findMax (fv e))
 
 type NM a = State.StateT IdInt Maybe a
 
 nfi' :: Int -> Exp -> NM Exp
 nfi' 0 _ = State.lift Nothing
-nfi' n e@(Var_f _) = return e
-nfi' n e@(Var_b _) = error "should not reach this"
+nfi' _n e@(Var_f _) = return e
+nfi' _n (Var_b _) = error "should not reach this"
 nfi' n (Abs e) = do
   x <- newVar
   e' <- nfi' (n - 1) (open e (Var_f x))
@@ -161,11 +158,31 @@ nfi' n (App f a) = do
 -- Compute the weak head normal form.
 whnfi :: Int -> Exp -> NM Exp
 whnfi 0 _ = State.lift Nothing
-whnfi n e@(Var_f _) = return e
-whnfi n e@(Var_b _) = error "should not reach this"
-whnfi n e@(Abs _) = return e
+whnfi _n e@(Var_f _) = return e
+whnfi _n (Var_b _) = error "should not reach this"
+whnfi _n e@(Abs _) = return e
 whnfi n (App f a) = do
   f' <- whnfi (n -1) f
   case f' of
     (Abs b) -> whnfi (n -1) (open b a)
     _ -> return $ App f' a
+
+---------------------------------------------------------------
+
+toDB :: LC.LC IdInt -> Exp
+toDB = to []
+  where
+    to vs (LC.Var v) = maybe (Var_f v) Var_b (elemIndex v vs)
+    to vs (LC.Lam x b) = Abs (to (x : vs) b)
+    to vs (LC.App f a) = App (to vs f) (to vs a)
+
+fromDB :: Exp -> LC.LC IdInt
+fromDB = from firstBoundId
+  where
+    from _n (Var_f v) = LC.Var v
+    from (IdInt n) (Var_b i)
+      | i < 0 = LC.Var (IdInt i)
+      | i >= n = LC.Var (IdInt i)
+      | otherwise = LC.Var (IdInt (n - i -1))
+    from n (Abs b) = LC.Lam n (from (succ n) b)
+    from n (App f a) = LC.App (from n f) (from n a)

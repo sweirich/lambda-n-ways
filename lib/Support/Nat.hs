@@ -35,14 +35,7 @@ shift :: SNat m -> Idx n -> Idx (Plus m n)
 shift SZ x = x
 shift (SS m) x = FS (shift m x)
 
--- if n2 is greater than n1 increment it. Otherwise just return it.
-cmpIdx :: Idx (S n) -> Idx n -> Idx (S n)
-cmpIdx n1 n2 =
-  case (n1, n2) of
-    (FS m, FZ) -> FZ
-    (FS m, FS n) -> FS (cmpIdx m n)
-    (FZ, FZ) -> FZ
-    (FZ, FS n) -> FS FZ
+
 
 -- Keep the index the same, just change its type
 weakenIdx :: forall n. Idx n -> Idx ('S n)
@@ -59,6 +52,16 @@ compareIdx SZ FZ = Nothing
 compareIdx (SS m) (FS n) = FS <$> compareIdx m n
 compareIdx SZ (FS _) = Nothing
 compareIdx (SS _) FZ = Just FZ
+
+-- if n2 is greater than n1 increment it. Otherwise just return it.
+cmpIdx :: Idx ('S n) -> Idx n -> Idx ('S n)
+cmpIdx n1 n2 =
+  case (n1, n2) of
+    (FS _m, FZ) -> FZ
+    (FS m, FS n) -> FS (cmpIdx m n)
+    (FZ, FZ) -> FZ
+    (FZ, FS _n) -> FS FZ
+
 
 instance NFData (Idx a) where
   rnf FZ = ()

@@ -9,6 +9,7 @@ but has been modified to to fit into this setting.
 > import Util.Lambda
 > import Util.IdInt
 > import Control.DeepSeq
+> import GHC.Generics
 
 > import Util.Impl
 
@@ -27,12 +28,12 @@ Variables are represented by their binding depth, i.e., how many
 $\lambda$s out the binding $\lambda$ is.  
 
 > data DB = DVar {-# unpack #-} !Int | DLam !DB | DApp !DB !DB
->   deriving (Eq)
+>   deriving (Eq, Generic)
 
 > instance NFData DB where
->    rnf (DVar i) = rnf i
+> {-   rnf (DVar i) = rnf i
 >    rnf (DLam d) = rnf d
->    rnf (DApp a b) = rnf a `seq` rnf b
+>    rnf (DApp a b) = rnf a `seq` rnf b -}
 
 Computing the normal form proceeds as usual.
 

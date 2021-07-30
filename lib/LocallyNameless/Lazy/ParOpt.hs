@@ -64,7 +64,6 @@ import Support.Nat
 {-# SPECIALIZE substBind :: Sub Exp n m -> Bind Exp n -> Bind Exp m #-}
 
 
-
 substBvBind :: SubstC a => Sub a n m -> Bind a n -> Bind a m
 substBvBind s2 (Bind s1 e) = Bind (s1 `comp` s2) e
 {-# INLINEABLE substBvBind #-}
@@ -77,17 +76,17 @@ data Exp (n :: Nat) where
   App :: (Exp n) -> (Exp n) -> Exp n
   deriving (Generic)
 
-open :: Bind Exp Z -> Exp Z -> Exp Z
-open (Bind (s1 :: Sub Exp m Z) (e :: Exp (S m))) u = subst s e
+open :: Bind Exp 'Z -> Exp 'Z -> Exp 'Z
+open (Bind (s1 :: Sub Exp m 'Z) (e :: Exp ('S m))) u = subst s e
   where
-    s :: Sub Exp (S m) Z
+    s :: Sub Exp ('S m) 'Z
     s = (lift s1) `comp` (single u)
 
 instance SubstC Exp where
   var = Var_b
 
   subst s (Var_b i) = applyS s i
-  subst s (Var_f x) = Var_f x
+  subst _s (Var_f x) = Var_f x
   subst s (Abs b) = Abs (substBvBind s b)
   subst s (App a b) = App (subst s a) (subst s b)
 

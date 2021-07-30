@@ -24,7 +24,7 @@ import Util.Impl
 import Util.Imports hiding (S)
 import qualified Util.Lambda as LC
 
--- 0. Original
+-- 0. (Ott) Original
 -- lennart: 1.03s
 -- random: 0.807 ms
 

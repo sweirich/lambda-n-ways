@@ -50,6 +50,7 @@ import qualified LocallyNameless.Lazy.TypedOpt
 import qualified LocallyNameless.Lazy.TypedOtt
 import qualified LocallyNameless.UnboundGenerics
 import qualified LocallyNameless.UnboundRep
+import qualified LocallyNameless.UGSubstBind
 -- import qualified Named.Nom
 --import qualified Named.Nominal
 import qualified Named.NominalG
@@ -131,7 +132,8 @@ locallyNameless =
     LocallyNameless.TypedOtt.impl,
     LocallyNameless.TypedOpt.impl,
     LocallyNameless.UnboundRep.impl, -- unbound
-    LocallyNameless.UnboundGenerics.impl -- unbound-generics
+    LocallyNameless.UnboundGenerics.impl, -- unbound-generics
+    LocallyNameless.UGSubstBind.impl
   ]
 
 -- | Name based/nominal implementations
@@ -212,6 +214,7 @@ fast_locally_nameless =
   [ LocallyNameless.Opt.impl,
     LocallyNameless.ParOpt.impl,
     LocallyNameless.TypedOpt.impl,
+    LocallyNameless.UGSubstBind.impl,
     LocallyNameless.UnboundGenerics.impl -- unbound-generics
   ]
 

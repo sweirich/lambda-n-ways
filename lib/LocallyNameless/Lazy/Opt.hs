@@ -3,7 +3,7 @@
 -- And caching openning substitutions at binders
 -- and caching closing substitutions at binders
 -- and removing types so we can use ints instead of unary nats
-module LocallyNameless.Lazy.Opt (impl) where
+module LocallyNameless.Lazy.Opt (impl,subst,fv) where
 
 import qualified Control.Monad.State as State
 import qualified Data.IntMap as IM
@@ -11,7 +11,7 @@ import Data.List (elemIndex)
 import qualified Data.Set as Set
 import Util.IdInt (IdInt (..), firstBoundId)
 import Util.Impl (LambdaImpl (..))
-import Util.Imports hiding (S, lift)
+import Util.Imports hiding (S, from, to)
 import qualified Util.Lambda as LC
 
 -- 0. Original (Ott derived version)
@@ -80,7 +80,7 @@ instance (Eq Exp) => Eq (Bind Exp) where
 substBind :: Exp -> IdInt -> Bind Exp -> Bind Exp
 substBind u x (Bind a) = Bind (subst u x a)
 substBind u x (BindOpen as a) = BindOpen (fmap (subst u x) as) (subst u x a)
-substBind u x b@(BindClose i xs a) =
+substBind u x (BindClose i xs a) =
   --  if x `elem` xs then
   --    Bind (subst u x (unbind b))
   --  else

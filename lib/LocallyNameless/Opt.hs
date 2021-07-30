@@ -1,9 +1,9 @@
 -- | Based directly on transliteration of Coq output for Ott Locally Nameless Backend
--- Then with types addded, and multi substitutions
+-- Then with multi substitutions
 -- And caching openning substitutions at binders
 -- and caching closing substitutions at binders
 -- and removing types so we can use ints instead of unary nats
-module LocallyNameless.Opt (impl) where
+module LocallyNameless.Opt (impl,subst,fv) where
 
 import qualified Control.Monad.State as State
 import qualified Data.IntMap as IM
@@ -11,24 +11,20 @@ import Data.List (elemIndex)
 import qualified Data.Set as Set
 import Util.IdInt (IdInt (..), firstBoundId)
 import Util.Impl (LambdaImpl (..))
-import Util.Imports hiding (S, lift)
+import Util.Imports hiding (S,from,to)
 import qualified Util.Lambda as LC
 
 -- 0. Original (Ott derived version)
 -- lennart: 1.03s
 -- random: 0.807 ms
 
--- 1. (Types) Well-typed (slows it down)
+-- 1. (TypedOtt) Well-typed (slows it down)
 -- lennart: 1.43s
 -- random: 1.8ms
 
--- 2. (ParTyped) Well-typed multisubst
+-- 2. (ParScoped) Well-typed multisubst
 
--- 3. Combo multisubst for open
--- lennart: 4.10 ms (wow!)
--- random: 1.46 ms (a little slow)
-
--- 4. (TypedOtt) Combo multisubst for open & close
+-- 3. (Opt) Combo multisubst for open & close
 -- lennart: 3.05 ms
 -- random: 0.135 ms
 
@@ -39,6 +35,7 @@ import qualified Util.Lambda as LC
 -- con20: 721ns / 678ns
 -- capt9: 387ns / 386ns
 --- (NOTE: dlists instead of lists slows things down)
+--- What about Data.Sequence???
 -------------------------------------------------------------------
 
 instance (NFData a) => NFData (Bind a) where
@@ -50,8 +47,6 @@ instance (NFData a) => NFData (Bind a) where
       `seq` rnf a
 
 --------------------------------------------------------------
---------------------------------------------------------------
-
 -- Caching open/close at binders.
 -- To speed up this implementation, we delay the execution of open / close
 -- in a binder so that multiple traversals can fuse together
@@ -80,7 +75,7 @@ instance (Eq Exp) => Eq (Bind Exp) where
 substBind :: Exp -> IdInt -> Bind Exp -> Bind Exp
 substBind u x (Bind a) = Bind (subst u x a)
 substBind u x (BindOpen as a) = BindOpen (fmap (subst u x) as) (subst u x a)
-substBind u x b@(BindClose i xs a) =
+substBind u x (BindClose i xs a) =
   --  if x `elem` xs then
   --    Bind (subst u x (unbind b))
   --  else
@@ -145,11 +140,7 @@ multi_close_exp_wrt_exp_rec k xs e =
       Nothing -> Var_f x
     Var_b n2 -> Var_b n2
     Abs (BindClose k0 ys a) -> Abs (BindClose k0 (ys <> xs) a)
-    Abs b ->
-      Abs (BindClose (k + 1) xs (unbind b))
-    --Abs (bind recur)
-    --where
-    --  recur = multi_close_exp_wrt_exp_rec (k + 1) xs (unbind b)
+    Abs b -> Abs (BindClose (k + 1) xs (unbind b))
     App e2 e3 ->
       App
         (multi_close_exp_wrt_exp_rec k xs e2)
@@ -176,7 +167,7 @@ toDB :: LC.LC IdInt -> Exp
 toDB = to 0 []
   where
     to :: Int -> [(IdInt, Int)] -> LC.LC IdInt -> Exp
-    to k vs (LC.Var v@(IdInt i)) = maybe (Var_f v) Var_b (lookup v vs)
+    to _k vs (LC.Var v) = maybe (Var_f v) Var_b (lookup v vs)
     to k vs (LC.Lam x b) = Abs (bind b')
       where
         b' = to (k + 1) ((x, 0) : mapSnd (1 +) vs) b
@@ -189,7 +180,7 @@ fromDB :: Exp -> LC.LC IdInt
 fromDB = from firstBoundId
   where
     from :: IdInt -> Exp -> LC.LC IdInt
-    from n (Var_f v) = LC.Var v
+    from _n (Var_f v) = LC.Var v
     from (IdInt n) (Var_b i)
       | i < 0 = LC.Var (IdInt $ i)
       | i >= n = LC.Var (IdInt $ i)
@@ -211,10 +202,10 @@ instance NFData Exp where
 
 -- free variable substitution
 subst :: Exp -> IdInt -> Exp -> Exp
-subst u y e = subst0 e
+subst u y = subst0
   where
     subst0 :: Exp -> Exp
-    subst0 e = case e of
+    subst0 e0 = case e0 of
       (Var_b n) -> Var_b n
       (Var_f x) -> (if x == y then u else (Var_f x))
       --      (Abs b) -> Abs (substBind u y b)
@@ -225,7 +216,7 @@ subst u y e = subst0 e
 fv :: Exp -> Set IdInt
 fv e =
   case e of
-    (Var_b nat) -> Set.empty
+    (Var_b _) -> Set.empty
     (Var_f x) -> Set.singleton x
     (Abs b) -> fv (unbind b)
     (App e1 e2) -> fv e1 `Set.union` fv e2
@@ -241,11 +232,13 @@ newVar = do
   return i
 
 nfd :: Exp -> Exp
-nfd e = State.evalState (nf' e) firstBoundId
+nfd e = State.evalState (nf' e) v where
+  v :: IdInt 
+  v = succ (Set.findMax (fv e))
 
 nf' :: Exp -> N Exp
 nf' e@(Var_f _) = return e
-nf' e@(Var_b _) = error "should not reach this"
+nf' (Var_b _) = error "should not reach this"
 nf' (Abs b) = do
   x <- newVar
   b' <- nf' (open b (Var_f x))
@@ -259,7 +252,7 @@ nf' (App f a) = do
 -- Compute the weak head normal form.
 whnf :: Exp -> N Exp
 whnf e@(Var_f _) = return e
-whnf e@(Var_b _) = error "BUG"
+whnf (Var_b _) = error "BUG"
 whnf e@(Abs _) = return e
 whnf (App f a) = do
   f' <- whnf f
@@ -270,14 +263,16 @@ whnf (App f a) = do
 -- Fueled version
 
 nfi :: Int -> Exp -> Maybe Exp
-nfi n e = State.evalStateT (nfi' n e) firstBoundId
+nfi n e = State.evalStateT (nfi' n e) v where
+  v :: IdInt 
+  v = succ (Set.findMax (fv e))
 
 type NM a = State.StateT IdInt Maybe a
 
 nfi' :: Int -> Exp -> NM Exp
 nfi' 0 _ = State.lift Nothing
-nfi' n e@(Var_f _) = return e
-nfi' n e@(Var_b _) = error "should not reach this"
+nfi' _n e@(Var_f _) = return e
+nfi' _n (Var_b _) = error "should not reach this"
 nfi' n (Abs e) = do
   x <- newVar
   e' <- nfi' (n - 1) (open e (Var_f x))
@@ -291,9 +286,9 @@ nfi' n (App f a) = do
 -- Compute the weak head normal form.
 whnfi :: Int -> Exp -> NM Exp
 whnfi 0 _ = State.lift Nothing
-whnfi n e@(Var_f _) = return e
-whnfi n e@(Var_b _) = error "BUG"
-whnfi n e@(Abs _) = return e
+whnfi _n e@(Var_f _) = return e
+whnfi _n (Var_b _) = error "BUG"
+whnfi _n e@(Abs _) = return e
 whnfi n (App f a) = do
   f' <- whnfi (n -1) f
   case f' of

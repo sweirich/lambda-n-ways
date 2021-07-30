@@ -59,13 +59,13 @@ nil = Inc 0
 -- NOTE: adding a smart constructor in lift really slows things down!
 
 lift :: SubstC a => Sub a -> Sub a
-lift s   = Cons (var 0) (s :<> Inc 1)
 {-# INLINABLE lift #-}
-
+lift s   = Cons (var 0) (s :<> Inc 1)
 
 single :: SubstC a => a -> Sub a
-single t = Cons t nil
 {-# INLINABLE single #-}
+single t = Cons t nil
+
 
 
 -- smart constructor for composition

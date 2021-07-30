@@ -59,7 +59,9 @@ subst _x (Succ y) = y
 data DBE a
   = VarE a
   | AppE (Pair (DBE a))
-  | LamE (DBE (Incr (DBE a)))
+  | LamE (DBE (Incr (DBE a)))  --
+
+
 
 deriving instance (Eq v) => (Eq (DBE v))
 

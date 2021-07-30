@@ -1,35 +1,28 @@
+> 
 > {-# LANGUAGE DeriveGeneric #-}
-> {-# LANGUAGE MultiParamTypeClasses
->           , FlexibleContexts
->           , FlexibleInstances
->           , TypeFamilies
->           , GADTs
->           , ScopedTypeVariables
->  #-}
 > {-# OPTIONS_GHC -fcross-module-specialise #-}
-
+>
 > module LocallyNameless.UnboundGenerics(impl) where
 
 > import qualified Util.Lambda as LC
 > import Util.IdInt
->
 > import qualified Control.DeepSeq as DS
 > import GHC.Generics(Generic)
 > import Unbound.Generics.LocallyNameless as U
+>    ( Name,
+>      s2n,
+>      name2Integer,
+>      FreshM,
+>      runFreshM,
+>      Alpha,
+>      Bind,
+>      aeq,
+>      bind,
+>      unbind,
+>      Subst(subst, isvar),
+>      SubstName(SubstName) )
 > import Unbound.Generics.PermM as U
-
-> import Util.Impl
-
-> data Exp = Var !(U.Name Exp)
->          | Lam !(U.Bind (U.Name Exp) Exp)
->          | App !Exp !Exp
->  deriving (Show, Generic)
->
-> instance DS.NFData Exp where
->    rnf (Var n)     = DS.rnf n
->    rnf (Lam bnd)   = DS.rnf bnd
->    rnf (App e1 e2) = DS.rnf e1 `seq` DS.rnf e2
-
+> import Util.Impl ( LambdaImpl(..) )
 
 
 > impl :: LambdaImpl
@@ -37,23 +30,22 @@
 >             impl_name   = "LocallyNameless.UnboundGenerics"
 >           , impl_fromLC = toDB
 >           , impl_toLC   = fromDB
->           , impl_nf     = nfu
+>           , impl_nf     = nf
 >           , impl_nfi    = error "nfi unimplementd for unbound"
->           , impl_aeq    = aeqd
+>           , impl_aeq    = aeq
 >        }
 
+> data Exp = Var !(U.Name Exp)
+>          | Lam !(U.Bind (U.Name Exp) Exp)
+>          | App !Exp !Exp
+>  deriving (Show, Generic)
+>
+> instance DS.NFData Exp where
 
 With representation types, the default implementation of Alpha
-provides alpha-equivalence and free variable calculation.
-
-> aeq :: LC.LC IdInt -> LC.LC IdInt -> Bool
-> aeq x y = U.aeq (toDB x) (toDB y)
-
-> aeqd :: Exp -> Exp -> Bool
-> aeqd = U.aeq
+provides alpha-equivalence, open, close, and free variable calculation.
 
 > instance U.Alpha Exp
-
 
 -- | The subst class uses generic programming to implement capture
 -- avoiding substitution. It just needs to know where the variables
@@ -63,14 +55,12 @@ provides alpha-equivalence and free variable calculation.
 >   isvar (Var x) = Just (U.SubstName x)
 >   isvar _       = Nothing
 
+---------------------------------------------------------------
 
-> nfu :: Exp -> Exp
-> nfu = U.runFreshM . nfd
+> nf :: Exp -> Exp
+> nf = U.runFreshM . nfd
 
-> nf :: LC.LC IdInt -> LC.LC IdInt
-> nf = fromDB . nfu . toDB
-
-Computing the normal form proceeds as usuaLC.
+Computing the normal form proceeds as usual.
 
 > nfd :: Exp -> U.FreshM Exp
 > nfd e@(Var _) = return e
@@ -97,6 +87,7 @@ Compute the weak head normal form.
 >                     whnf (U.subst x a b')
 >         _ -> return $ App f' a
 
+---------------------------------------------------------------
 
 Convert from LC type to DB type (try to do this in linear time??)
 

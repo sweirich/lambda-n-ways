@@ -6,7 +6,7 @@
 
 -- | Based directly on transliteration of Coq output for Ott Locally Nameless Backend
 -- Then with types addded to make sure that terms stay locally closed (when they need to be)
-module LocallyNameless.TypedOtt (impl, subst, fv) where
+module LocallyNameless.TypedOtt (impl, substFv, fv) where
 
 import qualified Control.Monad.State as State
 import qualified Data.IntMap as IM
@@ -16,18 +16,68 @@ import Data.Type.Equality (type (:~:) (..))
 import Support.Nat
 import Util.IdInt (IdInt (..), firstBoundId)
 import Util.Impl (LambdaImpl (..))
-import Util.Imports hiding (S)
+import Util.Imports hiding (S, from, to)
 import qualified Util.Lambda as LC
 
 -- 0. (Ott) Original
 -- lennart: 1.03s
 -- random: 0.807 ms
 
--- 1. (Typed) Well-typed (slows it down)
+-- 1. (TypedOtt) Well-typed (slows it down)
 -- lennart: 1.43s
 -- random: 1.8ms
 
+impl :: LambdaImpl
+impl =
+  LambdaImpl
+    { impl_name = "LocallyNameless.TypedOtt",
+      impl_fromLC = toDB,
+      impl_toLC = fromDB,
+      impl_nf = nfd,
+      impl_nfi = nfi,
+      impl_aeq = (==)
+    }
+
+-- Exp Z is  locally closed terms
+data Exp (n :: Nat) where
+  Var_b :: !(Idx n) -> Exp n
+  Var_f :: !IdInt -> Exp n
+  Abs :: !(Bind Exp n) -> Exp n
+  App :: !(Exp n) -> !(Exp n) -> Exp n
+  deriving (Generic)
+
+deriving instance (Eq (Exp n))
+
+instance NFData (Exp n) where
+
 --------------------------------------------------------------
+
+-- free variable substitution
+substFv :: Exp 'Z -> IdInt -> Exp 'Z -> Exp 'Z
+substFv u y = subst0 SZ
+  where
+    subst0 :: forall n. SNat n -> Exp n -> Exp n
+    subst0 k e0 = case e0 of
+      (Var_b n) -> Var_b n
+      (Var_f x) -> (if x == y then weaken @n u else (Var_f x))
+      (Abs b) -> Abs (bind (subst0 (SS k) (unbind b)))
+      (App e1 e2) -> App (subst0 @n k e1) (subst0 @n k e2)
+
+-- no bound variables to weaken.
+weaken :: forall m n. Exp n -> Exp (Plus n m)
+weaken (Var_b x) = Var_b (weakenIdxR @m x)
+weaken (Var_f x) = Var_f x
+weaken (Abs (Bind b)) = Abs (Bind (weaken @m b))
+weaken (App a b) = App (weaken @m a) (weaken @m b)
+
+fv :: Exp n -> Set IdInt
+fv e =
+  case e of
+    (Var_b _) -> Set.empty
+    (Var_f x) -> Set.singleton x
+    (Abs b) -> fv (unbind b)
+    (App e1 e2) -> fv e1 `Set.union` fv e2
+
 
 instance (forall n. NFData (a n)) => NFData (Bind a m) where
   rnf (Bind a) = rnf a
@@ -55,20 +105,7 @@ unbind (Bind a) = a -- multi_open_exp_wrt_exp_rec ss a
 instance (Eq (Exp ('S n))) => Eq (Bind Exp n) where
   b1 == b2 = unbind b1 == unbind b2
 
--- Exp Z is  locally closed terms
-data Exp (n :: Nat) where
-  Var_b :: !(Idx n) -> Exp n
-  Var_f :: !IdInt -> Exp n
-  Abs :: !(Bind Exp n) -> Exp n
-  App :: !(Exp n) -> !(Exp n) -> Exp n
-  deriving (Generic)
 
--- no bound variables to weaken.
-weaken :: forall m n. Exp n -> Exp (Plus n m)
-weaken (Var_b x) = Var_b (weakenIdxR @m x)
-weaken (Var_f x) = Var_f x
-weaken (Abs (Bind b)) = Abs (Bind (weaken @m b))
-weaken (App a b) = App (weaken @m a) (weaken @m b)
 
 open_exp_wrt_exp_rec :: forall n. SNat n -> Exp 'Z -> Exp ('S n) -> Exp n
 open_exp_wrt_exp_rec k u e =
@@ -89,7 +126,7 @@ open (Bind e) u = f
   where
     f = open_exp_wrt_exp_rec SZ u e
 
-close_exp_wrt_exp_rec :: Idx ('S n) -> IdInt -> Exp n -> Exp (S n)
+close_exp_wrt_exp_rec :: Idx ('S n) -> IdInt -> Exp n -> Exp ('S n)
 close_exp_wrt_exp_rec n1 x1 e1 =
   case e1 of
     Var_f x2 -> if (x1 == x2) then (Var_b n1) else (Var_f x2)
@@ -100,16 +137,6 @@ close_exp_wrt_exp_rec n1 x1 e1 =
 close :: IdInt -> Exp 'Z -> Bind Exp 'Z
 close x e = bind (close_exp_wrt_exp_rec FZ x e)
 
-impl :: LambdaImpl
-impl =
-  LambdaImpl
-    { impl_name = "LocallyNameless.TypedOtt",
-      impl_fromLC = toDB,
-      impl_toLC = fromDB,
-      impl_nf = nfd,
-      impl_nfi = nfi,
-      impl_aeq = aeq
-    }
 
 toDB :: LC.LC IdInt -> Exp 'Z
 toDB = to SZ []
@@ -136,36 +163,7 @@ fromDB = from firstBoundId
     from n (Abs b) = LC.Lam n (from (succ n) (unbind b))
     from n (App f a) = LC.App (from n f) (from n a)
 
-aeq :: Exp n -> Exp n -> Bool
-aeq (Var_b i) (Var_b j) = i == j
-aeq (Var_f i) (Var_f j) = i == j
-aeq (Abs a) (Abs b) = aeq (unbind a) (unbind b)
-aeq (App a b) (App c d) = aeq a c && aeq b d
-
-instance NFData (Exp n) where
-  rnf (Var_b i) = rnf i
-  rnf (Var_f i) = rnf i
-  rnf (Abs b) = rnf b
-  rnf (App a b) = rnf a `seq` rnf b
-
--- free variable substitution
-subst :: Exp 'Z -> IdInt -> Exp 'Z -> Exp 'Z
-subst u y e = subst0 SZ e
-  where
-    subst0 :: forall n. SNat n -> Exp n -> Exp n
-    subst0 k e0 = case e0 of
-      (Var_b n) -> Var_b n
-      (Var_f x) -> (if x == y then weaken @n u else (Var_f x))
-      (Abs b) -> Abs (bind (subst0 (SS k) (unbind b)))
-      (App e1 e2) -> App (subst0 @n k e1) (subst0 @n k e2)
-
-fv :: Exp n -> Set IdInt
-fv e =
-  case e of
-    (Var_b _) -> Set.empty
-    (Var_f x) -> Set.singleton x
-    (Abs b) -> fv (unbind b)
-    (App e1 e2) -> fv e1 `Set.union` fv e2
+----------------------------------------------------------------
 
 type N a = State IdInt a
 
@@ -176,7 +174,8 @@ newVar = do
   return i
 
 nfd :: Exp 'Z -> Exp 'Z
-nfd e = State.evalState (nf' e) firstBoundId
+nfd e = State.evalState (nf' e) v where
+  v = succ (Set.findMax (fv e))
 
 nf' :: Exp 'Z -> N (Exp 'Z)
 nf' e@(Var_f _) = return e
@@ -203,7 +202,8 @@ whnf (App f a) = do
 -- Fueled version
 
 nfi :: Int -> Exp 'Z -> Maybe (Exp 'Z)
-nfi n e = State.evalStateT (nfi' n e) firstBoundId
+nfi n e = State.evalStateT (nfi' n e) v where
+  v = succ (Set.findMax (fv e))
 
 type NM a = State.StateT IdInt Maybe a
 
