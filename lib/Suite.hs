@@ -137,7 +137,7 @@ locallyNameless =
     LocallyNameless.Lazy.ParOpt.impl,
     LocallyNameless.Lazy.TypedOtt.impl,
     LocallyNameless.Lazy.TypedOpt.impl,    
-    Locallynameless.UnboundRep.impl, -- unbound
+    LocallyNameless.UnboundRep.impl, -- unbound
     LocallyNameless.UnboundGenerics.impl -- unbound-generics
   ]
 
@@ -181,10 +181,13 @@ fast_nf = [
 fast_random :: [LambdaImpl]
 fast_random = [
 	Lennart.HOAS.impl, -- 1
+	LocallyNameless.Lazy.Opt.impl, -- 179 -- 178
         LocallyNameless.Opt.impl, -- 254 -- 264
 	DeBruijn.Lazy.Par.Scoped.impl, -- 269 -- 261
+        LocallyNameless.Lazy.TypedOpt.impl, -- 312 -- 316
         LocallyNameless.TypedOpt.impl, -- 325 -- 327			
 	DeBruijn.Lazy.Par.B.impl, -- 356 -- 344
+	LocallyNameless.Lazy.ParOpt.impl, -- 557 -- 546
 	LocallyNameless.ParOpt.impl, -- 678 -- 684
 	DeBruijn.Par.Scoped.impl, -- 876 -- 1360 
 	DeBruijn.Par.B.impl, -- 954 -- 1310
