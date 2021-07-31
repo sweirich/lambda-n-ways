@@ -34,8 +34,7 @@ import qualified DeBruijn.Par.P
 import qualified DeBruijn.Par.Scoped
 import qualified DeBruijn.TAPL
 import qualified Lennart.HOAS
-import qualified Lennart.Simple
-import qualified Lennart.Unique
+
 import qualified LocallyNameless.Opt
 import qualified LocallyNameless.Ott
 import qualified LocallyNameless.ParOpt
@@ -60,6 +59,8 @@ import qualified Named.NominalG
 --import qualified Named.SimpleB
 import qualified Named.SimpleH
 import qualified Named.SimpleM
+import qualified Named.Simple
+import qualified Named.Unique
 import Util.Impl (LambdaImpl)
 
 -- | Implementations used in the benchmarking/test suite
@@ -258,8 +259,8 @@ slow =
     LocallyNameless.ParScoped.impl,
     LocallyNameless.TypedOtt.impl,
     LocallyNameless.UnboundRep.impl, -- unbound
-    Lennart.Simple.impl,
-    Lennart.Unique.impl
+    Named.Simple.impl,
+    Named.Unique.impl
   ]
 
 really_slow :: [LambdaImpl]

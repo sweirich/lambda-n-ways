@@ -76,8 +76,8 @@ library
       LocallyNameless.Lazy.UnboundRep
       LocallyNameless.Lazy.UnboundGenerics
       LocallyNameless.Lazy.UGSubstBind
-      Lennart.Simple
-      Lennart.Unique
+      Named.Simple
+      Named.Unique
       Lennart.HOAS
       -- Named.Nom  -- doesn't compile
 --      Named.Nominal

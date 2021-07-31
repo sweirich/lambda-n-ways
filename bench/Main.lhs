@@ -11,8 +11,8 @@
 > import Util.IdInt ( IdInt )
 > import Util.Impl ( LambdaImpl(..), toIdInt, getTerm, getTerms )
 > import Suite ( impls )
-> import qualified Lennart.Simple as Simple
-> import qualified Lennart.Unique as Unique
+> import qualified Named.Simple as Simple
+> import qualified Named.Unique as Unique
 > import Test.QuickCheck ()
 > import System.IO.Unsafe ( unsafePerformIO )
 
@@ -83,6 +83,7 @@
 >   con_terms <- getTerms "lams/constructed20.lam"
 >   capt_terms <- getTerms "lams/capture10.lam"
 >   adjust_terms <- getTerms "lams/adjust.lam"
+>   adjustb_terms <- getTerms "lams/adjustb.lam"
 >   defaultMain [
 >    {-  bgroup "random15" $ map runBench (nf_bss random15_terms)
 >    , bgroup "random20" $ map runBench (nf_bss random20_terms)
@@ -99,7 +100,8 @@
 >    {- , bgroup "ids" $ map runBench (constructed_bss "ids" id_terms)
 >    , bgroup "con"  $ map runBench (constructed_bss "con" con_terms)
 >    , bgroup "capt" $ map runBench (constructed_bss "capt" capt_terms) 
->    , bgroup "adjust" $ map runBench (constructed_bss "adjust" adjust_terms)  -}
+>    , bgroup "adjust" $ map runBench (constructed_bss "adjust" adjust_terms)
+>    , bgroup "adjustb" $ map runBench (constructed_bss "adjustb" adjustb_terms)  -}
 >    ] 
 >
 >

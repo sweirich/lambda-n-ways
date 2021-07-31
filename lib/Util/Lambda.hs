@@ -263,7 +263,7 @@ genScopedRed = lams <$> sized (gen vars)
         red m = app' m (lam' m xs)
         app' 0 a = App <$> a <*> gen xs n'
         app' m a = App <$> app' (m - 1) a <*> gen xs n'
-        lam' 0 ys = do
+        lam' (0 :: Int) ys = do
           let y = succ (head ys)
           Lam y <$> gen (y : ys) n
         lam' m ys = do
@@ -288,7 +288,7 @@ depth = go
     go (App t s) = 1 + max (go t) (go s)
 
 size :: LC v -> Int
-size (Var v) = 1
+size (Var _) = 1
 size (Lam _ a) = 1 + size a
 size (App t s) = 1 + size t + size s
 

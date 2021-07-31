@@ -5,7 +5,8 @@
 -- using a na\"{i}ve version of substitution. In otherwords, this version
 -- alpha-renames bound variables during substitution if they would ever
 -- capture a free variable.
-module Lennart.Simple (nf, whnf, nfi, impl, iNf, St (..), subst, SubstStat (..), show_stats, mean) where
+-- It is based on Lennart Augustsson's version from "lambda-calculus cooked four ways"
+module Named.Simple (nf, whnf, nfi, impl, iNf, St (..), subst, SubstStat (..), show_stats, mean) where
 
 import Control.Monad.Except
 import qualified Control.Monad.State as State
@@ -19,13 +20,16 @@ import Util.Lambda
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "Lennart.Simple",
+    { impl_name = "Named.Simple",
       impl_fromLC = id,
       impl_toLC = id,
       impl_nf = nf,
       impl_nfi = nfi,
       impl_aeq = Util.Lambda.aeq
     }
+
+--- No extra syntax, just uses LC IdInt
+
 
 subst :: IdInt -> LC IdInt -> LC IdInt -> LC IdInt
 subst x a b = sub (M.singleton x a) vs0 b

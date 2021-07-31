@@ -7,7 +7,7 @@ variables are unique.
 > {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 > {-# LANGUAGE FlexibleContexts #-}
 > {-# LANGUAGE ScopedTypeVariables #-}
-> module Lennart.Unique(nf,Lennart.Unique.aeq, 
+> module Named.Unique(nf,Named.Unique.aeq, 
 >                       toUnique, fromUnique, impl, Unique) where
 > import Util.Lambda as LC
 > import qualified Data.Map as M
@@ -23,7 +23,7 @@ variables are unique.
 > import Util.Impl
 > impl :: LambdaImpl
 > impl = LambdaImpl {
->             impl_name   = "Lennart.Unique"
+>             impl_name   = "Named.Unique"
 >           , impl_fromLC = toUnique
 >           , impl_toLC   = fromUnique
 >           , impl_nf     = nfd
@@ -213,7 +213,7 @@ Find an existing variable in the mapping.
 >     (fromMaybe v1 (M.lookup v1 m1), fromMaybe v2 (M.lookup v2 m2))
 
 > aeq' :: Unique -> Unique -> Bool
-> aeq' = coerce Lennart.Unique.aeq
+> aeq' = coerce Named.Unique.aeq
 
 > aeq :: LC IdInt -> LC IdInt -> Bool
 > aeq a b = evalState (uaeq (M.empty,M.empty) a b) (initState (App a b))
@@ -228,6 +228,3 @@ Find an existing variable in the mapping.
 > uaeq env (App a1 a2) (App b1 b2) = liftM2 (&&) (uaeq env a1 b1) (uaeq env a2 b2)
 > uaeq _env _u1 _u2 = return False
 
-
-> prop_unique :: LC IdInt -> Bool
-> prop_unique x = Lennart.Unique.aeq x (Lennart.Unique.fromUnique (Lennart.Unique.toUnique x))
