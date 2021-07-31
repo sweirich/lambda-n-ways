@@ -96,14 +96,44 @@ close :: IdInt -> Exp -> Exp
 close x1 e1 = close_exp_wrt_exp_rec 0 x1 e1
 
 ----------------------------------------------------------------
+-- version based on reader monad (i.e. variables need only be 
+-- fresh for the current scope, not globally fresh
 
+type N a = IdInt -> a
+
+scope :: (IdInt -> N a) -> N a
+scope f = \i -> f i (succ i)
+
+nfd :: Exp -> Exp
+nfd e = nf' e v where
+  v = succ (Set.findMax (fv e))
+
+nf' :: Exp -> N Exp
+nf' e@(Var_f _) = return e
+nf' (Var_b _) = error "should not reach this"
+nf' (Abs e) = 
+  scope $ \x -> do 
+    b' <- nf' (open e (Var_f x))
+    return $ Abs (close x b')
+nf' (App f a) = do
+  f' <- whnf f
+  case f' of
+    Abs b -> nf' (open b a)
+    _ -> App <$> nf' f' <*> nf' a
+
+whnf :: Exp -> N Exp
+whnf e@(Var_f _) = return e
+whnf (Var_b _) = error "should not reach this"
+whnf e@(Abs _) = return e
+whnf (App f a) = do
+  f' <- whnf f
+  case f' of
+    (Abs b) -> whnf (open b a)
+    _ -> return $ App f' a
+
+----------------------------------------------------------------
+{-
 type N a = State IdInt a
-
-newVar :: (MonadState IdInt m) => m IdInt
-newVar = do
-  i <- get
-  put (succ i)
-  return i
 
 nfd :: Exp -> Exp
 nfd e = State.evalState (nf' e) v where
@@ -132,7 +162,7 @@ whnf (App f a) = do
   case f' of
     (Abs b) -> whnf (open b a)
     _ -> return $ App f' a
-
+-}
 -- Fueled version
 
 nfi :: Int -> Exp -> Maybe Exp
@@ -140,6 +170,12 @@ nfi n e = State.evalStateT (nfi' n e) v where
   v = succ (Set.findMax (fv e))
 
 type NM a = State.StateT IdInt Maybe a
+
+newVar :: (MonadState IdInt m) => m IdInt
+newVar = do
+  i <- get
+  put (succ i)
+  return i
 
 nfi' :: Int -> Exp -> NM Exp
 nfi' 0 _ = State.lift Nothing
