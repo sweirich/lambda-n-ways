@@ -163,7 +163,7 @@ named =
     Named.NominalG.impl, -- nominal, generally too slow (12s vs. <200 ms for everything else)
     -- Named.SimpleB.impl, -- fails test suite
     Named.SimpleH.impl,
-    Named.SimpleM.impl
+    Named.SimpleM.impl,
     Named.Simple.impl,
     Named.Unique.impl
   ]
