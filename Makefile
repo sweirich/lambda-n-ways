@@ -1,8 +1,10 @@
 OUT = results/`uname -n`/
 DB_SUITE = $(wildcard lib/DeBruijn/*.lhs lib/DeBruijn/*.hs lib/DeBruijn/*/*.lhs lib/DeBruijn/*/*.hs lib/DeBruijn/Lazy/*.hs lib/DeBruijn/Lazy/*.lhs lib/DeBruijn/Lazy/*/*.hs)
-LN_SUITE = $(wildcard lib/LocallyNameless/*.hs lib/DeBruijn/*/*.hs)
+LN_SUITE = $(wildcard lib/LocallyNameless/*.hs lib/LocallyNameless/Lazy/*.hs)
 NM_SUITE = $(wildcard lib/Named/*.hs lib/Named/*.lhs)
-SUITE = $(DB_SUITE) $(LN_SUITE) $(NM_SUITE)
+SUITE = $(LN_SUITE)
+# $(DB_SUITE) 
+# $(NM_SUITE)
 RESULTS_CONSTRUCTED = $(subst lib,results/constructed,$(subst .hs,.csv,$(subst .lhs,.csv,$(SUITE))))
 RESULTS_NF = $(subst lib,results/nf,$(subst .hs,.csv,$(subst .lhs,.csv,$(SUITE))))
 RESULTS_RANDOM = $(subst lib,results/random,$(subst .hs,.csv,$(subst .lhs,.csv,$(SUITE))))
@@ -16,10 +18,10 @@ LC:	lib/*.hs lib/*/*.lhs bench/*.lhs
 
 timing:	LC
 	uname -a > $(OUT)output.txt
-	stack run -- --output $(OUT)conv_bench.html --match prefix "conv/"  >> $(OUT)output.txt
+#	stack run -- --output $(OUT)conv_bench.html --match prefix "conv/"  >> $(OUT)output.txt
 	stack run -- --output $(OUT)nf_bench.html --match prefix "nf/"  >> $(OUT)output.txt
-	stack run -- --output $(OUT)aeq_bench.html --match prefix "aeq/" >> $(OUT)output.txt
-	stack run -- --output $(OUT)aeqs_bench.html --match prefix "aeqs/" >> $(OUT)output.txt
+#	stack run -- --output $(OUT)aeq_bench.html --match prefix "aeq/" >> $(OUT)output.txt
+#	stack run -- --output $(OUT)aeqs_bench.html --match prefix "aeqs/" >> $(OUT)output.txt
 
 constructed: LC 
 	mkdir -p $(OUT)constructed/
@@ -32,8 +34,8 @@ constructed: LC
 random: LC 
 	mkdir -p $(OUT)random/
 	uname -a > $(OUT)random/output.txt
-	stack run -- --output $(OUT)random/fast_random15_bench.html --match prefix "random15/"  >> $(OUT)random/output.txt
-	stack run -- --output $(OUT)random/fast_random20_bench.html --match prefix "random20/"  >> $(OUT)random/output.txt
+	stack run -- --output $(OUT)random15_bench.html --match prefix "random15/"  >> $(OUT)random/output.txt
+	stack run -- --output $(OUT)random20_bench.html --match prefix "random20/"  >> $(OUT)random/output.txt
 
 ################ Separate CSV files for each benchmark, plus individual charts for the constructed ones
 

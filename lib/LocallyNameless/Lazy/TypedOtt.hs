@@ -175,7 +175,7 @@ newVar = do
 
 nfd :: Exp 'Z -> Exp 'Z
 nfd e = State.evalState (nf' e) v where
-  v = succ (Set.findMax (fv e))
+  v = succ (fromMaybe firstBoundId (Set.lookupMax (fv e)))
 
 nf' :: Exp 'Z -> N (Exp 'Z)
 nf' e@(Var_f _) = return e
@@ -203,7 +203,7 @@ whnf (App f a) = do
 
 nfi :: Int -> Exp 'Z -> Maybe (Exp 'Z)
 nfi n e = State.evalStateT (nfi' n e) v where
-  v = succ (Set.findMax (fv e))
+  v = succ (fromMaybe firstBoundId (Set.lookupMax (fv e)))
 
 type NM a = State.StateT IdInt Maybe a
 
