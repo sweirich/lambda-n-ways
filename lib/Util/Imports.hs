@@ -15,7 +15,7 @@ module Util.Imports
     second,
 
     -- * Data.Maybe
-    fromJust,
+    fromJust,fromMaybe,
 
     -- * "Data.Tuple" reexports
     curry,
@@ -57,7 +57,7 @@ import Data.IntMap.Strict (IntMap)
 import Data.IntSet (IntSet)
 import Data.Kind (Type)
 import Data.Map.Strict (Map)
-import Data.Maybe (fromJust)
+import Data.Maybe (fromJust, fromMaybe)
 import Data.Proxy
 import Data.Sequence (Seq)
 import Data.Set (Set)

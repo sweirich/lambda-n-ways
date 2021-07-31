@@ -1,1236 +1,397 @@
 Linux zephyrus 5.4.0-80-generic #90-Ubuntu SMP Fri Jul 9 22:49:44 UTC 2021 x86_64 x86_64 x86_64 GNU/Linux
-benchmarking conv/DeBruijn.TAPL
-time                 3.801 μs   (3.773 μs .. 3.829 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 3.767 μs   (3.752 μs .. 3.787 μs)
-std dev              57.54 ns   (45.30 ns .. 73.90 ns)
-variance introduced by outliers: 13% (moderately inflated)
-
-benchmarking conv/DeBruijn.List
-time                 3.762 μs   (3.750 μs .. 3.782 μs)
-                     0.999 R²   (0.998 R² .. 1.000 R²)
-mean                 3.815 μs   (3.778 μs .. 3.887 μs)
-std dev              161.6 ns   (97.36 ns .. 306.7 ns)
-variance introduced by outliers: 55% (severely inflated)
-
-benchmarking conv/DeBruijn.Lennart
-time                 3.742 μs   (3.738 μs .. 3.749 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 3.746 μs   (3.740 μs .. 3.758 μs)
-std dev              28.48 ns   (16.41 ns .. 50.54 ns)
-
-benchmarking conv/DeBruijn.Cornell
-time                 3.540 μs   (3.535 μs .. 3.547 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 3.543 μs   (3.539 μs .. 3.552 μs)
-std dev              21.48 ns   (14.69 ns .. 31.62 ns)
-
-benchmarking conv/DeBruijn.Lift
-time                 3.731 μs   (3.722 μs .. 3.744 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 3.744 μs   (3.736 μs .. 3.757 μs)
-std dev              35.03 ns   (23.76 ns .. 57.42 ns)
-
-benchmarking conv/DeBruijn.Par.B
-time                 3.816 μs   (3.815 μs .. 3.818 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 3.817 μs   (3.815 μs .. 3.819 μs)
-std dev              5.983 ns   (4.479 ns .. 8.170 ns)
-
-benchmarking conv/DeBruijn.Par.FB
-time                 3.737 μs   (3.733 μs .. 3.741 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 3.734 μs   (3.731 μs .. 3.738 μs)
-std dev              12.38 ns   (9.767 ns .. 16.33 ns)
-
-benchmarking conv/DeBruijn.Par.P
-time                 3.647 μs   (3.644 μs .. 3.651 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 3.649 μs   (3.644 μs .. 3.656 μs)
-std dev              18.24 ns   (12.37 ns .. 29.53 ns)
-
-benchmarking conv/DeBruijn.Par.Fun
-time                 3.562 μs   (3.559 μs .. 3.566 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 3.562 μs   (3.558 μs .. 3.567 μs)
-std dev              13.98 ns   (11.11 ns .. 18.38 ns)
-
-benchmarking conv/DeBruijn.Par.L
-time                 3.845 μs   (3.841 μs .. 3.850 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 3.854 μs   (3.848 μs .. 3.862 μs)
-std dev              21.73 ns   (15.00 ns .. 31.37 ns)
-
-benchmarking conv/DeBruijn.Par.Scoped
-time                 14.39 μs   (14.16 μs .. 14.66 μs)
-                     0.998 R²   (0.997 R² .. 0.999 R²)
-mean                 14.43 μs   (14.24 μs .. 14.67 μs)
-std dev              697.1 ns   (529.1 ns .. 943.1 ns)
-variance introduced by outliers: 58% (severely inflated)
-
-benchmarking conv/DeBruijn.Bound
-time                 84.10 μs   (83.82 μs .. 84.32 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 83.83 μs   (83.75 μs .. 83.96 μs)
-std dev              315.5 ns   (217.0 ns .. 424.6 ns)
-
-benchmarking conv/DeBruijn.Nested
-time                 54.97 μs   (54.92 μs .. 55.03 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 55.06 μs   (54.99 μs .. 55.17 μs)
-std dev              294.6 ns   (180.2 ns .. 440.7 ns)
-
-benchmarking conv/DeBruijn.CPDT
-time                 14.00 μs   (13.90 μs .. 14.15 μs)
-                     0.999 R²   (0.998 R² .. 1.000 R²)
-mean                 14.21 μs   (14.07 μs .. 14.40 μs)
-std dev              556.1 ns   (419.1 ns .. 780.6 ns)
-variance introduced by outliers: 47% (moderately inflated)
-
-benchmarking conv/DeBruijn.Kit
-time                 16.29 μs   (16.26 μs .. 16.33 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 16.31 μs   (16.28 μs .. 16.34 μs)
-std dev              107.7 ns   (85.62 ns .. 138.5 ns)
-
-benchmarking conv/DeBruijn.Lazy.TAPL
-time                 4.212 μs   (4.192 μs .. 4.244 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 4.199 μs   (4.195 μs .. 4.213 μs)
-std dev              26.52 ns   (9.183 ns .. 51.82 ns)
-
-benchmarking conv/DeBruijn.Lazy.List
-time                 4.036 μs   (4.034 μs .. 4.038 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 4.037 μs   (4.035 μs .. 4.041 μs)
-std dev              8.141 ns   (5.172 ns .. 14.79 ns)
-
-benchmarking conv/DeBruijn.Lazy.Lennart
-time                 4.191 μs   (4.187 μs .. 4.195 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 4.186 μs   (4.183 μs .. 4.190 μs)
-std dev              10.90 ns   (7.532 ns .. 15.47 ns)
-
-benchmarking conv/DeBruijn.Lazy.Cornell
-time                 4.095 μs   (4.090 μs .. 4.103 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 4.096 μs   (4.091 μs .. 4.102 μs)
-std dev              16.72 ns   (11.61 ns .. 26.15 ns)
-
-benchmarking conv/DeBruijn.Lazy.Lift
-time                 4.225 μs   (4.219 μs .. 4.230 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 4.223 μs   (4.218 μs .. 4.229 μs)
-std dev              17.53 ns   (13.87 ns .. 23.40 ns)
-
-benchmarking conv/DeBruijn.Lazy.Par.B
-time                 4.273 μs   (4.267 μs .. 4.280 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 4.269 μs   (4.265 μs .. 4.275 μs)
-std dev              16.60 ns   (13.06 ns .. 24.44 ns)
-
-benchmarking conv/DeBruijn.Lazy.Par.FB
-time                 4.095 μs   (4.081 μs .. 4.113 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 4.092 μs   (4.086 μs .. 4.101 μs)
-std dev              25.74 ns   (19.34 ns .. 34.54 ns)
-
-benchmarking conv/DeBruijn.Lazy.Par.P
-time                 4.223 μs   (4.194 μs .. 4.258 μs)
-                     1.000 R²   (0.999 R² .. 1.000 R²)
-mean                 4.213 μs   (4.205 μs .. 4.233 μs)
-std dev              41.16 ns   (20.92 ns .. 69.68 ns)
-
-benchmarking conv/DeBruijn.Lazy.Par.Fun
-time                 4.236 μs   (4.229 μs .. 4.241 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 4.222 μs   (4.216 μs .. 4.229 μs)
-std dev              20.58 ns   (16.51 ns .. 28.09 ns)
-
-benchmarking conv/DeBruijn.Lazy.Par.L
-time                 4.145 μs   (4.133 μs .. 4.159 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 4.157 μs   (4.150 μs .. 4.164 μs)
-std dev              23.09 ns   (18.23 ns .. 30.26 ns)
-
-benchmarking conv/DeBruijn.Lazy.Par.Scoped
-time                 13.76 μs   (13.74 μs .. 13.78 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 13.76 μs   (13.74 μs .. 13.79 μs)
-std dev              73.43 ns   (59.29 ns .. 94.27 ns)
-
-benchmarking conv/DeBruijn.Lazy.Bound
-time                 80.68 μs   (80.50 μs .. 80.95 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 80.71 μs   (80.59 μs .. 80.85 μs)
-std dev              433.1 ns   (321.0 ns .. 588.8 ns)
-
-benchmarking conv/DeBruijn.Lazy.Nested
-time                 61.80 μs   (61.61 μs .. 62.10 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 62.14 μs   (62.01 μs .. 62.32 μs)
-std dev              507.6 ns   (408.1 ns .. 720.6 ns)
-
-benchmarking conv/DeBruijn.Lazy.CPDT
-time                 14.21 μs   (14.05 μs .. 14.38 μs)
-                     0.999 R²   (0.998 R² .. 0.999 R²)
-mean                 14.35 μs   (14.16 μs .. 14.57 μs)
-std dev              640.1 ns   (533.9 ns .. 793.4 ns)
-variance introduced by outliers: 54% (severely inflated)
-
-benchmarking conv/DeBruijn.Lazy.Kit
-time                 15.98 μs   (15.97 μs .. 16.00 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 15.98 μs   (15.96 μs .. 16.00 μs)
-std dev              63.44 ns   (43.17 ns .. 99.31 ns)
-
-benchmarking conv/LocallyNameless.Opt
-time                 13.67 μs   (13.48 μs .. 13.81 μs)
-                     0.999 R²   (0.998 R² .. 0.999 R²)
-mean                 13.29 μs   (13.11 μs .. 13.51 μs)
-std dev              646.0 ns   (539.9 ns .. 925.5 ns)
-variance introduced by outliers: 58% (severely inflated)
-
-benchmarking conv/LocallyNameless.Ott
-time                 3.827 μs   (3.825 μs .. 3.830 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 3.830 μs   (3.827 μs .. 3.834 μs)
-std dev              11.92 ns   (8.088 ns .. 18.90 ns)
-
-benchmarking conv/LocallyNameless.ParScoped
-time                 13.50 μs   (13.43 μs .. 13.58 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 13.49 μs   (13.47 μs .. 13.54 μs)
-std dev              114.3 ns   (79.14 ns .. 170.3 ns)
-
-benchmarking conv/LocallyNameless.ParOpt
-time                 13.61 μs   (13.57 μs .. 13.66 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 13.66 μs   (13.63 μs .. 13.72 μs)
-std dev              143.6 ns   (104.0 ns .. 231.0 ns)
-
-benchmarking conv/LocallyNameless.TypedOtt
-time                 13.58 μs   (13.54 μs .. 13.63 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 13.60 μs   (13.56 μs .. 13.65 μs)
-std dev              151.6 ns   (121.3 ns .. 200.0 ns)
-
-benchmarking conv/LocallyNameless.TypedOpt
-time                 13.53 μs   (13.51 μs .. 13.56 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 13.53 μs   (13.51 μs .. 13.55 μs)
-std dev              69.08 ns   (56.40 ns .. 85.67 ns)
-
-benchmarking conv/LocallyNameless.Lazy.Opt
-time                 12.50 μs   (12.43 μs .. 12.57 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 12.50 μs   (12.44 μs .. 12.56 μs)
-std dev              214.8 ns   (181.1 ns .. 265.6 ns)
-variance introduced by outliers: 15% (moderately inflated)
-
-benchmarking conv/LocallyNameless.Lazy.Ott
-time                 4.048 μs   (4.044 μs .. 4.055 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 4.063 μs   (4.056 μs .. 4.071 μs)
-std dev              23.41 ns   (19.07 ns .. 30.23 ns)
-
-benchmarking conv/LocallyNameless.Lazy.ParScoped
-time                 13.11 μs   (12.97 μs .. 13.26 μs)
-                     0.999 R²   (0.998 R² .. 0.999 R²)
-mean                 13.05 μs   (12.92 μs .. 13.19 μs)
-std dev              437.0 ns   (340.4 ns .. 560.6 ns)
-variance introduced by outliers: 39% (moderately inflated)
-
-benchmarking conv/LocallyNameless.Lazy.ParOpt
-time                 13.61 μs   (13.57 μs .. 13.67 μs)
-                     1.000 R²   (0.999 R² .. 1.000 R²)
-mean                 13.77 μs   (13.68 μs .. 13.94 μs)
-std dev              409.1 ns   (233.9 ns .. 729.2 ns)
-variance introduced by outliers: 34% (moderately inflated)
-
-benchmarking conv/LocallyNameless.Lazy.TypedOtt
-time                 13.07 μs   (12.99 μs .. 13.17 μs)
-                     0.999 R²   (0.999 R² .. 1.000 R²)
-mean                 13.11 μs   (13.04 μs .. 13.27 μs)
-std dev              358.8 ns   (219.8 ns .. 560.4 ns)
-variance introduced by outliers: 30% (moderately inflated)
-
-benchmarking conv/LocallyNameless.Lazy.TypedOpt
-time                 14.37 μs   (14.16 μs .. 14.53 μs)
-                     0.999 R²   (0.998 R² .. 0.999 R²)
-mean                 14.37 μs   (14.21 μs .. 14.55 μs)
-std dev              564.2 ns   (462.8 ns .. 747.7 ns)
-variance introduced by outliers: 47% (moderately inflated)
-
-benchmarking conv/LocallyNameless.UnboundRep
-time                 341.0 μs   (340.4 μs .. 341.8 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 341.7 μs   (341.4 μs .. 342.0 μs)
-std dev              1.019 μs   (850.7 ns .. 1.251 μs)
-
-benchmarking conv/LocallyNameless.UnboundGenerics
-time                 83.65 μs   (83.50 μs .. 83.78 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 83.40 μs   (83.32 μs .. 83.51 μs)
-std dev              303.6 ns   (250.6 ns .. 410.4 ns)
-
-benchmarking conv/Named.NominalG
-time                 93.20 ms   (52.83 ms .. 132.9 ms)
-                     0.818 R²   (0.746 R² .. 0.934 R²)
-mean                 41.61 ms   (25.50 ms .. 62.67 ms)
-std dev              29.97 ms   (21.09 ms .. 41.52 ms)
-variance introduced by outliers: 91% (severely inflated)
-
-benchmarking conv/Named.SimpleH
-time                 3.461 μs   (3.458 μs .. 3.464 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 3.461 μs   (3.459 μs .. 3.465 μs)
-std dev              9.046 ns   (6.543 ns .. 11.65 ns)
-
-benchmarking conv/Named.SimpleM
-time                 14.65 μs   (14.63 μs .. 14.66 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 14.61 μs   (14.59 μs .. 14.63 μs)
-std dev              54.48 ns   (43.63 ns .. 73.18 ns)
-
-benchmarking conv/Lennart.HOAS
-time                 23.21 ns   (23.17 ns .. 23.26 ns)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 23.16 ns   (23.14 ns .. 23.19 ns)
-std dev              94.45 ps   (70.26 ps .. 157.1 ps)
-
-benchmarking conv/Core
-time                 598.7 ns   (597.7 ns .. 599.5 ns)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 598.0 ns   (597.0 ns .. 598.9 ns)
-std dev              3.160 ns   (2.705 ns .. 3.826 ns)
-
 benchmarking nf/DeBruijn.TAPL/
-time                 1.415 s    (1.386 s .. 1.432 s)
+time                 1.435 s    (1.430 s .. 1.442 s)
                      1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 1.433 s    (1.421 s .. 1.438 s)
-std dev              8.874 ms   (2.463 ms .. 12.00 ms)
+mean                 1.433 s    (1.431 s .. 1.434 s)
+std dev              1.886 ms   (686.1 μs .. 2.554 ms)
 variance introduced by outliers: 19% (moderately inflated)
 
 benchmarking nf/DeBruijn.List/
-time                 282.6 ms   (282.3 ms .. 283.0 ms)
+time                 271.9 ms   (269.9 ms .. 273.7 ms)
                      1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 282.4 ms   (282.3 ms .. 282.5 ms)
-std dev              110.3 μs   (35.24 μs .. 159.2 μs)
+mean                 272.2 ms   (271.9 ms .. 272.9 ms)
+std dev              559.2 μs   (78.64 μs .. 759.4 μs)
 variance introduced by outliers: 16% (moderately inflated)
 
 benchmarking nf/DeBruijn.Lennart/
-time                 266.7 ms   (265.8 ms .. 267.5 ms)
+time                 267.6 ms   (266.9 ms .. 268.1 ms)
                      1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 265.6 ms   (265.2 ms .. 266.0 ms)
-std dev              554.8 μs   (313.6 μs .. 736.8 μs)
+mean                 268.9 ms   (268.3 ms .. 269.5 ms)
+std dev              781.1 μs   (575.1 μs .. 959.0 μs)
 variance introduced by outliers: 16% (moderately inflated)
 
 benchmarking nf/DeBruijn.Cornell/
-time                 649.8 ms   (626.7 ms .. 664.3 ms)
+time                 607.1 ms   (600.5 ms .. 615.2 ms)
                      1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 652.7 ms   (650.1 ms .. 654.8 ms)
-std dev              3.088 ms   (1.461 ms .. 4.329 ms)
+mean                 601.7 ms   (599.7 ms .. 604.5 ms)
+std dev              2.639 ms   (305.3 μs .. 3.364 ms)
 variance introduced by outliers: 19% (moderately inflated)
 
 benchmarking nf/DeBruijn.Lift/
-time                 269.4 ms   (268.4 ms .. 270.3 ms)
+time                 258.4 ms   (257.0 ms .. 259.8 ms)
                      1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 269.3 ms   (268.7 ms .. 269.7 ms)
-std dev              595.3 μs   (259.9 μs .. 799.7 μs)
+mean                 257.5 ms   (257.1 ms .. 257.9 ms)
+std dev              528.5 μs   (420.5 μs .. 580.9 μs)
 variance introduced by outliers: 16% (moderately inflated)
 
 benchmarking nf/DeBruijn.Par.B/
-time                 5.291 ms   (5.283 ms .. 5.298 ms)
+time                 6.258 ms   (6.240 ms .. 6.281 ms)
                      1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 5.307 ms   (5.301 ms .. 5.313 ms)
-std dev              19.77 μs   (15.69 μs .. 25.41 μs)
+mean                 6.250 ms   (6.244 ms .. 6.263 ms)
+std dev              25.47 μs   (13.87 μs .. 47.29 μs)
 
 benchmarking nf/DeBruijn.Par.FB/
-time                 11.05 s    (9.897 s .. NaN s)
-                     0.998 R²   (0.994 R² .. 1.000 R²)
-mean                 11.66 s    (11.29 s .. 12.29 s)
-std dev              598.9 ms   (62.84 ms .. 759.1 ms)
-variance introduced by outliers: 19% (moderately inflated)
+time                 10.65 s    (8.352 s .. 13.13 s)
+                     0.993 R²   (0.976 R² .. 1.000 R²)
+mean                 11.67 s    (11.12 s .. 12.32 s)
+std dev              785.4 ms   (326.4 ms .. 1.009 s)
+variance introduced by outliers: 20% (moderately inflated)
 
 benchmarking nf/DeBruijn.Par.P/
-time                 724.8 ms   (713.8 ms .. 736.8 ms)
-                     1.000 R²   (1.000 R² .. NaN R²)
-mean                 725.7 ms   (722.6 ms .. 729.8 ms)
-std dev              3.961 ms   (1.732 ms .. 4.965 ms)
+time                 726.3 ms   (724.9 ms .. 728.2 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 725.9 ms   (725.5 ms .. 726.1 ms)
+std dev              362.0 μs   (93.97 μs .. 444.2 μs)
 variance introduced by outliers: 19% (moderately inflated)
 
 benchmarking nf/DeBruijn.Par.Fun/
-time                 673.6 ms   (669.3 ms .. 678.7 ms)
-                     1.000 R²   (NaN R² .. 1.000 R²)
-mean                 669.6 ms   (667.3 ms .. 671.6 ms)
-std dev              2.364 ms   (1.957 ms .. 2.677 ms)
+time                 673.9 ms   (673.1 ms .. 674.8 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 674.6 ms   (674.2 ms .. 674.8 ms)
+std dev              341.8 μs   (21.49 μs .. 422.0 μs)
 variance introduced by outliers: 19% (moderately inflated)
 
 benchmarking nf/DeBruijn.Par.L/
-time                 822.6 ms   (819.1 ms .. 829.0 ms)
+time                 832.5 ms   (830.0 ms .. 837.3 ms)
                      1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 820.0 ms   (819.2 ms .. 821.3 ms)
-std dev              1.295 ms   (48.05 μs .. 1.574 ms)
+mean                 833.2 ms   (832.3 ms .. 834.4 ms)
+std dev              1.191 ms   (568.9 μs .. 1.658 ms)
 variance introduced by outliers: 19% (moderately inflated)
 
 benchmarking nf/DeBruijn.Par.Scoped/
-time                 2.910 ms   (2.901 ms .. 2.918 ms)
+time                 2.945 ms   (2.928 ms .. 2.960 ms)
                      1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 2.941 ms   (2.929 ms .. 2.968 ms)
-std dev              50.27 μs   (24.34 μs .. 98.26 μs)
+mean                 2.918 ms   (2.914 ms .. 2.925 ms)
+std dev              17.70 μs   (13.44 μs .. 26.13 μs)
 
 benchmarking nf/DeBruijn.Bound/
-time                 7.081 ms   (7.062 ms .. 7.100 ms)
+time                 7.171 ms   (7.164 ms .. 7.178 ms)
                      1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 7.069 ms   (7.063 ms .. 7.077 ms)
-std dev              19.71 μs   (15.33 μs .. 25.42 μs)
+mean                 7.169 ms   (7.164 ms .. 7.174 ms)
+std dev              15.90 μs   (12.17 μs .. 20.82 μs)
 
 benchmarking nf/DeBruijn.Nested/
-time                 10.52 s    (10.04 s .. 10.82 s)
+time                 10.50 s    (NaN s .. 10.89 s)
                      1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 10.70 s    (10.57 s .. 10.94 s)
-std dev              231.7 ms   (18.19 ms .. 289.2 ms)
+mean                 10.66 s    (10.52 s .. 10.88 s)
+std dev              209.2 ms   (242.2 μs .. 254.1 ms)
 variance introduced by outliers: 19% (moderately inflated)
 
 benchmarking nf/DeBruijn.CPDT/
-time                 949.1 ms   (946.4 ms .. 950.3 ms)
+time                 960.6 ms   (951.4 ms .. 966.1 ms)
                      1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 947.3 ms   (946.5 ms .. 948.0 ms)
-std dev              933.8 μs   (626.3 μs .. 1.091 ms)
+mean                 958.3 ms   (955.7 ms .. 959.9 ms)
+std dev              2.639 ms   (1.216 ms .. 3.684 ms)
 variance introduced by outliers: 19% (moderately inflated)
 
 benchmarking nf/DeBruijn.Kit/
-time                 816.8 ms   (812.1 ms .. 822.8 ms)
+time                 819.2 ms   (810.0 ms .. 830.8 ms)
                      1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 814.9 ms   (813.7 ms .. 816.1 ms)
-std dev              1.476 ms   (901.3 μs .. 1.762 ms)
+mean                 815.9 ms   (814.0 ms .. 817.7 ms)
+std dev              2.191 ms   (1.124 ms .. 2.779 ms)
 variance introduced by outliers: 19% (moderately inflated)
 
 benchmarking nf/DeBruijn.Lazy.TAPL/
-time                 6.943 s    (6.771 s .. 7.060 s)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 7.054 s    (6.994 s .. 7.167 s)
-std dev              110.8 ms   (1.985 ms .. 131.6 ms)
+time                 6.893 s    (6.709 s .. 7.157 s)
+                     1.000 R²   (NaN R² .. 1.000 R²)
+mean                 7.037 s    (6.961 s .. 7.160 s)
+std dev              117.0 ms   (9.157 ms .. 147.5 ms)
 variance introduced by outliers: 19% (moderately inflated)
 
 benchmarking nf/DeBruijn.Lazy.List/
-time                 2.531 s    (1.993 s .. 3.283 s)
-                     0.990 R²   (0.971 R² .. 1.000 R²)
-mean                 2.688 s    (2.518 s .. 2.807 s)
-std dev              181.7 ms   (108.6 ms .. 256.3 ms)
-variance introduced by outliers: 20% (moderately inflated)
+time                 2.444 s    (2.116 s .. 2.770 s)
+                     0.998 R²   (0.991 R² .. 1.000 R²)
+mean                 2.665 s    (2.560 s .. 2.825 s)
+std dev              155.6 ms   (76.79 ms .. 202.9 ms)
+variance introduced by outliers: 19% (moderately inflated)
 
 benchmarking nf/DeBruijn.Lazy.Lennart/
-time                 2.360 s    (NaN s .. 3.187 s)
-                     0.986 R²   (0.954 R² .. 1.000 R²)
-mean                 2.490 s    (2.311 s .. 2.685 s)
-std dev              233.7 ms   (115.6 ms .. 317.3 ms)
+time                 2.300 s    (1.645 s .. 2.994 s)
+                     0.989 R²   (0.959 R² .. 1.000 R²)
+mean                 2.455 s    (2.276 s .. 2.672 s)
+std dev              239.2 ms   (87.01 ms .. 326.3 ms)
 variance introduced by outliers: 22% (moderately inflated)
 
 benchmarking nf/DeBruijn.Lazy.Cornell/
-time                 6.082 s    (6.016 s .. NaN s)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 6.093 s    (6.080 s .. 6.101 s)
-std dev              12.63 ms   (7.371 ms .. 17.69 ms)
+time                 6.211 s    (5.985 s .. 6.649 s)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 6.093 s    (6.054 s .. 6.163 s)
+std dev              68.23 ms   (2.954 ms .. 87.53 ms)
 variance introduced by outliers: 19% (moderately inflated)
 
 benchmarking nf/DeBruijn.Lazy.Lift/
-time                 2.249 s    (2.074 s .. 2.374 s)
-                     0.999 R²   (0.998 R² .. 1.000 R²)
-mean                 2.534 s    (2.411 s .. 2.754 s)
-std dev              213.6 ms   (17.00 ms .. 266.5 ms)
-variance introduced by outliers: 22% (moderately inflated)
+time                 2.330 s    (1.937 s .. 2.753 s)
+                     0.996 R²   (0.985 R² .. 1.000 R²)
+mean                 2.512 s    (2.395 s .. 2.692 s)
+std dev              190.6 ms   (41.67 ms .. 245.2 ms)
+variance introduced by outliers: 21% (moderately inflated)
 
 benchmarking nf/DeBruijn.Lazy.Par.B/
-time                 9.420 ms   (9.382 ms .. 9.449 ms)
-                     1.000 R²   (0.999 R² .. 1.000 R²)
-mean                 9.481 ms   (9.456 ms .. 9.535 ms)
-std dev              99.41 μs   (36.92 μs .. 174.8 μs)
+time                 12.22 ms   (12.20 ms .. 12.25 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 12.21 ms   (12.20 ms .. 12.23 ms)
+std dev              47.74 μs   (27.35 μs .. 75.05 μs)
 
 benchmarking nf/DeBruijn.Lazy.Par.FB/
-time                 11.97 s    (9.337 s .. 13.32 s)
-                     0.994 R²   (0.985 R² .. 1.000 R²)
-mean                 12.70 s    (12.06 s .. 13.81 s)
-std dev              1.079 s    (69.40 ms .. 1.424 s)
-variance introduced by outliers: 22% (moderately inflated)
+time                 12.10 s    (10.28 s .. 13.14 s)
+                     0.997 R²   (0.993 R² .. 1.000 R²)
+mean                 12.87 s    (12.38 s .. 13.77 s)
+std dev              885.0 ms   (2.524 ms .. 1.124 s)
+variance introduced by outliers: 20% (moderately inflated)
 
 benchmarking nf/DeBruijn.Lazy.Par.P/
-time                 3.042 s    (NaN s .. 3.269 s)
-                     0.999 R²   (0.999 R² .. 1.000 R²)
-mean                 3.160 s    (3.079 s .. 3.304 s)
-std dev              138.6 ms   (3.984 ms .. 169.0 ms)
+time                 3.057 s    (2.349 s .. 3.690 s)
+                     0.994 R²   (0.976 R² .. 1.000 R²)
+mean                 3.115 s    (2.994 s .. 3.190 s)
+std dev              123.8 ms   (57.27 ms .. 173.1 ms)
 variance introduced by outliers: 19% (moderately inflated)
 
 benchmarking nf/DeBruijn.Lazy.Par.Fun/
-time                 2.535 s    (2.210 s .. 2.816 s)
-                     0.998 R²   (0.993 R² .. 1.000 R²)
-mean                 2.634 s    (2.550 s .. 2.771 s)
-std dev              132.1 ms   (33.64 ms .. 176.9 ms)
+time                 2.506 s    (2.251 s .. 2.644 s)
+                     0.999 R²   (0.997 R² .. 1.000 R²)
+mean                 2.609 s    (2.540 s .. 2.732 s)
+std dev              121.5 ms   (2.406 ms .. 155.0 ms)
 variance introduced by outliers: 19% (moderately inflated)
 
 benchmarking nf/DeBruijn.Lazy.Par.L/
-time                 3.826 s    (3.465 s .. 4.335 s)
-                     0.998 R²   (0.994 R² .. 1.000 R²)
-mean                 3.940 s    (3.878 s .. 4.054 s)
-std dev              113.7 ms   (5.930 ms .. 138.2 ms)
+time                 3.806 s    (3.534 s .. 4.324 s)
+                     0.998 R²   (0.995 R² .. 1.000 R²)
+mean                 3.936 s    (3.864 s .. 4.055 s)
+std dev              114.2 ms   (18.35 ms .. 147.2 ms)
 variance introduced by outliers: 19% (moderately inflated)
 
 benchmarking nf/DeBruijn.Lazy.Par.Scoped/
-time                 5.148 ms   (5.134 ms .. 5.158 ms)
+time                 5.195 ms   (5.180 ms .. 5.209 ms)
                      1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 5.136 ms   (5.129 ms .. 5.151 ms)
-std dev              32.04 μs   (18.67 μs .. 60.29 μs)
+mean                 5.175 ms   (5.170 ms .. 5.181 ms)
+std dev              17.05 μs   (13.17 μs .. 23.19 μs)
 
 benchmarking nf/DeBruijn.Lazy.Bound/
-time                 14.10 ms   (14.06 ms .. 14.14 ms)
+time                 13.87 ms   (13.82 ms .. 13.91 ms)
                      1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 14.04 ms   (14.01 ms .. 14.06 ms)
-std dev              52.87 μs   (40.41 μs .. 69.77 μs)
+mean                 13.92 ms   (13.88 ms .. 14.03 ms)
+std dev              163.0 μs   (52.68 μs .. 314.5 μs)
 
 benchmarking nf/DeBruijn.Lazy.Nested/
-time                 12.36 s    (11.95 s .. 12.58 s)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 12.36 s    (12.31 s .. 12.41 s)
-std dev              66.69 ms   (26.93 ms .. 87.66 ms)
+time                 12.23 s    (11.57 s .. 12.64 s)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 12.31 s    (12.20 s .. 12.42 s)
+std dev              125.9 ms   (107.6 ms .. 129.7 ms)
 variance introduced by outliers: 19% (moderately inflated)
 
 benchmarking nf/DeBruijn.Lazy.CPDT/
-time                 3.242 s    (3.017 s .. 3.673 s)
-                     0.998 R²   (0.995 R² .. 1.000 R²)
-mean                 3.357 s    (3.249 s .. 3.488 s)
-std dev              133.2 ms   (53.31 ms .. 183.7 ms)
+time                 3.198 s    (2.978 s .. 3.597 s)
+                     0.998 R²   (0.996 R² .. 1.000 R²)
+mean                 3.331 s    (3.225 s .. 3.468 s)
+std dev              136.0 ms   (49.89 ms .. 186.6 ms)
 variance introduced by outliers: 19% (moderately inflated)
 
 benchmarking nf/DeBruijn.Lazy.Kit/
-time                 2.603 s    (2.346 s .. 2.844 s)
-                     0.999 R²   (0.995 R² .. 1.000 R²)
-mean                 2.618 s    (2.574 s .. 2.645 s)
-std dev              44.16 ms   (18.40 ms .. 61.04 ms)
-variance introduced by outliers: 19% (moderately inflated)
+time                 2.525 s    (1.730 s .. 3.251 s)
+                     0.988 R²   (0.955 R² .. 1.000 R²)
+mean                 2.680 s    (2.463 s .. 2.939 s)
+std dev              276.6 ms   (118.3 ms .. 382.0 ms)
+variance introduced by outliers: 23% (moderately inflated)
 
 benchmarking nf/LocallyNameless.Opt/
-time                 2.766 ms   (2.735 ms .. 2.831 ms)
-                     0.998 R²   (0.996 R² .. 1.000 R²)
-mean                 2.743 ms   (2.736 ms .. 2.767 ms)
-std dev              40.54 μs   (5.587 μs .. 85.58 μs)
+time                 2.703 ms   (2.690 ms .. 2.723 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 2.684 ms   (2.680 ms .. 2.691 ms)
+std dev              18.38 μs   (13.30 μs .. 31.12 μs)
 
 benchmarking nf/LocallyNameless.Ott/
-time                 116.9 ms   (116.6 ms .. 117.2 ms)
+time                 120.3 ms   (120.1 ms .. 120.5 ms)
                      1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 116.8 ms   (116.7 ms .. 116.9 ms)
-std dev              204.1 μs   (132.3 μs .. 305.5 μs)
+mean                 120.4 ms   (120.3 ms .. 120.5 ms)
+std dev              159.7 μs   (77.83 μs .. 240.6 μs)
 variance introduced by outliers: 11% (moderately inflated)
 
 benchmarking nf/LocallyNameless.ParScoped/
-time                 1.375 s    (1.367 s .. 1.379 s)
+time                 1.378 s    (1.371 s .. 1.385 s)
                      1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 1.370 s    (1.368 s .. 1.372 s)
-std dev              2.725 ms   (1.100 ms .. 3.367 ms)
+mean                 1.378 s    (1.377 s .. 1.379 s)
+std dev              1.228 ms   (108.5 μs .. 1.538 ms)
 variance introduced by outliers: 19% (moderately inflated)
 
 benchmarking nf/LocallyNameless.ParOpt/
-time                 7.261 ms   (7.236 ms .. 7.278 ms)
+time                 7.054 ms   (7.041 ms .. 7.073 ms)
                      1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 7.241 ms   (7.232 ms .. 7.251 ms)
-std dev              27.75 μs   (23.14 μs .. 34.01 μs)
+mean                 7.052 ms   (7.043 ms .. 7.062 ms)
+std dev              26.74 μs   (20.65 μs .. 36.46 μs)
 
 benchmarking nf/LocallyNameless.TypedOtt/
-time                 759.8 ms   (756.1 ms .. 763.7 ms)
+time                 772.8 ms   (771.8 ms .. 773.4 ms)
                      1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 759.0 ms   (758.4 ms .. 759.9 ms)
-std dev              820.1 μs   (23.42 μs .. 1.014 ms)
+mean                 774.8 ms   (774.0 ms .. 776.0 ms)
+std dev              1.197 ms   (313.4 μs .. 1.613 ms)
 variance introduced by outliers: 19% (moderately inflated)
 
 benchmarking nf/LocallyNameless.TypedOpt/
-time                 3.204 ms   (3.199 ms .. 3.210 ms)
+time                 3.181 ms   (3.168 ms .. 3.201 ms)
                      1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 3.204 ms   (3.201 ms .. 3.210 ms)
-std dev              12.86 μs   (9.051 μs .. 22.64 μs)
+mean                 3.182 ms   (3.177 ms .. 3.191 ms)
+std dev              20.78 μs   (14.21 μs .. 33.12 μs)
 
 benchmarking nf/LocallyNameless.Lazy.Opt/
-time                 5.350 ms   (5.329 ms .. 5.383 ms)
-                     1.000 R²   (0.999 R² .. 1.000 R²)
-mean                 5.379 ms   (5.368 ms .. 5.403 ms)
-std dev              49.06 μs   (25.69 μs .. 87.91 μs)
+time                 5.339 ms   (5.325 ms .. 5.357 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 5.316 ms   (5.308 ms .. 5.326 ms)
+std dev              25.31 μs   (19.59 μs .. 34.00 μs)
 
 benchmarking nf/LocallyNameless.Lazy.Ott/
-time                 886.6 ms   (824.4 ms .. 943.4 ms)
-                     0.999 R²   (0.999 R² .. 1.000 R²)
-mean                 922.2 ms   (900.9 ms .. 961.8 ms)
-std dev              38.35 ms   (2.150 ms .. 46.84 ms)
+time                 919.3 ms   (821.0 ms .. 1.052 s)
+                     0.997 R²   (0.996 R² .. 1.000 R²)
+mean                 925.9 ms   (897.0 ms .. 955.2 ms)
+std dev              36.98 ms   (18.77 ms .. 45.03 ms)
 variance introduced by outliers: 19% (moderately inflated)
 
 benchmarking nf/LocallyNameless.Lazy.ParScoped/
-time                 3.632 s    (2.599 s .. 4.261 s)
-                     0.989 R²   (0.980 R² .. 1.000 R²)
-mean                 3.782 s    (3.530 s .. 4.167 s)
-std dev              368.2 ms   (93.46 ms .. 490.3 ms)
-variance introduced by outliers: 22% (moderately inflated)
+time                 3.514 s    (3.301 s .. 3.935 s)
+                     0.998 R²   (0.997 R² .. 1.000 R²)
+mean                 3.627 s    (3.562 s .. 3.725 s)
+std dev              93.49 ms   (25.36 ms .. 123.6 ms)
+variance introduced by outliers: 19% (moderately inflated)
 
 benchmarking nf/LocallyNameless.Lazy.ParOpt/
-time                 11.00 ms   (10.96 ms .. 11.05 ms)
+time                 10.73 ms   (10.70 ms .. 10.77 ms)
                      1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 10.94 ms   (10.92 ms .. 10.96 ms)
-std dev              54.59 μs   (39.33 μs .. 84.57 μs)
+mean                 10.70 ms   (10.68 ms .. 10.71 ms)
+std dev              35.70 μs   (27.24 μs .. 46.87 μs)
 
 benchmarking nf/LocallyNameless.Lazy.TypedOtt/
-time                 3.336 s    (2.972 s .. 3.658 s)
-                     0.999 R²   (0.995 R² .. 1.000 R²)
-mean                 3.376 s    (3.311 s .. 3.416 s)
-std dev              65.54 ms   (29.27 ms .. 91.08 ms)
+time                 3.231 s    (2.292 s .. 3.991 s)
+                     0.990 R²   (0.965 R² .. 1.000 R²)
+mean                 3.337 s    (3.219 s .. 3.446 s)
+std dev              133.4 ms   (54.75 ms .. 175.3 ms)
 variance introduced by outliers: 19% (moderately inflated)
 
 benchmarking nf/LocallyNameless.Lazy.TypedOpt/
-time                 3.067 ms   (3.056 ms .. 3.079 ms)
+time                 3.268 ms   (3.263 ms .. 3.272 ms)
                      1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 3.056 ms   (3.053 ms .. 3.060 ms)
-std dev              12.12 μs   (9.104 μs .. 17.95 μs)
+mean                 3.276 ms   (3.272 ms .. 3.279 ms)
+std dev              12.16 μs   (9.681 μs .. 15.86 μs)
 
 benchmarking nf/LocallyNameless.UnboundRep/
-time                 4.218 s    (3.608 s .. 4.947 s)
-                     0.997 R²   (0.988 R² .. 1.000 R²)
-mean                 4.639 s    (4.397 s .. 4.987 s)
-std dev              372.8 ms   (1.389 ms .. 454.8 ms)
-variance introduced by outliers: 21% (moderately inflated)
+time                 4.297 s    (3.751 s .. 5.375 s)
+                     0.993 R²   (0.984 R² .. 1.000 R²)
+mean                 4.773 s    (4.449 s .. 5.233 s)
+std dev              449.7 ms   (138.3 ms .. 603.6 ms)
+variance introduced by outliers: 22% (moderately inflated)
 
 benchmarking nf/LocallyNameless.UnboundGenerics/
-time                 3.059 s    (2.911 s .. 3.247 s)
-                     0.999 R²   (0.999 R² .. 1.000 R²)
-mean                 3.161 s    (3.108 s .. 3.198 s)
-std dev              51.86 ms   (18.72 ms .. 70.47 ms)
+time                 1.427 s    (1.424 s .. 1.431 s)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 1.427 s    (1.426 s .. 1.428 s)
+std dev              701.0 μs   (116.6 μs .. 890.2 μs)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking nf/LocallyNameless.UGSubstBind/
+time                 679.3 ms   (676.4 ms .. 681.1 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 679.9 ms   (679.1 ms .. 680.9 ms)
+std dev              1.125 ms   (217.5 μs .. 1.470 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking nf/LocallyNameless.Lazy.Opt/
+time                 5.361 ms   (5.342 ms .. 5.379 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 5.359 ms   (5.348 ms .. 5.373 ms)
+std dev              39.23 μs   (29.64 μs .. 52.22 μs)
+
+benchmarking nf/LocallyNameless.Lazy.Ott/
+time                 880.2 ms   (701.9 ms .. 1.060 s)
+                     0.995 R²   (0.980 R² .. 1.000 R²)
+mean                 929.7 ms   (892.0 ms .. 965.2 ms)
+std dev              42.44 ms   (28.62 ms .. 50.98 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking nf/LocallyNameless.Lazy.ParScoped/
+time                 3.602 s    (3.251 s .. 3.959 s)
+                     0.999 R²   (0.995 R² .. 1.000 R²)
+mean                 3.633 s    (3.576 s .. 3.725 s)
+std dev              88.05 ms   (16.93 ms .. 114.9 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking nf/LocallyNameless.Lazy.ParOpt/
+time                 10.65 ms   (10.62 ms .. 10.69 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 10.68 ms   (10.66 ms .. 10.72 ms)
+std dev              80.28 μs   (40.39 μs .. 123.0 μs)
+
+benchmarking nf/LocallyNameless.Lazy.TypedOtt/
+time                 3.189 s    (2.562 s .. 3.730 s)
+                     0.995 R²   (0.983 R² .. 1.000 R²)
+mean                 3.344 s    (3.246 s .. 3.473 s)
+std dev              140.0 ms   (54.13 ms .. 187.7 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking nf/LocallyNameless.Lazy.TypedOpt/
+time                 3.278 ms   (3.262 ms .. 3.302 ms)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 3.272 ms   (3.267 ms .. 3.283 ms)
+std dev              23.37 μs   (13.43 μs .. 40.87 μs)
+
+benchmarking nf/LocallyNameless.Lazy.UnboundRep/
+time                 4.744 s    (4.663 s .. 4.857 s)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 4.878 s    (4.816 s .. 4.990 s)
+std dev              107.5 ms   (6.258 ms .. 133.2 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking nf/LocallyNameless.Lazy.UnboundGenerics/
+time                 2.643 s    (2.330 s .. NaN s)
+                     0.998 R²   (0.994 R² .. 1.000 R²)
+mean                 2.805 s    (2.696 s .. 2.891 s)
+std dev              116.0 ms   (55.90 ms .. 150.5 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking nf/LocallyNameless.Lazy.UGSubstBind/
+time                 1.345 s    (1.065 s .. 1.708 s)
+                     0.992 R²   (0.974 R² .. 1.000 R²)
+mean                 1.431 s    (1.386 s .. 1.515 s)
+std dev              81.84 ms   (4.538 ms .. 99.22 ms)
 variance introduced by outliers: 19% (moderately inflated)
 
 benchmarking nf/Named.NominalG/
-time                 15.11 s    (13.35 s .. 17.32 s)
-                     0.998 R²   (0.992 R² .. 1.000 R²)
-mean                 15.66 s    (15.14 s .. 16.28 s)
-std dev              705.3 ms   (229.0 ms .. 938.0 ms)
+time                 15.17 s    (13.27 s .. 16.79 s)
+                     0.998 R²   (0.993 R² .. 1.000 R²)
+mean                 15.51 s    (14.96 s .. 16.13 s)
+std dev              649.5 ms   (257.8 ms .. 901.0 ms)
 variance introduced by outliers: 19% (moderately inflated)
 
 benchmarking nf/Named.SimpleH/
-time                 104.1 ms   (103.7 ms .. 104.6 ms)
+time                 106.5 ms   (106.3 ms .. 106.8 ms)
                      1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 103.9 ms   (103.8 ms .. 104.1 ms)
-std dev              195.8 μs   (65.00 μs .. 310.9 μs)
+mean                 106.5 ms   (106.5 ms .. 106.7 ms)
+std dev              186.4 μs   (132.0 μs .. 266.9 μs)
 
 benchmarking nf/Named.SimpleM/
-time                 1.255 s    (1.046 s .. 1.475 s)
-                     0.996 R²   (0.986 R² .. 1.000 R²)
-mean                 1.329 s    (1.267 s .. 1.367 s)
-std dev              63.35 ms   (27.76 ms .. 85.07 ms)
+time                 1.324 s    (1.228 s .. 1.404 s)
+                     0.999 R²   (0.998 R² .. 1.000 R²)
+mean                 1.354 s    (1.329 s .. 1.394 s)
+std dev              39.13 ms   (10.25 ms .. 52.43 ms)
 variance introduced by outliers: 19% (moderately inflated)
 
 benchmarking nf/Lennart.HOAS/
-time                 17.30 ms   (17.29 ms .. 17.32 ms)
+time                 17.17 ms   (17.11 ms .. 17.22 ms)
                      1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 17.29 ms   (17.26 ms .. 17.31 ms)
-std dev              58.15 μs   (28.17 μs .. 106.2 μs)
+mean                 17.19 ms   (17.15 ms .. 17.24 ms)
+std dev              109.7 μs   (77.07 μs .. 165.7 μs)
 
 benchmarking nf/Core/
-time                 6.548 s    (5.621 s .. 7.192 s)
-                     0.998 R²   (NaN R² .. 1.000 R²)
-mean                 6.894 s    (6.652 s .. 7.094 s)
-std dev              245.5 ms   (172.9 ms .. 287.2 ms)
-variance introduced by outliers: 19% (moderately inflated)
-
-benchmarking aeq/DeBruijn.TAPL
-time                 609.6 ns   (608.2 ns .. 611.3 ns)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 613.2 ns   (611.4 ns .. 617.2 ns)
-std dev              8.485 ns   (4.466 ns .. 15.68 ns)
-variance introduced by outliers: 13% (moderately inflated)
-
-benchmarking aeq/DeBruijn.List
-time                 605.2 ns   (604.1 ns .. 606.4 ns)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 605.0 ns   (604.2 ns .. 606.0 ns)
-std dev              3.146 ns   (2.448 ns .. 4.126 ns)
-
-benchmarking aeq/DeBruijn.Lennart
-time                 591.8 ns   (591.0 ns .. 592.7 ns)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 590.5 ns   (589.6 ns .. 591.6 ns)
-std dev              3.308 ns   (2.725 ns .. 4.514 ns)
-
-benchmarking aeq/DeBruijn.Cornell
-time                 647.2 ns   (646.4 ns .. 647.8 ns)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 645.9 ns   (645.1 ns .. 646.8 ns)
-std dev              2.841 ns   (2.321 ns .. 3.779 ns)
-
-benchmarking aeq/DeBruijn.Lift
-time                 614.5 ns   (613.7 ns .. 615.7 ns)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 615.6 ns   (614.4 ns .. 617.1 ns)
-std dev              4.546 ns   (3.633 ns .. 6.625 ns)
-
-benchmarking aeq/DeBruijn.Par.B
-time                 9.219 μs   (9.209 μs .. 9.232 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 9.259 μs   (9.236 μs .. 9.290 μs)
-std dev              93.59 ns   (67.86 ns .. 131.1 ns)
-
-benchmarking aeq/DeBruijn.Par.FB
-time                 14.01 μs   (13.97 μs .. 14.07 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 14.05 μs   (14.01 μs .. 14.13 μs)
-std dev              189.5 ns   (113.1 ns .. 289.3 ns)
-
-benchmarking aeq/DeBruijn.Par.P
-time                 614.8 ns   (613.6 ns .. 615.9 ns)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 613.7 ns   (612.8 ns .. 614.6 ns)
-std dev              3.006 ns   (2.504 ns .. 3.874 ns)
-
-benchmarking aeq/DeBruijn.Par.Fun
-time                 606.9 ns   (606.3 ns .. 607.6 ns)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 607.0 ns   (606.3 ns .. 608.1 ns)
-std dev              2.787 ns   (1.747 ns .. 4.910 ns)
-
-benchmarking aeq/DeBruijn.Par.L
-time                 616.1 ns   (615.2 ns .. 617.1 ns)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 615.7 ns   (614.6 ns .. 616.6 ns)
-std dev              3.267 ns   (2.677 ns .. 4.238 ns)
-
-benchmarking aeq/DeBruijn.Par.Scoped
-time                 15.43 μs   (15.41 μs .. 15.46 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 15.43 μs   (15.41 μs .. 15.44 μs)
-std dev              46.34 ns   (38.44 ns .. 57.98 ns)
-
-benchmarking aeq/DeBruijn.Bound
-time                 179.4 μs   (178.5 μs .. 180.8 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 178.8 μs   (178.6 μs .. 179.4 μs)
-std dev              1.119 μs   (467.9 ns .. 2.173 μs)
-
-benchmarking aeq/DeBruijn.Nested
-time                 3.146 μs   (3.140 μs .. 3.153 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 3.144 μs   (3.141 μs .. 3.150 μs)
-std dev              14.36 ns   (9.470 ns .. 23.57 ns)
-
-benchmarking aeq/DeBruijn.CPDT
-time                 1.470 μs   (1.467 μs .. 1.472 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 1.465 μs   (1.464 μs .. 1.467 μs)
-std dev              5.510 ns   (4.727 ns .. 6.744 ns)
-
-benchmarking aeq/DeBruijn.Kit
-time                 1.403 μs   (1.401 μs .. 1.405 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 1.408 μs   (1.406 μs .. 1.411 μs)
-std dev              7.876 ns   (6.264 ns .. 10.67 ns)
-
-benchmarking aeq/DeBruijn.Lazy.TAPL
-time                 737.0 ns   (734.9 ns .. 739.0 ns)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 734.9 ns   (733.4 ns .. 736.6 ns)
-std dev              4.985 ns   (4.014 ns .. 6.449 ns)
-
-benchmarking aeq/DeBruijn.Lazy.List
-time                 752.9 ns   (750.5 ns .. 755.5 ns)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 751.3 ns   (750.4 ns .. 752.7 ns)
-std dev              3.783 ns   (2.749 ns .. 5.682 ns)
-
-benchmarking aeq/DeBruijn.Lazy.Lennart
-time                 747.7 ns   (745.6 ns .. 749.9 ns)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 746.3 ns   (745.1 ns .. 747.7 ns)
-std dev              4.507 ns   (3.440 ns .. 6.109 ns)
-
-benchmarking aeq/DeBruijn.Lazy.Cornell
-time                 745.8 ns   (745.4 ns .. 746.4 ns)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 746.4 ns   (745.6 ns .. 748.0 ns)
-std dev              3.325 ns   (1.995 ns .. 5.644 ns)
-
-benchmarking aeq/DeBruijn.Lazy.Lift
-time                 764.4 ns   (763.2 ns .. 765.8 ns)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 763.7 ns   (762.9 ns .. 764.5 ns)
-std dev              2.847 ns   (2.243 ns .. 3.637 ns)
-
-benchmarking aeq/DeBruijn.Lazy.Par.B
-time                 13.16 μs   (13.07 μs .. 13.26 μs)
-                     0.999 R²   (0.999 R² .. 1.000 R²)
-mean                 13.20 μs   (13.09 μs .. 13.34 μs)
-std dev              424.0 ns   (284.9 ns .. 693.6 ns)
-variance introduced by outliers: 37% (moderately inflated)
-
-benchmarking aeq/DeBruijn.Lazy.Par.FB
-time                 16.76 μs   (16.73 μs .. 16.79 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 16.75 μs   (16.72 μs .. 16.79 μs)
-std dev              118.0 ns   (84.21 ns .. 165.3 ns)
-
-benchmarking aeq/DeBruijn.Lazy.Par.P
-time                 769.4 ns   (768.3 ns .. 770.6 ns)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 768.3 ns   (767.2 ns .. 769.4 ns)
-std dev              3.625 ns   (2.876 ns .. 4.671 ns)
-
-benchmarking aeq/DeBruijn.Lazy.Par.Fun
-time                 751.7 ns   (748.3 ns .. 755.3 ns)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 751.2 ns   (749.3 ns .. 753.4 ns)
-std dev              6.530 ns   (5.048 ns .. 9.052 ns)
-
-benchmarking aeq/DeBruijn.Lazy.Par.L
-time                 747.5 ns   (745.4 ns .. 749.4 ns)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 745.9 ns   (744.3 ns .. 747.5 ns)
-std dev              5.446 ns   (4.410 ns .. 7.813 ns)
-
-benchmarking aeq/DeBruijn.Lazy.Par.Scoped
-time                 16.90 μs   (16.88 μs .. 16.93 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 16.89 μs   (16.87 μs .. 16.91 μs)
-std dev              72.89 ns   (54.70 ns .. 100.4 ns)
-
-benchmarking aeq/DeBruijn.Lazy.Bound
-time                 171.0 μs   (170.9 μs .. 171.2 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 171.0 μs   (170.9 μs .. 171.2 μs)
-std dev              547.4 ns   (428.2 ns .. 772.2 ns)
-
-benchmarking aeq/DeBruijn.Lazy.Nested
-time                 2.808 μs   (2.801 μs .. 2.816 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 2.802 μs   (2.799 μs .. 2.806 μs)
-std dev              12.20 ns   (8.554 ns .. 16.94 ns)
-
-benchmarking aeq/DeBruijn.Lazy.CPDT
-time                 1.449 μs   (1.447 μs .. 1.453 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 1.449 μs   (1.446 μs .. 1.453 μs)
-std dev              11.33 ns   (7.187 ns .. 17.33 ns)
-
-benchmarking aeq/DeBruijn.Lazy.Kit
-time                 1.381 μs   (1.377 μs .. 1.387 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 1.385 μs   (1.382 μs .. 1.390 μs)
-std dev              13.57 ns   (7.136 ns .. 21.40 ns)
-
-benchmarking aeq/LocallyNameless.Opt
-time                 788.4 ns   (787.8 ns .. 789.0 ns)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 788.3 ns   (787.8 ns .. 788.8 ns)
-std dev              1.713 ns   (1.392 ns .. 2.234 ns)
-
-benchmarking aeq/LocallyNameless.Ott
-time                 620.0 ns   (619.1 ns .. 620.8 ns)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 619.8 ns   (619.0 ns .. 620.5 ns)
-std dev              2.696 ns   (2.304 ns .. 3.174 ns)
-
-benchmarking aeq/LocallyNameless.ParScoped
-time                 1.444 μs   (1.443 μs .. 1.446 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 1.448 μs   (1.446 μs .. 1.453 μs)
-std dev              11.46 ns   (7.219 ns .. 20.23 ns)
-
-benchmarking aeq/LocallyNameless.ParOpt
-time                 14.16 μs   (14.15 μs .. 14.18 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 14.17 μs   (14.16 μs .. 14.19 μs)
-std dev              53.41 ns   (40.24 ns .. 78.68 ns)
-
-benchmarking aeq/LocallyNameless.TypedOtt
-time                 1.479 μs   (1.477 μs .. 1.481 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 1.482 μs   (1.479 μs .. 1.484 μs)
-std dev              8.356 ns   (6.356 ns .. 12.04 ns)
-
-benchmarking aeq/LocallyNameless.TypedOpt
-time                 1.562 μs   (1.560 μs .. 1.565 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 1.573 μs   (1.568 μs .. 1.581 μs)
-std dev              19.56 ns   (13.47 ns .. 29.80 ns)
-variance introduced by outliers: 10% (moderately inflated)
-
-benchmarking aeq/LocallyNameless.Lazy.Opt
-time                 1.191 μs   (1.188 μs .. 1.193 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 1.188 μs   (1.187 μs .. 1.190 μs)
-std dev              4.296 ns   (3.276 ns .. 6.003 ns)
-
-benchmarking aeq/LocallyNameless.Lazy.Ott
-time                 692.2 ns   (691.1 ns .. 693.5 ns)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 692.4 ns   (691.4 ns .. 694.0 ns)
-std dev              4.033 ns   (2.764 ns .. 6.440 ns)
-
-benchmarking aeq/LocallyNameless.Lazy.ParScoped
-time                 1.547 μs   (1.546 μs .. 1.548 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 1.546 μs   (1.544 μs .. 1.548 μs)
-std dev              6.269 ns   (4.965 ns .. 9.897 ns)
-
-benchmarking aeq/LocallyNameless.Lazy.ParOpt
-time                 16.77 μs   (16.75 μs .. 16.79 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 16.76 μs   (16.74 μs .. 16.81 μs)
-std dev              113.0 ns   (75.92 ns .. 198.8 ns)
-
-benchmarking aeq/LocallyNameless.Lazy.TypedOtt
-time                 1.565 μs   (1.563 μs .. 1.569 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 1.575 μs   (1.571 μs .. 1.580 μs)
-std dev              13.89 ns   (10.84 ns .. 17.74 ns)
-
-benchmarking aeq/LocallyNameless.Lazy.TypedOpt
-time                 1.586 μs   (1.584 μs .. 1.588 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 1.591 μs   (1.589 μs .. 1.596 μs)
-std dev              11.18 ns   (5.688 ns .. 21.55 ns)
-
-benchmarking aeq/LocallyNameless.UnboundRep
-time                 9.985 μs   (9.966 μs .. 10.01 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 9.971 μs   (9.963 μs .. 9.991 μs)
-std dev              36.26 ns   (17.36 ns .. 63.65 ns)
-
-benchmarking aeq/LocallyNameless.UnboundGenerics
-time                 2.235 μs   (2.234 μs .. 2.237 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 2.235 μs   (2.233 μs .. 2.236 μs)
-std dev              5.351 ns   (4.209 ns .. 6.912 ns)
-
-benchmarking aeq/Named.NominalG
-time                 2.298 ms   (2.295 ms .. 2.299 ms)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 2.297 ms   (2.295 ms .. 2.300 ms)
-std dev              7.413 μs   (6.065 μs .. 9.130 μs)
-
-benchmarking aeq/Named.SimpleH
-time                 5.406 μs   (5.395 μs .. 5.418 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 5.413 μs   (5.405 μs .. 5.426 μs)
-std dev              34.26 ns   (21.40 ns .. 64.65 ns)
-
-benchmarking aeq/Named.SimpleM
-time                 21.74 μs   (21.62 μs .. 21.89 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 21.66 μs   (21.62 μs .. 21.76 μs)
-std dev              166.5 ns   (73.39 ns .. 322.5 ns)
-
-benchmarking aeq/Lennart.HOAS
-time                 28.70 μs   (28.68 μs .. 28.73 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 28.69 μs   (28.67 μs .. 28.75 μs)
-std dev              124.3 ns   (71.22 ns .. 224.1 ns)
-
-benchmarking aeq/Core
-time                 27.11 μs   (27.04 μs .. 27.23 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 27.05 μs   (27.02 μs .. 27.11 μs)
-std dev              135.8 ns   (68.51 ns .. 237.0 ns)
-
-benchmarking aeqs/DeBruijn.TAPL
-time                 610.4 ns   (608.9 ns .. 612.0 ns)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 611.6 ns   (610.2 ns .. 613.8 ns)
-std dev              5.377 ns   (3.905 ns .. 7.825 ns)
-
-benchmarking aeqs/DeBruijn.List
-time                 608.6 ns   (607.6 ns .. 609.5 ns)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 607.5 ns   (606.7 ns .. 608.4 ns)
-std dev              2.903 ns   (2.362 ns .. 3.677 ns)
-
-benchmarking aeqs/DeBruijn.Lennart
-time                 594.5 ns   (592.9 ns .. 597.1 ns)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 593.7 ns   (592.2 ns .. 595.7 ns)
-std dev              5.970 ns   (4.192 ns .. 10.09 ns)
-
-benchmarking aeqs/DeBruijn.Cornell
-time                 646.5 ns   (644.7 ns .. 649.5 ns)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 646.5 ns   (645.2 ns .. 650.4 ns)
-std dev              6.761 ns   (3.343 ns .. 12.91 ns)
-
-benchmarking aeqs/DeBruijn.Lift
-time                 611.8 ns   (611.4 ns .. 612.4 ns)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 611.4 ns   (610.9 ns .. 611.9 ns)
-std dev              1.841 ns   (1.589 ns .. 2.195 ns)
-
-benchmarking aeqs/DeBruijn.Par.B
-time                 9.217 μs   (9.200 μs .. 9.248 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 9.237 μs   (9.213 μs .. 9.302 μs)
-std dev              129.7 ns   (31.67 ns .. 250.2 ns)
-variance introduced by outliers: 11% (moderately inflated)
-
-benchmarking aeqs/DeBruijn.Par.FB
-time                 14.10 μs   (13.98 μs .. 14.29 μs)
-                     0.999 R²   (0.999 R² .. 1.000 R²)
-mean                 14.07 μs   (14.01 μs .. 14.18 μs)
-std dev              236.7 ns   (97.95 ns .. 384.5 ns)
-variance introduced by outliers: 14% (moderately inflated)
-
-benchmarking aeqs/DeBruijn.Par.P
-time                 618.4 ns   (617.0 ns .. 619.9 ns)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 618.6 ns   (617.3 ns .. 620.1 ns)
-std dev              4.589 ns   (3.745 ns .. 6.290 ns)
-
-benchmarking aeqs/DeBruijn.Par.Fun
-time                 607.7 ns   (606.8 ns .. 608.9 ns)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 609.7 ns   (608.3 ns .. 615.4 ns)
-std dev              7.904 ns   (1.864 ns .. 17.77 ns)
-variance introduced by outliers: 12% (moderately inflated)
-
-benchmarking aeqs/DeBruijn.Par.L
-time                 613.9 ns   (612.6 ns .. 615.7 ns)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 615.1 ns   (613.4 ns .. 618.9 ns)
-std dev              8.084 ns   (5.045 ns .. 13.27 ns)
-variance introduced by outliers: 12% (moderately inflated)
-
-benchmarking aeqs/DeBruijn.Par.Scoped
-time                 15.36 μs   (15.36 μs .. 15.37 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 15.36 μs   (15.35 μs .. 15.38 μs)
-std dev              35.45 ns   (23.78 ns .. 59.31 ns)
-
-benchmarking aeqs/DeBruijn.Bound
-time                 178.0 μs   (177.7 μs .. 178.6 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 178.1 μs   (177.8 μs .. 179.1 μs)
-std dev              1.725 μs   (591.5 ns .. 3.963 μs)
-
-benchmarking aeqs/DeBruijn.Nested
-time                 3.160 μs   (3.157 μs .. 3.163 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 3.160 μs   (3.156 μs .. 3.168 μs)
-std dev              18.94 ns   (9.090 ns .. 36.38 ns)
-
-benchmarking aeqs/DeBruijn.CPDT
-time                 1.470 μs   (1.469 μs .. 1.472 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 1.472 μs   (1.470 μs .. 1.474 μs)
-std dev              5.280 ns   (4.228 ns .. 6.750 ns)
-
-benchmarking aeqs/DeBruijn.Kit
-time                 1.398 μs   (1.397 μs .. 1.401 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 1.407 μs   (1.399 μs .. 1.431 μs)
-std dev              39.86 ns   (11.66 ns .. 87.07 ns)
-variance introduced by outliers: 37% (moderately inflated)
-
-benchmarking aeqs/DeBruijn.Lazy.TAPL
-time                 730.6 ns   (729.5 ns .. 732.3 ns)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 734.4 ns   (731.5 ns .. 743.6 ns)
-std dev              15.30 ns   (5.276 ns .. 30.91 ns)
-variance introduced by outliers: 25% (moderately inflated)
-
-benchmarking aeqs/DeBruijn.Lazy.List
-time                 748.3 ns   (747.1 ns .. 749.6 ns)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 747.4 ns   (746.8 ns .. 748.1 ns)
-std dev              2.187 ns   (1.728 ns .. 3.148 ns)
-
-benchmarking aeqs/DeBruijn.Lazy.Lennart
-time                 746.3 ns   (745.4 ns .. 747.5 ns)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 748.0 ns   (745.7 ns .. 754.9 ns)
-std dev              11.81 ns   (2.969 ns .. 23.81 ns)
-variance introduced by outliers: 17% (moderately inflated)
-
-benchmarking aeqs/DeBruijn.Lazy.Cornell
-time                 749.3 ns   (748.8 ns .. 749.8 ns)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 749.2 ns   (748.5 ns .. 749.9 ns)
-std dev              2.368 ns   (1.762 ns .. 3.049 ns)
-
-benchmarking aeqs/DeBruijn.Lazy.Lift
-time                 770.2 ns   (767.9 ns .. 773.7 ns)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 767.5 ns   (766.2 ns .. 769.1 ns)
-std dev              4.801 ns   (3.542 ns .. 7.995 ns)
-
-benchmarking aeqs/DeBruijn.Lazy.Par.B
-time                 13.34 μs   (13.20 μs .. 13.45 μs)
-                     0.999 R²   (0.999 R² .. 1.000 R²)
-mean                 13.23 μs   (13.14 μs .. 13.34 μs)
-std dev              322.7 ns   (262.2 ns .. 435.5 ns)
-variance introduced by outliers: 25% (moderately inflated)
-
-benchmarking aeqs/DeBruijn.Lazy.Par.FB
-time                 16.58 μs   (16.54 μs .. 16.62 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 16.63 μs   (16.58 μs .. 16.71 μs)
-std dev              206.2 ns   (136.2 ns .. 290.1 ns)
-
-benchmarking aeqs/DeBruijn.Lazy.Par.P
-time                 770.1 ns   (768.8 ns .. 771.7 ns)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 769.1 ns   (768.3 ns .. 770.3 ns)
-std dev              3.345 ns   (2.434 ns .. 5.314 ns)
-
-benchmarking aeqs/DeBruijn.Lazy.Par.Fun
-time                 755.8 ns   (754.1 ns .. 757.8 ns)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 756.2 ns   (754.7 ns .. 758.0 ns)
-std dev              5.361 ns   (4.492 ns .. 6.864 ns)
-
-benchmarking aeqs/DeBruijn.Lazy.Par.L
-time                 751.9 ns   (749.7 ns .. 754.2 ns)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 750.6 ns   (748.9 ns .. 752.0 ns)
-std dev              5.022 ns   (4.086 ns .. 6.760 ns)
-
-benchmarking aeqs/DeBruijn.Lazy.Par.Scoped
-time                 16.91 μs   (16.87 μs .. 16.95 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 16.87 μs   (16.85 μs .. 16.91 μs)
-std dev              95.70 ns   (71.81 ns .. 143.4 ns)
-
-benchmarking aeqs/DeBruijn.Lazy.Bound
-time                 171.1 μs   (170.3 μs .. 172.7 μs)
-                     1.000 R²   (0.999 R² .. 1.000 R²)
-mean                 170.4 μs   (170.2 μs .. 171.7 μs)
-std dev              1.291 μs   (445.8 ns .. 2.909 μs)
-
-benchmarking aeqs/DeBruijn.Lazy.Nested
-time                 2.792 μs   (2.791 μs .. 2.794 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 2.794 μs   (2.791 μs .. 2.798 μs)
-std dev              9.926 ns   (5.724 ns .. 19.17 ns)
-
-benchmarking aeqs/DeBruijn.Lazy.CPDT
-time                 1.439 μs   (1.437 μs .. 1.442 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 1.439 μs   (1.437 μs .. 1.441 μs)
-std dev              7.471 ns   (6.355 ns .. 9.131 ns)
-
-benchmarking aeqs/DeBruijn.Lazy.Kit
-time                 1.384 μs   (1.382 μs .. 1.387 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 1.382 μs   (1.380 μs .. 1.384 μs)
-std dev              6.106 ns   (4.683 ns .. 9.460 ns)
-
-benchmarking aeqs/LocallyNameless.Opt
-time                 792.6 ns   (791.7 ns .. 793.6 ns)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 791.9 ns   (791.0 ns .. 792.7 ns)
-std dev              2.891 ns   (2.389 ns .. 3.755 ns)
-
-benchmarking aeqs/LocallyNameless.Ott
-time                 620.6 ns   (619.7 ns .. 621.9 ns)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 620.1 ns   (619.2 ns .. 621.0 ns)
-std dev              2.987 ns   (2.367 ns .. 3.878 ns)
-
-benchmarking aeqs/LocallyNameless.ParScoped
-time                 1.448 μs   (1.444 μs .. 1.454 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 1.448 μs   (1.446 μs .. 1.452 μs)
-std dev              9.740 ns   (6.184 ns .. 16.75 ns)
-
-benchmarking aeqs/LocallyNameless.ParOpt
-time                 14.08 μs   (14.07 μs .. 14.09 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 14.07 μs   (14.07 μs .. 14.08 μs)
-std dev              24.65 ns   (18.64 ns .. 32.79 ns)
-
-benchmarking aeqs/LocallyNameless.TypedOtt
-time                 1.495 μs   (1.493 μs .. 1.497 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 1.493 μs   (1.491 μs .. 1.497 μs)
-std dev              9.142 ns   (6.023 ns .. 15.86 ns)
-
-benchmarking aeqs/LocallyNameless.TypedOpt
-time                 1.570 μs   (1.569 μs .. 1.572 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 1.571 μs   (1.570 μs .. 1.572 μs)
-std dev              4.135 ns   (3.244 ns .. 5.471 ns)
-
-benchmarking aeqs/LocallyNameless.Lazy.Opt
-time                 1.197 μs   (1.196 μs .. 1.199 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 1.197 μs   (1.195 μs .. 1.198 μs)
-std dev              5.049 ns   (3.937 ns .. 7.186 ns)
-
-benchmarking aeqs/LocallyNameless.Lazy.Ott
-time                 704.6 ns   (703.3 ns .. 706.5 ns)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 706.7 ns   (705.3 ns .. 709.8 ns)
-std dev              6.480 ns   (4.049 ns .. 10.78 ns)
-
-benchmarking aeqs/LocallyNameless.Lazy.ParScoped
-time                 1.561 μs   (1.557 μs .. 1.569 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 1.565 μs   (1.560 μs .. 1.576 μs)
-std dev              21.75 ns   (11.18 ns .. 36.55 ns)
-variance introduced by outliers: 13% (moderately inflated)
-
-benchmarking aeqs/LocallyNameless.Lazy.ParOpt
-time                 16.66 μs   (16.63 μs .. 16.69 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 16.65 μs   (16.63 μs .. 16.66 μs)
-std dev              49.63 ns   (35.87 ns .. 67.15 ns)
-
-benchmarking aeqs/LocallyNameless.Lazy.TypedOtt
-time                 1.571 μs   (1.569 μs .. 1.573 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 1.572 μs   (1.570 μs .. 1.575 μs)
-std dev              8.790 ns   (5.977 ns .. 15.32 ns)
-
-benchmarking aeqs/LocallyNameless.Lazy.TypedOpt
-time                 1.577 μs   (1.576 μs .. 1.579 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 1.580 μs   (1.578 μs .. 1.585 μs)
-std dev              10.72 ns   (5.168 ns .. 19.91 ns)
-
-benchmarking aeqs/LocallyNameless.UnboundRep
-time                 10.00 μs   (9.990 μs .. 10.01 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 10.000 μs  (9.992 μs .. 10.01 μs)
-std dev              32.27 ns   (26.04 ns .. 42.60 ns)
-
-benchmarking aeqs/LocallyNameless.UnboundGenerics
-time                 2.234 μs   (2.233 μs .. 2.237 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 2.243 μs   (2.239 μs .. 2.249 μs)
-std dev              17.36 ns   (12.18 ns .. 26.59 ns)
-
-benchmarking aeqs/Named.NominalG
-time                 2.256 ms   (2.251 ms .. 2.261 ms)
-                     1.000 R²   (0.999 R² .. 1.000 R²)
-mean                 2.274 ms   (2.266 ms .. 2.300 ms)
-std dev              43.45 μs   (17.37 μs .. 86.88 μs)
-
-benchmarking aeqs/Named.SimpleH
-time                 1.723 μs   (1.720 μs .. 1.726 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 1.722 μs   (1.721 μs .. 1.724 μs)
-std dev              6.202 ns   (4.559 ns .. 8.660 ns)
-
-benchmarking aeqs/Named.SimpleM
-time                 5.505 μs   (5.497 μs .. 5.515 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 5.500 μs   (5.495 μs .. 5.510 μs)
-std dev              23.79 ns   (15.33 ns .. 41.90 ns)
-
-benchmarking aeqs/Lennart.HOAS
-time                 28.56 μs   (28.54 μs .. 28.58 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 28.55 μs   (28.53 μs .. 28.58 μs)
-std dev              89.50 ns   (67.05 ns .. 142.7 ns)
-
-benchmarking aeqs/Core
-time                 1.656 μs   (1.654 μs .. 1.659 μs)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 1.655 μs   (1.653 μs .. 1.659 μs)
-std dev              9.081 ns   (6.914 ns .. 12.65 ns)
+time                 6.187 s    (4.873 s .. 7.382 s)
+                     0.994 R²   (0.979 R² .. 1.000 R²)
+mean                 7.012 s    (6.546 s .. 7.816 s)
+std dev              770.9 ms   (37.71 ms .. 946.9 ms)
+variance introduced by outliers: 23% (moderately inflated)
 
