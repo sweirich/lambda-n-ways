@@ -1,10 +1,23 @@
 module Suite where
 
 import qualified Core.Nf
+import qualified Lennart.HOAS
+
 import qualified DeBruijn.Bound
 import qualified DeBruijn.CPDT
 import qualified DeBruijn.Cornell
 import qualified DeBruijn.Kit
+import qualified DeBruijn.Lennart
+import qualified DeBruijn.Lift
+import qualified DeBruijn.List
+import qualified DeBruijn.Nested
+import qualified DeBruijn.Par.B
+import qualified DeBruijn.Par.FB
+import qualified DeBruijn.Par.Fun
+import qualified DeBruijn.Par.L
+import qualified DeBruijn.Par.P
+import qualified DeBruijn.Par.Scoped
+import qualified DeBruijn.TAPL
 import qualified DeBruijn.Lazy.Bound
 import qualified DeBruijn.Lazy.CPDT
 import qualified DeBruijn.Lazy.Cornell
@@ -13,7 +26,6 @@ import qualified DeBruijn.Lazy.Lennart
 import qualified DeBruijn.Lazy.Lift
 import qualified DeBruijn.Lazy.List
 import qualified DeBruijn.Lazy.Nested
---import qualified DeBruijn.Nested2
 import qualified DeBruijn.Lazy.Par.B
 import qualified DeBruijn.Lazy.Par.FB
 import qualified DeBruijn.Lazy.Par.Fun
@@ -21,19 +33,6 @@ import qualified DeBruijn.Lazy.Par.L
 import qualified DeBruijn.Lazy.Par.P
 import qualified DeBruijn.Lazy.Par.Scoped
 import qualified DeBruijn.Lazy.TAPL
-import qualified DeBruijn.Lennart
-import qualified DeBruijn.Lift
-import qualified DeBruijn.List
-import qualified DeBruijn.Nested
--- import qualified DeBruijn.Nested2
-import qualified DeBruijn.Par.B
-import qualified DeBruijn.Par.FB
-import qualified DeBruijn.Par.Fun
-import qualified DeBruijn.Par.L
-import qualified DeBruijn.Par.P
-import qualified DeBruijn.Par.Scoped
-import qualified DeBruijn.TAPL
-import qualified Lennart.HOAS
 
 import qualified LocallyNameless.Opt
 import qualified LocallyNameless.Ott
@@ -41,6 +40,9 @@ import qualified LocallyNameless.ParOpt
 import qualified LocallyNameless.ParScoped
 import qualified LocallyNameless.TypedOpt
 import qualified LocallyNameless.TypedOtt
+import qualified LocallyNameless.UnboundGenerics
+import qualified LocallyNameless.UnboundRep
+import qualified LocallyNameless.UGSubstBind
 import qualified LocallyNameless.Lazy.Opt
 import qualified LocallyNameless.Lazy.Ott
 import qualified LocallyNameless.Lazy.ParOpt
@@ -50,13 +52,8 @@ import qualified LocallyNameless.Lazy.TypedOtt
 import qualified LocallyNameless.Lazy.UnboundGenerics
 import qualified LocallyNameless.Lazy.UnboundRep
 import qualified LocallyNameless.Lazy.UGSubstBind
-import qualified LocallyNameless.UnboundGenerics
-import qualified LocallyNameless.UnboundRep
-import qualified LocallyNameless.UGSubstBind
--- import qualified Named.Nom
---import qualified Named.Nominal
+
 import qualified Named.NominalG
---import qualified Named.SimpleB
 import qualified Named.SimpleH
 import qualified Named.SimpleM
 import qualified Named.Simple
@@ -65,7 +62,7 @@ import Util.Impl (LambdaImpl)
 
 -- | Implementations used in the benchmarking/test suite
 impls :: [LambdaImpl]
-impls = all_impls
+impls = debruijn 
 
 
 interleave :: [a] -> [a] -> [a]
@@ -86,22 +83,21 @@ debruijn :: [LambdaImpl]
 debruijn =
   [ -- single substitutions
     DeBruijn.TAPL.impl,
-    DeBruijn.List.impl,
-    DeBruijn.Lennart.impl,
     DeBruijn.Cornell.impl,
+    DeBruijn.Lennart.impl,
     DeBruijn.Lift.impl,
     -- parallel substitutions
-    DeBruijn.Par.B.impl,
-    DeBruijn.Par.FB.impl,
-    DeBruijn.Par.P.impl,
-    DeBruijn.Par.Fun.impl,
     DeBruijn.Par.L.impl,
-    -- Well-scoped
-    DeBruijn.Par.Scoped.impl,
-    DeBruijn.Bound.impl, -- bound
-    DeBruijn.Nested.impl,
+    DeBruijn.Par.Fun.impl,
+    DeBruijn.Par.P.impl,
+    DeBruijn.Par.B.impl,
+    -- Well-scoped single
     DeBruijn.CPDT.impl,
-    DeBruijn.Kit.impl
+    DeBruijn.Nested.impl,
+    DeBruijn.Bound.impl, -- bound
+    -- well-scoped parallel
+    DeBruijn.Kit.impl,
+    DeBruijn.Par.Scoped.impl
     -- DeBruijn.Nested2.impl, --fails test suite
   ]
 
@@ -109,33 +105,33 @@ debruijn_lazy :: [LambdaImpl]
 debruijn_lazy =
   [ -- single substitutions
     DeBruijn.Lazy.TAPL.impl,
-    DeBruijn.Lazy.List.impl,
-    DeBruijn.Lazy.Lennart.impl,
     DeBruijn.Lazy.Cornell.impl,
+    DeBruijn.Lazy.Lennart.impl,
     DeBruijn.Lazy.Lift.impl,
     -- parallel substitutions
-    DeBruijn.Lazy.Par.B.impl,
-    DeBruijn.Lazy.Par.FB.impl,
-    DeBruijn.Lazy.Par.P.impl,
-    DeBruijn.Lazy.Par.Fun.impl,
     DeBruijn.Lazy.Par.L.impl,
-    -- Well-scoped
-    DeBruijn.Lazy.Par.Scoped.impl,
-    DeBruijn.Lazy.Bound.impl, -- bound
-    DeBruijn.Lazy.Nested.impl,
+    DeBruijn.Lazy.Par.Fun.impl,
+    DeBruijn.Lazy.Par.P.impl,
+    DeBruijn.Lazy.Par.B.impl,
+    -- Well-scoped single
     DeBruijn.Lazy.CPDT.impl,
-    DeBruijn.Lazy.Kit.impl
+    DeBruijn.Lazy.Nested.impl,
+    DeBruijn.Lazy.Bound.impl, -- bound
+    -- Well-scoped parallel
+    DeBruijn.Lazy.Kit.impl,
+    DeBruijn.Lazy.Par.Scoped.impl
   ]
 
 -- | Locally Nameless based implmentations
 locallyNameless :: [LambdaImpl]
 locallyNameless =
-  [ LocallyNameless.Opt.impl,
+  [ 
     LocallyNameless.Ott.impl,
+    LocallyNameless.TypedOtt.impl,
     LocallyNameless.ParScoped.impl,
     LocallyNameless.ParOpt.impl,
-    LocallyNameless.TypedOtt.impl,
-    LocallyNameless.TypedOpt.impl,
+    LocallyNameless.Opt.impl,
+    -- LocallyNameless.TypedOpt.impl,
     LocallyNameless.UnboundRep.impl, -- unbound
     LocallyNameless.UnboundGenerics.impl, -- unbound-generics mod1
     LocallyNameless.UGSubstBind.impl -- unbound-generics mod2
@@ -143,12 +139,13 @@ locallyNameless =
 
 locallyNameless_lazy :: [LambdaImpl]
 locallyNameless_lazy =
-  [ LocallyNameless.Lazy.Opt.impl,
+  [ 
     LocallyNameless.Lazy.Ott.impl,
+    LocallyNameless.Lazy.TypedOtt.impl,
     LocallyNameless.Lazy.ParScoped.impl,
     LocallyNameless.Lazy.ParOpt.impl,
-    LocallyNameless.Lazy.TypedOtt.impl,
-    LocallyNameless.Lazy.TypedOpt.impl,
+    LocallyNameless.Lazy.Opt.impl,
+    -- LocallyNameless.Lazy.TypedOpt.impl,
     LocallyNameless.Lazy.UnboundRep.impl, -- unbound
     LocallyNameless.Lazy.UnboundGenerics.impl, -- unbound-generics
     LocallyNameless.Lazy.UGSubstBind.impl
@@ -182,7 +179,7 @@ other =
 -- fastest implementation in each category in the NF benchmark
 fast_nf :: [LambdaImpl]
 fast_nf = [
-        LocallyNameless.Opt.impl, -- 2.81
+  LocallyNameless.Opt.impl, -- 2.81
 	DeBruijn.Par.Scoped.impl, -- 2.93
 	LocallyNameless.TypedOpt.impl, -- 3.27
 	DeBruijn.Lazy.Par.Scoped.impl, -- 5.2

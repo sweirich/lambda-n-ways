@@ -34,7 +34,7 @@ impl =
 
 -- NOTE: making the Idx strict, significantly degrades performance, hmmm....
 data DB n where
-  DVar :: (Idx n) -> DB n
+  DVar :: !(Idx n) -> DB n
   DLam :: !(Bind DB n) -> DB n
   DApp :: !(DB n) -> !(DB n) -> DB n
 

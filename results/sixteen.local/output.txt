@@ -1,0 +1,56 @@
+Darwin sixteen.local 19.6.0 Darwin Kernel Version 19.6.0: Tue Jun 22 19:49:55 PDT 2021; root:xnu-6153.141.35~1/RELEASE_X86_64 x86_64
+benchmarking nf/LocallyNameless.Ott/
+time                 122.0 ms   (120.8 ms .. 123.5 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 123.6 ms   (122.6 ms .. 125.8 ms)
+std dev              2.147 ms   (832.5 μs .. 3.318 ms)
+variance introduced by outliers: 11% (moderately inflated)
+
+benchmarking nf/LocallyNameless.TypedOtt/
+time                 850.2 ms   (824.2 ms .. 878.8 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 834.1 ms   (828.5 ms .. 842.5 ms)
+std dev              8.011 ms   (2.102 ms .. 10.54 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking nf/LocallyNameless.ParScoped/
+time                 1.500 s    (1.482 s .. 1.513 s)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 1.506 s    (1.501 s .. 1.515 s)
+std dev              8.345 ms   (603.6 μs .. 10.46 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking nf/LocallyNameless.ParOpt/
+time                 7.715 ms   (7.651 ms .. 7.755 ms)
+                     0.999 R²   (0.996 R² .. 1.000 R²)
+mean                 7.787 ms   (7.724 ms .. 7.947 ms)
+std dev              248.2 μs   (89.16 μs .. 443.9 μs)
+variance introduced by outliers: 11% (moderately inflated)
+
+benchmarking nf/LocallyNameless.Opt/
+time                 2.957 ms   (2.930 ms .. 2.991 ms)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 2.956 ms   (2.944 ms .. 2.969 ms)
+std dev              40.83 μs   (33.58 μs .. 52.66 μs)
+
+benchmarking nf/LocallyNameless.UnboundRep/
+time                 4.536 s    (3.982 s .. NaN s)
+                     0.995 R²   (0.988 R² .. 1.000 R²)
+mean                 5.123 s    (4.798 s .. 5.627 s)
+std dev              483.1 ms   (97.54 ms .. 638.1 ms)
+variance introduced by outliers: 22% (moderately inflated)
+
+benchmarking nf/LocallyNameless.UnboundGenerics/
+time                 1.560 s    (1.534 s .. 1.586 s)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 1.554 s    (1.550 s .. 1.559 s)
+std dev              5.692 ms   (31.59 μs .. 6.964 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking nf/LocallyNameless.UGSubstBind/
+time                 801.1 ms   (766.9 ms .. 841.6 ms)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 779.4 ms   (767.7 ms .. 790.2 ms)
+std dev              13.33 ms   (11.51 ms .. 14.24 ms)
+variance introduced by outliers: 19% (moderately inflated)
+

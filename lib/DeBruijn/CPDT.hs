@@ -28,7 +28,7 @@ impl =
 -- NOTE: for comparison with Par.Scoped, we don't make the index strict. But maybe we should.
 
 data DB (n :: Nat) where
-  DVar :: (Idx n) -> DB n
+  DVar :: !(Idx n) -> DB n
   DLam :: !(DB ('S n)) -> DB n
   DApp :: !(DB n) -> !(DB n) -> DB n
 

@@ -1,0 +1,90 @@
+Darwin huntsman-ve703-07129.apn.wlan.private.upenn.edu 19.6.0 Darwin Kernel Version 19.6.0: Tue Jun 22 19:49:55 PDT 2021; root:xnu-6153.141.35~1/RELEASE_X86_64 x86_64
+benchmarking random15/DeBruijn.TAPL/
+time                 1.051 s    (851.2 ms .. 1.393 s)
+                     0.988 R²   (0.972 R² .. 1.000 R²)
+mean                 1.131 s    (1.085 s .. 1.210 s)
+std dev              75.74 ms   (9.870 ms .. 95.48 ms)
+variance introduced by outliers: 20% (moderately inflated)
+
+benchmarking random15/DeBruijn.Cornell/
+time                 1.108 s    (958.7 ms .. 1.250 s)
+                     0.998 R²   (0.991 R² .. 1.000 R²)
+mean                 1.096 s    (1.080 s .. 1.123 s)
+std dev              25.76 ms   (4.672 ms .. 33.49 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking random15/DeBruijn.Lennart/
+time                 358.3 ms   (326.7 ms .. 399.1 ms)
+                     0.999 R²   (0.995 R² .. 1.000 R²)
+mean                 347.0 ms   (337.7 ms .. 353.6 ms)
+std dev              9.176 ms   (3.038 ms .. 12.23 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking random15/DeBruijn.Lift/
+time                 695.8 ms   (640.4 ms .. 720.7 ms)
+                     0.999 R²   (0.998 R² .. 1.000 R²)
+mean                 722.0 ms   (708.5 ms .. 729.5 ms)
+std dev              13.06 ms   (3.679 ms .. 17.40 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking random15/DeBruijn.Par.L/
+time                 3.137 s    (3.030 s .. 3.218 s)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 3.169 s    (3.143 s .. 3.189 s)
+std dev              25.64 ms   (11.54 ms .. 31.33 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking random15/DeBruijn.Par.Fun/
+time                 2.970 s    (2.918 s .. 3.060 s)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 2.875 s    (2.825 s .. 2.905 s)
+std dev              50.76 ms   (28.21 ms .. 70.09 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking random15/DeBruijn.Par.P/
+time                 2.880 s    (2.786 s .. 2.930 s)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 2.936 s    (2.906 s .. 2.995 s)
+std dev              57.00 ms   (1.835 ms .. 67.99 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking random15/DeBruijn.Par.B/
+time                 1.210 ms   (1.184 ms .. 1.248 ms)
+                     0.994 R²   (0.992 R² .. 0.997 R²)
+mean                 1.210 ms   (1.191 ms .. 1.236 ms)
+std dev              70.55 μs   (61.62 μs .. 81.84 μs)
+variance introduced by outliers: 46% (moderately inflated)
+
+benchmarking random15/DeBruijn.CPDT/
+time                 6.351 s    (5.910 s .. 6.752 s)
+                     0.999 R²   (0.998 R² .. 1.000 R²)
+mean                 6.632 s    (6.485 s .. 6.771 s)
+std dev              165.7 ms   (141.2 ms .. 174.1 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking random15/DeBruijn.Nested/
+time                 44.42 ms   (43.39 ms .. 45.19 ms)
+                     0.999 R²   (0.996 R² .. 1.000 R²)
+mean                 44.01 ms   (43.48 ms .. 44.79 ms)
+std dev              1.308 ms   (660.3 μs .. 2.273 ms)
+
+benchmarking random15/DeBruijn.Bound/
+time                 6.642 ms   (6.591 ms .. 6.690 ms)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 6.748 ms   (6.711 ms .. 6.786 ms)
+std dev              109.2 μs   (86.63 μs .. 150.9 μs)
+
+benchmarking random15/DeBruijn.Kit/
+time                 6.370 s    (5.888 s .. 6.668 s)
+                     0.999 R²   (0.998 R² .. 1.000 R²)
+mean                 6.044 s    (5.899 s .. 6.190 s)
+std dev              171.2 ms   (145.7 ms .. 192.2 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking random15/DeBruijn.Par.Scoped/
+time                 918.5 μs   (909.5 μs .. 927.8 μs)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 914.8 μs   (907.9 μs .. 922.0 μs)
+std dev              22.95 μs   (19.20 μs .. 27.91 μs)
+variance introduced by outliers: 14% (moderately inflated)
+

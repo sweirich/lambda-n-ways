@@ -8,6 +8,7 @@ SUITE = $(LN_SUITE)
 RESULTS_CONSTRUCTED = $(subst lib,results/constructed,$(subst .hs,.csv,$(subst .lhs,.csv,$(SUITE))))
 RESULTS_NF = $(subst lib,results/nf,$(subst .hs,.csv,$(subst .lhs,.csv,$(SUITE))))
 RESULTS_RANDOM = $(subst lib,results/random,$(subst .hs,.csv,$(subst .lhs,.csv,$(SUITE))))
+RESULTS = $(RESULTS_CONSTRUCTED)
 
 LC:	lib/*.hs lib/*/*.lhs bench/*.lhs 
 	stack build 
@@ -18,10 +19,10 @@ LC:	lib/*.hs lib/*/*.lhs bench/*.lhs
 
 timing:	LC
 	uname -a > $(OUT)output.txt
-#	stack run -- --output $(OUT)conv_bench.html --match prefix "conv/"  >> $(OUT)output.txt
+	stack run -- --output $(OUT)conv_bench.html --match prefix "conv/"  >> $(OUT)output.txt
 	stack run -- --output $(OUT)nf_bench.html --match prefix "nf/"  >> $(OUT)output.txt
-#	stack run -- --output $(OUT)aeq_bench.html --match prefix "aeq/" >> $(OUT)output.txt
-#	stack run -- --output $(OUT)aeqs_bench.html --match prefix "aeqs/" >> $(OUT)output.txt
+	stack run -- --output $(OUT)aeq_bench.html --match prefix "aeq/" >> $(OUT)output.txt
+	stack run -- --output $(OUT)aeqs_bench.html --match prefix "aeqs/" >> $(OUT)output.txt
 
 constructed: LC 
 	mkdir -p $(OUT)constructed/
@@ -44,7 +45,7 @@ random: LC
 # It is a good idea to modify bench/Main.lhs to only contain the benchmarks you want. Otherwise, finding the benchmark
 # can be pretty slow
 
-csv: $(RESULTS_CONSTRUCTED)
+csv: $(RESULTS)
 
 results/nf/%.csv : Makefile $(SUITE)
 	mkdir -p $(@D)

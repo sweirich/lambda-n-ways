@@ -35,7 +35,7 @@ mapP f (x, y) = (f x, f y)
 
 -- Section 3.  de Bruijn notation
 
-data DB v = DVar v | DLam !(DB (Incr v)) | DApp !(Pair (DB v))
+data DB v = DVar !v | DLam !(DB (Incr v)) | DApp !(Pair (DB v))
 
 deriving instance (Eq v) => (Eq (DB v))
 

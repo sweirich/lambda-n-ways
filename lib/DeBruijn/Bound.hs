@@ -25,7 +25,7 @@ impl = LambdaImpl {
          , impl_aeq    = (==)
       }
 
-data DB a = DVar a
+data DB a = DVar !a
           | DLam !(Scope () DB a)
           | DApp !(DB a) !(DB a)
   deriving (Functor, Foldable, Traversable, Generic)
