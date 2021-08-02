@@ -61,10 +61,11 @@ results/random/%.csv : Makefile $(SUITE)
 results/constructed/%.csv : Makefile $(SUITE)
 	mkdir -p $(@D)
 	uname -a > $(@D)/uname.txt
-	stack run -- --csv results/constructed/$*-adjust.csv --output results/constructed/$*-adjust.html --match prefix "adjust/$(subst /,.,$*)"
-	stack run -- --csv results/constructed/$*-ids.csv --output results/constructed/$*-ids.html --match prefix "ids/$(subst /,.,$*)"
-	stack run -- --csv results/constructed/$*-con.csv --output results/constructed/$*-con.html --match prefix "con/$(subst /,.,$*)"
-	stack run -- --csv results/constructed/$*-capt.csv --output results/constructed/$*-capt.html --match prefix "capt/$(subst /,.,$*)"
+#	stack run -- --csv results/constructed/$*-adjust.csv --output results/constructed/$*-adjust.html --match prefix "adjust/$(subst /,.,$*)"
+	stack run -- --csv results/constructed/$*-adjustb.csv --output results/constructed/$*-adjustb.html --match prefix "adjustb/$(subst /,.,$*)"
+#	stack run -- --csv results/constructed/$*-ids.csv --output results/constructed/$*-ids.html --match prefix "ids/$(subst /,.,$*)"
+#	stack run -- --csv results/constructed/$*-con.csv --output results/constructed/$*-con.html --match prefix "con/$(subst /,.,$*)"
+#	stack run -- --csv results/constructed/$*-capt.csv --output results/constructed/$*-capt.html --match prefix "capt/$(subst /,.,$*)"
 
 
 
