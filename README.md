@@ -171,7 +171,7 @@ Original four implementations from Lennart Augustsson's paper:
 
   DeBruijn indices that shift during substitution.
 
-## DeBrujn-index based implementations
+## DeBrujn-index based implementations (both strict and lazy)
 
 - Bound
 
@@ -195,14 +195,14 @@ Original four implementations from Lennart Augustsson's paper:
 
 - Lift/Cornell
 
-Two versions of an implementation found in the Cornell lecture notes:
-https://www.cs.cornell.edu/courses/cs4110/2018fa/lectures/lecture15.pdf
+  Two versions of an implementation found in the Cornell lecture notes:
+  https://www.cs.cornell.edu/courses/cs4110/2018fa/lectures/lecture15.pdf
 
 - Nested 
 
-Extracted from "de Bruijn notation as a nested datatype",
-by Richard S. Bird and Ross Paterson
-(renamed and adapted to this benchmark framework).
+  Extracted from "de Bruijn notation as a nested datatype",
+  by Richard S. Bird and Ross Paterson
+  (renamed and adapted to this benchmark framework).
 
 - DeBruijn.Par.F 
   
@@ -234,7 +234,7 @@ by Richard S. Bird and Ross Paterson
   Above, but also uses a GADT to enforce that the syntax is well-scoped.
 
 
-## Locally-Nameless implementations
+## Locally-Nameless implementations (both strict and lazy)
 
 - UnboundRep
 
