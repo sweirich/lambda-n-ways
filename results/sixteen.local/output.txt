@@ -1,56 +1,90 @@
 Darwin sixteen.local 19.6.0 Darwin Kernel Version 19.6.0: Tue Jun 22 19:49:55 PDT 2021; root:xnu-6153.141.35~1/RELEASE_X86_64 x86_64
-benchmarking nf/LocallyNameless.Ott/
-time                 122.0 ms   (120.8 ms .. 123.5 ms)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 123.6 ms   (122.6 ms .. 125.8 ms)
-std dev              2.147 ms   (832.5 μs .. 3.318 ms)
-variance introduced by outliers: 11% (moderately inflated)
-
-benchmarking nf/LocallyNameless.TypedOtt/
-time                 850.2 ms   (824.2 ms .. 878.8 ms)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 834.1 ms   (828.5 ms .. 842.5 ms)
-std dev              8.011 ms   (2.102 ms .. 10.54 ms)
-variance introduced by outliers: 19% (moderately inflated)
-
-benchmarking nf/LocallyNameless.ParScoped/
-time                 1.500 s    (1.482 s .. 1.513 s)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 1.506 s    (1.501 s .. 1.515 s)
-std dev              8.345 ms   (603.6 μs .. 10.46 ms)
-variance introduced by outliers: 19% (moderately inflated)
-
-benchmarking nf/LocallyNameless.ParOpt/
-time                 7.715 ms   (7.651 ms .. 7.755 ms)
-                     0.999 R²   (0.996 R² .. 1.000 R²)
-mean                 7.787 ms   (7.724 ms .. 7.947 ms)
-std dev              248.2 μs   (89.16 μs .. 443.9 μs)
-variance introduced by outliers: 11% (moderately inflated)
-
-benchmarking nf/LocallyNameless.Opt/
-time                 2.957 ms   (2.930 ms .. 2.991 ms)
-                     0.999 R²   (0.999 R² .. 1.000 R²)
-mean                 2.956 ms   (2.944 ms .. 2.969 ms)
-std dev              40.83 μs   (33.58 μs .. 52.66 μs)
-
-benchmarking nf/LocallyNameless.UnboundRep/
-time                 4.536 s    (3.982 s .. NaN s)
-                     0.995 R²   (0.988 R² .. 1.000 R²)
-mean                 5.123 s    (4.798 s .. 5.627 s)
-std dev              483.1 ms   (97.54 ms .. 638.1 ms)
-variance introduced by outliers: 22% (moderately inflated)
-
-benchmarking nf/LocallyNameless.UnboundGenerics/
-time                 1.560 s    (1.534 s .. 1.586 s)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 1.554 s    (1.550 s .. 1.559 s)
-std dev              5.692 ms   (31.59 μs .. 6.964 ms)
-variance introduced by outliers: 19% (moderately inflated)
-
-benchmarking nf/LocallyNameless.UGSubstBind/
-time                 801.1 ms   (766.9 ms .. 841.6 ms)
+benchmarking nf/DeBruijn.TAPL/
+time                 1.644 s    (1.572 s .. 1.684 s)
                      1.000 R²   (0.999 R² .. 1.000 R²)
-mean                 779.4 ms   (767.7 ms .. 790.2 ms)
-std dev              13.33 ms   (11.51 ms .. 14.24 ms)
+mean                 1.597 s    (1.576 s .. 1.615 s)
+std dev              24.44 ms   (17.67 ms .. 28.63 ms)
 variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking nf/DeBruijn.Cornell/
+time                 751.5 ms   (719.9 ms .. 777.4 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 754.6 ms   (747.3 ms .. 760.4 ms)
+std dev              7.523 ms   (5.778 ms .. 8.917 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking nf/DeBruijn.Lennart/
+time                 299.2 ms   (294.7 ms .. 306.9 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 299.0 ms   (295.8 ms .. 300.5 ms)
+std dev              2.749 ms   (1.060 ms .. 3.819 ms)
+variance introduced by outliers: 16% (moderately inflated)
+
+benchmarking nf/DeBruijn.Lift/
+time                 290.3 ms   (286.0 ms .. 293.4 ms)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 292.8 ms   (290.7 ms .. 295.2 ms)
+std dev              2.728 ms   (1.507 ms .. 4.196 ms)
+variance introduced by outliers: 16% (moderately inflated)
+
+benchmarking nf/DeBruijn.Par.L/
+time                 918.1 ms   (900.5 ms .. 928.6 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 924.1 ms   (920.7 ms .. 926.0 ms)
+std dev              3.321 ms   (816.0 μs .. 4.380 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking nf/DeBruijn.Par.Fun/
+time                 720.6 ms   (581.8 ms .. 846.7 ms)
+                     0.995 R²   (0.983 R² .. 1.000 R²)
+mean                 751.6 ms   (726.6 ms .. 774.1 ms)
+std dev              26.42 ms   (21.35 ms .. 30.35 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking nf/DeBruijn.Par.P/
+time                 795.7 ms   (615.6 ms .. 963.6 ms)
+                     0.991 R²   (0.990 R² .. 1.000 R²)
+mean                 805.5 ms   (755.4 ms .. 838.3 ms)
+std dev              50.16 ms   (18.15 ms .. 62.72 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking nf/DeBruijn.Par.B/
+time                 6.354 ms   (6.130 ms .. 6.611 ms)
+                     0.994 R²   (0.989 R² .. 0.998 R²)
+mean                 6.783 ms   (6.656 ms .. 6.959 ms)
+std dev              449.0 μs   (393.1 μs .. 528.5 μs)
+variance introduced by outliers: 37% (moderately inflated)
+
+benchmarking nf/DeBruijn.CPDT/
+time                 927.8 ms   (843.8 ms .. 1.016 s)
+                     0.999 R²   (0.996 R² .. 1.000 R²)
+mean                 927.2 ms   (904.0 ms .. 940.4 ms)
+std dev              22.50 ms   (6.635 ms .. 30.56 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking nf/DeBruijn.Nested/
+time                 11.85 s    (11.45 s .. 12.45 s)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 11.89 s    (11.73 s .. 11.98 s)
+std dev              162.0 ms   (70.55 ms .. 217.2 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking nf/DeBruijn.Bound/
+time                 5.828 ms   (5.794 ms .. 5.858 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 5.868 ms   (5.843 ms .. 5.890 ms)
+std dev              70.86 μs   (60.87 μs .. 87.46 μs)
+
+benchmarking nf/DeBruijn.Kit/
+time                 664.9 ms   (651.4 ms .. 677.5 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 661.4 ms   (658.1 ms .. 663.3 ms)
+std dev              3.182 ms   (298.9 μs .. 3.996 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking nf/DeBruijn.Par.Scoped/
+time                 2.893 ms   (2.869 ms .. 2.912 ms)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 2.903 ms   (2.891 ms .. 2.913 ms)
+std dev              34.15 μs   (25.41 μs .. 46.31 μs)
 

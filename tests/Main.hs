@@ -4,7 +4,7 @@ module Main where
 
 import Control.Monad
 import qualified DeBruijn.Lennart as DeBruijn
-import qualified Lennart.Unique as Unique
+import qualified Named.Unique as Unique
 import Suite
 import System.Exit (exitFailure)
 import Test.QuickCheck
