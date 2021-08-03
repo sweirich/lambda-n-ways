@@ -10,6 +10,7 @@ where
 
 import Data.List (union, (\\))
 import qualified Data.Map as M
+import qualified Data.Set as S
 import Util.Imports
 
 -- | An IdInt is just another name for an Int. We only use the nonnegative Ints though
@@ -68,6 +69,9 @@ convVar v = do
       return ii
     Just ii -> return ii
 
-newId :: [IdInt] -> IdInt
-newId [] = firstBoundId
-newId vs = succ (maximum vs)
+newId :: S.Set IdInt -> IdInt
+newId s = if S.null s then firstBoundId else succ (S.findMax s)
+
+--newId :: [IdInt] -> IdInt
+--newId [] = firstBoundId
+--newId vs = succ (maximum vs)

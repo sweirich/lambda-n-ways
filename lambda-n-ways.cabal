@@ -18,14 +18,15 @@ library
       Util.Lambda
       Util.Misc
       Suite
+      QuickBench
       Util.Id
       Util.IdInt
-      QuickBench
       Util.IdInt.Map
       Util.IdInt.Set
       Support.Nat
       Support.Par.Subst
       Support.Par.SubstScoped
+      Support.SubstH
       DeBruijn.Cornell
       DeBruijn.CPDT
       DeBruijn.Lennart
@@ -90,6 +91,7 @@ library
       Named.NominalG
 --      Named.SimpleB
       Named.SimpleH
+      Named.SimpleGH
       Named.SimpleM
       Core.Core
       Core.Unique

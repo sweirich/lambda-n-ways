@@ -61,6 +61,7 @@ import qualified LocallyNameless.Lazy.UGSubstEBind
 
 import qualified Named.NominalG
 import qualified Named.SimpleH
+import qualified Named.SimpleGH
 import qualified Named.SimpleM
 import qualified Named.Simple
 import qualified Named.Unique
@@ -68,7 +69,7 @@ import Util.Impl (LambdaImpl)
 
 -- | Implementations used in the benchmarking/test suite
 impls :: [LambdaImpl]
-impls = debruijn
+impls = all_impls
 
 
 interleave :: [a] -> [a] -> [a]
@@ -170,8 +171,8 @@ named =
   [ -- Named.Nom.impl, doesn't compile
     -- Named.Nominal.impl, -- fails test suite
     Named.NominalG.impl, -- nominal, generally too slow (12s vs. <200 ms for everything else)
-    -- Named.SimpleB.impl, -- fails test suite
     Named.SimpleH.impl,
+    Named.SimpleGH.impl,
     Named.SimpleM.impl,
     Named.Simple.impl,
     Named.Unique.impl

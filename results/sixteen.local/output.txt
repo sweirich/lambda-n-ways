@@ -1,69 +1,310 @@
 Darwin sixteen.local 19.6.0 Darwin Kernel Version 19.6.0: Tue Jun 22 19:49:55 PDT 2021; root:xnu-6153.141.35~1/RELEASE_X86_64 x86_64
-benchmarking nf/LocallyNameless.Ott/
-time                 122.7 ms   (121.9 ms .. 124.7 ms)
+benchmarking nf/DeBruijn.TAPL/
+time                 1.679 s    (1.633 s .. 1.778 s)
                      1.000 R²   (0.999 R² .. 1.000 R²)
-mean                 121.7 ms   (121.1 ms .. 122.5 ms)
-std dev              1.083 ms   (727.1 μs .. 1.732 ms)
+mean                 1.670 s    (1.638 s .. 1.692 s)
+std dev              31.88 ms   (12.07 ms .. 43.65 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking nf/DeBruijn.Cornell/
+time                 725.4 ms   (586.9 ms .. 839.0 ms)
+                     0.996 R²   (0.985 R² .. 1.000 R²)
+mean                 721.4 ms   (710.1 ms .. 743.2 ms)
+std dev              21.48 ms   (588.3 μs .. 25.60 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking nf/DeBruijn.Lennart/
+time                 332.8 ms   (287.0 ms .. 412.9 ms)
+                     0.976 R²   (0.879 R² .. 1.000 R²)
+mean                 322.6 ms   (312.4 ms .. 352.3 ms)
+std dev              22.20 ms   (403.0 μs .. 27.75 ms)
+variance introduced by outliers: 17% (moderately inflated)
+
+benchmarking nf/DeBruijn.Lift/
+time                 289.5 ms   (260.0 ms .. 331.8 ms)
+                     0.992 R²   (0.985 R² .. 1.000 R²)
+mean                 300.5 ms   (287.0 ms .. 320.5 ms)
+std dev              20.43 ms   (8.637 ms .. 27.97 ms)
+variance introduced by outliers: 17% (moderately inflated)
+
+benchmarking nf/DeBruijn.Par.L/
+time                 924.0 ms   (783.3 ms .. 1.058 s)
+                     0.997 R²   (0.989 R² .. 1.000 R²)
+mean                 924.0 ms   (897.0 ms .. 956.9 ms)
+std dev              36.27 ms   (9.762 ms .. 49.41 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking nf/DeBruijn.Par.Fun/
+time                 794.6 ms   (651.1 ms .. 892.2 ms)
+                     0.996 R²   (0.988 R² .. 1.000 R²)
+mean                 774.3 ms   (726.2 ms .. 793.1 ms)
+std dev              33.10 ms   (6.617 ms .. 43.38 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking nf/DeBruijn.Par.P/
+time                 818.9 ms   (692.5 ms .. 951.2 ms)
+                     0.997 R²   (0.988 R² .. 1.000 R²)
+mean                 823.2 ms   (797.5 ms .. 855.4 ms)
+std dev              34.21 ms   (12.51 ms .. 46.71 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking nf/DeBruijn.Par.B/
+time                 6.554 ms   (6.300 ms .. 6.858 ms)
+                     0.991 R²   (0.987 R² .. 0.995 R²)
+mean                 6.290 ms   (6.205 ms .. 6.425 ms)
+std dev              297.4 μs   (219.8 μs .. 360.8 μs)
+variance introduced by outliers: 23% (moderately inflated)
+
+benchmarking nf/DeBruijn.Par.GB/
+time                 8.282 ms   (8.021 ms .. 8.688 ms)
+                     0.990 R²   (0.984 R² .. 0.995 R²)
+mean                 8.060 ms   (7.938 ms .. 8.244 ms)
+std dev              418.4 μs   (325.4 μs .. 493.8 μs)
+variance introduced by outliers: 26% (moderately inflated)
+
+benchmarking nf/DeBruijn.CPDT/
+time                 958.6 ms   (808.5 ms .. NaN s)
+                     0.995 R²   (0.984 R² .. 1.000 R²)
+mean                 936.9 ms   (895.4 ms .. 960.3 ms)
+std dev              40.14 ms   (10.93 ms .. 54.17 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking nf/DeBruijn.Nested/
+time                 12.35 s    (11.72 s .. 12.87 s)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 12.16 s    (11.99 s .. 12.29 s)
+std dev              173.0 ms   (94.13 ms .. 239.4 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking nf/DeBruijn.Bound/
+time                 6.418 ms   (6.382 ms .. 6.449 ms)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 6.379 ms   (6.343 ms .. 6.404 ms)
+std dev              91.38 μs   (70.38 μs .. 124.5 μs)
+
+benchmarking nf/DeBruijn.Kit/
+time                 656.1 ms   (651.2 ms .. 659.5 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 658.9 ms   (657.5 ms .. 659.6 ms)
+std dev              1.321 ms   (92.90 μs .. 1.668 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking nf/DeBruijn.Par.Scoped/
+time                 3.286 ms   (3.259 ms .. 3.309 ms)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 3.264 ms   (3.251 ms .. 3.274 ms)
+std dev              36.11 μs   (27.18 μs .. 48.52 μs)
+
+benchmarking nf/DeBruijn.Lazy.TAPL/
+time                 8.655 s    (7.393 s .. 9.881 s)
+                     0.997 R²   (0.990 R² .. 1.000 R²)
+mean                 8.337 s    (7.897 s .. 8.502 s)
+std dev              300.0 ms   (39.61 ms .. 381.7 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking nf/DeBruijn.Lazy.Cornell/
+time                 7.430 s    (6.083 s .. 8.077 s)
+                     0.996 R²   (0.990 R² .. 1.000 R²)
+mean                 7.643 s    (7.449 s .. 7.797 s)
+std dev              194.6 ms   (100.9 ms .. 255.5 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking nf/DeBruijn.Lazy.Lennart/
+time                 2.820 s    (2.524 s .. 2.956 s)
+                     0.999 R²   (0.997 R² .. 1.000 R²)
+mean                 2.938 s    (2.856 s .. 3.084 s)
+std dev              142.4 ms   (19.84 ms .. 180.3 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking nf/DeBruijn.Lazy.Lift/
+time                 2.947 s    (2.698 s .. 3.194 s)
+                     0.999 R²   (0.996 R² .. 1.000 R²)
+mean                 2.942 s    (2.889 s .. 3.004 s)
+std dev              67.86 ms   (25.49 ms .. 93.69 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking nf/DeBruijn.Lazy.Par.L/
+time                 4.525 s    (4.492 s .. 4.570 s)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 4.825 s    (4.690 s .. 5.033 s)
+std dev              196.5 ms   (17.14 ms .. 249.8 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking nf/DeBruijn.Lazy.Par.Fun/
+time                 3.110 s    (2.893 s .. 3.276 s)
+                     0.999 R²   (0.998 R² .. 1.000 R²)
+mean                 3.101 s    (3.078 s .. 3.136 s)
+std dev              34.59 ms   (1.254 ms .. 44.48 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking nf/DeBruijn.Lazy.Par.P/
+time                 3.761 s    (3.433 s .. 4.155 s)
+                     0.999 R²   (0.996 R² .. 1.000 R²)
+mean                 3.770 s    (3.675 s .. 3.836 s)
+std dev              93.01 ms   (31.79 ms .. 124.0 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking nf/DeBruijn.Lazy.Par.B/
+time                 13.70 ms   (13.47 ms .. 14.13 ms)
+                     0.996 R²   (0.991 R² .. 0.999 R²)
+mean                 13.86 ms   (13.68 ms .. 14.26 ms)
+std dev              648.6 μs   (417.5 μs .. 979.5 μs)
+variance introduced by outliers: 18% (moderately inflated)
+
+benchmarking nf/DeBruijn.Lazy.Par.GB/
+time                 11.75 ms   (11.62 ms .. 11.88 ms)
+                     0.999 R²   (0.998 R² .. 1.000 R²)
+mean                 11.89 ms   (11.78 ms .. 12.02 ms)
+std dev              310.4 μs   (205.9 μs .. 488.0 μs)
+
+benchmarking nf/DeBruijn.Lazy.CPDT/
+time                 3.715 s    (3.281 s .. 4.263 s)
+                     0.998 R²   (0.992 R² .. 1.000 R²)
+mean                 3.941 s    (3.787 s .. 4.176 s)
+std dev              222.2 ms   (20.50 ms .. 281.7 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking nf/DeBruijn.Lazy.Nested/
+time                 15.10 s    (14.72 s .. 15.38 s)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 15.02 s    (14.92 s .. 15.10 s)
+std dev              97.86 ms   (42.41 ms .. 124.2 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking nf/DeBruijn.Lazy.Bound/
+time                 15.60 ms   (15.49 ms .. 15.74 ms)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 15.66 ms   (15.53 ms .. 15.82 ms)
+std dev              374.0 μs   (217.0 μs .. 574.3 μs)
+
+benchmarking nf/DeBruijn.Lazy.Kit/
+time                 3.061 s    (2.886 s .. 3.185 s)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 3.095 s    (3.057 s .. 3.156 s)
+std dev              61.80 ms   (24.43 ms .. 85.08 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking nf/DeBruijn.Lazy.Par.Scoped/
+time                 6.088 ms   (6.028 ms .. 6.178 ms)
+                     0.999 R²   (0.997 R² .. 1.000 R²)
+mean                 6.067 ms   (6.036 ms .. 6.108 ms)
+std dev              104.9 μs   (76.57 μs .. 161.6 μs)
+
+benchmarking nf/LocallyNameless.Ott/
+time                 129.6 ms   (129.1 ms .. 129.9 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 129.0 ms   (128.7 ms .. 129.2 ms)
+std dev              409.3 μs   (287.9 μs .. 511.1 μs)
 variance introduced by outliers: 11% (moderately inflated)
 
 benchmarking nf/LocallyNameless.TypedOtt/
-time                 808.2 ms   (793.9 ms .. 828.2 ms)
+time                 880.3 ms   (866.6 ms .. 907.7 ms)
                      1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 812.6 ms   (810.1 ms .. 817.2 ms)
-std dev              4.474 ms   (237.1 μs .. 5.415 ms)
+mean                 870.3 ms   (867.5 ms .. 875.6 ms)
+std dev              5.166 ms   (166.3 μs .. 6.241 ms)
 variance introduced by outliers: 19% (moderately inflated)
 
 benchmarking nf/LocallyNameless.ParScoped/
-time                 1.494 s    (1.476 s .. 1.523 s)
+time                 1.583 s    (1.526 s .. 1.619 s)
                      1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 1.490 s    (1.476 s .. 1.496 s)
-std dev              10.36 ms   (2.814 ms .. 13.74 ms)
+mean                 1.580 s    (1.572 s .. 1.589 s)
+std dev              10.23 ms   (4.467 ms .. 14.14 ms)
 variance introduced by outliers: 19% (moderately inflated)
 
 benchmarking nf/LocallyNameless.ParOpt/
-time                 7.518 ms   (7.457 ms .. 7.568 ms)
-                     1.000 R²   (0.999 R² .. 1.000 R²)
-mean                 7.494 ms   (7.462 ms .. 7.522 ms)
-std dev              83.84 μs   (65.99 μs .. 104.1 μs)
+time                 7.891 ms   (7.857 ms .. 7.917 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 7.880 ms   (7.855 ms .. 7.919 ms)
+std dev              91.98 μs   (60.29 μs .. 143.1 μs)
 
 benchmarking nf/LocallyNameless.Opt/
-time                 2.798 ms   (2.791 ms .. 2.811 ms)
-                     1.000 R²   (0.999 R² .. 1.000 R²)
-mean                 2.799 ms   (2.791 ms .. 2.816 ms)
-std dev              34.75 μs   (17.85 μs .. 62.07 μs)
+time                 2.988 ms   (2.956 ms .. 3.034 ms)
+                     0.999 R²   (0.998 R² .. 1.000 R²)
+mean                 2.967 ms   (2.949 ms .. 2.991 ms)
+std dev              66.54 μs   (48.35 μs .. 95.69 μs)
 
 benchmarking nf/LocallyNameless.UnboundRep/
-time                 4.660 s    (3.558 s .. 5.799 s)
-                     0.992 R²   (0.972 R² .. 1.000 R²)
-mean                 5.062 s    (4.740 s .. 5.559 s)
-std dev              475.6 ms   (108.3 ms .. 628.5 ms)
-variance introduced by outliers: 22% (moderately inflated)
+time                 4.888 s    (4.397 s .. 5.481 s)
+                     0.998 R²   (0.994 R² .. 1.000 R²)
+mean                 5.113 s    (4.968 s .. 5.266 s)
+std dev              190.3 ms   (11.40 ms .. 237.0 ms)
+variance introduced by outliers: 19% (moderately inflated)
 
 benchmarking nf/LocallyNameless.UnboundGenerics/
-time                 1.549 s    (1.541 s .. 1.555 s)
+time                 1.648 s    (1.629 s .. 1.666 s)
                      1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 1.545 s    (1.542 s .. 1.547 s)
-std dev              2.488 ms   (1.922 ms .. 2.904 ms)
+mean                 1.652 s    (1.648 s .. 1.654 s)
+std dev              3.455 ms   (2.875 ms .. 3.757 ms)
 variance introduced by outliers: 19% (moderately inflated)
 
 benchmarking nf/LocallyNameless.UGSubstBind/
-time                 753.5 ms   (683.8 ms .. 819.7 ms)
-                     0.999 R²   (0.996 R² .. 1.000 R²)
-mean                 759.1 ms   (749.9 ms .. 768.3 ms)
-std dev              11.23 ms   (6.639 ms .. 13.54 ms)
+time                 802.6 ms   (800.1 ms .. 804.7 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 800.9 ms   (799.2 ms .. 801.8 ms)
+std dev              1.630 ms   (45.40 μs .. 2.037 ms)
 variance introduced by outliers: 19% (moderately inflated)
 
 benchmarking nf/LocallyNameless.UGEBind/
-time                 1.623 s    (1.562 s .. NaN s)
+time                 1.696 s    (1.682 s .. 1.720 s)
                      1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 1.578 s    (1.559 s .. 1.597 s)
-std dev              22.78 ms   (15.07 ms .. 27.05 ms)
+mean                 1.689 s    (1.686 s .. 1.693 s)
+std dev              4.158 ms   (1.122 ms .. 5.257 ms)
 variance introduced by outliers: 19% (moderately inflated)
 
 benchmarking nf/LocallyNameless.UGSubstEBind/
-time                 793.7 ms   (644.9 ms .. 931.3 ms)
-                     0.996 R²   (0.984 R² .. 1.000 R²)
-mean                 805.7 ms   (767.2 ms .. 835.9 ms)
-std dev              44.19 ms   (26.17 ms .. 62.03 ms)
+time                 787.3 ms   (776.1 ms .. 811.7 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 777.0 ms   (773.9 ms .. 782.1 ms)
+std dev              5.155 ms   (529.2 μs .. 6.572 ms)
 variance introduced by outliers: 19% (moderately inflated)
 
+benchmarking nf/LocallyNameless.Lazy.Ott/
+time                 1.077 s    (814.5 ms .. 1.394 s)
+                     0.986 R²   (0.983 R² .. 1.000 R²)
+mean                 1.089 s    (1.016 s .. 1.186 s)
+std dev              92.73 ms   (46.73 ms .. 114.1 ms)
+variance introduced by outliers: 22% (moderately inflated)
+
+benchmarking nf/LocallyNameless.Lazy.TypedOtt/
+time                 3.797 s    (3.379 s .. 4.068 s)
+                     0.999 R²   (0.996 R² .. 1.000 R²)
+mean                 3.890 s    (3.771 s .. 4.045 s)
+std dev              155.1 ms   (54.13 ms .. 210.8 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking nf/LocallyNameless.Lazy.ParScoped/
+time                 4.105 s    (3.746 s .. 4.639 s)
+                     0.998 R²   (0.994 R² .. 1.000 R²)
+mean                 4.219 s    (4.091 s .. 4.334 s)
+std dev              144.4 ms   (64.76 ms .. 187.2 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking nf/LocallyNameless.Lazy.ParOpt/
+time                 12.32 ms   (11.97 ms .. 12.59 ms)
+                     0.997 R²   (0.995 R² .. 0.998 R²)
+mean                 13.11 ms   (12.85 ms .. 13.59 ms)
+std dev              880.9 μs   (447.8 μs .. 1.308 ms)
+variance introduced by outliers: 32% (moderately inflated)
+
+benchmarking nf/LocallyNameless.Lazy.Opt/
+time                 6.866 ms   (6.644 ms .. 7.067 ms)
+                     0.991 R²   (0.985 R² .. 0.995 R²)
+mean                 6.637 ms   (6.501 ms .. 6.769 ms)
+std dev              387.3 μs   (329.6 μs .. 464.2 μs)
+variance introduced by outliers: 32% (moderately inflated)
+
+benchmarking nf/LocallyNameless.Lazy.UnboundRep/
+time                 5.153 s    (4.738 s .. 5.476 s)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 5.464 s    (5.306 s .. 5.765 s)
+std dev              296.4 ms   (16.69 ms .. 356.8 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking nf/LocallyNameless.Lazy.UnboundGenerics/
+time                 3.353 s    (3.006 s .. 3.616 s)
+                     0.998 R²   (0.998 R² .. 1.000 R²)
+mean                 3.413 s    (3.350 s .. 3.474 s)
+std dev              71.37 ms   (61.85 ms .. 79.25 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking nf/LocallyNameless.Lazy.UGSubstBind/

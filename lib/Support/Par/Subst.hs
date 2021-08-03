@@ -1,6 +1,5 @@
 --This is a general purpose library for defining substitution for debruijn indices
 {-# LANGUAGE DefaultSignatures #-}
-{-# LANGUAGE DerivingVia #-}
 module Support.Par.Subst where
 
 import Control.DeepSeq

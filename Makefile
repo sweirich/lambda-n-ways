@@ -2,7 +2,7 @@ OUT = results/`uname -n`/
 DB_SUITE = $(wildcard lib/DeBruijn/*.lhs lib/DeBruijn/*.hs lib/DeBruijn/*/*.lhs lib/DeBruijn/*/*.hs lib/DeBruijn/Lazy/*.hs lib/DeBruijn/Lazy/*.lhs lib/DeBruijn/Lazy/*/*.hs)
 LN_SUITE = $(wildcard lib/LocallyNameless/*.hs lib/LocallyNameless/Lazy/*.hs)
 NM_SUITE = $(wildcard lib/Named/*.hs lib/Named/*.lhs)
-SUITE = $(LN_SUITE)
+SUITE = $(NM_SUITE)
 # $(DB_SUITE) 
 # $(NM_SUITE)
 RESULTS_CONSTRUCTED = $(subst lib,results/constructed,$(subst .hs,.csv,$(subst .lhs,.csv,$(SUITE))))
@@ -20,7 +20,7 @@ LC:	lib/*.hs lib/*/*.lhs bench/*.lhs
 timing:	LC
 	uname -a > $(OUT)output.txt
 #	stack run -- --output $(OUT)conv_bench.html --match prefix "conv/"  >> $(OUT)output.txt
-	stack run -- --output $(OUT)db_nf_bench.html --match prefix "nf/"  >> $(OUT)output.txt
+	stack run -- --output $(OUT)named_nf_bench.html --match prefix "nf/"  >> $(OUT)output.txt
 #	stack run -- --output $(OUT)aeq_bench.html --match prefix "aeq/" >> $(OUT)output.txt
 #	stack run -- --output $(OUT)aeqs_bench.html --match prefix "aeqs/" >> $(OUT)output.txt
 
@@ -35,7 +35,7 @@ constructed: LC
 random: LC 
 	mkdir -p $(OUT)random/
 	uname -a > $(OUT)random/output.txt
-	stack run -- --output $(OUT)db_random15_bench.html --match prefix "random15/"  >> $(OUT)random/output.txt
+	stack run -- --output $(OUT)named_random15_bench.html --match prefix "random15/"  >> $(OUT)random/output.txt
 #	stack run -- --output $(OUT)random20_bench.html --match prefix "random20/"  >> $(OUT)random/output.txt
 
 ################ Separate CSV files for each benchmark, plus individual charts for the constructed ones
