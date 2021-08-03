@@ -38,7 +38,7 @@ import qualified LocallyNameless.Opt
 import qualified LocallyNameless.Ott
 import qualified LocallyNameless.ParOpt
 import qualified LocallyNameless.ParScoped
-import qualified LocallyNameless.TypedOpt
+--import qualified LocallyNameless.TypedOpt
 import qualified LocallyNameless.TypedOtt
 import qualified LocallyNameless.UnboundGenerics
 import qualified LocallyNameless.UnboundRep
@@ -47,7 +47,7 @@ import qualified LocallyNameless.Lazy.Opt
 import qualified LocallyNameless.Lazy.Ott
 import qualified LocallyNameless.Lazy.ParOpt
 import qualified LocallyNameless.Lazy.ParScoped
-import qualified LocallyNameless.Lazy.TypedOpt
+--import qualified LocallyNameless.Lazy.TypedOpt
 import qualified LocallyNameless.Lazy.TypedOtt
 import qualified LocallyNameless.Lazy.UnboundGenerics
 import qualified LocallyNameless.Lazy.UnboundRep
@@ -62,7 +62,7 @@ import Util.Impl (LambdaImpl)
 
 -- | Implementations used in the benchmarking/test suite
 impls :: [LambdaImpl]
-impls = debruijn 
+impls = all_impls
 
 
 interleave :: [a] -> [a] -> [a]
@@ -181,7 +181,7 @@ fast_nf :: [LambdaImpl]
 fast_nf = [
   LocallyNameless.Opt.impl, -- 2.81
 	DeBruijn.Par.Scoped.impl, -- 2.93
-	LocallyNameless.TypedOpt.impl, -- 3.27
+--	LocallyNameless.TypedOpt.impl, -- 3.27
 	DeBruijn.Lazy.Par.Scoped.impl, -- 5.2
 	DeBruijn.Par.B.impl, -- 5.31
 	LocallyNameless.ParOpt.impl, -- 6.13
@@ -197,8 +197,8 @@ fast_random = [
 	LocallyNameless.Lazy.Opt.impl, -- 363 -- 178
         LocallyNameless.Opt.impl, -- 434 -- 264
 	DeBruijn.Lazy.Par.Scoped.impl, -- 269 -- 261
-        LocallyNameless.Lazy.TypedOpt.impl, -- 312 -- 316
-        LocallyNameless.TypedOpt.impl, -- 321 -- 327			
+--        LocallyNameless.Lazy.TypedOpt.impl, -- 312 -- 316
+--        LocallyNameless.TypedOpt.impl, -- 321 -- 327			
 	DeBruijn.Lazy.Par.B.impl, -- 356 -- 344
 	LocallyNameless.Lazy.ParOpt.impl, -- 557 -- 546
 	LocallyNameless.ParOpt.impl, -- 678 -- 684
@@ -234,7 +234,7 @@ fast_locally_nameless :: [LambdaImpl]
 fast_locally_nameless =
   [ LocallyNameless.Opt.impl,
     LocallyNameless.ParOpt.impl,
-    LocallyNameless.TypedOpt.impl,
+--    LocallyNameless.TypedOpt.impl,
     LocallyNameless.UGSubstBind.impl,
     LocallyNameless.UnboundGenerics.impl -- unbound-generics
   ]
@@ -251,7 +251,7 @@ slow =
     DeBruijn.Par.Fun.impl,
     DeBruijn.Par.P.impl,
     LocallyNameless.ParScoped.impl,
-    LocallyNameless.TypedOtt.impl,
+--    LocallyNameless.TypedOtt.impl,
     LocallyNameless.UnboundRep.impl, -- unbound
     Named.Simple.impl,
     Named.Unique.impl

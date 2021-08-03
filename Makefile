@@ -1,6 +1,6 @@
 OUT = results/`uname -n`/
 DB_SUITE = $(wildcard lib/DeBruijn/*.lhs lib/DeBruijn/*.hs lib/DeBruijn/*/*.lhs lib/DeBruijn/*/*.hs lib/DeBruijn/Lazy/*.hs lib/DeBruijn/Lazy/*.lhs lib/DeBruijn/Lazy/*/*.hs)
-LN_SUITE = $(wildcard lib/LocallyNameless/*.hs lib/LocallyNameless/Lazy/*.hs)
+LN_SUITE = $(wildcard lib/LocallyNameless/*.hs lib/LocallyNameless/*.lhs lib/LocallyNameless/Lazy/*.hs lib/LocallyNameless/Lazy/*.lhs)
 NM_SUITE = $(wildcard lib/Named/*.hs lib/Named/*.lhs)
 SUITE = $(LN_SUITE)
 # $(DB_SUITE) 
@@ -59,11 +59,13 @@ results/random/%.csv : Makefile $(SUITE)
 	stack run -- --csv results/random/$*-20.csv --match prefix "random20/$(subst /,.,$*)"
 
 results/constructed/%.csv : Makefile $(SUITE)
+	@echo $(RESULTS)
 	mkdir -p $(@D)
 	uname -a > $(@D)/uname.txt
-#	stack run -- --csv results/constructed/$*-adjust.csv --output results/constructed/$*-adjust.html --match prefix "adjust/$(subst /,.,$*)"
+	stack run -- -l 
+	stack run -- --csv results/constructed/$*-adjust.csv --output results/constructed/$*-adjust.html --match prefix "adjust/$(subst /,.,$*)"
 	stack run -- --csv results/constructed/$*-adjustb.csv --output results/constructed/$*-adjustb.html --match prefix "adjustb/$(subst /,.,$*)"
-#	stack run -- --csv results/constructed/$*-ids.csv --output results/constructed/$*-ids.html --match prefix "ids/$(subst /,.,$*)"
+	stack run -- --csv results/constructed/$*-ids.csv --output results/constructed/$*-ids.html --match prefix "ids/$(subst /,.,$*)"
 #	stack run -- --csv results/constructed/$*-con.csv --output results/constructed/$*-con.html --match prefix "con/$(subst /,.,$*)"
 #	stack run -- --csv results/constructed/$*-capt.csv --output results/constructed/$*-capt.html --match prefix "capt/$(subst /,.,$*)"
 
