@@ -12,6 +12,7 @@ import qualified DeBruijn.Lift
 import qualified DeBruijn.List
 import qualified DeBruijn.Nested
 import qualified DeBruijn.Par.B
+import qualified DeBruijn.Par.GB
 import qualified DeBruijn.Par.FB
 import qualified DeBruijn.Par.Fun
 import qualified DeBruijn.Par.L
@@ -27,6 +28,7 @@ import qualified DeBruijn.Lazy.Lift
 import qualified DeBruijn.Lazy.List
 import qualified DeBruijn.Lazy.Nested
 import qualified DeBruijn.Lazy.Par.B
+import qualified DeBruijn.Lazy.Par.GB
 import qualified DeBruijn.Lazy.Par.FB
 import qualified DeBruijn.Lazy.Par.Fun
 import qualified DeBruijn.Lazy.Par.L
@@ -66,7 +68,7 @@ import Util.Impl (LambdaImpl)
 
 -- | Implementations used in the benchmarking/test suite
 impls :: [LambdaImpl]
-impls = debruijn 
+impls = debruijn
 
 
 interleave :: [a] -> [a] -> [a]
@@ -95,6 +97,7 @@ debruijn =
     DeBruijn.Par.Fun.impl,
     DeBruijn.Par.P.impl,
     DeBruijn.Par.B.impl,
+    DeBruijn.Par.GB.impl,
     -- Well-scoped single
     DeBruijn.CPDT.impl,
     DeBruijn.Nested.impl,
@@ -117,6 +120,7 @@ debruijn_lazy =
     DeBruijn.Lazy.Par.Fun.impl,
     DeBruijn.Lazy.Par.P.impl,
     DeBruijn.Lazy.Par.B.impl,
+    DeBruijn.Lazy.Par.GB.impl,
     -- Well-scoped single
     DeBruijn.Lazy.CPDT.impl,
     DeBruijn.Lazy.Nested.impl,
@@ -188,33 +192,33 @@ other =
 fast_nf :: [LambdaImpl]
 fast_nf = [
   LocallyNameless.Opt.impl, -- 2.81
-	DeBruijn.Par.Scoped.impl, -- 2.93
-	LocallyNameless.TypedOpt.impl, -- 3.27
-	DeBruijn.Lazy.Par.Scoped.impl, -- 5.2
-	DeBruijn.Par.B.impl, -- 5.31
-	LocallyNameless.ParOpt.impl, -- 6.13
-	DeBruijn.Bound.impl, -- 7.18
-	DeBruijn.Lazy.Par.B.impl, -- 9.55
-	Lennart.HOAS.impl, -- 17.4
-	Named.SimpleH.impl -- 108
-	]
+  DeBruijn.Par.Scoped.impl, -- 2.93
+  LocallyNameless.TypedOpt.impl, -- 3.27
+  DeBruijn.Lazy.Par.Scoped.impl, -- 5.2
+  DeBruijn.Par.B.impl, -- 5.31
+  LocallyNameless.ParOpt.impl, -- 6.13
+  DeBruijn.Bound.impl, -- 7.18
+  DeBruijn.Lazy.Par.B.impl, -- 9.55
+  Lennart.HOAS.impl, -- 17.4
+  Named.SimpleH.impl -- 108
+  ]
 
 fast_random :: [LambdaImpl]
 fast_random = [
-	Lennart.HOAS.impl, -- 1
-	LocallyNameless.Lazy.Opt.impl, -- 363 -- 178
-        LocallyNameless.Opt.impl, -- 434 -- 264
-	DeBruijn.Lazy.Par.Scoped.impl, -- 269 -- 261
-        LocallyNameless.Lazy.TypedOpt.impl, -- 312 -- 316
-        LocallyNameless.TypedOpt.impl, -- 321 -- 327			
-	DeBruijn.Lazy.Par.B.impl, -- 356 -- 344
-	LocallyNameless.Lazy.ParOpt.impl, -- 557 -- 546
-	LocallyNameless.ParOpt.impl, -- 678 -- 684
-	DeBruijn.Par.Scoped.impl, -- 876 -- 1360 
-	DeBruijn.Par.B.impl, -- 954 -- 1310
-	Named.SimpleH.impl, -- 7780 -- 11200
-	DeBruijn.Bound.impl -- 8440 -- 9500
-        ] 
+  Lennart.HOAS.impl, -- 1
+  LocallyNameless.Lazy.Opt.impl, -- 363 -- 178
+  LocallyNameless.Opt.impl, -- 434 -- 264
+  DeBruijn.Lazy.Par.Scoped.impl, -- 269 -- 261
+  LocallyNameless.Lazy.TypedOpt.impl, -- 312 -- 316
+  LocallyNameless.TypedOpt.impl, -- 321 -- 327			
+  DeBruijn.Lazy.Par.B.impl, -- 356 -- 344
+  LocallyNameless.Lazy.ParOpt.impl, -- 557 -- 546
+  LocallyNameless.ParOpt.impl, -- 678 -- 684
+  DeBruijn.Par.Scoped.impl, -- 876 -- 1360 
+  DeBruijn.Par.B.impl, -- 954 -- 1310
+  Named.SimpleH.impl, -- 7780 -- 11200
+  DeBruijn.Bound.impl -- 8440 -- 9500
+  ] 
 
 -- Fast implementations overall
 fast_impls :: [LambdaImpl]

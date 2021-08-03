@@ -37,6 +37,7 @@ library
       DeBruijn.Kit
       DeBruijn.Par.P
       DeBruijn.Par.B
+      DeBruijn.Par.GB
       DeBruijn.Par.Fun
       DeBruijn.Par.FB
       DeBruijn.Par.L
@@ -54,6 +55,7 @@ library
       DeBruijn.Lazy.Kit
       DeBruijn.Lazy.Par.P
       DeBruijn.Lazy.Par.B
+      DeBruijn.Lazy.Par.GB
       DeBruijn.Lazy.Par.Fun
       DeBruijn.Lazy.Par.FB
       DeBruijn.Lazy.Par.L

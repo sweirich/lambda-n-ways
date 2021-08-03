@@ -33,7 +33,7 @@ impl =
     }
 
 data DB
-  = DVar Int
+  = DVar Var
   | DLam (Bind DB)
   | DApp DB DB
   deriving (Eq)
@@ -44,10 +44,11 @@ instance NFData DB where
   rnf (DApp a b) = rnf a `seq` rnf b
 
 ----------------------------------------------------------
-instance SubstC DB where
+instance VarC DB where
   var = DVar
   {-# INLINEABLE var #-}
 
+instance SubstC DB DB where
   subst s = go
     where
       go (DVar i) = applySub s i
@@ -104,14 +105,14 @@ whnfi n (DApp f a) = do
 toDB :: LC IdInt -> DB
 toDB = to []
   where
-    to vs (Var v@(IdInt i)) = maybe (DVar i) DVar (elemIndex v vs)
+    to vs (Var v@(IdInt i)) = maybe (DVar (V i)) (DVar . V) (elemIndex v vs)
     to vs (Lam x b) = DLam (bind (to (x : vs) b))
     to vs (App f a) = DApp (to vs f) (to vs a)
 
 fromDB :: DB -> LC IdInt
 fromDB = from firstBoundId
   where
-    from (IdInt n) (DVar i)
+    from (IdInt n) (DVar (V i))
       | i < 0 = Var (IdInt i)
       | i >= n = Var (IdInt i)
       | otherwise = Var (IdInt (n - i -1))
@@ -134,7 +135,7 @@ pparens False d = d
 
 -----------------------------------------------------------
 
-{-# SPECIALIZE applySub :: Sub DB -> Int -> DB #-}
+{-# SPECIALIZE applySub :: Sub DB -> Var -> DB #-}
 
 {-# SPECIALIZE nil :: Sub DB #-}
 

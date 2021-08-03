@@ -35,8 +35,8 @@ constructed: LC
 random: LC 
 	mkdir -p $(OUT)random/
 	uname -a > $(OUT)random/output.txt
-	stack run -- --output $(OUT)random15_bench.html --match prefix "random15/"  >> $(OUT)random/output.txt
-	stack run -- --output $(OUT)random20_bench.html --match prefix "random20/"  >> $(OUT)random/output.txt
+	stack run -- --output $(OUT)db_random15_bench.html --match prefix "random15/"  >> $(OUT)random/output.txt
+#	stack run -- --output $(OUT)random20_bench.html --match prefix "random20/"  >> $(OUT)random/output.txt
 
 ################ Separate CSV files for each benchmark, plus individual charts for the constructed ones
 

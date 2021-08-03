@@ -69,20 +69,6 @@ Implementation using the Nominal library (available from hackage)
 > subst z m (App t s) = App (subst z m t) (subst z m s)
 > subst z m (Lam (x :. t)) = Lam (x . subst z m t)
 
-For alpha-equivalence, we can optimize the case where the binding variable is
-the same. However, if it is not, we need to check to see if the left binding
-variable is free in the body of the right Lam. If so, then the terms cannot be
-alpha-equal. Otherwise, we can remember that the right one matches up with the
-left.
-
-> aeq :: Term -> Term -> Bool
-> aeq = aeqd where
->   aeqd (Var v1) (Var v2) = v1 == v2
->   aeqd (Lam b1) (Lam b2) = b1 == b2
->   aeqd (App a1 a2) (App b1 b2) =
->     aeqd a1 b1 && aeqd a2 b2
->   aeqd _ _ = False
-
 
 > nf :: Term -> Term
 > nf e@(Var _) = e
