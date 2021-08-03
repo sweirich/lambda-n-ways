@@ -43,6 +43,8 @@ import qualified LocallyNameless.TypedOtt
 import qualified LocallyNameless.UnboundGenerics
 import qualified LocallyNameless.UnboundRep
 import qualified LocallyNameless.UGSubstBind
+import qualified LocallyNameless.UGEBind
+import qualified LocallyNameless.UGSubstEBind
 import qualified LocallyNameless.Lazy.Opt
 import qualified LocallyNameless.Lazy.Ott
 import qualified LocallyNameless.Lazy.ParOpt
@@ -52,6 +54,8 @@ import qualified LocallyNameless.Lazy.TypedOtt
 import qualified LocallyNameless.Lazy.UnboundGenerics
 import qualified LocallyNameless.Lazy.UnboundRep
 import qualified LocallyNameless.Lazy.UGSubstBind
+import qualified LocallyNameless.Lazy.UGEBind
+import qualified LocallyNameless.Lazy.UGSubstEBind
 
 import qualified Named.NominalG
 import qualified Named.SimpleH
@@ -134,7 +138,9 @@ locallyNameless =
     -- LocallyNameless.TypedOpt.impl,
     LocallyNameless.UnboundRep.impl, -- unbound
     LocallyNameless.UnboundGenerics.impl, -- unbound-generics mod1
-    LocallyNameless.UGSubstBind.impl -- unbound-generics mod2
+    LocallyNameless.UGSubstBind.impl, -- unbound-generics mod2
+    LocallyNameless.UGEBind.impl, -- unbound-generics mod2
+    LocallyNameless.UGSubstEBind.impl -- unbound-generics mod2
   ]
 
 locallyNameless_lazy :: [LambdaImpl]
@@ -148,7 +154,9 @@ locallyNameless_lazy =
     -- LocallyNameless.Lazy.TypedOpt.impl,
     LocallyNameless.Lazy.UnboundRep.impl, -- unbound
     LocallyNameless.Lazy.UnboundGenerics.impl, -- unbound-generics
-    LocallyNameless.Lazy.UGSubstBind.impl
+    LocallyNameless.Lazy.UGSubstBind.impl,
+    LocallyNameless.Lazy.UGEBind.impl, -- unbound-generics mod2
+    LocallyNameless.Lazy.UGSubstEBind.impl -- unbound-generics mod2
   ]
 
 

@@ -67,6 +67,8 @@ library
       LocallyNameless.UnboundRep
       LocallyNameless.UnboundGenerics
       LocallyNameless.UGSubstBind
+      LocallyNameless.UGEBind
+      LocallyNameless.UGSubstEBind
       LocallyNameless.Lazy.Ott
       LocallyNameless.Lazy.Opt
       LocallyNameless.Lazy.ParScoped
@@ -76,6 +78,8 @@ library
       LocallyNameless.Lazy.UnboundRep
       LocallyNameless.Lazy.UnboundGenerics
       LocallyNameless.Lazy.UGSubstBind
+      LocallyNameless.Lazy.UGEBind
+      LocallyNameless.Lazy.UGSubstEBind
       Named.Simple
       Named.Unique
       Lennart.HOAS
