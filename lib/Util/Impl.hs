@@ -9,6 +9,7 @@ in a data structure.
 
 import Control.Monad.State
 import qualified Data.Map.Strict as M
+import qualified Data.Set as S
 import Util.Id
 import Util.IdInt
 import Util.IdInt.Set (IdIntSet)
@@ -39,7 +40,7 @@ toIdInt e = evalState (conv e) (0, fvmap)
       Prelude.foldr
         (\(v, i) m -> M.insert v (IdInt i) m)
         M.empty
-        (zip (Util.Lambda.freeVars e) [1 ..])
+        (zip (S.toList (Util.Lambda.freeVars e)) [1 ..])
 
     conv :: (Ord v) => LC v -> FreshM v (LC IdInt)
     conv (Var v) = Var <$> convVar v

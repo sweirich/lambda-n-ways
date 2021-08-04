@@ -12,6 +12,7 @@ import Control.Monad.Except
 import qualified Control.Monad.State as State
 import Data.List (intersperse, union, (\\))
 import qualified Data.Map as M
+import qualified Data.Set as S
 import Util.IdInt (IdInt, newId)
 import Util.Impl (LambdaImpl (..))
 import Util.Imports
@@ -34,21 +35,21 @@ impl =
 subst :: IdInt -> LC IdInt -> LC IdInt -> LC IdInt
 subst x a b = sub (M.singleton x a) vs0 b
   where
-    sub :: Map IdInt (LC IdInt) -> [IdInt] -> LC IdInt -> LC IdInt
+    sub :: Map IdInt (LC IdInt) -> S.Set IdInt -> LC IdInt -> LC IdInt
     sub ss _ e@(Var v)
       | v `M.member` ss = (ss M.! v)
       | otherwise = e
     sub ss vs e@(Lam v e')
       | v `M.member` ss = e
-      | v `elem` fvs = Lam v' (sub ss (v' : vs) e'')
-      | otherwise = Lam v (sub ss (v : vs) e')
+      | v `elem` fvs = Lam v' (sub ss (S.insert v' vs) e'')
+      | otherwise = Lam v (sub ss (S.insert v vs) e')
       where
         v' = newId vs
         e'' = subst v (Var v') e'
     sub ss vs (App f g) = App (sub ss vs f) (sub ss vs g)
 
     fvs = freeVars a
-    vs0 = fvs `union` allVars b `union` [x]
+    vs0 = fvs `S.union` allVars b `S.union` (S.singleton x)
 
 -- make sure we don't rename v' to variable we are sub'ing for
 
@@ -127,7 +128,7 @@ substStat x a b =
     { subst_occ = occs x b,
       subst_sizeB = size b,
       subst_sizeA = size a,
-      subst_capture = captures [x] x a b
+      subst_capture = captures (S.singleton x) x a b
     }
 
 mean :: [Int] -> Double

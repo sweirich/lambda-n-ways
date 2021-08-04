@@ -4,7 +4,7 @@
 -- to be efficiently composed via smart constructors.
 
 
-module DeBruijn.Par.B(impl) where
+module DeBruijn.Par.GB(impl) where
 import Data.List(elemIndex)
 import Util.Lambda
 import Util.IdInt
@@ -14,10 +14,11 @@ import Text.PrettyPrint.HughesPJ(Doc, renderStyle, style, text,
 import qualified Text.PrettyPrint.HughesPJ as PP
 import Util.Impl
 import Support.Par.Subst
+import GHC.Generics (Generic(..))
 
 impl :: LambdaImpl
 impl = LambdaImpl {
-            impl_name   = "DeBruijn.Par.B"
+            impl_name   = "DeBruijn.Par.GB"
           , impl_fromLC = toDB
           , impl_toLC   = fromDB
           , impl_nf     = nf
@@ -28,7 +29,7 @@ impl = LambdaImpl {
 data DB = DVar {-# unpack #-} !Var
         | DLam !(Bind DB)
         | DApp !DB !DB
-   deriving (Eq)
+   deriving (Eq, Generic)
 
 instance NFData DB where
    rnf (DVar i) = rnf i
@@ -39,13 +40,11 @@ instance NFData DB where
 instance VarC DB where
   var = DVar
   {-# INLINABLE var #-}
+  isvar (DVar i) = Just i
+  isvar _ = Nothing
 
 instance SubstC DB DB where
-  subst s = go where 
-    go (DVar i)   = applySub s i
-    go (DLam b)   = DLam (substBind s b)
-    go (DApp f a) = DApp (go f) (go a) 
-  {-# INLINABLE subst #-}
+
 
 ---------------------------------------------------------
 

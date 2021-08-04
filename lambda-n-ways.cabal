@@ -18,14 +18,15 @@ library
       Util.Lambda
       Util.Misc
       Suite
+      QuickBench
       Util.Id
       Util.IdInt
-      QuickBench
       Util.IdInt.Map
       Util.IdInt.Set
       Support.Nat
       Support.Par.Subst
       Support.Par.SubstScoped
+      Support.SubstH
       DeBruijn.Cornell
       DeBruijn.CPDT
       DeBruijn.Lennart
@@ -37,6 +38,7 @@ library
       DeBruijn.Kit
       DeBruijn.Par.P
       DeBruijn.Par.B
+      DeBruijn.Par.GB
       DeBruijn.Par.Fun
       DeBruijn.Par.FB
       DeBruijn.Par.L
@@ -54,6 +56,7 @@ library
       DeBruijn.Lazy.Kit
       DeBruijn.Lazy.Par.P
       DeBruijn.Lazy.Par.B
+      DeBruijn.Lazy.Par.GB
       DeBruijn.Lazy.Par.Fun
       DeBruijn.Lazy.Par.FB
       DeBruijn.Lazy.Par.L
@@ -67,6 +70,8 @@ library
       LocallyNameless.UnboundRep
       LocallyNameless.UnboundGenerics
       LocallyNameless.UGSubstBind
+      LocallyNameless.UGEBind
+      LocallyNameless.UGSubstEBind
       LocallyNameless.Lazy.Ott
       LocallyNameless.Lazy.Opt
       LocallyNameless.Lazy.ParScoped
@@ -76,6 +81,8 @@ library
       LocallyNameless.Lazy.UnboundRep
       LocallyNameless.Lazy.UnboundGenerics
       LocallyNameless.Lazy.UGSubstBind
+      LocallyNameless.Lazy.UGEBind
+      LocallyNameless.Lazy.UGSubstEBind
       Named.Simple
       Named.Unique
       Lennart.HOAS
@@ -84,6 +91,7 @@ library
       Named.NominalG
 --      Named.SimpleB
       Named.SimpleH
+      Named.SimpleGH
       Named.SimpleM
       Core.Core
       Core.Unique

@@ -62,7 +62,7 @@ freshening function with the maxium variable found in the term.
 > initState :: LC IdInt -> IdInt
 > initState e = succ x where
 >      vs = LC.allVars e
->      x  = case vs of [] -> firstBoundId ; _ -> max firstBoundId (maximum vs)
+>      x  = newId vs 
 
 Then normal form is computed by repeatedly performing
 substitution (beta reduction) on the leftmost redex.

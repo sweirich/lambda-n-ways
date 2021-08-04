@@ -12,6 +12,7 @@ import qualified DeBruijn.Lift
 import qualified DeBruijn.List
 import qualified DeBruijn.Nested
 import qualified DeBruijn.Par.B
+import qualified DeBruijn.Par.GB
 import qualified DeBruijn.Par.FB
 import qualified DeBruijn.Par.Fun
 import qualified DeBruijn.Par.L
@@ -27,6 +28,7 @@ import qualified DeBruijn.Lazy.Lift
 import qualified DeBruijn.Lazy.List
 import qualified DeBruijn.Lazy.Nested
 import qualified DeBruijn.Lazy.Par.B
+import qualified DeBruijn.Lazy.Par.GB
 import qualified DeBruijn.Lazy.Par.FB
 import qualified DeBruijn.Lazy.Par.Fun
 import qualified DeBruijn.Lazy.Par.L
@@ -43,6 +45,8 @@ import qualified LocallyNameless.TypedOtt
 import qualified LocallyNameless.UnboundGenerics
 import qualified LocallyNameless.UnboundRep
 import qualified LocallyNameless.UGSubstBind
+import qualified LocallyNameless.UGEBind
+import qualified LocallyNameless.UGSubstEBind
 import qualified LocallyNameless.Lazy.Opt
 import qualified LocallyNameless.Lazy.Ott
 import qualified LocallyNameless.Lazy.ParOpt
@@ -52,9 +56,12 @@ import qualified LocallyNameless.Lazy.TypedOtt
 import qualified LocallyNameless.Lazy.UnboundGenerics
 import qualified LocallyNameless.Lazy.UnboundRep
 import qualified LocallyNameless.Lazy.UGSubstBind
+import qualified LocallyNameless.Lazy.UGEBind
+import qualified LocallyNameless.Lazy.UGSubstEBind
 
 import qualified Named.NominalG
 import qualified Named.SimpleH
+import qualified Named.SimpleGH
 import qualified Named.SimpleM
 import qualified Named.Simple
 import qualified Named.Unique
@@ -91,6 +98,7 @@ debruijn =
     DeBruijn.Par.Fun.impl,
     DeBruijn.Par.P.impl,
     DeBruijn.Par.B.impl,
+    DeBruijn.Par.GB.impl,
     -- Well-scoped single
     DeBruijn.CPDT.impl,
     DeBruijn.Nested.impl,
@@ -113,6 +121,7 @@ debruijn_lazy =
     DeBruijn.Lazy.Par.Fun.impl,
     DeBruijn.Lazy.Par.P.impl,
     DeBruijn.Lazy.Par.B.impl,
+    DeBruijn.Lazy.Par.GB.impl,
     -- Well-scoped single
     DeBruijn.Lazy.CPDT.impl,
     DeBruijn.Lazy.Nested.impl,
@@ -134,7 +143,9 @@ locallyNameless =
     -- LocallyNameless.TypedOpt.impl,
     LocallyNameless.UnboundRep.impl, -- unbound
     LocallyNameless.UnboundGenerics.impl, -- unbound-generics mod1
-    LocallyNameless.UGSubstBind.impl -- unbound-generics mod2
+    LocallyNameless.UGSubstBind.impl, -- unbound-generics mod2
+    LocallyNameless.UGEBind.impl, -- unbound-generics mod2
+    LocallyNameless.UGSubstEBind.impl -- unbound-generics mod2
   ]
 
 locallyNameless_lazy :: [LambdaImpl]
@@ -148,7 +159,9 @@ locallyNameless_lazy =
     -- LocallyNameless.Lazy.TypedOpt.impl,
     LocallyNameless.Lazy.UnboundRep.impl, -- unbound
     LocallyNameless.Lazy.UnboundGenerics.impl, -- unbound-generics
-    LocallyNameless.Lazy.UGSubstBind.impl
+    LocallyNameless.Lazy.UGSubstBind.impl,
+    LocallyNameless.Lazy.UGEBind.impl, -- unbound-generics mod2
+    LocallyNameless.Lazy.UGSubstEBind.impl -- unbound-generics mod2
   ]
 
 
@@ -158,8 +171,8 @@ named =
   [ -- Named.Nom.impl, doesn't compile
     -- Named.Nominal.impl, -- fails test suite
     Named.NominalG.impl, -- nominal, generally too slow (12s vs. <200 ms for everything else)
-    -- Named.SimpleB.impl, -- fails test suite
     Named.SimpleH.impl,
+    Named.SimpleGH.impl,
     Named.SimpleM.impl,
     Named.Simple.impl,
     Named.Unique.impl

@@ -35,17 +35,17 @@ instance NFData a => NFData (LC a)
 
 -- Compute the free variables of an expression.
 
-freeVars :: (Eq v) => LC v -> [v]
-freeVars (Var v) = [v]
-freeVars (Lam v e) = freeVars e \\ [v]
-freeVars (App f a) = freeVars f `union` freeVars a
+freeVars :: (Ord v) => LC v -> S.Set v
+freeVars (Var v) = S.singleton v
+freeVars (Lam v e) = freeVars e S.\\ S.singleton v
+freeVars (App f a) = freeVars f `S.union` freeVars a
 
 -- Compute *all* variables in an expression.
 
-allVars :: (Eq v) => LC v -> [v]
-allVars (Var v) = [v]
+allVars :: (Ord v) => LC v -> S.Set v
+allVars (Var v) = S.singleton v
 allVars (Lam _ e) = allVars e
-allVars (App f a) = allVars f `union` allVars a
+allVars (App f a) = allVars f `S.union` allVars a
 
 -- For alpha-equivalence, we can optimize the case where the binding variable is
 -- the same. However, if it is not, we need to check to see if the left binding
@@ -199,7 +199,7 @@ genScoped = lams <$> sized (gen vars)
         app = App <$> gen xs n' <*> gen xs n'
         var = Var <$> elements xs
 
-shrinkScoped :: forall v. (Enum v, Eq v) => LC v -> [LC v]
+shrinkScoped :: forall v. (Enum v, Ord v) => LC v -> [LC v]
 shrinkScoped e = lams <$> s (peel e)
   where
     vars = take 5 [(toEnum 0) ..]
@@ -211,7 +211,7 @@ shrinkScoped e = lams <$> s (peel e)
     peel _ = error "start with 5 lambda-bound variables"
 
     s :: LC v -> [LC v]
-    s (Lam v e0) = [e | v `notElem` freeVars e0]
+    s (Lam v e0) = [e | not (v `S.member` freeVars e0)]
     s (Var _x) = []
     s (App e1 e2) = e1 : e2 : [App e1 e2' | e2' <- s e2] ++ [App e1' e2 | e1' <- s e1]
 
@@ -297,13 +297,13 @@ occs v (Var w) = if v == w then 1 else 0
 occs v (Lam w a) = if v == w then 0 else occs v a
 occs v (App a b) = occs v a + occs v b
 
-captures :: Eq v => [v] -> v -> LC v -> LC v -> Bool
+captures :: Ord v => S.Set v -> v -> LC v -> LC v -> Bool
 captures vs v a (Var w) =
   if v == w
-    then any (`elem` vs) (freeVars a)
+    then any (`S.member` vs) (freeVars a)
     else False
 captures vs v a (Lam w b) =
   if v == w
     then False
-    else captures (w : vs) v a b
+    else captures (w `S.insert` vs) v a b
 captures vs v a (App b1 b2) = captures vs v a b1 || captures vs v a b2
