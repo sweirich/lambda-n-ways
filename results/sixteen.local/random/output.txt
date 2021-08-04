@@ -1,70 +1,41 @@
 Darwin sixteen.local 19.6.0 Darwin Kernel Version 19.6.0: Tue Jun 22 19:49:55 PDT 2021; root:xnu-6153.141.35~1/RELEASE_X86_64 x86_64
-benchmarking random15/LocallyNameless.Ott/
-time                 220.0 ms   (178.5 ms .. 266.9 ms)
-                     0.989 R²   (0.977 R² .. 1.000 R²)
-mean                 260.3 ms   (243.1 ms .. 275.6 ms)
-std dev              20.96 ms   (16.39 ms .. 25.58 ms)
-variance introduced by outliers: 18% (moderately inflated)
-
-benchmarking random15/LocallyNameless.TypedOtt/
-time                 1.513 s    (1.436 s .. 1.613 s)
-                     0.999 R²   (0.999 R² .. 1.000 R²)
-mean                 1.474 s    (1.422 s .. 1.501 s)
-std dev              49.90 ms   (2.255 ms .. 61.41 ms)
-variance introduced by outliers: 19% (moderately inflated)
-
-benchmarking random15/LocallyNameless.ParScoped/
-time                 5.052 s    (4.966 s .. 5.090 s)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 5.366 s    (5.227 s .. 5.594 s)
-std dev              217.8 ms   (22.75 ms .. 275.3 ms)
-variance introduced by outliers: 19% (moderately inflated)
-
-benchmarking random15/LocallyNameless.ParOpt/
-time                 1.990 ms   (1.964 ms .. 2.043 ms)
-                     0.997 R²   (0.991 R² .. 1.000 R²)
-mean                 1.983 ms   (1.970 ms .. 2.018 ms)
-std dev              62.86 μs   (21.39 μs .. 126.6 μs)
-variance introduced by outliers: 18% (moderately inflated)
-
 benchmarking random15/LocallyNameless.Opt/
-time                 455.5 μs   (451.5 μs .. 460.1 μs)
+time                 439.8 μs   (435.8 μs .. 447.3 μs)
+                     0.999 R²   (0.997 R² .. 1.000 R²)
+mean                 438.7 μs   (436.0 μs .. 446.0 μs)
+std dev              13.94 μs   (7.441 μs .. 25.73 μs)
+variance introduced by outliers: 24% (moderately inflated)
+
+benchmarking random15/LocallyNameless.SupportOpt/
+time                 461.1 μs   (454.3 μs .. 467.6 μs)
+                     0.998 R²   (0.997 R² .. 0.999 R²)
+mean                 457.8 μs   (453.2 μs .. 466.3 μs)
+std dev              20.65 μs   (11.87 μs .. 30.55 μs)
+variance introduced by outliers: 39% (moderately inflated)
+
+benchmarking random15/LocallyNameless.GenericOpt/
+time                 555.4 μs   (550.6 μs .. 559.6 μs)
                      1.000 R²   (0.999 R² .. 1.000 R²)
-mean                 452.1 μs   (450.2 μs .. 455.1 μs)
-std dev              8.570 μs   (5.310 μs .. 14.28 μs)
-variance introduced by outliers: 11% (moderately inflated)
+mean                 551.6 μs   (549.8 μs .. 553.7 μs)
+std dev              6.533 μs   (5.435 μs .. 9.424 μs)
 
-benchmarking random15/LocallyNameless.UnboundRep/
-time                 74.87 ms   (74.35 ms .. 75.53 ms)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 74.68 ms   (74.40 ms .. 74.98 ms)
-std dev              527.2 μs   (382.0 μs .. 797.5 μs)
+benchmarking random15/LocallyNameless.Lazy.Opt/
+time                 393.2 μs   (384.1 μs .. 402.0 μs)
+                     0.998 R²   (0.997 R² .. 1.000 R²)
+mean                 386.7 μs   (384.5 μs .. 390.4 μs)
+std dev              9.466 μs   (6.903 μs .. 13.94 μs)
+variance introduced by outliers: 17% (moderately inflated)
 
-benchmarking random15/LocallyNameless.UnboundGenerics/
-time                 1.548 s    (NaN s .. 1.572 s)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 1.583 s    (1.567 s .. 1.612 s)
-std dev              28.08 ms   (106.9 μs .. 34.53 ms)
-variance introduced by outliers: 19% (moderately inflated)
+benchmarking random15/LocallyNameless.Lazy.SupportOpt/
+time                 376.7 μs   (369.9 μs .. 388.1 μs)
+                     0.992 R²   (0.987 R² .. 0.996 R²)
+mean                 389.1 μs   (381.1 μs .. 399.1 μs)
+std dev              30.10 μs   (24.43 μs .. 34.61 μs)
+variance introduced by outliers: 68% (severely inflated)
 
-benchmarking random15/LocallyNameless.UGSubstBind/
-time                 835.2 ms   (806.5 ms .. 852.5 ms)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 825.4 ms   (816.1 ms .. 829.2 ms)
-std dev              6.592 ms   (1.821 ms .. 8.824 ms)
-variance introduced by outliers: 19% (moderately inflated)
-
-benchmarking random15/LocallyNameless.UGEBind/
-time                 970.0 ms   (944.7 ms .. 999.0 ms)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 972.4 ms   (967.2 ms .. 976.7 ms)
-std dev              5.343 ms   (4.256 ms .. 6.249 ms)
-variance introduced by outliers: 19% (moderately inflated)
-
-benchmarking random15/LocallyNameless.UGSubstEBind/
-time                 804.9 ms   (739.8 ms .. 936.7 ms)
-                     0.997 R²   (0.994 R² .. 1.000 R²)
-mean                 757.1 ms   (743.8 ms .. 782.3 ms)
-std dev              24.78 ms   (1.315 ms .. 29.85 ms)
-variance introduced by outliers: 19% (moderately inflated)
+benchmarking random15/LocallyNameless.Lazy.GenericOpt/
+time                 546.5 μs   (542.0 μs .. 550.5 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 545.7 μs   (543.8 μs .. 547.3 μs)
+std dev              5.845 μs   (4.387 μs .. 7.677 μs)
 

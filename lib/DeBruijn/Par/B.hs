@@ -3,49 +3,58 @@
 -- It also caches substitutions at binders allowing them to
 -- to be efficiently composed via smart constructors.
 
+module DeBruijn.Par.B (impl) where
 
-module DeBruijn.Par.B(impl) where
-import Data.List(elemIndex)
-import Util.Lambda
-import Util.IdInt
 import Control.DeepSeq
-import Text.PrettyPrint.HughesPJ(Doc, renderStyle, style, text,
-           (<+>), parens)
-import qualified Text.PrettyPrint.HughesPJ as PP
-import Util.Impl
+import Data.List (elemIndex)
 import Support.Par.Subst
+import Text.PrettyPrint.HughesPJ
+  ( Doc,
+    parens,
+    renderStyle,
+    style,
+    text,
+    (<+>),
+  )
+import qualified Text.PrettyPrint.HughesPJ as PP
+import Util.IdInt
+import Util.Impl
+import Util.Lambda
 
 impl :: LambdaImpl
-impl = LambdaImpl {
-            impl_name   = "DeBruijn.Par.B"
-          , impl_fromLC = toDB
-          , impl_toLC   = fromDB
-          , impl_nf     = nf
-          , impl_nfi    = nfi
-          , impl_aeq    = (==)
-       }
+impl =
+  LambdaImpl
+    { impl_name = "DeBruijn.Par.B",
+      impl_fromLC = toDB,
+      impl_toLC = fromDB,
+      impl_nf = nf,
+      impl_nfi = nfi,
+      impl_aeq = (==)
+    }
 
-data DB = DVar {-# unpack #-} !Var
-        | DLam !(Bind DB)
-        | DApp !DB !DB
-   deriving (Eq)
+data DB
+  = DVar {-# UNPACK #-} !Var
+  | DLam !(Bind DB)
+  | DApp !DB !DB
+  deriving (Eq)
 
 instance NFData DB where
-   rnf (DVar i) = rnf i
-   rnf (DLam d) = rnf d
-   rnf (DApp a b) = rnf a `seq` rnf b
+  rnf (DVar i) = rnf i
+  rnf (DLam d) = rnf d
+  rnf (DApp a b) = rnf a `seq` rnf b
 
 ----------------------------------------------------------
 instance VarC DB where
   var = DVar
-  {-# INLINABLE var #-}
+  {-# INLINEABLE var #-}
 
 instance SubstC DB DB where
-  subst s = go where 
-    go (DVar i)   = applySub s i
-    go (DLam b)   = DLam (substBind s b)
-    go (DApp f a) = DApp (go f) (go a) 
-  {-# INLINABLE subst #-}
+  subst s = go
+    where
+      go (DVar i) = applySub s i
+      go (DLam b) = DLam (substBind s b)
+      go (DApp f a) = DApp (go f) (go a)
+  {-# INLINEABLE subst #-}
 
 ---------------------------------------------------------
 
@@ -53,40 +62,40 @@ nf :: DB -> DB
 nf e@(DVar _) = e
 nf (DLam b) = DLam (bind (nf (unbind b)))
 nf (DApp f a) =
-    case whnf f of
-        DLam b -> 
-           nf (instantiate b a)
-        f' -> DApp (nf f') (nf a)
+  case whnf f of
+    DLam b ->
+      nf (instantiate b a)
+    f' -> DApp (nf f') (nf a)
 
 whnf :: DB -> DB
 whnf e@(DVar _) = e
 whnf e@(DLam _) = e
 whnf (DApp f a) =
-    case whnf f of
-        DLam b -> whnf (instantiate b a)
-        f' -> DApp f' a
+  case whnf f of
+    DLam b -> whnf (instantiate b a)
+    f' -> DApp f' a
 
 ---------------------------------------------------------
 
 nfi :: Int -> DB -> Maybe DB
 nfi 0 _e = Nothing
 nfi _n e@(DVar _) = return e
-nfi n (DLam b) = DLam . bind <$> nfi (n-1) (unbind b)
+nfi n (DLam b) = DLam . bind <$> nfi (n -1) (unbind b)
 nfi n (DApp f a) = do
-    f' <- whnfi (n-1) f 
-    case f' of
-        DLam b -> nfi (n-1) (instantiate b a)
-        _ -> DApp <$> nfi n f' <*> nfi n a
+  f' <- whnfi (n -1) f
+  case f' of
+    DLam b -> nfi (n -1) (instantiate b a)
+    _ -> DApp <$> nfi n f' <*> nfi n a
 
 whnfi :: Int -> DB -> Maybe DB
 whnfi 0 _e = Nothing
 whnfi _n e@(DVar _) = return e
 whnfi _n e@(DLam _) = return e
 whnfi n (DApp f a) = do
-    f' <- whnfi (n-1) f 
-    case whnf f' of
-        DLam b -> whnfi (n-1) (instantiate b a)
-        _ -> return $ DApp f' a
+  f' <- whnfi (n -1) f
+  case whnf f' of
+    DLam b -> whnfi (n -1) (instantiate b a)
+    _ -> return $ DApp f' a
 
 ---------------------------------------------------------
 -- Convert to deBruijn indicies.  Do this by keeping a list of the bound
@@ -95,27 +104,30 @@ whnfi n (DApp f a) = do
 
 toDB :: LC IdInt -> DB
 toDB = to []
-  where to vs (Var v@(IdInt i)) = maybe (DVar (V i)) (DVar . V) (elemIndex v vs)
-        to vs (Lam x b) = DLam (bind (to (x:vs) b))
-        to vs (App f a) = DApp (to vs f) (to vs a)
+  where
+    to vs (Var v@(IdInt i)) = maybe (DVar (V i)) (DVar . V) (elemIndex v vs)
+    to vs (Lam x b) = DLam (bind (to (x : vs) b))
+    to vs (App f a) = DApp (to vs f) (to vs a)
 
 fromDB :: DB -> LC IdInt
 fromDB = from firstBoundId
-  where from (IdInt n) (DVar (V i)) | i < 0     = Var (IdInt i)
-                                    | i >= n    = Var (IdInt i)
-                                    | otherwise = Var (IdInt (n-i-1))
-        from n (DLam b)   = Lam n (from (succ n) (unbind b))
-        from n (DApp f a) = App (from n f) (from n a)
+  where
+    from (IdInt n) (DVar (V i))
+      | i < 0 = Var (IdInt i)
+      | i >= n = Var (IdInt i)
+      | otherwise = Var (IdInt (n - i -1))
+    from n (DLam b) = Lam n (from (succ n) (unbind b))
+    from n (DApp f a) = App (from n f) (from n a)
 
 ---------------------------------------------------------
 
 instance Show DB where
-    show = renderStyle style . ppLC 0
+  show = renderStyle style . ppLC 0
 
 ppLC :: Int -> DB -> Doc
-ppLC _ (DVar v)   = text $ "x" ++ show v
-ppLC p (DLam b) = pparens (p>0) $ text "\\." PP.<> ppLC 0 (unbind b)
-ppLC p (DApp f a) = pparens (p>1) $ ppLC 1 f <+> ppLC 2 a
+ppLC _ (DVar v) = text $ "x" ++ show v
+ppLC p (DLam b) = pparens (p > 0) $ text "\\." PP.<> ppLC 0 (unbind b)
+ppLC p (DApp f a) = pparens (p > 1) $ ppLC 1 f <+> ppLC 2 a
 
 pparens :: Bool -> Doc -> Doc
 pparens True d = parens d
@@ -124,15 +136,14 @@ pparens False d = d
 -----------------------------------------------------------
 
 {-# SPECIALIZE applySub :: Sub DB -> Var -> DB #-}
-{-# SPECIALIZE nil :: Sub DB #-}
+
 {-# SPECIALIZE comp :: Sub DB -> Sub DB -> Sub DB #-}
-{-# SPECIALIZE lift :: Sub DB -> Sub DB #-}
-{-# SPECIALIZE single :: DB -> Sub DB #-}
+
 {-# SPECIALIZE unbind :: Bind DB -> DB #-}
+
 {-# SPECIALIZE instantiate :: Bind DB -> DB -> DB #-}
+
 {-# SPECIALIZE substBind :: Sub DB -> Bind DB -> Bind DB #-}
-
-
 
 {-
 potential optimizations
@@ -142,7 +153,6 @@ potential optimizations
 3. check for subst (Inc 0)
 4. ! in Sub definition
 5. ! in DB definition
-
 
 NONE:   user	0m6.655s
 1:      user	0m0.038s   (almost as fast at H, at user	0m0.030s)

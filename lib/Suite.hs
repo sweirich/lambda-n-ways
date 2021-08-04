@@ -37,11 +37,15 @@ import qualified Lennart.DeBruijn
 import qualified Lennart.HOAS
 import qualified Lennart.Simple
 import qualified Lennart.Unique
+--import qualified LocallyNameless.Lazy.TypedOpt
+
+import qualified LocallyNameless.GenericOpt
+import qualified LocallyNameless.Lazy.GenericOpt
 import qualified LocallyNameless.Lazy.Opt
 import qualified LocallyNameless.Lazy.Ott
 import qualified LocallyNameless.Lazy.ParOpt
 import qualified LocallyNameless.Lazy.ParScoped
---import qualified LocallyNameless.Lazy.TypedOpt
+import qualified LocallyNameless.Lazy.SupportOpt
 import qualified LocallyNameless.Lazy.TypedOtt
 import qualified LocallyNameless.Lazy.UGEBind
 import qualified LocallyNameless.Lazy.UGSubstBind
@@ -52,6 +56,7 @@ import qualified LocallyNameless.Opt
 import qualified LocallyNameless.Ott
 import qualified LocallyNameless.ParOpt
 import qualified LocallyNameless.ParScoped
+import qualified LocallyNameless.SupportOpt
 --import qualified LocallyNameless.TypedOpt
 import qualified LocallyNameless.TypedOtt
 import qualified LocallyNameless.UGEBind
@@ -68,8 +73,9 @@ import qualified Named.Unique
 import Util.Impl (LambdaImpl)
 
 -- | Implementations used in the benchmarking/test suite
+-- must be a single variable name for Makefile
 impls :: [LambdaImpl]
-impls = lennart
+impls = locallyNameless_opt
 
 interleave :: [a] -> [a] -> [a]
 interleave (a1 : a1s) (a2 : a2s) = a1 : a2 : interleave a1s a2s
@@ -138,6 +144,8 @@ locallyNameless =
     LocallyNameless.ParScoped.impl,
     LocallyNameless.ParOpt.impl,
     LocallyNameless.Opt.impl,
+    LocallyNameless.SupportOpt.impl,
+    LocallyNameless.GenericOpt.impl,
     -- LocallyNameless.TypedOpt.impl,
     LocallyNameless.UnboundRep.impl, -- unbound
     LocallyNameless.UnboundGenerics.impl, -- unbound-generics (original)
@@ -153,6 +161,8 @@ locallyNameless_lazy =
     LocallyNameless.Lazy.ParScoped.impl,
     LocallyNameless.Lazy.ParOpt.impl,
     LocallyNameless.Lazy.Opt.impl,
+    LocallyNameless.Lazy.SupportOpt.impl,
+    LocallyNameless.Lazy.GenericOpt.impl,
     -- LocallyNameless.Lazy.TypedOpt.impl,
     LocallyNameless.Lazy.UnboundRep.impl, -- unbound
     LocallyNameless.Lazy.UnboundGenerics.impl, -- unbound-generics
@@ -161,12 +171,20 @@ locallyNameless_lazy =
     LocallyNameless.Lazy.UGSubstEBind.impl -- unbound-generics mod2
   ]
 
+locallyNameless_opt :: [LambdaImpl]
+locallyNameless_opt =
+  [ LocallyNameless.Opt.impl,
+    LocallyNameless.SupportOpt.impl,
+    LocallyNameless.GenericOpt.impl,
+    LocallyNameless.Lazy.Opt.impl,
+    LocallyNameless.Lazy.SupportOpt.impl,
+    LocallyNameless.Lazy.GenericOpt.impl
+  ]
+
 -- | Name based/nominal implementations
 named :: [LambdaImpl]
 named =
-  [ -- Named.Nom.impl, doesn't compile
-    -- Named.Nominal.impl, -- fails test suite
-    Named.SimpleH.impl,
+  [ Named.SimpleH.impl,
     Named.SimpleGH.impl,
     Named.SimpleM.impl,
     Named.Simple.impl,
@@ -177,9 +195,8 @@ lennart :: [LambdaImpl]
 lennart =
   [ -- Other
     Named.Unique.impl,
-    Lennart.DeBruijn.impl,
     Lennart.Simple.impl,
-    Named.Simple.impl,
+    Lennart.DeBruijn.impl,
     Lennart.HOAS.impl
   ]
 
@@ -189,6 +206,15 @@ hackage =
     LocallyNameless.Lazy.UnboundRep.impl, -- unbound
     LocallyNameless.Lazy.UnboundGenerics.impl, -- unbound-generics
     DeBruijn.Lazy.Bound.impl -- bound
+  ]
+
+generic :: [LambdaImpl]
+generic =
+  [ DeBruijn.Par.GB.impl,
+    DeBruijn.Lazy.Par.GB.impl,
+    LocallyNameless.GenericOpt.impl,
+    LocallyNameless.Lazy.GenericOpt.impl,
+    Named.SimpleGH.impl
   ]
 
 ---------------------------------------------------

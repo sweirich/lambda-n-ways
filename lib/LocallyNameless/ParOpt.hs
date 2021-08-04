@@ -10,26 +10,33 @@ import qualified Control.Monad.State as State
 import qualified Data.IntMap as IM
 import Data.List (elemIndex)
 import qualified Data.Set as Set
+import Support.Nat (Idx (..), Nat (..), Plus, cmpIdx, toInt)
+import Support.Par.SubstScoped
+  ( Bind (..),
+    Sub (..),
+    SubstC (..),
+    applyS,
+    bind,
+    comp,
+    instantiate,
+    lift,
+    nil,
+    single,
+    substBind,
+    unbind,
+  )
 import qualified Unsafe.Coerce as Unsafe
 import Util.IdInt (IdInt (..), firstBoundId)
 import Util.Impl (LambdaImpl (..))
 import Util.Imports
-    ( Generic, NFData, Set, State, MonadState(put, get), fromMaybe )
+  ( Generic,
+    MonadState (get, put),
+    NFData,
+    Set,
+    State,
+    fromMaybe,
+  )
 import qualified Util.Lambda as LC
-import Support.Par.SubstScoped
-    ( SubstC(..),
-      Sub(..),
-      Bind(..),
-      bind,
-      unbind,
-      instantiate,
-      substBind,
-      applyS,
-      nil,
-      lift,
-      single,
-      comp )
-import Support.Nat ( Plus, Idx(..), Nat(..), toInt, cmpIdx )
 
 -- 0. (Lazy.Ott) Original
 -- lennart: 1.03s
@@ -87,12 +94,11 @@ data Exp (n :: Nat) where
   App :: !(Exp n) -> !(Exp n) -> Exp n
   deriving (Generic)
 
-instance NFData (Exp n) where
+instance NFData (Exp n)
 
-deriving instance Eq (Exp n)   
+deriving instance Eq (Exp n)
 
 ----------------------------------------------------------
-
 
 -- free variable substitution
 substFv :: Exp 'Z -> IdInt -> Exp 'Z -> Exp 'Z
@@ -122,13 +128,12 @@ fv e =
     (Var_f x) -> Set.singleton x
     (Abs b) -> fv (unbind b)
     (App e1 e2) -> fv e1 `Set.union` fv e2
+
 ---------------------------------------------------------------
 
 substBvBind :: SubstC a => Sub a n m -> Bind a n -> Bind a m
 substBvBind s2 (Bind s1 e) = Bind (s1 `comp` s2) e
 {-# INLINEABLE substBvBind #-}
-
-
 
 open :: Bind Exp 'Z -> Exp 'Z -> Exp 'Z
 open (Bind (s1 :: Sub Exp m 'Z) (e :: Exp ('S m))) u = subst s e
@@ -162,6 +167,7 @@ close_exp_wrt_exp_rec n1 x1 e1 =
 
 close :: IdInt -> Exp 'Z -> Bind Exp 'Z
 close x e = bind (close_exp_wrt_exp_rec FZ x e)
+
 ---------------------------------------------------------------
 
 type N a = State IdInt a
@@ -173,8 +179,9 @@ newVar = do
   return i
 
 nfd :: Exp 'Z -> Exp 'Z
-nfd e = State.evalState (nf' e) v where
-  v = succ (fromMaybe firstBoundId (Set.lookupMax (fv e)))
+nfd e = State.evalState (nf' e) v
+  where
+    v = succ (fromMaybe firstBoundId (Set.lookupMax (fv e)))
 
 nf' :: Exp 'Z -> N (Exp 'Z)
 nf' e@(Var_f _) = return e
@@ -201,8 +208,9 @@ whnf (App f a) = do
 -- Fueled version
 
 nfi :: Int -> Exp 'Z -> Maybe (Exp 'Z)
-nfi n e = State.evalStateT (nfi' n e) v where
-  v = succ (fromMaybe firstBoundId (Set.lookupMax (fv e)))
+nfi n e = State.evalStateT (nfi' n e) v
+  where
+    v = succ (fromMaybe firstBoundId (Set.lookupMax (fv e)))
 
 type NM a = State.StateT IdInt Maybe a
 
@@ -218,7 +226,7 @@ nfi' n (App f a) = do
   case f' of
     Abs b -> nfi' (n - 1) (open b a)
     _ -> App <$> nfi' (n - 1) f' <*> nfi' (n -1) a
- 
+
 -- Compute the weak head normal form.
 whnfi :: Int -> Exp 'Z -> NM (Exp 'Z)
 whnfi 0 _ = State.lift Nothing
@@ -260,10 +268,15 @@ fromDB = from firstBoundId
 -----------------------------------------------------------------------
 
 {-# SPECIALIZE applyS :: Sub Exp n m -> Idx n -> Exp m #-}
+
 {-# SPECIALIZE nil :: Sub Exp n n #-}
+
 {-# SPECIALIZE comp :: Sub Exp m n -> Sub Exp n p -> Sub Exp m p #-}
+
 {-# SPECIALIZE lift :: Sub Exp n m -> Sub Exp ('S n) ('S m) #-}
-{-# SPECIALIZE single :: Exp n -> Sub Exp ('S n) n #-}
+
 {-# SPECIALIZE unbind :: Bind Exp n -> Exp ('S n) #-}
+
 {-# SPECIALIZE instantiate :: Bind Exp n -> Exp n -> Exp n #-}
+
 {-# SPECIALIZE substBind :: Sub Exp n m -> Bind Exp n -> Bind Exp m #-}

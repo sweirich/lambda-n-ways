@@ -7,6 +7,7 @@ module DeBruijn.Lazy.Par.B (impl) where
 
 import Control.DeepSeq
 import Data.List (elemIndex)
+import Support.Par.Subst
 import Text.PrettyPrint.HughesPJ
   ( Doc,
     parens,
@@ -19,7 +20,6 @@ import qualified Text.PrettyPrint.HughesPJ as PP
 import Util.IdInt
 import Util.Impl
 import Util.Lambda
-import Support.Par.Subst
 
 impl :: LambdaImpl
 impl =
@@ -137,13 +137,7 @@ pparens False d = d
 
 {-# SPECIALIZE applySub :: Sub DB -> Var -> DB #-}
 
-{-# SPECIALIZE nil :: Sub DB #-}
-
 {-# SPECIALIZE comp :: Sub DB -> Sub DB -> Sub DB #-}
-
-{-# SPECIALIZE lift :: Sub DB -> Sub DB #-}
-
-{-# SPECIALIZE single :: DB -> Sub DB #-}
 
 {-# SPECIALIZE unbind :: Bind DB -> DB #-}
 

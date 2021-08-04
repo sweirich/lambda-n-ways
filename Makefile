@@ -21,7 +21,7 @@ charts: timing random
 timing:	LC
 	uname -a > $(OUT)output.txt
 #	stack run -- --output $(OUT)conv_bench.html --match prefix "conv/"  >> $(OUT)output.txt
-	stack run -- --output $(OUT)all_nf_bench.html --match prefix "nf/"  >> $(OUT)output.txt
+	stack run -- --output $(OUT)ln_opt_nf_bench.html --match prefix "nf/"  >> $(OUT)output.txt
 #	stack run -- --output $(OUT)aeq_bench.html --match prefix "aeq/" >> $(OUT)output.txt
 #	stack run -- --output $(OUT)aeqs_bench.html --match prefix "aeqs/" >> $(OUT)output.txt
 
@@ -36,7 +36,7 @@ constructed: LC
 random: LC 
 	mkdir -p $(OUT)random/
 	uname -a > $(OUT)random/output.txt
-	stack run -- --output $(OUT)all_random15_bench.html --match prefix "random15/"  >> $(OUT)random/output.txt
+	stack run -- --output $(OUT)ln_opt_random15_bench.html --match prefix "random15/"  >> $(OUT)random/output.txt
 #	stack run -- --output $(OUT)random20_bench.html --match prefix "random20/"  >> $(OUT)random/output.txt
 
 ################ Separate CSV files for each benchmark, plus individual charts for the constructed ones
