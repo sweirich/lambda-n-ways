@@ -31,7 +31,6 @@ impl =
 
 --- No extra syntax, just uses LC IdInt
 
-
 subst :: IdInt -> LC IdInt -> LC IdInt -> LC IdInt
 subst x a b = sub (M.singleton x a) vs0 b
   where

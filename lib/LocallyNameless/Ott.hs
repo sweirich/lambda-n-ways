@@ -6,7 +6,6 @@
 -- 2. ParOpt  (like Par.Scoped)
 -- 3. Opt, like Par.B, but cache close too. Not well-scoped
 -- 4. TypedOpt, well-scoped version of Opt
-
 module LocallyNameless.Ott (impl, substFv, fv) where
 
 import qualified Control.Monad.State as State
@@ -14,7 +13,7 @@ import Data.List (elemIndex)
 import qualified Data.Set as Set
 import Util.IdInt (IdInt (..), firstBoundId)
 import Util.Impl (LambdaImpl (..))
-import Util.Imports hiding (to, from)
+import Util.Imports hiding (from, to)
 import qualified Util.Lambda as LC
 
 impl :: LambdaImpl
@@ -35,7 +34,7 @@ data Exp
   | App !Exp !Exp
   deriving (Eq, Ord, Generic)
 
-instance NFData Exp where
+instance NFData Exp
 
 -------------------------------------------------------------
 
@@ -56,8 +55,8 @@ fv e =
     (App e1 e2) -> fv e1 `Set.union` fv e2
 
 -------------------------------------------------------------
--- This definition of open is similar to the "subst" function 
--- from DeBruijn.Lennart. However, because substituted terms 
+-- This definition of open is similar to the "subst" function
+-- from DeBruijn.Lennart. However, because substituted terms
 -- are always locally closed, they do not need to be adjusted/lifted
 -- at each occurrence
 
@@ -66,9 +65,9 @@ open_exp_wrt_exp_rec k u e0 =
   case e0 of
     (Var_b n) ->
       case compare n k of
-        LT -> Var_b n 
+        LT -> Var_b n
         EQ -> u
-        GT -> Var_b (n - 1)  -- is this dead code?
+        GT -> Var_b (n - 1) -- is this dead code?
     (Var_f x) -> Var_f x
     (Abs e) -> Abs (open_exp_wrt_exp_rec (k + 1) u e)
     (App e1 e2) ->
@@ -96,7 +95,8 @@ close :: IdInt -> Exp -> Exp
 close x1 e1 = close_exp_wrt_exp_rec 0 x1 e1
 
 ----------------------------------------------------------------
--- version based on reader monad (i.e. variables need only be 
+{-
+-- version based on reader monad (i.e. variables need only be
 -- fresh for the current scope, not globally fresh
 
 type N a = IdInt -> a
@@ -111,8 +111,8 @@ nfd e = nf' e v where
 nf' :: Exp -> N Exp
 nf' e@(Var_f _) = return e
 nf' (Var_b _) = error "should not reach this"
-nf' (Abs e) = 
-  scope $ \x -> do 
+nf' (Abs e) =
+  scope $ \x -> do
     b' <- nf' (open e (Var_f x))
     return $ Abs (close x b')
 nf' (App f a) = do
@@ -130,14 +130,17 @@ whnf (App f a) = do
   case f' of
     (Abs b) -> whnf (open b a)
     _ -> return $ App f' a
-
+-}
 ----------------------------------------------------------------
-{-
+
 type N a = State IdInt a
 
+-- version based on state monad
+
 nfd :: Exp -> Exp
-nfd e = State.evalState (nf' e) v where
-  v = succ (fromMaybe firstBoundId (Set.lookupMax (fv e)))
+nfd e = State.evalState (nf' e) v
+  where
+    v = succ (fromMaybe firstBoundId (Set.lookupMax (fv e)))
 
 nf' :: Exp -> N Exp
 nf' e@(Var_f _) = return e
@@ -162,12 +165,13 @@ whnf (App f a) = do
   case f' of
     (Abs b) -> whnf (open b a)
     _ -> return $ App f' a
--}
+
 -- Fueled version
 
 nfi :: Int -> Exp -> Maybe Exp
-nfi n e = State.evalStateT (nfi' n e) v where
-  v = succ (fromMaybe firstBoundId (Set.lookupMax (fv e)))
+nfi n e = State.evalStateT (nfi' n e) v
+  where
+    v = succ (fromMaybe firstBoundId (Set.lookupMax (fv e)))
 
 type NM a = State.StateT IdInt Maybe a
 

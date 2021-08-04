@@ -5,7 +5,7 @@
 -- Strangely, composing substitutions too much causes this impl to really slow
 -- down on the lennart/nf benchmark.
 -- This version puts all operations (including substitution) in freshness monad
-module Named.SimpleM (impl) where
+module Named.Lazy.SimpleM (impl) where
 
 import qualified Control.Monad.Except as E
 import qualified Control.Monad.State as State
@@ -27,7 +27,7 @@ import qualified Util.Lambda as LC
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "Named.SimpleM",
+    { impl_name = "Named.Lazy.SimpleM",
       impl_fromLC = toExp,
       impl_toLC = fromExp,
       impl_nf = nf,
@@ -36,9 +36,9 @@ impl =
     }
 
 data Exp
-  = Var {-# UNPACK #-} !Var
-  | Lam !(Bind Exp)
-  | App !Exp !Exp
+  = Var Var
+  | Lam (Bind Exp)
+  | App Exp Exp
   deriving (Generic)
 
 instance NFData Exp

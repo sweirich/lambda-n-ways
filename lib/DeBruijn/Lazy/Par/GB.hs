@@ -10,7 +10,7 @@ import Control.DeepSeq
 import Data.List (elemIndex)
 import GHC.Generics (Generic (..))
 import Support.Par.Subst
-import Util.IdInt
+import Util.IdInt (IdInt (..), firstBoundId)
 import Util.Impl
 import Util.Lambda
 
@@ -31,10 +31,7 @@ data DB
   | DApp DB DB
   deriving (Eq, Generic)
 
-instance NFData DB where
-  rnf (DVar i) = rnf i
-  rnf (DLam d) = rnf d
-  rnf (DApp a b) = rnf a `seq` rnf b
+instance NFData DB
 
 ----------------------------------------------------------
 instance VarC DB where

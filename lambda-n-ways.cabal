@@ -98,10 +98,13 @@ library
       -- Named.Nom  -- doesn't compile
 --      Named.Nominal
       Named.NominalG
---      Named.SimpleB
       Named.SimpleH
       Named.SimpleGH
       Named.SimpleM
+      Named.Lazy.NominalG
+      Named.Lazy.SimpleH
+      Named.Lazy.SimpleGH
+      Named.Lazy.SimpleM
       Core.Core
       Core.Unique
       Core.FV

@@ -2,8 +2,7 @@
 -- of the "Simple" implementation.
 -- Strangely, composing substitutions too much causes this impl to really slow
 -- down on the lennart/nf benchmark.
--- Most of the logic of this implementation is in the Support.SimpleH library
-module Named.SimpleH (impl) where
+module Named.Lazy.SimpleGH (impl) where
 
 import Support.SubstH
 import Util.IdInt (IdInt)
@@ -16,7 +15,7 @@ import qualified Util.Lambda as LC
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "Named.SimpleH",
+    { impl_name = "Named.Lazy.SimpleGH",
       impl_fromLC = toExp,
       impl_toLC = fromExp,
       impl_nf = nfd,
@@ -25,9 +24,9 @@ impl =
     }
 
 data Exp
-  = Var !Var
-  | Lam !(Bind Exp)
-  | App !Exp !Exp
+  = Var Var
+  | Lam (Bind Exp)
+  | App Exp Exp
   deriving (Generic, Eq)
 
 instance NFData Exp
@@ -36,16 +35,12 @@ instance NFData Exp
 
 instance VarC Exp where
   var = Var
+  isvar (Var v) = Just v
+  isvar _ = Nothing
 
-instance FreeVarsC Exp where
-  freeVars (Var (V v)) = S.singleton v
-  freeVars (Lam b) = freeVarsBind b
-  freeVars (App f a) = freeVars f `S.union` freeVars a
+instance FreeVarsC Exp
 
-instance SubstC Exp Exp where
-  subst s (Var v@(V i)) = M.findWithDefault (Var v) i s
-  subst s (Lam b) = Lam (substBind s b)
-  subst s (App f a) = App (subst s f) (subst s a)
+instance SubstC Exp Exp
 
 -------------------------------------------------------------------
 

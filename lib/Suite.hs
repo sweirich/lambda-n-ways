@@ -64,6 +64,10 @@ import qualified LocallyNameless.UGSubstBind
 import qualified LocallyNameless.UGSubstEBind
 import qualified LocallyNameless.UnboundGenerics
 import qualified LocallyNameless.UnboundRep
+import qualified Named.Lazy.NominalG
+import qualified Named.Lazy.SimpleGH
+import qualified Named.Lazy.SimpleH
+import qualified Named.Lazy.SimpleM
 import qualified Named.NominalG
 import qualified Named.Simple
 import qualified Named.SimpleGH
@@ -75,7 +79,7 @@ import Util.Impl (LambdaImpl)
 -- | Implementations used in the benchmarking/test suite
 -- must be a single variable name for Makefile
 impls :: [LambdaImpl]
-impls = locallyNameless_opt
+impls = all_impls
 
 interleave :: [a] -> [a] -> [a]
 interleave (a1 : a1s) (a2 : a2s) = a1 : a2 : interleave a1s a2s
@@ -88,7 +92,7 @@ interleave _ _ = []
 
 all_impls :: [LambdaImpl]
 all_impls =
-  debruijn ++ debruijn_lazy ++ locallyNameless ++ locallyNameless_lazy ++ named ++ lennart ++ hackage
+  debruijn ++ debruijn_lazy ++ locallyNameless ++ locallyNameless_lazy ++ named ++ named_lazy ++ lennart ++ hackage
 
 -- | deBruijn index-based implementations
 debruijn :: [LambdaImpl]
@@ -191,6 +195,13 @@ named =
     Named.Unique.impl
   ]
 
+named_lazy :: [LambdaImpl]
+named_lazy =
+  [ Named.Lazy.SimpleH.impl,
+    Named.Lazy.SimpleGH.impl,
+    Named.Lazy.SimpleM.impl
+  ]
+
 lennart :: [LambdaImpl]
 lennart =
   [ -- Other
@@ -203,8 +214,12 @@ lennart =
 hackage :: [LambdaImpl]
 hackage =
   [ Named.NominalG.impl, -- nominal, generally too slow (12s vs. <200 ms for everything else)
+    Named.Lazy.NominalG.impl,
+    LocallyNameless.UnboundRep.impl, -- unbound
     LocallyNameless.Lazy.UnboundRep.impl, -- unbound
+    LocallyNameless.UnboundGenerics.impl, -- unbound-generics
     LocallyNameless.Lazy.UnboundGenerics.impl, -- unbound-generics
+    DeBruijn.Bound.impl, -- bound
     DeBruijn.Lazy.Bound.impl -- bound
   ]
 

@@ -3,7 +3,7 @@
 -- Strangely, composing substitutions too much causes this impl to really slow
 -- down on the lennart/nf benchmark.
 -- Most of the logic of this implementation is in the Support.SimpleH library
-module Named.SimpleH (impl) where
+module Named.Lazy.SimpleH (impl) where
 
 import Support.SubstH
 import Util.IdInt (IdInt)
@@ -16,7 +16,7 @@ import qualified Util.Lambda as LC
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "Named.SimpleH",
+    { impl_name = "Named.Lazy.SimpleH",
       impl_fromLC = toExp,
       impl_toLC = fromExp,
       impl_nf = nfd,
@@ -25,9 +25,9 @@ impl =
     }
 
 data Exp
-  = Var !Var
-  | Lam !(Bind Exp)
-  | App !Exp !Exp
+  = Var Var
+  | Lam (Bind Exp)
+  | App Exp Exp
   deriving (Generic, Eq)
 
 instance NFData Exp
