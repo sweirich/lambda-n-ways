@@ -86,6 +86,9 @@ library
       Named.Simple
       Named.Unique
       Lennart.HOAS
+      Lennart.Simple
+      Lennart.Unique
+      Lennart.DeBruijn
       -- Named.Nom  -- doesn't compile
 --      Named.Nominal
       Named.NominalG

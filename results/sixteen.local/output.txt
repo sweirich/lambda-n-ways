@@ -308,3 +308,79 @@ std dev              71.37 ms   (61.85 ms .. 79.25 ms)
 variance introduced by outliers: 19% (moderately inflated)
 
 benchmarking nf/LocallyNameless.Lazy.UGSubstBind/
+time                 1.306 s    (763.0 ms .. 2.100 s)
+                     0.960 R²   (0.902 R² .. 1.000 R²)
+mean                 1.455 s    (1.269 s .. 1.612 s)
+std dev              203.6 ms   (86.12 ms .. 263.8 ms)
+variance introduced by outliers: 24% (moderately inflated)
+
+benchmarking nf/LocallyNameless.Lazy.UGEBind/
+time                 3.009 s    (2.516 s .. 3.269 s)
+                     0.997 R²   (0.992 R² .. 1.000 R²)
+mean                 3.178 s    (3.033 s .. 3.398 s)
+std dev              218.9 ms   (9.001 ms .. 283.8 ms)
+variance introduced by outliers: 20% (moderately inflated)
+
+benchmarking nf/LocallyNameless.Lazy.UGSubstEBind/
+time                 1.454 s    (968.6 ms .. 1.951 s)
+                     0.985 R²   (0.946 R² .. 1.000 R²)
+mean                 1.568 s    (1.448 s .. 1.641 s)
+std dev              114.9 ms   (51.36 ms .. 148.8 ms)
+variance introduced by outliers: 20% (moderately inflated)
+
+benchmarking nf/Named.NominalG/
+time                 17.01 s    (16.23 s .. 17.47 s)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 17.33 s    (17.16 s .. 17.41 s)
+std dev              160.1 ms   (16.00 ms .. 200.4 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking nf/Named.SimpleH/
+time                 124.5 ms   (123.8 ms .. 125.2 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 125.4 ms   (124.7 ms .. 127.4 ms)
+std dev              1.787 ms   (218.1 μs .. 2.744 ms)
+variance introduced by outliers: 11% (moderately inflated)
+
+benchmarking nf/Named.SimpleGH/
+time                 196.6 ms   (195.6 ms .. 197.3 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 196.0 ms   (195.8 ms .. 196.3 ms)
+std dev              397.0 μs   (236.4 μs .. 555.2 μs)
+variance introduced by outliers: 14% (moderately inflated)
+
+benchmarking nf/Named.SimpleM/
+time                 1.330 s    (1.270 s .. 1.407 s)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 1.359 s    (1.339 s .. 1.380 s)
+std dev              25.54 ms   (274.1 μs .. 31.30 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking nf/Named.Simple/
+time                 1.542 s    (1.494 s .. 1.597 s)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 1.537 s    (1.528 s .. 1.544 s)
+std dev              9.830 ms   (4.620 ms .. 13.74 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking nf/Named.Unique/
+time                 7.886 s    (7.512 s .. 8.065 s)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 7.690 s    (7.590 s .. 7.773 s)
+std dev              104.0 ms   (50.51 ms .. 135.0 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking nf/Lennart.HOAS/
+time                 19.30 ms   (18.59 ms .. 20.65 ms)
+                     0.985 R²   (0.968 R² .. 0.998 R²)
+mean                 19.00 ms   (18.65 ms .. 19.56 ms)
+std dev              1.081 ms   (658.9 μs .. 1.423 ms)
+variance introduced by outliers: 22% (moderately inflated)
+
+benchmarking nf/Core/
+time                 7.469 s    (6.315 s .. 9.320 s)
+                     0.991 R²   (0.988 R² .. 1.000 R²)
+mean                 7.964 s    (7.515 s .. 8.678 s)
+std dev              682.1 ms   (114.0 ms .. 890.6 ms)
+variance introduced by outliers: 22% (moderately inflated)
+
