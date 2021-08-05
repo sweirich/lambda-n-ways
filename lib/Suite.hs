@@ -14,7 +14,7 @@ import qualified DeBruijn.Lazy.Lift
 --import qualified DeBruijn.Lazy.List
 import qualified DeBruijn.Lazy.Nested
 import qualified DeBruijn.Lazy.Par.B
-import qualified DeBruijn.Lazy.Par.FB
+--import qualified DeBruijn.Lazy.Par.FB
 import qualified DeBruijn.Lazy.Par.Fun
 import qualified DeBruijn.Lazy.Par.GB
 import qualified DeBruijn.Lazy.Par.L
@@ -26,7 +26,7 @@ import qualified DeBruijn.Lift
 -- import qualified DeBruijn.List
 import qualified DeBruijn.Nested
 import qualified DeBruijn.Par.B
-import qualified DeBruijn.Par.FB
+-- import qualified DeBruijn.Par.FB
 import qualified DeBruijn.Par.Fun
 import qualified DeBruijn.Par.GB
 import qualified DeBruijn.Par.L
@@ -314,7 +314,7 @@ fast_impls =
 fast_debruijn :: [LambdaImpl]
 fast_debruijn =
   [ DeBruijn.Par.B.impl,
-    DeBruijn.Par.FB.impl,
+    --DeBruijn.Par.FB.impl,
     DeBruijn.Bound.impl, -- bound
     DeBruijn.Nested.impl
   ]
@@ -322,7 +322,7 @@ fast_debruijn =
 fast_debruijn_lazy :: [LambdaImpl]
 fast_debruijn_lazy =
   [ DeBruijn.Lazy.Par.B.impl,
-    DeBruijn.Lazy.Par.FB.impl,
+    --DeBruijn.Lazy.Par.FB.impl,
     DeBruijn.Lazy.Bound.impl, -- bound
     DeBruijn.Lazy.Nested.impl
   ]

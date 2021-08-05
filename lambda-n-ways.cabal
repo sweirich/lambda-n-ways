@@ -41,7 +41,7 @@ library
       DeBruijn.Par.B
       DeBruijn.Par.GB
       DeBruijn.Par.Fun
-      DeBruijn.Par.FB
+      -- DeBruijn.Par.FB
       DeBruijn.Par.L
       DeBruijn.Par.Scoped
       DeBruijn.TAPL
@@ -59,7 +59,7 @@ library
       DeBruijn.Lazy.Par.B
       DeBruijn.Lazy.Par.GB
       DeBruijn.Lazy.Par.Fun
-      DeBruijn.Lazy.Par.FB
+      --DeBruijn.Lazy.Par.FB
       DeBruijn.Lazy.Par.L
       DeBruijn.Lazy.Par.Scoped
       LocallyNameless.Ott
