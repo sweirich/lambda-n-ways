@@ -11,7 +11,7 @@ import qualified DeBruijn.Lazy.Cornell
 import qualified DeBruijn.Lazy.Kit
 import qualified DeBruijn.Lazy.Lennart
 import qualified DeBruijn.Lazy.Lift
-import qualified DeBruijn.Lazy.List
+--import qualified DeBruijn.Lazy.List
 import qualified DeBruijn.Lazy.Nested
 import qualified DeBruijn.Lazy.Par.B
 import qualified DeBruijn.Lazy.Par.FB
@@ -23,7 +23,7 @@ import qualified DeBruijn.Lazy.Par.Scoped
 import qualified DeBruijn.Lazy.TAPL
 import qualified DeBruijn.Lennart
 import qualified DeBruijn.Lift
-import qualified DeBruijn.List
+-- import qualified DeBruijn.List
 import qualified DeBruijn.Nested
 import qualified DeBruijn.Par.B
 import qualified DeBruijn.Par.FB
@@ -236,19 +236,57 @@ generic =
 ---------------------------------------------------
 -- same implementations, roughly divided by speed
 
+fastest :: [LambdaImpl]
+fastest =
+  [ Lennart.HOAS.impl, 
+
+    LocallyNameless.Opt.impl, 
+    LocallyNameless.Lazy.Opt.impl,
+    LocallyNameless.SupportOpt.impl, 
+    LocallyNameless.Lazy.SupportOpt.impl, 
+    LocallyNameless.GenericOpt.impl, 
+    LocallyNameless.Lazy.GenericOpt.impl,
+    LocallyNameless.ParOpt.impl, 
+    LocallyNameless.Lazy.ParOpt.impl,
+    
+    DeBruijn.Par.Scoped.impl, 
+    DeBruijn.Lazy.Par.Scoped.impl, 
+    DeBruijn.Par.B.impl, 
+    DeBruijn.Lazy.Par.B.impl, 
+    DeBruijn.Par.GB.impl, 
+    DeBruijn.Lazy.Par.GB.impl, 
+
+    DeBruijn.Bound.impl, 
+    DeBruijn.Lazy.Bound.impl, 
+    
+    Named.SimpleH.impl,
+    Named.Lazy.SimpleH.impl, 
+    Named.SimpleGH.impl,     
+    Named.Lazy.SimpleGH.impl 
+  ]
+
+
 -- fastest implementation in each category in the NF benchmark
 fast_nf :: [LambdaImpl]
 fast_nf =
-  [ LocallyNameless.Opt.impl, -- 2.81
-    DeBruijn.Par.Scoped.impl, -- 2.93
+  [ LocallyNameless.Opt.impl, -- 2.56
+    LocallyNameless.SupportOpt.impl, -- 2.59
+    DeBruijn.Par.Scoped.impl, -- 3.00
+    LocallyNameless.GenericOpt.impl, -- 4.36
     --	LocallyNameless.TypedOpt.impl, -- 3.27
-    DeBruijn.Lazy.Par.Scoped.impl, -- 5.2
-    DeBruijn.Par.B.impl, -- 5.31
-    LocallyNameless.ParOpt.impl, -- 6.13
-    DeBruijn.Bound.impl, -- 7.18
-    DeBruijn.Lazy.Par.B.impl, -- 9.55
+    DeBruijn.Lazy.Par.Scoped.impl, -- 5.35
+    DeBruijn.Bound.impl, -- 6.07    
+    DeBruijn.Par.B.impl, -- 7.43
+    LocallyNameless.ParOpt.impl, -- 7.46
+    DeBruijn.Par.GB.impl, -- 8.51
+    DeBruijn.Lazy.Par.GB.impl, -- 11.4
+    DeBruijn.Lazy.Par.B.impl, -- 13
+    DeBruijn.Lazy.Bound.impl, -- 13.09
     Lennart.HOAS.impl, -- 17.4
-    Named.SimpleH.impl -- 108
+    Named.SimpleH.impl, -- 122
+    Named.Lazy.SimpleH.impl, -- 166
+    Named.Lazy.SimpleGH.impl, -- 169
+    Named.SimpleGH.impl -- 193    
   ]
 
 fast_random :: [LambdaImpl]
@@ -301,6 +339,7 @@ fast_locally_nameless =
 fast_named :: [LambdaImpl]
 fast_named =
   [ Named.SimpleH.impl,
+    Named.SimpleGH.impl,
     Named.SimpleM.impl
   ]
 
