@@ -52,7 +52,7 @@ instance SubstC DB DB where
   subst s = go
     where
       go (DVar i) = applySub s i
-      go (DLam b) = DLam (substBind s b)
+      go (DLam b) = DLam (subst s b)
       go (DApp f a) = DApp (go f) (go a)
   {-# INLINEABLE subst #-}
 
