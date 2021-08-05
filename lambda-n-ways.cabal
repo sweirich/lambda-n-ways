@@ -32,7 +32,7 @@ library
       DeBruijn.CPDT
       DeBruijn.Lennart
       DeBruijn.Lift
-      DeBruijn.List
+      -- DeBruijn.List
       DeBruijn.Bound
       DeBruijn.Nested
 --      DeBruijn.Nested2
@@ -49,7 +49,7 @@ library
       DeBruijn.Lazy.CPDT
       DeBruijn.Lazy.Lennart
       DeBruijn.Lazy.Lift
-      DeBruijn.Lazy.List
+      -- DeBruijn.Lazy.List
       DeBruijn.Lazy.Bound
       DeBruijn.Lazy.Nested
       -- DeBruijn.Lazy.Nested2
