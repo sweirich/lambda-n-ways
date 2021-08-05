@@ -10,7 +10,7 @@ import Util.IdInt (IdInt)
 import qualified Util.IdInt.Map as M
 import qualified Util.IdInt.Set as S
 import Util.Impl (LambdaImpl (..))
-import Util.Imports
+import Util.Imports (Generic, NFData)
 import qualified Util.Lambda as LC
 
 impl :: LambdaImpl
