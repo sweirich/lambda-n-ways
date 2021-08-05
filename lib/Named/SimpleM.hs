@@ -22,6 +22,12 @@ import qualified Util.IdInt.Map as M
 import qualified Util.IdInt.Set as S
 import Util.Impl (LambdaImpl (..))
 import Util.Imports
+  ( Generic,
+    MonadError (throwError),
+    MonadState (get, put),
+    NFData (..),
+    State,
+  )
 import qualified Util.Lambda as LC
 
 impl :: LambdaImpl
@@ -91,8 +97,8 @@ type Sub = M.IdIntMap
 data Bind e = Bind
   { bind_subst :: !(Sub e),
     bind_fvs :: !(VarSet),
-    bind_var :: !IdInt,
-    bind_body :: !e
+    _bind_var :: !IdInt,
+    _bind_body :: !e
   }
 
 {-
@@ -272,7 +278,7 @@ nfd (App f a) = do
     Lam b -> do
       b' <- instantiate b a
       nfd b'
-    f' -> App <$> nfd f' <*> nfd a
+    _ -> App <$> nfd f' <*> nfd a
 
 -- Compute the weak head normal form.
 
@@ -285,7 +291,7 @@ whnf (App f a) = do
     Lam b -> do
       x <- instantiate b a
       whnf x
-    f' -> return $ App f' a
+    _ -> return $ App f' a
 
 ---------------------------------------------------------
 
@@ -294,7 +300,7 @@ nfi k e =
   let x :: E.ExceptT String (State IdInt) Exp
       x = nfdi k e
    in case runFresh (E.runExceptT x) (succ (S.findMax (allVars e))) of
-        Left e -> Nothing
+        Left _ -> Nothing
         Right v -> Just v
 
 nfdi :: (MonadError String m, Fresh m) => Int -> Exp -> m Exp
@@ -310,7 +316,7 @@ nfdi n (App f a) = do
     Lam b -> do
       b' <- (instantiate b a)
       nfdi (n -1) b'
-    _ -> App <$> nfdi (n -1) f' <*> nfdi (n -1) a
+    _ -> App <$> nfdi (n - 1) f' <*> nfdi (n - 1) a
 
 whnfi :: (MonadError String m, Fresh m) => Int -> Exp -> m Exp
 whnfi 0 _e = throwError "out of gas"

@@ -66,7 +66,7 @@ lift e = case e of
 To define substitution itself, we will need to apply some explicit type casts, based on equalities between types. A single equality will suffice for all of our casts. Its statement is somewhat strange: it quantifies over a variable f of type fin n, but then never mentions f. Rather, quantifying over f is useful because fin is a dependent type that is inhabited or not depending on its index. The body of the theorem, S pred( n) = n, is true only for n , but we can prove it by contradiction when n = 0, because we have around a value f of the uninhabited type fin 0.
 -}
 
-nzf :: Idx n -> S (Pred n) :~: n
+nzf :: Idx n -> 'S (Pred n) :~: n
 nzf FZ = Refl
 nzf (FS _) = Refl
 

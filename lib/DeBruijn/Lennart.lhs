@@ -9,7 +9,7 @@ but has been modified to to fit into this setting.
 > import Util.Lambda
 > import Util.IdInt
 > import Control.DeepSeq
-> import GHC.Generics
+> import GHC.Generics ( Generic )
 
 > import Util.Impl
 

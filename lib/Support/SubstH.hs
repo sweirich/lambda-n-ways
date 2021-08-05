@@ -1,26 +1,36 @@
 {-# LANGUAGE DefaultSignatures #-}
-module Support.SubstH 
-    (Var(..), 
-    Bind, bind, unbind, freeVarsBind, substBind,
-    validBind,
-    VarSet, 
-    Sub, emptySub, singleSub, comp,
-    VarC(..),
-    FreeVarsC(..),
-    SubstC(..),
-    instantiate)
-    where
 
+module Support.SubstH
+  ( Var (..),
+    Bind,
+    bind,
+    unbind,
+    freeVarsBind,
+    substBind,
+    validBind,
+    VarSet,
+    Sub,
+    emptySub,
+    singleSub,
+    comp,
+    VarC (..),
+    FreeVarsC (..),
+    SubstC (..),
+    instantiate,
+  )
+where
+
+import GHC.Generics
 import Util.IdInt (IdInt)
 import qualified Util.IdInt.Map as M
 import qualified Util.IdInt.Set as S
-import Util.Imports ( NFData(..) ) 
-import GHC.Generics
+import Util.Imports (NFData (..))
 
 -------------------------------------------
 newtype Var = V IdInt deriving (Show, Eq, NFData, Generic)
 
 type VarSet = S.IdIntSet
+
 type Sub = M.IdIntMap
 
 -- In this implementation we cache substitutions and fv sets at binders.
@@ -30,9 +40,9 @@ type Sub = M.IdIntMap
 -- or pruning of the substitution (to cut off substitution early).
 data Bind e = Bind
   { bind_subst :: !(Sub e),
-    bind_fvs   :: !(VarSet),
-    bind_var   :: !IdInt,
-    bind_body  :: !e
+    bind_fvs :: !(VarSet),
+    bind_var :: !IdInt,
+    bind_body :: !e
   }
 
 {-
@@ -50,35 +60,35 @@ Invariants for bind:
 -------------------------------------------------------------------
 
 class VarC a where
-   var :: Var -> a 
+  var :: Var -> a
 
-   isvar :: a -> Maybe Var
-   isvar _ = Nothing
-   {-# INLINE isvar #-}
+  isvar :: a -> Maybe Var
+  isvar _ = Nothing
+  {-# INLINE isvar #-}
 
 class FreeVarsC a where
-   freeVars :: a -> VarSet
-
-   default freeVars :: (Generic a, GFreeVars (Rep a), VarC a) => a -> VarSet
-   freeVars x =
-     case (isvar x) of
-         Just (V v)  -> S.singleton v
-         Nothing -> gfreeVars (from x)
+  freeVars :: a -> VarSet
+  default freeVars :: (Generic a, GFreeVars (Rep a), VarC a) => a -> VarSet
+  freeVars x =
+    case (isvar x) of
+      Just (V v) -> S.singleton v
+      Nothing -> gfreeVars (from x)
 
 class FreeVarsC a => SubstC b a where
-   subst :: Sub b -> a -> a
-   default subst :: (Generic a, GSubst b (Rep a), VarC a, a ~ b) => Sub b -> a -> a
-   subst s x =
-     case (isvar x) of
-         Just (V i)  -> M.findWithDefault x i s
-         Nothing -> to $ gsubst s (from x)
-   {-# INLINE subst #-}
+  subst :: Sub b -> a -> a
+  default subst :: (Generic a, GSubst b (Rep a), VarC a, a ~ b) => Sub b -> a -> a
+  subst s x =
+    case (isvar x) of
+      Just (V i) -> M.findWithDefault x i s
+      Nothing -> to $ gsubst s (from x)
+  {-# INLINE subst #-}
 
 -------------------------------------------------------------------
 
 instantiate :: (VarC a, SubstC a a) => Bind a -> a -> a
-instantiate b u = subst (singleSub y u) a  where
-    (y,a) = unbind b
+instantiate b u = subst (singleSub y u) a
+  where
+    (y, a) = unbind b
 
 -------------------------------------------------------------------
 -- varset operations
@@ -89,7 +99,7 @@ lookupMax vs = if S.null vs then Nothing else Just $ S.findMax vs
 
 varSetMax :: VarSet -> IdInt
 varSetMax s = maybe (toEnum 0) succ (lookupMax s)
-{-# INLINEABLE varSetMax #-}   
+{-# INLINEABLE varSetMax #-}
 
 -------------------------------------------------------------------
 -- sub operations
@@ -154,24 +164,22 @@ unbindHelper (Bind s fv x a)
     fv_s = freeVarsSub s'
     y = maximum (fmap varSetMax [fv, fv_s])
 {-# INLINEABLE unbindHelper #-}
- 
+
 instance (NFData a) => NFData (Bind a) where
   rnf (Bind s f x a) = rnf s `seq` rnf f `seq` rnf x `seq` rnf a
 
 instance (Eq a, SubstC a a, VarC a) => Eq (Bind a) where
   b1 == b2
-     | x1 == x2 = 
-        -- apply delayed substs if variable names are the same
-       subst s1 a1 == subst s2 a2
-     | x1 `S.member` freeVarsBind b2 = False
-     | x2 `S.member` freeVarsBind b1 = False
-     | otherwise = subst s1 a1 == subst s2' a2
-   where
-     s2' = M.singleton x2 (var (V x1)) `comp` s2 
-     (x1, s1, a1) = unbindHelper b1
-     (x2, s2, a2) = unbindHelper b2
-
-
+    | x1 == x2 =
+      -- apply delayed substs if variable names are the same
+      subst s1 a1 == subst s2 a2
+    | x1 `S.member` freeVarsBind b2 = False
+    | x2 `S.member` freeVarsBind b1 = False
+    | otherwise = subst s1 a1 == subst s2' a2
+    where
+      s2' = M.singleton x2 (var (V x1)) `comp` s2
+      (x1, s1, a1) = unbindHelper b1
+      (x2, s2, a2) = unbindHelper b2
 
 freeVarsBind :: (VarC a, SubstC a a) => Bind a -> S.IdIntSet
 freeVarsBind b = freeVarsSub s <> (bind_fvs b S.\\ M.keysSet s)
@@ -212,12 +220,11 @@ class GFreeVars f where
   gfreeVars :: f a -> VarSet
 
 class GSubst b f where
-  gsubst :: Sub b -> f a -> f a  
-  
+  gsubst :: Sub b -> f a -> f a
 
 -- Constant types
 instance (SubstC b c) => GSubst b (K1 i c) where
-  gsubst s (K1 c) = K1 (subst s c) 
+  gsubst s (K1 c) = K1 (subst s c)
 
 instance GSubst b U1 where
   gsubst _s U1 = U1
@@ -239,50 +246,55 @@ instance (GSubst b f, GSubst b g) => GSubst b (f :+: g) where
   gsubst s (R1 g) = R1 $ gsubst s g
   {-# INLINE gsubst #-}
 
-newtype Ignore a = Ignore a 
-
-instance SubstC b (Ignore a) where
-  subst _ = id
-  {-# INLINE subst #-}
-  
 instance SubstC b Int where
   subst _ = id
   {-# INLINE subst #-}
+
 instance SubstC b Bool where
   subst _ = id
   {-# INLINE subst #-}
+
 instance SubstC b () where
   subst _ = id
   {-# INLINE subst #-}
+
 instance SubstC b Char where
   subst _ = id
   {-# INLINE subst #-}
 
-
 instance SubstC b Var where
   subst _ = id
-  {-# INLINE subst #-}  
+  {-# INLINE subst #-}
+
 instance (VarC b, SubstC b b) => SubstC b (Bind b) where
-  subst = substBind 
+  subst = substBind
   {-# INLINE subst #-}
 
 instance (Generic a, FreeVarsC a, GSubst b (Rep [a])) => SubstC b [a] where
   subst s x = to $ gsubst s (from x)
+
 instance (Generic a, FreeVarsC a, GSubst b (Rep (Maybe a))) => SubstC b (Maybe a) where
   subst s x = to $ gsubst s (from x)
+
 instance (Generic (Either a1 a2), FreeVarsC (Either a1 a2), GSubst b (Rep (Either a1 a2))) => SubstC b (Either a1 a2) where
   subst s x = to $ gsubst s (from x)
-instance (Generic (a, b), FreeVarsC (a,b), GSubst c (Rep (a,b))) => SubstC c (a, b) where
+
+instance (Generic (a, b), FreeVarsC (a, b), GSubst c (Rep (a, b))) => SubstC c (a, b) where
   subst s x = to $ gsubst s (from x)
-instance (Generic (a, b, d), FreeVarsC (a,b,d), 
-    GSubst c (Rep (a,b,d))) => SubstC c (a, b, d) where
+
+instance
+  ( Generic (a, b, d),
+    FreeVarsC (a, b, d),
+    GSubst c (Rep (a, b, d))
+  ) =>
+  SubstC c (a, b, d)
+  where
   subst s x = to $ gsubst s (from x)
 
 ----------------------------------------------------------------
 
-
 instance (FreeVarsC c) => GFreeVars (K1 i c) where
-  gfreeVars (K1 c) = (freeVars c) 
+  gfreeVars (K1 c) = (freeVars c)
 
 instance GFreeVars U1 where
   gfreeVars U1 = S.empty
@@ -304,41 +316,45 @@ instance (GFreeVars f, GFreeVars g) => GFreeVars (f :+: g) where
   gfreeVars (R1 g) = gfreeVars g
   {-# INLINE gfreeVars #-}
 
-instance FreeVarsC (Ignore a) where
-  freeVars _ = S.empty
-  {-# INLINE freeVars #-}
-  
 instance FreeVarsC Int where
   freeVars _ = S.empty
   {-# INLINE freeVars #-}
+
 instance FreeVarsC Bool where
   freeVars _ = S.empty
   {-# INLINE freeVars #-}
+
 instance FreeVarsC () where
   freeVars _ = S.empty
   {-# INLINE freeVars #-}
+
 instance FreeVarsC Char where
   freeVars _ = S.empty
   {-# INLINE freeVars #-}
+
 instance FreeVarsC String where
   freeVars _ = S.empty
   {-# INLINE freeVars #-}
 
 instance FreeVarsC Var where
   freeVars _ = S.empty
-  {-# INLINE freeVars #-}  
+  {-# INLINE freeVars #-}
 
 instance (VarC b, SubstC b b) => FreeVarsC (Bind b) where
-  freeVars = freeVarsBind 
+  freeVars = freeVarsBind
   {-# INLINE freeVars #-}
 
 instance (Generic a, GFreeVars (Rep [a])) => FreeVarsC [a] where
   freeVars x = gfreeVars (from x)
+
 instance (Generic a, GFreeVars (Rep (Maybe a))) => FreeVarsC (Maybe a) where
   freeVars x = gfreeVars (from x)
+
 instance (Generic (Either a1 a2), GFreeVars (Rep (Either a1 a2))) => FreeVarsC (Either a1 a2) where
   freeVars x = gfreeVars (from x)
-instance (Generic (a, b), GFreeVars (Rep (a,b))) => FreeVarsC (a, b) where
+
+instance (Generic (a, b), GFreeVars (Rep (a, b))) => FreeVarsC (a, b) where
   freeVars x = gfreeVars (from x)
-instance (Generic (a, b, d),GFreeVars  (Rep (a,b,d))) => FreeVarsC (a, b, d) where
+
+instance (Generic (a, b, d), GFreeVars (Rep (a, b, d))) => FreeVarsC (a, b, d) where
   freeVars x = gfreeVars (from x)

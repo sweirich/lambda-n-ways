@@ -39,9 +39,6 @@ to track which terms have been renamed in this way.
 
 We can also define some fake constructors to help us work with this new type.
 
-> uvar :: IdInt -> Unique
-> uvar = coerce (Var @IdInt)
-
 > ulam :: IdInt -> Unique -> Unique
 > ulam = coerce (Lam @IdInt)
 
@@ -111,7 +108,7 @@ Fueled version:
 
 > nfi' :: Int -> Unique -> NM Unique
 > nfi' 0 _ = lift Nothing
-> nfi' i e@(MkU (Var _)) = return e
+> nfi' _i e@(MkU (Var _)) = return e
 > nfi' i (MkU (Lam x e)) = ulam x <$> nfi' (i-1)  (MkU e)
 > nfi' i (MkU (App f a)) = do
 >     f' <- whnfi (i-1) (MkU f)
@@ -160,13 +157,6 @@ at every place it is put.
 > clone :: forall m. (MonadState IdInt m) => Env -> Unique -> m Unique
 > clone = coerce $ unique @m
 
-Create a fresh variable.
-
-> newVar :: (MonadState IdInt m) => m IdInt
-> newVar = do
->     i <- get
->     put (succ i)
->     return i
 
 Do the actual translation of the term to unique variables.
 We keep mapping of old variable names to new variable name.

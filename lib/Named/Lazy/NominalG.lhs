@@ -4,6 +4,7 @@ Implementation using the Nominal library (available from hackage)
 > {-# LANGUAGE FlexibleInstances #-}
 > {-# LANGUAGE DeriveGeneric #-}
 > {-# LANGUAGE DeriveAnyClass #-}
+> {-# OPTIONS -fno-warn-orphans #-}
 
 > module Named.Lazy.NominalG(nf,nfi,impl) where
 > import Data.List(union, (\\))

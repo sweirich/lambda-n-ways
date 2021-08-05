@@ -61,6 +61,7 @@ mapT f (DVar x) = (DVar . f) x
 mapT f (DApp p) = (DApp . mapP (mapT f)) p
 mapT f (DLam t) = (DLam . mapT (mapI f)) t
 
+{-
 foldT ::
   (forall a. a -> n a) ->
   (forall a. Pair (n a) -> n a) ->
@@ -70,6 +71,7 @@ foldT ::
 foldT v _a _l (DVar x) = v x
 foldT v a l (DApp p) = (a . mapP (foldT v a l)) p
 foldT v a l (DLam t) = (l . foldT v a l) t
+-}
 
 gfoldT ::
   (forall a. m a -> n a) ->
@@ -82,6 +84,7 @@ gfoldT v _a _l _k (DVar x) = v x
 gfoldT v a l k (DApp p) = (a . mapP (gfoldT v a l k)) p
 gfoldT v a l k (DLam t) = (l . gfoldT v a l k . mapT k) t
 
+{-
 kfoldT ::
   (a -> b) ->
   (Pair b -> b) ->
@@ -104,6 +107,7 @@ showTC :: DB Char -> String
 showTC = showT . mapT wrap
   where
     wrap x = [x]
+-}
 
 joinT :: DB (DB a) -> DB a
 joinT = gfoldT id DApp DLam distT

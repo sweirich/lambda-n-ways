@@ -6,7 +6,7 @@ Overview of DeBruijn index based implementations.
 + Lennart
 + Lift
 + Cornell 
-+ List 
++ List (deprecated)
 
 * Variants for "Parallel Substitution"
 
@@ -24,18 +24,21 @@ https://www.hpl.hp.com/techreports/Compaq-DEC/SRC-RR-54.pdf
   - functions delayed at binders
 + DeBruijn.Par.B
   - defunctionalized and delayed at binders, optimizied composition
++ DeBruijn.Par.GB 
+  - like B, but in a library and with GHC.Generics
 
 * Well-scoped versions
 
 + DeBruijn.Nested
   - Bird and Patterson
   - Uses nested datatypes to track scoping level 
+  - Only their original version though. For generalized binders, see Bound
 + Chlipala
   - From CPDT, translated from Gallina
 + DeBruijn.Bound
-  - uses Kmett's library 
+  - uses Kmett's library based on Bird and Patterson
 + DeBruijn.Par.Scoped
-  - Par.B with strong types.
+  - Par.B with strong types
 + DeBruijn.Kit
   - Allais et al.
   - like F, but with strong types and "finally tagless"
