@@ -1,6 +1,8 @@
 # Find the name of the suite of files we are benchmarking
-SNAME = `grep "impls = [^ ]*" lib/Suite.hs | cut -d" " -f 3`
-OUT = results/`uname -n`/$(SNAME)/
+SUITE_NAME =$(shell grep "impls = [^ ]*" lib/Suite.hs | cut -d" " -f 3)
+MACHINE = $(shell uname -n)
+
+OUT = results/$(MACHINE)/$(SUITE_NAME)/
 
 LC:	lib/*.hs lib/*/*.lhs bench/*.lhs 
 	stack build 
@@ -22,8 +24,8 @@ normalize: LC
 	mkdir -p $(OUT)
 	uname -a > $(OUT)output.txt
 	stack run -- --output $(OUT)nf_bench.html --match prefix "nf/"  >> $(OUT)output.txt
-	stack run -- --output $(OUT)random15_bench.html --match prefix "random15/"  >> $(OUT)random/output.txt
-	stack run -- --output $(OUT)random20_bench.html --match prefix "random20/"  >> $(OUT)random/output.txt
+	stack run -- --output $(OUT)random15_bench.html --match prefix "random15/"  >> $(OUT)output.txt
+	stack run -- --output $(OUT)random20_bench.html --match prefix "random20/"  >> $(OUT)output.txt
 
 ################ Separate CSV files for each benchmark, plus individual charts for the constructed ones
 

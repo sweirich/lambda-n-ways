@@ -47,14 +47,15 @@ QuickChecks:
 
 Overally, the harness is extremely fiddly and requires editing [Main](bench/Main.hs), [Suite](lib/Suite.hs), and the [Makefile](Makefile) to control what implementations are benchmarked with what terms. 
 
-The entry point to the benchmark suite is defined by several targets in the [Makefile](Makefile). Each target produces criterion output in the `results/XXX/` directory, where `XXX` is the name of the machine used to run the benchmark. 
+The entry point to the benchmark suite is defined by several targets in the [Makefile](Makefile). Each target produces criterion output in the `results/XXX/YYY` directory, where `XXX` is the name of the machine used to run the benchmark and `YYY` is the value of `impls` in [Suite](lib/Suite.hs). 
 
     make timing  
-       -- normalize large term, alpha equivalence, conversion to/from named rep
-    make random
+       -- alpha equivalence, conversion to/from named rep
+
+    make normalize
+       -- normalize large term
        -- normalize groups of 100 randomly generated lambda-terms
-    make constructed
-       -- normalize microbenchmarks to observe the asymptotic complexity of each implementation)
+
     
 The benchmarks can also output to individual csv files (one per implementation) using the target. Note that the list in `impls` (in [Suite](lib/Suite.hs)) must be a superset of `$(RESULTS)` for this to work. However, you probably want to comment out the benchmarks in [Main](bench/Main.hs) that you are not running to speed up the harness.
 

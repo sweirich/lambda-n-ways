@@ -80,7 +80,7 @@ import Util.Impl (LambdaImpl)
 -- | Implementations used in the benchmarking/test suite
 -- must be a single variable name for Makefile
 impls :: [LambdaImpl]
-impls = hackage
+impls = debruijn
 
 interleave :: [a] -> [a] -> [a]
 interleave (a1 : a1s) (a2 : a2s) = a1 : a2 : interleave a1s a2s
@@ -206,15 +206,16 @@ named_lazy =
 lennart :: [LambdaImpl]
 lennart =
   [ -- Other
-    Lennart.Unique.impl
-    --Lennart.Simple.impl,
-    --Lennart.DeBruijn.impl,
-    --Lennart.HOAS.impl
+    --Lennart.Unique.impl -- buggy
+    Lennart.Simple.impl,
+    Lennart.DeBruijn.impl,
+    Lennart.HOAS.impl
   ]
 
 hackage :: [LambdaImpl]
 hackage =
   [ Named.Nom.impl, -- https://hackage.haskell.org/package/nom
+  -- really, really slow.
     Named.NominalG.impl, -- nominal, generally too slow (12s vs. <200 ms for everything else)
     -- https://hackage.haskell.org/package/nominal
     Named.Lazy.NominalG.impl,

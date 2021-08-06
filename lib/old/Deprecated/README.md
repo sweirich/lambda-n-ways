@@ -1,0 +1,1 @@
+These implementations (in the Deprecated folder) are correct and fit into the suite. But they just aren't different enough to include. But still, perhaps they should be restored?
