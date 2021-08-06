@@ -31,9 +31,6 @@ $\lambda$s out the binding $\lambda$ is.
 >   deriving (Eq, Generic)
 
 > instance NFData DB where
-> {-   rnf (DVar i) = rnf i
->    rnf (DLam d) = rnf d
->    rnf (DApp a b) = rnf a `seq` rnf b -}
 
 Computing the normal form proceeds as usual.
 

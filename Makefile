@@ -1,13 +1,6 @@
-OUT = results/`uname -n`/
-DB_SUITE = $(wildcard lib/DeBruijn/*.lhs lib/DeBruijn/*.hs lib/DeBruijn/*/*.lhs lib/DeBruijn/*/*.hs lib/DeBruijn/Lazy/*.hs lib/DeBruijn/Lazy/*.lhs lib/DeBruijn/Lazy/*/*.hs)
-LN_SUITE = $(wildcard lib/LocallyNameless/*.hs lib/LocallyNameless/*.lhs lib/LocallyNameless/Lazy/*.hs lib/LocallyNameless/Lazy/*.lhs)
-NM_SUITE = $(wildcard lib/Named/*.hs lib/Named/*.lhs)
-
-SUITE =  $(DB_SUITE) $(LN_SUITE) $(NM_SUITE)
-RESULTS_CONSTRUCTED = $(subst lib,results/constructed,$(subst .hs,.csv,$(subst .lhs,.csv,$(SUITE))))
-RESULTS_NF = $(subst lib,results/nf,$(subst .hs,.csv,$(subst .lhs,.csv,$(SUITE))))
-RESULTS_RANDOM = $(subst lib,results/random,$(subst .hs,.csv,$(subst .lhs,.csv,$(SUITE))))
-RESULTS = $(RESULTS_CONSTRUCTED)
+# Find the name of the suite of files we are benchmarking
+SNAME = `grep "impls = [^ ]*" lib/Suite.hs | cut -d" " -f 3`
+OUT = results/`uname -n`/$(SNAME)/
 
 LC:	lib/*.hs lib/*/*.lhs bench/*.lhs 
 	stack build 
@@ -19,27 +12,30 @@ LC:	lib/*.hs lib/*/*.lhs bench/*.lhs
 charts: timing random
 
 timing:	LC
+	mkdir -p $(OUT)
 	uname -a > $(OUT)output.txt
-#	stack run -- --output $(OUT)conv_bench.html --match prefix "conv/"  >> $(OUT)output.txt
-	stack run -- --output $(OUT)fast_nf_bench.html --match prefix "nf/"  >> $(OUT)output.txt
-#	stack run -- --output $(OUT)aeq_bench.html --match prefix "aeq/" >> $(OUT)output.txt
-#	stack run -- --output $(OUT)aeqs_bench.html --match prefix "aeqs/" >> $(OUT)output.txt
+	stack run -- --output $(OUT)conv_bench.html --match prefix "conv/"  >> $(OUT)output.txt
+	stack run -- --output $(OUT)aeq_bench.html --match prefix "aeq/" >> $(OUT)output.txt
+	stack run -- --output $(OUT)aeqs_bench.html --match prefix "aeqs/" >> $(OUT)output.txt
 
-constructed: LC 
-	mkdir -p $(OUT)constructed/
-	uname -a > $(OUT)constructed/output.txt
-	stack run -- --output $(OUT)constructed/ids_bench.html --match prefix "ids/"  >> $(OUT)constructed/output.txt
-	stack run -- --output $(OUT)constructed/adjust_bench.html --match prefix "adjust/"  >> $(OUT)constructed/output.txt
-	stack run -- --output $(OUT)constructed/con_bench.html --match prefix "con/"  >> $(OUT)constructed/output.txt
-	stack run -- --output $(OUT)constructed/capt_bench.html --match prefix "capt/" >> $(OUT)constructed/output.txt
-
-random: LC 
-	mkdir -p $(OUT)random/
-	uname -a > $(OUT)random/output.txt
-	stack run -- --output $(OUT)fast_random15_bench.html --match prefix "random15/"  >> $(OUT)random/output.txt
-#	stack run -- --output $(OUT)random20_bench.html --match prefix "random20/"  >> $(OUT)random/output.txt
+normalize: LC 
+	mkdir -p $(OUT)
+	uname -a > $(OUT)output.txt
+	stack run -- --output $(OUT)nf_bench.html --match prefix "nf/"  >> $(OUT)output.txt
+	stack run -- --output $(OUT)random15_bench.html --match prefix "random15/"  >> $(OUT)random/output.txt
+	stack run -- --output $(OUT)random20_bench.html --match prefix "random20/"  >> $(OUT)random/output.txt
 
 ################ Separate CSV files for each benchmark, plus individual charts for the constructed ones
+
+DB_SUITE = $(wildcard lib/DeBruijn/*.lhs lib/DeBruijn/*.hs lib/DeBruijn/*/*.lhs lib/DeBruijn/*/*.hs lib/DeBruijn/Lazy/*.hs lib/DeBruijn/Lazy/*.lhs lib/DeBruijn/Lazy/*/*.hs)
+LN_SUITE = $(wildcard lib/LocallyNameless/*.hs lib/LocallyNameless/*.lhs lib/LocallyNameless/Lazy/*.hs lib/LocallyNameless/Lazy/*.lhs)
+NM_SUITE = $(wildcard lib/Named/*.hs lib/Named/*.lhs)
+SUITE =  $(DB_SUITE) $(LN_SUITE) $(NM_SUITE)
+
+RESULTS_CONSTRUCTED = $(subst lib,results/constructed,$(subst .hs,.csv,$(subst .lhs,.csv,$(SUITE))))
+RESULTS_NF = $(subst lib,results/nf,$(subst .hs,.csv,$(subst .lhs,.csv,$(SUITE))))
+RESULTS_RANDOM = $(subst lib,results/random,$(subst .hs,.csv,$(subst .lhs,.csv,$(SUITE))))
+RESULTS = $(RESULTS_CONSTRUCTED)
 
 # Suite.hs must list *all* known benchmarks or this part will fail.
 #

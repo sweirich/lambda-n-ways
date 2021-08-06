@@ -95,7 +95,7 @@ library
       Lennart.Simple
       Lennart.Unique
       Lennart.DeBruijn
-      -- Named.Nom  -- doesn't compile
+      Named.Nom  
 --      Named.Nominal
       Named.NominalG
       Named.SimpleH

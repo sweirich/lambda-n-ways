@@ -1,7 +1,7 @@
 How to Implement the Lambda Calculus, Quickly
 =============================================
 
-Since 1965, the lambda-calculus has been a foundation for our understanding of programming languages [1].  I'm going to assume that you have a basic understanding of what the lambda calculus is, and concepts such as bound & free variables, alpha-equivalence and capture-avoiding substitution. On paper, we might write the lambda calculus using the following BNF, and then say things like "the variable x is bound in the scope of a" or "we identify terms up to alpha-equivalence and adopt the Barandregt Bound Variable convention".
+Since 1965, the lambda-calculus has been a foundation for our understanding of programming languages [^1].  I'm going to assume that you have a basic understanding of what the lambda calculus is, and concepts such as bound & free variables, alpha-equivalence and capture-avoiding substitution. On paper, we might write the lambda calculus using the following BNF, and then say things like "the variable x is bound in the scope of a" or "we identify terms up to alpha-equivalence and adopt the Barandregt Bound Variable convention".
     
       a ::= x        variables 
         | \x. a      lambda abstraction
@@ -43,32 +43,34 @@ where the bound variable has been renamed so it doesn't interfere with the free 
         subst :: Var -> Exp -> Exp -> Exp 
         subst x b a = ...
 
+Whatever we use to implement `Var`,`Bind`,`aeq` and `subst`, we will call a *binding implementation*.
+
 Implementation?
 ---------------
 
-This is all very abstract, but how should fill in the details? Unfortunately, we have a wealth of answers, even sticking with first-order representations.
+This is all very abstract, but how should fill in the details? Unfortunately, we have a wealth of details.
 
-- Names: simple renaming, BVC 
-- Names: nominal
+- Names with simple renaming to avoid capture
+- Names with Barendregt Variable Convention [^3] 
+- Names with nominal logic
 - de Bruijn indices
 - de Bruijn levels
-- co-de Bruijn representation
+- co-de Bruijn indices
 - HOAS
 - Weak HOAS / PHOAS
 - Locally Nameless
 - Locally Named
 - Canonically Named
+- ...
 
-These implementations differ in
-- Representation of syntax, esp. variables and binders
-- Implementation of alpha-equivalence, capture-avoiding substitution functions
-- What you need to do to implement other operations
+These implementations differ not just in their representations of syntax (i.e. the type  definitions for variables and binders), but also in the algorithms that they use for the 
+implementation of alpha-equivalence and capture-avoiding substitution functions. Each of these choices also leads to invariants that must be maintained when working with this data structure,especially when working with open terms. 
+For example, when using de Bruijn indicies, it is important to keep track of the current scope (i.e. number of variables in scope) so that terms can be shifted when they change scope. Similarly, when working with names, an implementation might keep track of the names that are currently in scope (or all of the names that have ever been mentioned) so that new names can be chosen that are "fresh enough".
 
-* What should we think about when selecting an implementation?
+Why are there so many?  
 
-* Of course, if we only had to implement these operations for this language, we'd be done already. However, we want a general notion of translating the ideas of variable occurrences and binding to arbitrary languages, and implementing these operations in that context.
+What should we think about when selecting an implementation?
 
-* Let's call that a *binding implementation*.
 
 What do we want from a binding implementation?
 ---------------------------------------
@@ -77,13 +79,15 @@ What do we want from a binding implementation?
 
     These operations are *standard* and, in many cases, *datatype-generic*. An ideal world provides us with libraries where we can declarative specify the information needed to generate the algorithm for our data type definition. 
 
+    Of course, if we only had to implement these operations for this language, we'd be done already. However, we want a general notion of translating the ideas of variable occurrences and binding to arbitrary languages, and implementing these operations in that context.
+
 * An interface that helps us use these operations safely
 
-    Depending on what we choose for our implementation, `aeq` or `subst` may or may not have the types given above. Furthermore, there may be some invariants that must be maintained about our code, when we call these operations...
+    Depending on what we choose for our implementation, `aeq` or `subst` may or may not have the types given above. Furthermore, there may be some invariants that must be maintained about our code, when we call these operations. 
 
 * Fast-ish execution
 
-    We're working in Haskell, so we cannot be too greedy. But we would like an implementation to apply optimizations (such as cutting off substitution when it is not needed), to maintain sharing (as much as possible), and to avoid quadratic complexity.
+    We're working in Haskell, so we cannot expect too much. But these implementations differ in execution speed by orders of magnitude. We would like an implementation to apply optimizations (such as cutting off substitution when it is not needed), to maintain sharing (as much as possible), and to avoid quadratic complexity.
 
 Why is this difficult?
 ----------------------
@@ -99,7 +103,9 @@ Why is this difficult?
 Contributions
 --------------
 
-1. A library of various implmentations and variations of the untyped lambda calculus. In this project, we limit ourselves to *pure* implementations, i.e. those that can instantiate the general skeleton above. This means that some approaches are off-limits; we cannot, say, represent variables by pointers to their binding locations, relying on the properties of heap layout to ensure that the barandregt variable convention is maintained. Working in Haskell, we cannot even observe the sharing in our data structures, so we'll have to think about that externally (and carefully).
+1.   A library of binding implmentations and variations of the untyped lambda calculus. 
+
+In this project, we limit ourselves to *pure* implementations, i.e. those that can instantiate the general skeleton above. This means that some approaches are off-limits; we cannot, say, represent variables by pointers to their binding locations, relying on the properties of heap layout to ensure that the barandregt variable convention is maintained. Working in Haskell, we cannot even observe the sharing in our data structures, so we'll have to think about that externally (and carefully).
 
 The advantage of this constraint is that it keeps us closer to implementations that we can implement and verify in a proof assistant like Agda or Coq. Because Haskell allows nontermination, we can't be sure that a Haskell definition can be ported over to Coq/Agda directly (and the termination arguments for substitution are often subtle!). However, nontermination is the only effect that we have to worry about so perhaps this work can lead to faster implementations within proof assistants.
 
@@ -115,13 +121,21 @@ Inspired by Lennart Augustson's "Lambda Calculus Cooked Four Ways" [4], this pro
 
 Note, we are not trying to implement reduction quickly: just substitution. If we want to speed up reduction itself, we wouldn't use substitution at all, we'd switch to a virtual machine. Similarly, our reduction function doesn't reduce terms using the fewest number of substituions, it is possible to do much better using alternative reduction algorithms. (See "optimal reduction"). That is not what we are on about.
 
+Overall, benchmarking is difficult because binding is so fundamental it is used for many purposes.
+
+Another issue with benchmarking is that this language (the lambda calculus) is deliberately impoverished. This is good because it makes it very easy to add new implementations to the suite. This is bad because we need to use encodings for everything. But, we don't want our benchmark suite to be influenced by the encodings that we choose. (Or do we?)
+
 
 
 
 References
 -----------
-[1]: Landin, Peter J. Correspondence between ALGOL 60 and Church's Lambda-notation: part I     
+
+[^1]: Landin, Peter J. Correspondence between ALGOL 60 and Church's Lambda-notation: part I     
 https://dl.acm.org/doi/10.1145/363744.363749
-[2]: de Bruijn. 
-[3]: Barendregt, Henk. The Lambda Calculus, Its Syntax and Semantics. North Holland, 1984.
-[4]: Augustsson, Lennart. Lambda Calculus Cooked Four Ways. Draft paper and implementation, available from https://github.com/steshaw/lennart-lambda/
+
+[^2]: de Bruijn, N.G. Lambda calculus notation with nameless dummies, a tool for automatic formula manipulation, with application to the Church-Rosser theorem.  Indagationes Mathematicae (Proceedings), Volume 75, Issue 5, 1972, Pages 381-392.
+
+[^3]: Barendregt, Henk. The Lambda Calculus, Its Syntax and Semantics. North Holland, 1984.
+
+[^4]: Augustsson, Lennart. Lambda Calculus Cooked Four Ways. Draft paper and implementation, available from https://github.com/steshaw/lennart-lambda/
