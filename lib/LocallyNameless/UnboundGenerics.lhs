@@ -14,6 +14,8 @@
 >      name2Integer,
 >      FreshM,
 >      runFreshM,
+>      FreshMT,
+>      runFreshMT,
 >      Alpha,
 >      Bind,
 >      aeq,
@@ -23,6 +25,8 @@
 >      SubstName(SubstName) )
 > import Unbound.Generics.PermM as U
 > import Util.Impl ( LambdaImpl(..) )
+> import qualified Util.Stats as Stats
+> import Control.Monad.Trans(lift)
 
 
 > impl :: LambdaImpl
@@ -31,7 +35,7 @@
 >           , impl_fromLC = toDB
 >           , impl_toLC   = fromDB
 >           , impl_nf     = nf
->           , impl_nfi    = error "nfi unimplementd for unbound"
+>           , impl_nfi    = nfiTop
 >           , impl_aeq    = aeq
 >        }
 
@@ -88,6 +92,41 @@ Compute the weak head normal form.
 >         _ -> return $ App f' a
 
 ---------------------------------------------------------------
+
+> nfiTop :: Int -> Exp -> Stats.M Exp 
+> nfiTop x e = runFreshMT (nfi x e) 
+
+> nfi :: Int -> Exp -> FreshMT Stats.M Exp
+> nfi 0 _ = lift Stats.done
+> nfi _ e@(Var _) = return e
+> nfi n (Lam e) =
+>   do
+>     (x, e') <- U.unbind e
+>     e1 <- nfi (n-1) e'
+>     return $ Lam (U.bind x e1)
+> nfi n (App f a) = do
+>   f' <- whnfi (n-1) f
+>   case f' of
+>     Lam b -> do (x, b') <- U.unbind b
+>                 lift Stats.count
+>                 nfi (n-1) (U.subst x a b')
+>     _ -> App <$> nfi (n-1) f' <*> nfi (n-1) a
+
+--Compute the weak head normal form.
+
+> whnfi :: Int -> Exp -> FreshMT Stats.M Exp
+> whnfi 0 _ = lift Stats.done
+> whnfi _ e@(Var _) = return e
+> whnfi _ e@(Lam _) = return e
+> whnfi n (App f a) = do
+>   f' <- whnfi (n-1) f
+>   case f' of 
+>     Lam b -> do
+>        lift Stats.count 
+>        (x, b') <- U.unbind b
+>        whnfi (n-1) (subst x a b')
+>     _ -> return $ App f' a
+
 
 Convert from LC type to DB type (try to do this in linear time??)
 

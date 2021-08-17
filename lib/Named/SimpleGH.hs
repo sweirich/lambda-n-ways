@@ -4,13 +4,14 @@
 -- down on the lennart/nf benchmark.
 module Named.SimpleGH (impl) where
 
+import Support.SubstH
 import Util.IdInt (IdInt)
 import qualified Util.IdInt.Map as M
 import qualified Util.IdInt.Set as S
 import Util.Impl (LambdaImpl (..))
-import Util.Imports ( Generic, NFData )
+import Util.Imports (Generic, NFData)
 import qualified Util.Lambda as LC
-import Support.SubstH
+import qualified Util.Stats as Stats
 
 impl :: LambdaImpl
 impl =
@@ -23,23 +24,24 @@ impl =
       impl_aeq = (==)
     }
 
+data Exp
+  = Var !Var
+  | Lam !(Bind Exp)
+  | App !Exp !Exp
+  deriving (Generic, Eq)
 
-data Exp = Var !Var 
-  | Lam !(Bind Exp) 
-  | App !Exp !Exp 
-    deriving (Generic, Eq)
+instance NFData Exp
 
-instance NFData Exp where
- 
 -------------------------------------------------------------------
 
 instance VarC Exp where
-   var = Var
-   isvar (Var v) = Just v
-   isvar _ = Nothing
+  var = Var
+  isvar (Var v) = Just v
+  isvar _ = Nothing
 
-instance FreeVarsC Exp where
-instance SubstC Exp Exp where
+instance FreeVarsC Exp
+
+instance SubstC Exp Exp
 
 -------------------------------------------------------------------
 
@@ -68,24 +70,24 @@ whnf (App f a) =
 
 ---------------------------------------------------------
 
-nfi :: Int -> Exp -> Maybe Exp
-nfi 0 _e = Nothing
+nfi :: Int -> Exp -> Stats.M Exp
+nfi 0 _e = Stats.done
 nfi _n e@(Var _) = return e
 nfi n (Lam b) = Lam . bind x <$> nfi (n -1) a where (x, a) = unbind b
 nfi n (App f a) = do
   f' <- whnfi (n - 1) f
   case f' of
-    Lam b -> nfi (n -1) (instantiate b a)
+    Lam b -> Stats.count >> nfi (n -1) (instantiate b a)
     _ -> App <$> nfi (n -1) f' <*> nfi (n -1) a
 
-whnfi :: Int -> Exp -> Maybe Exp
-whnfi 0 _e = Nothing
+whnfi :: Int -> Exp -> Stats.M Exp
+whnfi 0 _e = Stats.done
 whnfi _n e@(Var _) = return e
 whnfi _n e@(Lam _) = return e
 whnfi n (App f a) = do
   f' <- whnfi (n - 1) f
   case f' of
-    Lam b -> whnfi (n - 1) (instantiate b a)
+    Lam b -> Stats.count >> whnfi (n - 1) (instantiate b a)
     _ -> return $ App f' a
 
 ---------------------------------------------------------

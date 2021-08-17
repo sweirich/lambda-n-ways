@@ -7,20 +7,23 @@
 module LocallyNameless.UnboundRep (impl) where
 
 import qualified Control.DeepSeq as DS
+import Control.Monad.Trans (lift)
 import Unbound.LocallyNameless as U
   ( Alpha,
     Bind,
     FreshM,
+    FreshMT,
     Name,
     R,
     Rep (..),
     Subst (isvar),
     SubstName (SubstName),
+    fv, 
     aeq,
     bind,
     derive,
     name2Integer,
-    runFreshM,
+    runFreshM, runFreshMT, 
     s2n,
     substBind,
     unbind,
@@ -29,6 +32,8 @@ import Unbound.LocallyNameless as U
 import Util.IdInt hiding (FreshM)
 import Util.Impl
 import qualified Util.Lambda as LC
+import qualified Util.Stats as Stats
+import Data.Set (Set, lookupMax)
 
 data Exp
   = Var !(U.Name Exp)
@@ -52,7 +57,7 @@ impl =
       impl_fromLC = toDB,
       impl_toLC = fromDB,
       impl_nf = nf,
-      impl_nfi = error "nfi unimplementd for unbound",
+      impl_nfi = nfiTop,
       impl_aeq = aeq
     }
 
@@ -95,6 +100,37 @@ whnf (App f a) =
   case whnf f of
     Lam b -> whnf (substBind b a)
     f' -> App f' a
+
+nfiTop :: Int -> Exp -> Stats.M Exp 
+nfiTop x e = runFreshMT (nfi x e) 
+
+nfi :: Int -> Exp -> FreshMT Stats.M Exp
+nfi 0 _ = lift Stats.done
+nfi _ e@(Var _) = return e
+nfi n (Lam e) =
+  do
+    (x, e') <- U.unbind e
+    e1 <- nfi (n-1) e'
+    return $ Lam (U.bind x e1)
+nfi n (App f a) = do
+  f' <- whnfi (n-1) f
+  case f' of
+    Lam b -> lift Stats.count >> nfi (n-1) (U.substBind b a)
+    _ -> App <$> nfi (n-1) f' <*> nfi (n-1) a
+
+--Compute the weak head normal form.
+
+whnfi :: Int -> Exp -> FreshMT Stats.M Exp
+whnfi 0 _ = lift Stats.done
+whnfi _ e@(Var _) = return e
+whnfi _ e@(Lam _) = return e
+whnfi n (App f a) = do
+  f' <- whnfi (n-1) f
+  case f' of 
+    Lam b -> do
+       lift Stats.count 
+       whnfi (n-1) (substBind b a)
+    _ -> return $ App f' a
 
 --Convert from LC type to DB type (try to do this in linear time??)
 

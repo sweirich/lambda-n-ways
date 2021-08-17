@@ -15,6 +15,7 @@ import Util.IdInt
 import Util.Impl
 import Util.Lambda
 import Util.Misc
+import qualified Util.Stats as Stats
 
 -- | Reference version of aeq
 -- convert to DB indices and use (==)
@@ -86,24 +87,47 @@ nfRandomTests str = do
 
 ------------------------------------------------------------------------------
 
+compareNf :: LC IdInt -> LambdaImpl -> Assertion
+compareNf tm1  = 
+  let iters = 5000 in
+  case Stats.runM (DeBruijn.nfi iters (DeBruijn.toDB tm1)) of
+      Just (db_ct, result) ->
+        let db_tm = DeBruijn.fromDB result in
+        \ LambdaImpl { .. } ->
+        case Stats.runM (impl_nfi iters (impl_fromLC tm1)) of
+                   Just (impl_ct, impl_tm) -> do
+                      let impl_res = (impl_toLC impl_tm)
+                      assertBool ("nf produced: " ++ show impl_res) 
+                        (db_aeq db_tm impl_res)
+                      assertBool ("step mismatch: " ++ show impl_ct ++ " vs. " ++ show db_ct) (impl_ct == db_ct)
+                   Nothing -> assertBool "no result produced" False
+      Nothing -> error $ "no nf after" ++ show iters
+
 -- | Quick-check based tests for normalization, compare with reference version
 -- Note: must use fueled version of DB normalization becase random terms may not terminate
 -- Uses DB version of aeq to compare results
 prop_nf :: LambdaImpl -> Property
-prop_nf LambdaImpl {..} = withMaxSuccess 1000 $
+prop_nf LambdaImpl {..} = withMaxSuccess 5000 $
   forAllShrink genScopedLam shrinkScoped $ \tm1 -> do
-    case DeBruijn.nfi 1000 (DeBruijn.toDB tm1) of
-      Just result ->
+    case Stats.runM (DeBruijn.nfi 2000 (DeBruijn.toDB tm1)) of
+      Just (db_ct, result) ->
         let db_tm = DeBruijn.fromDB result
          in if db_aeq tm1 db_tm
-              then classify True "trivial" $ property True
-              else
-                let impl_tm = (impl_toLC . impl_nf . impl_fromLC) tm1
-                 in property (db_aeq impl_tm db_tm)
+              then discard
+            else
+              classify (db_ct == Stats.Stats 1) "stats == 1" $
+              classify (db_ct == Stats.Stats 2) "stats == 2" $
+              classify (db_ct == Stats.Stats 3) "stats == 3" $
+              classify (db_ct == Stats.Stats 4) "stats == 4" $
+              classify (db_ct >= Stats.Stats 5) "stats >= 5" $
+              (case Stats.runM (impl_nfi 2000 (impl_fromLC tm1)) of
+                   Just (impl_ct, impl_tm) -> 
+                       property (db_aeq (impl_toLC impl_tm) db_tm) .&&. impl_ct == db_ct
+                   Nothing -> property False)
       Nothing -> classify True "nonterminating" $ property True
 
 nfQCs :: TestTree
-nfQCs = testGroup "NF quick checks" (map f impls)
+nfQCs = testGroup "nfi vs. deBruijn" (map f impls)
   where
     f i = testProperty (impl_name i) (prop_nf i)
 
@@ -113,34 +137,36 @@ nfQCs = testGroup "NF quick checks" (map f impls)
 prop_fueled_nf :: LambdaImpl -> Property
 prop_fueled_nf LambdaImpl {..} = withMaxSuccess 1000 $
   forAllShrink genScopedLam shrinkScoped $ \tm1 -> do
-    case impl_nfi 1000 (impl_fromLC tm1) of
-      Just result -> property (impl_aeq (impl_nf (impl_fromLC tm1)) result)
+    case Stats.runM (impl_nfi 1000 (impl_fromLC tm1)) of
+      Just (_,result) -> property (impl_aeq (impl_nf (impl_fromLC tm1)) result)
       Nothing -> classify True "nonterminating" $ property True
 
 nfFueledQCs :: TestTree
-nfFueledQCs = testGroup "NF fueled quick checks" (map f impls)
+nfFueledQCs = testGroup "nfi vs nf" (map f impls)
   where
     f i = testProperty (impl_name i) (prop_fueled_nf i)
 
 --------------------------------------------------------
 
 -- | Unit test based on normalizing large lambda term
-nfUnitTests :: IO TestTree
-nfUnitTests = do
+nfLennartUnitTests :: IO TestTree
+nfLennartUnitTests = do
   tm <- getTerm "lams/lennart.lam"
   let tm1 = toIdInt tm
-  let test_impl LambdaImpl {..} = do
+  {-let test_impl LambdaImpl {..} = do
         let result = (impl_toLC . impl_nf . impl_fromLC) tm1
-        assertBool ("nf produced: " ++ show result) (db_aeq lambdaFalse result)
+        assertBool ("nf produced: " ++ show result) (db_aeq lambdaFalse result) -}
+  let test_impl li = (compareNf tm1 li)
   return $
     testGroup "NF Unit Test (Lennart) " $
       map (\i -> testCase (impl_name i) $ test_impl i) impls
 
 main :: IO ()
 main = do
-  nfRandoms <- mapM nfRandomTests ["random", "random2", "random25", "random35", "lams100"]
+  {- nfRandoms <- mapM nfRandomTests ["random", "random2", "random25", "random35", "lams100"]
   nfLamTests <- mapM nfRandomTests ["t1", "t2", "t3", "t4", "t5", "t6", "t7"]
   nfSimple <- mapM nfRandomTests ["capture10", "constructed10"]
-  nfMoreTests <- mapM nfRandomTests ["tests", "onesubst", "twosubst", "threesubst", "foursubst"]
-  lennart <- nfUnitTests
-  defaultMain $ testGroup "tests" ([rtQCs, aeqQCs, nfQCs] ++ nfRandoms ++ nfLamTests ++ nfSimple ++ nfMoreTests ++ [lennart])
+  nfMoreTests <- mapM nfRandomTests ["tests", "onesubst", "twosubst", "threesubst", "foursubst"] -}
+  lennart <- nfLennartUnitTests 
+  defaultMain $ testGroup "tests" [lennart] --[nfQCs, nfFueledQCs]
+  --defaultMain $ testGroup "tests" ([rtQCs, aeqQCs, nfQCs] ++ nfRandoms ++ nfLamTests ++ nfSimple ++ nfMoreTests ++ [lennart])

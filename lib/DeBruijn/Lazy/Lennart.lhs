@@ -12,6 +12,7 @@ but has been modified to to fit into this setting.
 > import Control.DeepSeq
 
 > import Util.Impl
+> import qualified Util.Stats as Stats
 
 > impl :: LambdaImpl
 > impl = LambdaImpl {
@@ -58,24 +59,24 @@ Compute the weak head normal form.
 
 Bounded versions
 
-> nfi :: Int -> DB -> Maybe DB
-> nfi 0 _e = Nothing
+> nfi :: Int -> DB -> Stats.M DB
+> nfi 0 _e = Stats.done
 > nfi _n e@(DVar _) = return e
 > nfi n (DLam b) = DLam <$> nfi (n-1) b
 > nfi n (DApp f a) = do
 >     f' <- whnfi (n-1) f 
 >     case f' of
->         DLam b -> nfi (n-1) (instantiate b a)
+>         DLam b -> Stats.count >> nfi (n-1) (instantiate b a)
 >         _ -> DApp <$> nfi n f' <*> nfi n a
 
-> whnfi :: Int -> DB -> Maybe DB
-> whnfi 0 _e = Nothing
+> whnfi :: Int -> DB -> Stats.M DB
+> whnfi 0 _e = Stats.done
 > whnfi _n e@(DVar _) = return e
 > whnfi _n e@(DLam _) = return e
 > whnfi n (DApp f a) = do
 >     f' <- whnfi (n-1) f 
 >     case whnf f' of
->         DLam b -> whnfi (n-1) (instantiate b a)
+>         DLam b -> Stats.count >> whnfi (n-1) (instantiate b a)
 >         _ -> return $ DApp f' a
 
 -----------------------------------------------------------

@@ -17,6 +17,7 @@ import Util.IdInt (IdInt, newId)
 import Util.Impl (LambdaImpl (..))
 import Util.Imports
 import Util.Lambda
+import qualified Util.Stats as Stats
 
 impl :: LambdaImpl
 impl =
@@ -85,24 +86,24 @@ whnf (App f a) =
 
 -- For testing, we can add a "fueled" version that also counts the number of substitutions
 
-nfi :: Int -> LC IdInt -> Maybe (LC IdInt)
-nfi 0 _e = Nothing
+nfi :: Int -> LC IdInt -> Stats.M (LC IdInt)
+nfi 0 _e = Stats.done
 nfi _n e@(Var _) = return e
 nfi n (Lam x e) = Lam x <$> nfi (n -1) e
 nfi n (App f a) = do
   f' <- whnfi (n - 1) f
   case f' of
-    Lam x b -> nfi (n -1) (subst x a b)
+    Lam x b -> Stats.count >> nfi (n -1) (subst x a b)
     _ -> App <$> nfi (n -1) f' <*> nfi (n -1) a
 
-whnfi :: Int -> LC IdInt -> Maybe (LC IdInt)
-whnfi 0 _e = Nothing
+whnfi :: Int -> LC IdInt -> Stats.M (LC IdInt)
+whnfi 0 _e = Stats.done
 whnfi _n e@(Var _) = return e
 whnfi _n e@(Lam _ _) = return e
 whnfi n (App f a) = do
   f' <- whnfi (n - 1) f
   case f' of
-    Lam x b -> whnfi (n - 1) (subst x a b)
+    Lam x b -> Stats.count >> whnfi (n - 1) (subst x a b)
     _ -> return $ App f' a
 
 -- For testing, we can add a "fueled" version. We can also count

@@ -22,6 +22,7 @@ import Util.IdInt (IdInt (..))
 import Util.Impl (LambdaImpl (..))
 import Util.Imports
 import qualified Util.Lambda as LC
+import qualified Util.Stats as Stats
 
 impl :: LambdaImpl
 impl =
@@ -92,24 +93,24 @@ nf (App f a) =
     Lam b -> nf (b `conc` a)
     f' -> App (nf f') (nf a)
 
-nfi :: Int -> Exp -> Maybe Exp
-nfi 0 _e = Nothing
+nfi :: Int -> Exp -> Stats.M Exp
+nfi 0 _e = Stats.done
 nfi _n e@(Var _) = return e
 nfi n (Lam (x :@> e)) = (\t -> (Lam (x :@> t))) <$> nfi (n -1) e
 nfi n (App f a) = do
   f' <- whnfi (n - 1) f
   case f' of
-    Lam (x :@> b) -> nfi (n -1) (sub x a b)
+    Lam (x :@> b) -> Stats.count >> nfi (n -1) (sub x a b)
     _ -> App <$> nfi (n -1) f' <*> nfi (n -1) a
 
-whnfi :: Int -> Exp -> Maybe Exp
-whnfi 0 _e = Nothing
+whnfi :: Int -> Exp -> Stats.M Exp
+whnfi 0 _e = Stats.done
 whnfi _n e@(Var _) = return e
 whnfi _n e@(Lam _) = return e
 whnfi n (App f a) = do
   f' <- whnfi (n - 1) f
   case f' of
-    Lam (x :@> b) -> whnfi (n - 1) (sub x a b)
+    Lam (x :@> b) -> Stats.count >> whnfi (n - 1) (sub x a b)
     _ -> return $ App f' a
 
 aeq :: Exp -> Exp -> Bool

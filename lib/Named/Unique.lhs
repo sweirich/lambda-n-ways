@@ -18,7 +18,7 @@ variables are unique.
 > import Control.DeepSeq
 > 
 > import Test.QuickCheck
-
+> import qualified Util.Stats as Stats
 
 > import Util.Impl
 > impl :: LambdaImpl
@@ -99,21 +99,21 @@ Compute the weak head normal form.
 
 Fueled version:
 
-> type NM a = StateT IdInt Maybe a
+> type NM a = Stats.FM a
 
-> nfi :: Int -> Unique -> Maybe Unique
-> nfi x e = fst <$> result where
->     result :: Maybe (Unique, IdInt)
->     result = runStateT (nfi' x e) (initState (fromUnique e))
+> nfi :: Int -> Unique -> Stats.M Unique
+> nfi x e = result where
+>     result = Stats.runF (nfi' x e) (initState (fromUnique e))
 
 > nfi' :: Int -> Unique -> NM Unique
-> nfi' 0 _ = lift Nothing
+> nfi' 0 _ = Stats.doneFM
 > nfi' _i e@(MkU (Var _)) = return e
 > nfi' i (MkU (Lam x e)) = ulam x <$> nfi' (i-1)  (MkU e)
 > nfi' i (MkU (App f a)) = do
 >     f' <- whnfi (i-1) (MkU f)
 >     case f' of
 >         MkU (Lam x b) -> do
+>               Stats.countFM
 >               t <- subst x (MkU a) (MkU b)
 >               nfi' (i-1) t
 >         _ -> uapp <$> nfi' (i-1) f' <*> nfi' (i-1) (MkU a)
@@ -121,13 +121,13 @@ Fueled version:
 Compute the weak head normal form.
 
 > whnfi :: Int -> Unique -> NM Unique
-> whnfi 0 _ = lift Nothing
+> whnfi 0 _ = Stats.doneFM
 > whnfi _ e@(MkU (Var _)) = return e
 > whnfi _ e@(MkU (Lam _ _)) = return e
 > whnfi i (MkU (App f a)) = do
 >     f' <- whnfi (i-1) (MkU f)
 >     case f' of
->         MkU (Lam x b) -> subst x (MkU a) (MkU b) >>= whnfi (i-1)
+>         MkU (Lam x b) -> Stats.countFM >> subst x (MkU a) (MkU b) >>= whnfi (i-1)
 >         _ -> return $ uapp f' (MkU a)
 
 

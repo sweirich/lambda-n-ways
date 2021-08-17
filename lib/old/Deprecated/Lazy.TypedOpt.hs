@@ -418,10 +418,10 @@ whnf (App f a) = do
 nfi :: Int -> Exp Z -> Maybe (Exp Z)
 nfi n e = State.evalStateT (nfi' n e) firstBoundId
 
-type NM a = State.StateT IdInt Maybe a
+type NM a = State.StateT IdInt Stats.M a
 
 nfi' :: Int -> (Exp Z) -> NM (Exp Z)
-nfi' 0 _ = State.lift Nothing
+nfi' 0 _ = State.lift Stats.done
 nfi' n e@(Var_f _) = return e
 --nfi' n e@(Var_b _) = error "should not reach this"
 nfi' n (Abs e) = do
@@ -431,17 +431,17 @@ nfi' n (Abs e) = do
 nfi' n (App f a) = do
   f' <- whnfi (n - 1) f
   case f' of
-    Abs b -> nfi' (n - 1) (open b a)
+    Abs b -> State.lift Stats.count >> nfi' (n - 1) (open b a)
     _ -> App <$> nfi' (n - 1) f' <*> nfi' (n -1) a
 
 -- Compute the weak head normal form.
 whnfi :: Int -> Exp Z -> NM (Exp Z)
-whnfi 0 _ = State.lift Nothing
+whnfi 0 _ = State.lift Stats.done
 whnfi n e@(Var_f _) = return e
 --whnfi n e@(Var_b _) = error "BUG"
 whnfi n e@(Abs _) = return e
 whnfi n (App f a) = do
   f' <- whnfi (n -1) f
   case f' of
-    (Abs b) -> whnfi (n -1) (open b a)
+    (Abs b) -> State.lift Stats.count >> whnfi (n -1) (open b a)
     _ -> return $ App f' a

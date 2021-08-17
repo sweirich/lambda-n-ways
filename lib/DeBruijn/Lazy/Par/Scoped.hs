@@ -20,6 +20,7 @@ import qualified Text.PrettyPrint.HughesPJ as PP
 import Util.IdInt (IdInt (..), firstBoundId)
 import Util.Impl (LambdaImpl (..))
 import Util.Lambda (LC (..))
+import qualified Util.Stats as Stats
 
 impl :: LambdaImpl
 impl =
@@ -95,24 +96,24 @@ whnf (DApp f a) =
 
 ---------------------------------------------------------------
 
-nfi :: Int -> DB n -> Maybe (DB n)
-nfi 0 _ = Nothing
+nfi :: Int -> DB n -> Stats.M (DB n)
+nfi 0 _ = Stats.done
 nfi _ e@(DVar _) = return e
 nfi n (DLam b) = DLam . bind <$> nfi (n - 1) (unbind b)
 nfi n (DApp f a) = do
   f' <- whnfi (n - 1) f
   case f' of
-    DLam b -> nfi (n - 1) (instantiate b a)
+    DLam b -> Stats.count >> nfi (n - 1) (instantiate b a)
     _ -> DApp <$> nfi n f' <*> nfi n a
 
-whnfi :: Int -> DB n -> Maybe (DB n)
-whnfi 0 _ = Nothing
+whnfi :: Int -> DB n -> Stats.M (DB n)
+whnfi 0 _ = Stats.done
 whnfi _ e@(DVar _) = return e
 whnfi _ e@(DLam _) = return e
 whnfi n (DApp f a) = do
   f' <- whnfi (n - 1) f
   case whnf f' of
-    DLam b -> whnfi (n - 1) (instantiate b a)
+    DLam b -> Stats.count >> whnfi (n - 1) (instantiate b a)
     _ -> return $ DApp f' a
 
 ---------------------------------------------------------

@@ -11,6 +11,7 @@ import GHC.Generics (Generic)
 import Util.IdInt (IdInt (..), firstBoundId)
 import Util.Impl (LambdaImpl (..))
 import qualified Util.Lambda as LC
+import qualified Util.Stats as Stats
 
 impl :: LambdaImpl
 impl =
@@ -19,7 +20,7 @@ impl =
       impl_fromLC = toDB,
       impl_toLC = fromDB,
       impl_nf = nf,
-      impl_nfi = error "no nfi",
+      impl_nfi = nfi,
       impl_aeq = (==)
     }
 
@@ -121,6 +122,28 @@ nfb (Bind e) = Bind (nf e)
 instantiate :: Bind Term -> Term -> Term
 instantiate (Bind b) a = termSubstTop a b
 {-# INLINE instantiate #-}
+
+
+nfi :: Int -> Term -> Stats.M Term
+nfi 0 _e = Stats.done
+nfi _n e@(Var _) = return e
+nfi n (Lam(Bind b)) = Lam . Bind <$> nfi (n -1) b
+nfi n (App f a) = do
+  f' <- whnfi (n -1) f
+  case f' of
+    Lam b -> Stats.count >> nfi (n -1) (instantiate b a)
+    _ -> App <$> nfi n f' <*> nfi n a
+
+whnfi :: Int -> Term -> Stats.M Term
+whnfi 0 _e = Stats.done
+whnfi _n e@(Var _) = return e
+whnfi _n e@(Lam _) = return e
+whnfi n (App f a) = do
+  f' <- whnfi (n -1) f
+  case whnf f' of
+    Lam b -> Stats.count >> whnfi (n -1) (instantiate b a)
+    _ -> return $ App f' a
+
 
 -------------------------------------------------------------------
 toDB :: LC.LC IdInt -> Term

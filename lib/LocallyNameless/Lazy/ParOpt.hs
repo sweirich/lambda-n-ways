@@ -37,6 +37,7 @@ import Util.Imports
     fromMaybe,
   )
 import qualified Util.Lambda as LC
+import qualified Util.Stats as Stats
 
 -- 0. (Lazy.Ott) Original
 -- lennart: 1.03s
@@ -207,15 +208,15 @@ whnf (App f a) = do
 
 -- Fueled version
 
-nfi :: Int -> Exp 'Z -> Maybe (Exp 'Z)
+nfi :: Int -> Exp 'Z -> Stats.M (Exp 'Z)
 nfi n e = State.evalStateT (nfi' n e) v
   where
     v = succ (fromMaybe firstBoundId (Set.lookupMax (fv e)))
 
-type NM a = State.StateT IdInt Maybe a
+type NM a = State.StateT IdInt Stats.M a
 
 nfi' :: Int -> (Exp 'Z) -> NM (Exp 'Z)
-nfi' 0 _ = State.lift Nothing
+nfi' 0 _ = State.lift Stats.done
 nfi' _n e@(Var_f _) = return e
 nfi' n (Abs e) = do
   x <- newVar
@@ -224,18 +225,18 @@ nfi' n (Abs e) = do
 nfi' n (App f a) = do
   f' <- whnfi (n - 1) f
   case f' of
-    Abs b -> nfi' (n - 1) (open b a)
+    Abs b -> State.lift Stats.count >> nfi' (n - 1) (open b a)
     _ -> App <$> nfi' (n - 1) f' <*> nfi' (n -1) a
 
 -- Compute the weak head normal form.
 whnfi :: Int -> Exp 'Z -> NM (Exp 'Z)
-whnfi 0 _ = State.lift Nothing
+whnfi 0 _ = State.lift Stats.done
 whnfi _ e@(Var_f _) = return e
 whnfi _n e@(Abs _) = return e
 whnfi n (App f a) = do
   f' <- whnfi (n -1) f
   case f' of
-    (Abs b) -> whnfi (n -1) (open b a)
+    (Abs b) -> State.lift Stats.count >> whnfi (n -1) (open b a)
     _ -> return $ App f' a
 
 -----------------------------------------------------

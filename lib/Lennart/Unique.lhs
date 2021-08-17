@@ -16,6 +16,7 @@ variables are unique.
 > import Control.DeepSeq
 > 
 > import Test.QuickCheck
+> import qualified Util.Stats as Stats
 
 
 > import Util.Impl
@@ -65,20 +66,21 @@ Compute the weak head normal form.
 
 Fueled version:
 
-> type NM a = StateT IdInt Maybe a
+> type NM a = StateT IdInt Stats.M a
 
-> nfi :: Int -> LC IdInt -> Maybe (LC IdInt)
+> nfi :: Int -> LC IdInt -> Stats.M (LC IdInt)
 > nfi x e = fst <$> result where
 >     result = runStateT (nfi' x e) (initState e)
 
 > nfi' :: Int -> LC IdInt -> NM  (LC IdInt)
-> nfi' 0 _ = lift Nothing
+> nfi' 0 _ = lift Stats.done
 > nfi' _i e@(Var _) = return e
 > nfi' i (Lam x e) = Lam x <$> nfi' (i-1) e
 > nfi' i (App f a) = do
 >     f' <- whnfi (i-1) f
 >     case f' of
 >         Lam x b -> do
+>               lift Stats.count
 >               t <- subst x a b
 >               nfi' (i-1) t
 >         _ -> App <$> nfi' (i-1) f' <*> nfi' (i-1) a
@@ -86,13 +88,13 @@ Fueled version:
 Compute the weak head normal form.
 
 > whnfi :: Int -> LC IdInt -> NM (LC IdInt)
-> whnfi 0 _ = lift Nothing
+> whnfi 0 _ = lift Stats.done
 > whnfi _ e@(Var _) = return e
 > whnfi _ e@(Lam _ _) = return e
 > whnfi i (App f a) = do
 >     f' <- whnfi (i-1) f
 >     case f' of
->         (Lam x b) -> subst x a b >>= whnfi (i-1)
+>         (Lam x b) -> lift Stats.count >> subst x a b >>= whnfi (i-1)
 >         _ -> return $ App f' a
 
 Substitution proceeds by cloning the term that is inserted

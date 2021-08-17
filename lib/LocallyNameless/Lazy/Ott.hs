@@ -6,7 +6,6 @@
 -- 2. ParOpt  (like Par.Scoped)
 -- 3. Opt, like Par.B, but cache close too. Not well-scoped
 -- 4. TypedOpt, well-scoped version of Opt
-
 module LocallyNameless.Lazy.Ott (impl, substFv, fv) where
 
 import qualified Control.Monad.State as State
@@ -14,8 +13,9 @@ import Data.List (elemIndex)
 import qualified Data.Set as Set
 import Util.IdInt (IdInt (..), firstBoundId)
 import Util.Impl (LambdaImpl (..))
-import Util.Imports hiding (to, from)
+import Util.Imports hiding (from, to)
 import qualified Util.Lambda as LC
+import qualified Util.Stats as Stats
 
 impl :: LambdaImpl
 impl =
@@ -35,7 +35,7 @@ data Exp
   | App Exp Exp
   deriving (Eq, Ord, Generic)
 
-instance NFData Exp where
+instance NFData Exp
 
 -------------------------------------------------------------
 
@@ -56,8 +56,8 @@ fv e =
     (App e1 e2) -> fv e1 `Set.union` fv e2
 
 -------------------------------------------------------------
--- This definition of open is similar to the "subst" function 
--- from DeBruijn.Lennart. However, because substituted terms 
+-- This definition of open is similar to the "subst" function
+-- from DeBruijn.Lennart. However, because substituted terms
 -- are always locally closed, they do not need to be adjusted/lifted
 -- at each occurrence
 
@@ -66,9 +66,9 @@ open_exp_wrt_exp_rec k u e0 =
   case e0 of
     (Var_b n) ->
       case compare n k of
-        LT -> Var_b n 
+        LT -> Var_b n
         EQ -> u
-        GT -> Var_b (n - 1)  -- is this dead code?
+        GT -> Var_b (n - 1) -- is this dead code?
     (Var_f x) -> Var_f x
     (Abs e) -> Abs (open_exp_wrt_exp_rec (k + 1) u e)
     (App e1 e2) ->
@@ -106,8 +106,9 @@ newVar = do
   return i
 
 nfd :: Exp -> Exp
-nfd e = State.evalState (nf' e) v where
-  v = succ (fromMaybe firstBoundId (Set.lookupMax (fv e)))
+nfd e = State.evalState (nf' e) v
+  where
+    v = succ (fromMaybe firstBoundId (Set.lookupMax (fv e)))
 
 nf' :: Exp -> N Exp
 nf' e@(Var_f _) = return e
@@ -135,36 +136,37 @@ whnf (App f a) = do
 
 -- Fueled version
 
-nfi :: Int -> Exp -> Maybe Exp
-nfi n e = State.evalStateT (nfi' n e) v where
-  v = succ (fromMaybe firstBoundId (Set.lookupMax (fv e)))
+nfi :: Int -> Exp -> Stats.M Exp
+nfi n e = State.evalStateT (nfi' n e) v
+  where
+    v = succ (fromMaybe firstBoundId (Set.lookupMax (fv e)))
 
-type NM a = State.StateT IdInt Maybe a
+type NM a = State.StateT IdInt Stats.M a
 
 nfi' :: Int -> Exp -> NM Exp
-nfi' 0 _ = State.lift Nothing
+nfi' 0 _ = State.lift Stats.done
 nfi' _n e@(Var_f _) = return e
 nfi' _n (Var_b _) = error "should not reach this"
 nfi' n (Abs e) = do
   x <- newVar
   e' <- nfi' (n - 1) (open e (Var_f x))
-  return $ Abs e'
+  return $ Abs (close x e')
 nfi' n (App f a) = do
   f' <- whnfi (n - 1) f
   case f' of
-    Abs b -> nfi' (n - 1) (open b a)
+    Abs b -> State.lift Stats.count >> nfi' (n - 1) (open b a)
     _ -> App <$> nfi' (n - 1) f' <*> nfi' (n -1) a
 
 -- Compute the weak head normal form.
 whnfi :: Int -> Exp -> NM Exp
-whnfi 0 _ = State.lift Nothing
+whnfi 0 _ = State.lift Stats.done
 whnfi _n e@(Var_f _) = return e
 whnfi _n (Var_b _) = error "should not reach this"
 whnfi _n e@(Abs _) = return e
 whnfi n (App f a) = do
   f' <- whnfi (n -1) f
   case f' of
-    (Abs b) -> whnfi (n -1) (open b a)
+    (Abs b) -> State.lift Stats.count >> whnfi (n -1) (open b a)
     _ -> return $ App f' a
 
 ---------------------------------------------------------------

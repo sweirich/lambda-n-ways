@@ -11,19 +11,21 @@ import qualified Control.Monad.State as State
 import qualified Data.IntMap as IM
 import Data.List (elemIndex)
 import qualified Data.Set as Set
+import Support.Nat
+  ( Idx (..),
+    Nat (..),
+    Plus,
+    SNat (..),
+    cmpIdx,
+    shift,
+    toInt,
+    weakenIdxR,
+  )
 import Util.IdInt (IdInt (..), firstBoundId)
 import Util.Impl (LambdaImpl (..))
-import Util.Imports hiding (S, to, from)
+import Util.Imports hiding (S, from, to)
 import qualified Util.Lambda as LC
-import Support.Nat
-    ( Plus,
-      SNat(..),
-      Idx(..),
-      Nat(..),
-      toInt,
-      shift,
-      weakenIdxR,
-      cmpIdx )
+import qualified Util.Stats as Stats
 
 -- 0. (Ott) Adding strictness annotations to the datatype definition:
 -- lennart: 1.03 s
@@ -56,12 +58,13 @@ data Exp (n :: Nat) where
   App :: (Exp n) -> (Exp n) -> Exp n
   deriving (Generic)
 
-instance NFData (Exp n) where
-deriving instance (Eq (Exp n)) 
- 
+instance NFData (Exp n)
+
+deriving instance (Eq (Exp n))
+
 ---------------------------------------------------
 
-  -- free variable substitution
+-- free variable substitution
 substFv :: Exp 'Z -> IdInt -> Exp 'Z -> Exp 'Z
 substFv u y = subst0 SZ
   where
@@ -131,7 +134,7 @@ instance (forall n. NFData (a n)) => NFData (Bind a m) where
   rnf (Bind a) = rnf a
 
 --------------------------------------------------------------
-      
+
 data Bind a n where
   Bind :: !(a ('S n)) -> Bind a n
 
@@ -151,7 +154,7 @@ substBvBind :: SubstC a => Sub a n m -> Bind a n -> Bind a m
 substBvBind s2 (Bind e) = Bind (subst (lift s2) e)
 {-# INLINEABLE substBvBind #-}
 
---------------------------------------------------------------      
+--------------------------------------------------------------
 
 open :: Bind Exp 'Z -> Exp 'Z -> Exp 'Z
 open (Bind e) u = subst (single u) e
@@ -191,8 +194,9 @@ newVar = do
   return i
 
 nfd :: Exp 'Z -> Exp 'Z
-nfd e = State.evalState (nf' e) v where
-  v = succ (fromMaybe firstBoundId (Set.lookupMax (fv e)))
+nfd e = State.evalState (nf' e) v
+  where
+    v = succ (fromMaybe firstBoundId (Set.lookupMax (fv e)))
 
 nf' :: Exp 'Z -> N (Exp 'Z)
 nf' e@(Var_f _) = return e
@@ -216,17 +220,17 @@ whnf (App f a) = do
     (Abs b) -> whnf (open b a)
     _ -> return $ App f' a
 
-
 -- Fueled version
 
-nfi :: Int -> Exp 'Z -> Maybe (Exp 'Z)
-nfi n e = State.evalStateT (nfi' n e) v where
-  v = succ (fromMaybe firstBoundId (Set.lookupMax (fv e)))
+nfi :: Int -> Exp 'Z -> Stats.M (Exp 'Z)
+nfi n e = State.evalStateT (nfi' n e) v
+  where
+    v = succ (fromMaybe firstBoundId (Set.lookupMax (fv e)))
 
-type NM a = State.StateT IdInt Maybe a
+type NM a = State.StateT IdInt Stats.M a
 
 nfi' :: Int -> (Exp 'Z) -> NM (Exp 'Z)
-nfi' 0 _ = State.lift Nothing
+nfi' 0 _ = State.lift Stats.done
 nfi' _ e@(Var_f _) = return e
 nfi' n (Abs e) = do
   x <- newVar
@@ -235,18 +239,18 @@ nfi' n (Abs e) = do
 nfi' n (App f a) = do
   f' <- whnfi (n - 1) f
   case f' of
-    Abs b -> nfi' (n - 1) (open b a)
+    Abs b -> State.lift Stats.count >> nfi' (n - 1) (open b a)
     _ -> App <$> nfi' (n - 1) f' <*> nfi' (n -1) a
 
 -- Compute the weak head normal form.
 whnfi :: Int -> Exp 'Z -> NM (Exp 'Z)
-whnfi 0 _ = State.lift Nothing
+whnfi 0 _ = State.lift Stats.done
 whnfi _ e@(Var_f _) = return e
 whnfi _ e@(Abs _) = return e
 whnfi n (App f a) = do
   f' <- whnfi (n -1) f
   case f' of
-    (Abs b) -> whnfi (n -1) (open b a)
+    (Abs b) -> State.lift Stats.count >> whnfi (n -1) (open b a)
     _ -> return $ App f' a
 
 --------------------------------------------------------------------

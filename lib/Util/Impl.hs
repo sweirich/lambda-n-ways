@@ -17,6 +17,7 @@ import qualified Util.IdInt.Set as IdIntSet
 import Util.Imports
 import Util.Lambda
 import qualified Util.Misc as Misc
+import qualified Util.Stats as Stats
 import Prelude hiding (abs)
 
 data LambdaImpl = forall a.
@@ -26,7 +27,7 @@ data LambdaImpl = forall a.
     impl_fromLC :: LC IdInt -> a,
     impl_toLC :: a -> LC IdInt,
     impl_nf :: a -> a,
-    impl_nfi :: Int -> a -> Maybe a,
+    impl_nfi :: Int -> a -> Stats.M a,
     impl_aeq :: a -> a -> Bool
   }
 

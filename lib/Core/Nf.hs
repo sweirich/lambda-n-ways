@@ -13,6 +13,7 @@ import Core.VarSet
 import Util.IdInt
 import Util.Impl
 import Util.Lambda as LC
+import qualified Util.Stats as Stats
 
 impl :: LambdaImpl
 impl =
@@ -20,7 +21,7 @@ impl =
     { impl_name = "Core",
       impl_fromLC = id,
       impl_toLC = id,
-      impl_nf = nf,
+      impl_nf = nf2,
       impl_nfi = nfi,
       impl_aeq = LC.aeq
     }
@@ -93,22 +94,41 @@ nf2 expr = go init_subst expr
 
 -----
 
-nfi :: Int -> LC IdInt -> Maybe (LC IdInt)
+nfi :: Int -> LC IdInt -> Stats.M (LC IdInt)
 nfi i expr = go i init_subst expr
   where
     init_subst = mkEmptySubst (mkInScopeSet (exprFreeVars expr))
-    go :: Int -> Subst -> LC IdInt -> Maybe (LC IdInt)
-    go 0 _ _ = Nothing
-    go i s (Var v) = return $ lookupIdSubst ("nf") s v
-    go i s (Lam x b) = Lam y <$> go (i -1) s' b
+    go :: Int -> Subst -> LC IdInt -> Stats.M (LC IdInt)
+    go 0 _ _ = Stats.done
+    go _i s (Var v) = return $ lookupIdSubst ("nf") s v
+    go _i s (Lam x b) = Lam y <$> go (i-1) s' b
       where
         (s', y) = substBndr s x
     go i s (App f a) = do
-      f' <- go (i -1) s f
+      f' <- whnf (i - 1) s f
       case f' of
         Lam x b -> do
           -- need a new subst as we have "applied" the current one already
           let is = mkEmptySubst (substInScope s)
-          s' <- extendIdSubst is x <$> go (i -1) s a
-          go (i -1) s' b
-        _ -> App f' <$> go (i -1) s a
+          Stats.count
+          s' <- extendIdSubst is x <$> go i s a
+          go (i-1) s' b
+        _ -> App f' <$> go i s a
+
+    whnf :: Int -> Subst -> LC IdInt -> Stats.M (LC IdInt)
+    whnf 0 _ _ = Stats.done
+    whnf _ s e@(Var v) = return $ lookupIdSubst ("whnf") s v
+    whnf _ s e@(Lam x b) = return $ Lam y (substExpr "whnf" s' b)
+      where
+        (s', y) = substBndr s x
+    whnf n s (App f a) = do
+      f' <- whnf (n - 1) s f
+      case f' of
+        Lam x b -> do 
+          let is = mkEmptySubst (substInScope s)
+          a' <- go n s a
+          let s' = extendIdSubst is x a'
+          Stats.count
+          whnf (n-1) s' b
+          
+        _ -> return $ App f' (substExpr "whnf" s a)

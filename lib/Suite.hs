@@ -80,7 +80,7 @@ import Util.Impl (LambdaImpl)
 -- | Implementations used in the benchmarking/test suite
 -- must be a single variable name for Makefile
 impls :: [LambdaImpl]
-impls = debruijn
+impls = all_impls
 
 interleave :: [a] -> [a] -> [a]
 interleave (a1 : a1s) (a2 : a2s) = a1 : a2 : interleave a1s a2s
@@ -93,7 +93,7 @@ interleave _ _ = []
 
 all_impls :: [LambdaImpl]
 all_impls =
-  debruijn ++ debruijn_lazy ++ locallyNameless ++ locallyNameless_lazy ++ named ++ named_lazy ++ lennart ++ hackage
+  debruijn ++ debruijn_lazy ++ locallyNameless ++ locallyNameless_lazy ++ named ++ named_lazy ++  hackage
 
 -- | deBruijn index-based implementations
 debruijn :: [LambdaImpl]
@@ -119,6 +119,29 @@ debruijn =
     -- DeBruijn.Nested2.impl, --fails test suite
   ]
 
+debruijn_nfi :: [LambdaImpl]
+debruijn_nfi =
+  [ -- single substitutions
+    DeBruijn.TAPL.impl,
+    DeBruijn.Cornell.impl,
+    DeBruijn.Lennart.impl,
+    DeBruijn.Lift.impl,
+    -- parallel substitutions
+    DeBruijn.Par.L.impl,
+    DeBruijn.Par.Fun.impl,
+    DeBruijn.Par.P.impl,
+    DeBruijn.Par.B.impl,
+    DeBruijn.Par.GB.impl,
+    -- Well-scoped single
+    DeBruijn.CPDT.impl,
+    DeBruijn.Nested.impl,
+    --DeBruijn.Bound.impl, -- bound
+    -- well-scoped parallel
+    DeBruijn.Kit.impl,
+    DeBruijn.Par.Scoped.impl
+    -- DeBruijn.Nested2.impl, --fails test suite
+  ]
+
 debruijn_lazy :: [LambdaImpl]
 debruijn_lazy =
   [ -- single substitutions
@@ -136,6 +159,28 @@ debruijn_lazy =
     DeBruijn.Lazy.CPDT.impl,
     DeBruijn.Lazy.Nested.impl,
     DeBruijn.Lazy.Bound.impl, -- bound
+    -- Well-scoped parallel
+    DeBruijn.Lazy.Kit.impl,
+    DeBruijn.Lazy.Par.Scoped.impl
+  ]
+
+debruijn_nfi_lazy :: [LambdaImpl]
+debruijn_nfi_lazy =
+  [ -- single substitutions
+    DeBruijn.Lazy.TAPL.impl,
+    DeBruijn.Lazy.Cornell.impl,
+    DeBruijn.Lazy.Lift.impl,
+    DeBruijn.Lazy.Lennart.impl,
+    -- parallel substitutions
+    DeBruijn.Lazy.Par.Fun.impl,
+    DeBruijn.Lazy.Par.L.impl,
+    DeBruijn.Lazy.Par.P.impl,
+    DeBruijn.Lazy.Par.B.impl,
+    DeBruijn.Lazy.Par.GB.impl,
+    -- Well-scoped single
+    DeBruijn.Lazy.CPDT.impl,
+    DeBruijn.Lazy.Nested.impl,
+    --DeBruijn.Lazy.Bound.impl, -- bound
     -- Well-scoped parallel
     DeBruijn.Lazy.Kit.impl,
     DeBruijn.Lazy.Par.Scoped.impl

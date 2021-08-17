@@ -29,6 +29,7 @@ import Util.Imports
     State,
   )
 import qualified Util.Lambda as LC
+import qualified Util.Stats as Stats
 
 impl :: LambdaImpl
 impl =
@@ -295,16 +296,11 @@ whnf (App f a) = do
 
 ---------------------------------------------------------
 
-nfi :: Int -> Exp -> Maybe Exp
-nfi k e =
-  let x :: E.ExceptT String (State IdInt) Exp
-      x = nfdi k e
-   in case runFresh (E.runExceptT x) (succ (S.findMax (allVars e))) of
-        Left _ -> Nothing
-        Right v -> Just v
-
-nfdi :: (MonadError String m, Fresh m) => Int -> Exp -> m Exp
-nfdi 0 _e = throwError "out of gas"
+nfi :: Int -> Exp -> Stats.M Exp
+nfi k e = Stats.runF (nfdi k e) (succ (S.findMax (allVars e))) 
+  
+nfdi :: Int -> Exp -> Stats.FM Exp
+nfdi 0 _e = Stats.doneFM
 nfdi _n e@(Var _) = return e
 nfdi n (Lam b) = do
   (x, a) <- unbind b
@@ -314,18 +310,20 @@ nfdi n (App f a) = do
   f' <- whnfi (n - 1) f
   case f' of
     Lam b -> do
+      Stats.countFM
       b' <- (instantiate b a)
       nfdi (n -1) b'
     _ -> App <$> nfdi (n -1) f' <*> nfdi (n -1) a
 
-whnfi :: (MonadError String m, Fresh m) => Int -> Exp -> m Exp
-whnfi 0 _e = throwError "out of gas"
+whnfi :: Int -> Exp -> Stats.FM Exp
+whnfi 0 _e = Stats.doneFM
 whnfi _n e@(Var _) = return e
 whnfi _n e@(Lam _) = return e
 whnfi n (App f a) = do
   f' <- whnfi (n - 1) f
   case f' of
     Lam b -> do
+      Stats.countFM
       b' <- (instantiate b a)
       whnfi (n - 1) b'
     _ -> return $ App f' a

@@ -23,6 +23,7 @@ library
       Util.IdInt
       Util.IdInt.Map
       Util.IdInt.Set
+      Util.Stats
       Support.Nat
       Support.Par.Subst
       Support.Par.SubstScoped

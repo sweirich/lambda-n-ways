@@ -16,6 +16,8 @@ Implementation using the Nominal library (available from hackage)
 
 > import Control.DeepSeq
 > import Util.Impl
+> import qualified Util.Stats as Stats
+
 >
 > impl :: LambdaImpl
 > impl = LambdaImpl {
@@ -95,24 +97,24 @@ that is not a $\beta$-redex.
 
 For testing, we can add a "fueled" version
 
-> nfi :: Int -> Term -> Maybe Term
-> nfi 0 _e = Nothing
+> nfi :: Int -> Term -> Stats.M Term
+> nfi 0 _e = Stats.done
 > nfi _n e@(Var _) = return  e
 > nfi n (Lam (x :. e)) = (\t -> ( Lam (x . t))) <$> nfi (n-1) e
 > nfi n (App f a) = do
 >     f' <- whnfi (n - 1) f 
 >     case f' of
->         Lam (x :. b) -> nfi (n-1) (subst x a b)
+>         Lam (x :. b) -> Stats.count >> nfi (n-1) (subst x a b)
 >         _ -> App <$> nfi (n-1) f' <*> nfi (n-1) a
 
 
-> whnfi :: Int -> Term -> Maybe Term
-> whnfi 0 _e = Nothing 
+> whnfi :: Int -> Term -> Stats.M Term
+> whnfi 0 _e = Stats.done 
 > whnfi _n e@(Var _) = return e
 > whnfi _n e@(Lam _) = return e
 > whnfi n (App f a) = do
 >     f' <- whnfi (n - 1) f 
 >     case f' of
->         Lam (x :. b) -> whnfi (n - 1) (subst x a b)
+>         Lam (x :. b) -> Stats.count >> whnfi (n - 1) (subst x a b)
 >         _ -> return $ App f' a
 

@@ -3,7 +3,7 @@
 -- And caching openning substitutions at binders
 -- and caching closing substitutions at binders
 -- and removing types so we can use ints instead of unary nats
-module LocallyNameless.Lazy.Opt (impl,substFv,fv) where
+module LocallyNameless.Lazy.Opt (impl, substFv, fv) where
 
 import qualified Control.Monad.State as State
 import qualified Data.IntMap as IM
@@ -11,8 +11,9 @@ import Data.List (elemIndex)
 import qualified Data.Set as Set
 import Util.IdInt (IdInt (..), firstBoundId)
 import Util.Impl (LambdaImpl (..))
-import Util.Imports hiding (S,from,to)
+import Util.Imports hiding (S, from, to)
 import qualified Util.Lambda as LC
+import qualified Util.Stats as Stats
 
 -- 0. Original (Ott derived version)
 -- lennart: 1.03s
@@ -55,7 +56,7 @@ data Exp where
   App :: Exp -> Exp -> Exp
   deriving (Generic, Eq)
 
-instance NFData Exp where
+instance NFData Exp
 
 -------------------------------------------------------------------
 
@@ -80,7 +81,6 @@ fv e =
     (Abs b) -> fv (unbind b)
     (App e1 e2) -> fv e1 `Set.union` fv e2
 
-
 --------------------------------------------------------------
 -- Caching open/close at binders.
 -- To speed up this implementation, we delay the execution of open / close
@@ -90,7 +90,6 @@ data Bind a where
   Bind :: !a -> Bind a
   BindOpen :: ![a] -> !a -> Bind a
   BindClose :: !Int -> ![IdInt] -> !a -> Bind a
-
 
 instance (NFData a) => NFData (Bind a) where
   rnf (BindOpen s a) = rnf s `seq` rnf a
@@ -199,9 +198,10 @@ newVar = do
   return i
 
 nfd :: Exp -> Exp
-nfd e = State.evalState (nf' e) v where
-  v :: IdInt 
-  v = succ (fromMaybe firstBoundId (Set.lookupMax (fv e)))
+nfd e = State.evalState (nf' e) v
+  where
+    v :: IdInt
+    v = succ (fromMaybe firstBoundId (Set.lookupMax (fv e)))
 
 nf' :: Exp -> N Exp
 nf' e@(Var_f _) = return e
@@ -229,15 +229,16 @@ whnf (App f a) = do
 
 -- Fueled version
 
-nfi :: Int -> Exp -> Maybe Exp
-nfi n e = State.evalStateT (nfi' n e) v where
-  v :: IdInt 
-  v = succ (fromMaybe firstBoundId (Set.lookupMax (fv e)))
+nfi :: Int -> Exp -> Stats.M Exp
+nfi n e = State.evalStateT (nfi' n e) v
+  where
+    v :: IdInt
+    v = succ (fromMaybe firstBoundId (Set.lookupMax (fv e)))
 
-type NM a = State.StateT IdInt Maybe a
+type NM a = State.StateT IdInt Stats.M a
 
 nfi' :: Int -> Exp -> NM Exp
-nfi' 0 _ = State.lift Nothing
+nfi' 0 _ = State.lift Stats.done
 nfi' _n e@(Var_f _) = return e
 nfi' _n (Var_b _) = error "should not reach this"
 nfi' n (Abs e) = do
@@ -247,22 +248,22 @@ nfi' n (Abs e) = do
 nfi' n (App f a) = do
   f' <- whnfi (n - 1) f
   case f' of
-    Abs b -> nfi' (n - 1) (open b a)
+    Abs b -> State.lift Stats.count >> nfi' (n - 1) (open b a)
     _ -> App <$> nfi' (n - 1) f' <*> nfi' (n -1) a
 
 -- Compute the weak head normal form.
 whnfi :: Int -> Exp -> NM Exp
-whnfi 0 _ = State.lift Nothing
+whnfi 0 _ = State.lift Stats.done
 whnfi _n e@(Var_f _) = return e
 whnfi _n (Var_b _) = error "BUG"
 whnfi _n e@(Abs _) = return e
 whnfi n (App f a) = do
   f' <- whnfi (n -1) f
   case f' of
-    (Abs b) -> whnfi (n -1) (open b a)
+    (Abs b) -> State.lift Stats.count >> whnfi (n -1) (open b a)
     _ -> return $ App f' a
 
-  {- ------------------------------------------ -}
+{- ------------------------------------------ -}
 
 toDB :: LC.LC IdInt -> Exp
 toDB = to 0 []
@@ -288,4 +289,3 @@ fromDB = from firstBoundId
       | otherwise = LC.Var (IdInt (n - i -1))
     from n (Abs b) = LC.Lam n (from (succ n) (unbind b))
     from n (App f a) = LC.App (from n f) (from n a)
-

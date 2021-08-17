@@ -18,6 +18,7 @@ import Util.IdInt (IdInt (..), firstBoundId)
 import Util.Impl (LambdaImpl (..))
 import Util.Imports hiding (S, from, to)
 import qualified Util.Lambda as LC
+import qualified Util.Stats as Stats
 
 -- 0. (Ott) Original
 -- lennart: 1.03s
@@ -48,7 +49,7 @@ data Exp (n :: Nat) where
 
 deriving instance (Eq (Exp n))
 
-instance NFData (Exp n) where
+instance NFData (Exp n)
 
 --------------------------------------------------------------
 
@@ -78,7 +79,6 @@ fv e =
     (Abs b) -> fv (unbind b)
     (App e1 e2) -> fv e1 `Set.union` fv e2
 
-
 instance (forall n. NFData (a n)) => NFData (Bind a m) where
   rnf (Bind a) = rnf a
 
@@ -104,8 +104,6 @@ unbind (Bind a) = a -- multi_open_exp_wrt_exp_rec ss a
 
 instance (Eq (Exp ('S n))) => Eq (Bind Exp n) where
   b1 == b2 = unbind b1 == unbind b2
-
-
 
 open_exp_wrt_exp_rec :: forall n. SNat n -> Exp 'Z -> Exp ('S n) -> Exp n
 open_exp_wrt_exp_rec k u e =
@@ -136,7 +134,6 @@ close_exp_wrt_exp_rec n1 x1 e1 =
 
 close :: IdInt -> Exp 'Z -> Bind Exp 'Z
 close x e = bind (close_exp_wrt_exp_rec FZ x e)
-
 
 toDB :: LC.LC IdInt -> Exp 'Z
 toDB = to SZ []
@@ -174,8 +171,9 @@ newVar = do
   return i
 
 nfd :: Exp 'Z -> Exp 'Z
-nfd e = State.evalState (nf' e) v where
-  v = succ (fromMaybe firstBoundId (Set.lookupMax (fv e)))
+nfd e = State.evalState (nf' e) v
+  where
+    v = succ (fromMaybe firstBoundId (Set.lookupMax (fv e)))
 
 nf' :: Exp 'Z -> N (Exp 'Z)
 nf' e@(Var_f _) = return e
@@ -201,14 +199,15 @@ whnf (App f a) = do
 
 -- Fueled version
 
-nfi :: Int -> Exp 'Z -> Maybe (Exp 'Z)
-nfi n e = State.evalStateT (nfi' n e) v where
-  v = succ (fromMaybe firstBoundId (Set.lookupMax (fv e)))
+nfi :: Int -> Exp 'Z -> Stats.M (Exp 'Z)
+nfi n e = State.evalStateT (nfi' n e) v
+  where
+    v = succ (fromMaybe firstBoundId (Set.lookupMax (fv e)))
 
-type NM a = State.StateT IdInt Maybe a
+type NM a = State.StateT IdInt Stats.M a
 
 nfi' :: Int -> (Exp 'Z) -> NM (Exp 'Z)
-nfi' 0 _ = State.lift Nothing
+nfi' 0 _ = State.lift Stats.done
 nfi' _ e@(Var_f _) = return e
 nfi' n (Abs e) = do
   x <- newVar
@@ -217,16 +216,16 @@ nfi' n (Abs e) = do
 nfi' n (App f a) = do
   f' <- whnfi (n - 1) f
   case f' of
-    Abs b -> nfi' (n - 1) (open b a)
+    Abs b -> State.lift Stats.count >> nfi' (n - 1) (open b a)
     _ -> App <$> nfi' (n - 1) f' <*> nfi' (n -1) a
 
 -- Compute the weak head normal form.
 whnfi :: Int -> Exp 'Z -> NM (Exp 'Z)
-whnfi 0 _ = State.lift Nothing
+whnfi 0 _ = State.lift Stats.done
 whnfi _ e@(Var_f _) = return e
 whnfi _ e@(Abs _) = return e
 whnfi n (App f a) = do
   f' <- whnfi (n -1) f
   case f' of
-    (Abs b) -> whnfi (n -1) (open b a)
+    (Abs b) -> State.lift Stats.count >> whnfi (n -1) (open b a)
     _ -> return $ App f' a
