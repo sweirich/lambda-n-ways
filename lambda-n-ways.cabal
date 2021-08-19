@@ -67,6 +67,7 @@ library
       LocallyNameless.Opt
       LocallyNameless.SupportInstOpt
       LocallyNameless.SupportOpt
+      LocallyNameless.GenericInstOpt
       LocallyNameless.GenericOpt
       LocallyNameless.ParScoped
       LocallyNameless.ParOpt

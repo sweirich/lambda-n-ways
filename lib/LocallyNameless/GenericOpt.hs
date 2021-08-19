@@ -80,7 +80,7 @@ nf' :: Exp -> N Exp
 nf' e@(Var _) = return e
 nf' (Abs b) = do
   x <- newVar
-  b' <- nf' (instantiate b (Var (F x)))
+  b' <- nf' (open b (F x))
   return $ Abs (close x b')
 nf' (App f a) = do
   f' <- whnf f
@@ -95,7 +95,9 @@ whnf e@(Abs _) = return e
 whnf (App f a) = do
   f' <- whnf f
   case f' of
-    (Abs b) -> whnf (instantiate b a)
+    (Abs b) -> do
+      x <- newVar
+      whnf (substFv a x (open b (F x)))
     _ -> return $ App f' a
 
 -- Fueled version

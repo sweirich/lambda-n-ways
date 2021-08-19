@@ -40,7 +40,7 @@ import qualified Lennart.Simple
 import qualified Lennart.Unique
 --import qualified LocallyNameless.Lazy.TypedOpt
 
-import qualified LocallyNameless.GenericOpt
+
 import qualified LocallyNameless.Lazy.GenericOpt
 import qualified LocallyNameless.Lazy.Opt
 import qualified LocallyNameless.Lazy.Ott
@@ -59,6 +59,8 @@ import qualified LocallyNameless.ParOpt
 import qualified LocallyNameless.ParScoped
 import qualified LocallyNameless.SupportInstOpt
 import qualified LocallyNameless.SupportOpt
+import qualified LocallyNameless.GenericOpt
+import qualified LocallyNameless.GenericInstOpt
 --import qualified LocallyNameless.TypedOpt
 import qualified LocallyNameless.TypedOtt
 import qualified LocallyNameless.UGEBind
@@ -199,14 +201,14 @@ debruijn_nfi_lazy =
 -- | Locally Nameless based implmentations
 locallyNameless :: [LambdaImpl]
 locallyNameless =
-  [ --LocallyNameless.Ott.impl,
+  [ LocallyNameless.Ott.impl,
     --LocallyNameless.TypedOtt.impl,
     --LocallyNameless.ParScoped.impl,
-    --LocallyNameless.ParOpt.impl,
-    --LocallyNameless.Opt.impl,
+    LocallyNameless.ParOpt.impl,
+    LocallyNameless.Opt.impl,
     LocallyNameless.SupportOpt.impl,
     LocallyNameless.SupportInstOpt.impl
-    --LocallyNameless.GenericOpt.impl,
+    LocallyNameless.GenericOpt.impl,
     -- LocallyNameless.TypedOpt.impl,
     --LocallyNameless.UnboundRep.impl, -- unbound
     --LocallyNameless.UnboundGenerics.impl, -- unbound-generics (original)
