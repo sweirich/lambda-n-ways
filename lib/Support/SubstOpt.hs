@@ -71,7 +71,7 @@ class AlphaC a => SubstC b a where
   multi_subst_bv vs x
     = case isvar x of
       Just v -> substBvVar 0 vs v
-      Nothing -> to (gmulti_subst_bv 0 vs (from x))
+      Nothing -> to (gmulti_subst_bv vs (from x))
     {- | otherwise = error $ "multi_subst_bv: called with k=" ++ show k -}
   {-# INLINE multi_subst_bv #-}
 
@@ -211,35 +211,35 @@ class GAlpha f where
   gmulti_close_rec :: Int -> [IdInt] -> f a -> f a
 
 class GOpen b f where
-  gmulti_subst_bv :: Int -> [b] -> f a -> f a
+  gmulti_subst_bv :: [b] -> f a -> f a
 
 -------------------------------------------------------------------
 newtype Ignore a = Ignore a
 
 -- Constant types
 instance (SubstC b c) => GOpen b (K1 i c) where
-  gmulti_subst_bv _s vs (K1 c) = K1 (multi_subst_bv vs c)
+  gmulti_subst_bv vs (K1 c) = K1 (multi_subst_bv vs c)
   {-# INLINE gmulti_subst_bv #-}
 
 instance GOpen b U1 where
-  gmulti_subst_bv _s _v U1 = U1
+  gmulti_subst_bv _v U1 = U1
   {-# INLINE gmulti_subst_bv #-}
 
 instance GOpen b f => GOpen b (M1 i c f) where
-  gmulti_subst_bv s vs = M1 . gmulti_subst_bv s vs . unM1
+  gmulti_subst_bv vs = M1 . gmulti_subst_bv vs . unM1
   {-# INLINE gmulti_subst_bv #-}
 
 instance GOpen b V1 where
-  gmulti_subst_bv _s _vs = id
+  gmulti_subst_bv _vs = id
   {-# INLINE gmulti_subst_bv #-}
 
 instance (GOpen b f, GOpen b g) => GOpen b (f :*: g) where
-  gmulti_subst_bv s vs (f :*: g) = gmulti_subst_bv s vs f :*: gmulti_subst_bv s vs g
+  gmulti_subst_bv vs (f :*: g) = gmulti_subst_bv vs f :*: gmulti_subst_bv vs g
   {-# INLINE gmulti_subst_bv #-}
 
 instance (GOpen b f, GOpen b g) => GOpen b (f :+: g) where
-  gmulti_subst_bv s vs (L1 f) = L1 $ gmulti_subst_bv s vs f
-  gmulti_subst_bv s vs (R1 g) = R1 $ gmulti_subst_bv s vs g
+  gmulti_subst_bv vs (L1 f) = L1 $ gmulti_subst_bv vs f
+  gmulti_subst_bv vs (R1 g) = R1 $ gmulti_subst_bv vs g
   {-# INLINE gmulti_subst_bv #-}
 
 instance SubstC b (Ignore a) where
@@ -267,19 +267,19 @@ instance SubstC b Var where
   {-# INLINE multi_subst_bv #-}
 
 instance (Generic a, AlphaC a, GOpen b (Rep [a])) => SubstC b [a] where
-  multi_subst_bv xs x = to $ gmulti_subst_bv 0 xs (from x)
+  multi_subst_bv xs x = to $ gmulti_subst_bv xs (from x)
   {-# INLINE multi_subst_bv #-}
 
 instance (Generic a, AlphaC a, GOpen b (Rep (Maybe a))) => SubstC b (Maybe a) where
-  multi_subst_bv xs x = to $ gmulti_subst_bv 0 xs (from x)
+  multi_subst_bv xs x = to $ gmulti_subst_bv xs (from x)
   {-# INLINE multi_subst_bv #-}
 
 instance (Generic (Either a1 a2), AlphaC (Either a1 a2), GOpen b (Rep (Either a1 a2))) => SubstC b (Either a1 a2) where
-  multi_subst_bv xs x = to $ gmulti_subst_bv 0 xs (from x)
+  multi_subst_bv xs x = to $ gmulti_subst_bv xs (from x)
   {-# INLINE multi_subst_bv #-}
 
 instance (Generic (a, b), AlphaC (a, b), GOpen c (Rep (a, b))) => SubstC c (a, b) where
-  multi_subst_bv xs x = to $ gmulti_subst_bv 0 xs (from x)
+  multi_subst_bv xs x = to $ gmulti_subst_bv xs (from x)
   {-# INLINE multi_subst_bv #-}
 
 instance
@@ -289,7 +289,7 @@ instance
   ) =>
   SubstC c (a, b, d)
   where
-  multi_subst_bv xs x = to $ gmulti_subst_bv 0 xs (from x)
+  multi_subst_bv xs x = to $ gmulti_subst_bv xs (from x)
   {-# INLINE multi_subst_bv #-}
 
 ----------------------------------------------------------------
