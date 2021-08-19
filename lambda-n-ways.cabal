@@ -73,6 +73,7 @@ library
 --      LocallyNameless.TypedOpt
       LocallyNameless.UnboundRep
       LocallyNameless.UnboundGenerics
+      LocallyNameless.UnboundNonGenerics
       LocallyNameless.UGSubstBind
       LocallyNameless.UGEBind
       LocallyNameless.UGSubstEBind
@@ -90,12 +91,14 @@ library
       LocallyNameless.Lazy.UGSubstBind
       LocallyNameless.Lazy.UGEBind
       LocallyNameless.Lazy.UGSubstEBind
+
       Named.Simple
       Named.Unique
       Lennart.HOAS
       Lennart.Simple
       Lennart.Unique
       Lennart.DeBruijn
+      Lennart.DeBruijnC
       Named.Nom  
 --      Named.Nominal
       Named.NominalG

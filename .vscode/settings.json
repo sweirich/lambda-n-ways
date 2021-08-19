@@ -17,5 +17,6 @@
     "haskell.plugin.importLens.codeLensOn": false,
     "haskell.diagnosticsOnChange": false,
     "haskell.formatOnImportOn": false,
-    "haskell.indentationRules.enabled": false
+    "haskell.indentationRules.enabled": false,
+    "editor.formatOnSave": true
 }

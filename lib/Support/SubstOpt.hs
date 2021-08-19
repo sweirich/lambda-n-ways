@@ -59,13 +59,13 @@ class AlphaC a where
   {-# INLINE fv #-}
   {-# INLINE multi_close_rec #-}
 
-class AlphaC a => OpenC b a where
-  multi_open_rec :: Int -> [b] -> a -> a
-  default multi_open_rec :: (Generic a, VarC b, GOpen b (Rep a), a ~ b) => Int -> [b] -> a -> a
-  multi_open_rec k vs x = case isvar x of
+class AlphaC a => SubstC b a where
+  multi_subst_bv :: Int -> [b] -> a -> a
+  default multi_subst_bv :: (Generic a, VarC b, GOpen b (Rep a), a ~ b) => Int -> [b] -> a -> a
+  multi_subst_bv k vs x = case isvar x of
     Just v -> openVar k vs v
-    Nothing -> to (gmulti_open_rec k vs (from x))
-  {-# INLINE multi_open_rec #-}
+    Nothing -> to (gmulti_subst_bv k vs (from x))
+  {-# INLINE multi_subst_bv #-}
 
 --------------------------------------------------------------
 
@@ -89,7 +89,7 @@ openVar :: VarC a => Int -> [a] -> Var -> a
 openVar _ _ (F x) = var (F x)
 openVar k vs (B i)
   | i >= k = vs !! (i - k)
-  | otherwise = var (B 0)
+  | otherwise = var (B i)
 {-# INLINEABLE openVar #-}
 
 substFvVar :: VarC a => a -> IdInt -> Var -> a
@@ -116,7 +116,7 @@ instance (NFData a) => NFData (Bind a) where
       `seq` rnf v
       `seq` rnf a
 
-instance (Eq a, OpenC a a) => Eq (Bind a) where
+instance (Eq a, SubstC a a) => Eq (Bind a) where
   b1 == b2 = unbind b1 == unbind b2
 
 -- create a binding by "abstracting a variable"
@@ -124,23 +124,15 @@ bind :: a -> Bind a
 bind = Bind
 {-# INLINEABLE bind #-}
 
-unbind :: OpenC a a => Bind a -> a
+unbind :: SubstC a a => Bind a -> a
 unbind (Bind a) = a
-unbind (BindOpen ss a) = multi_open_rec 0 ss a
+-- this is always 0 because multi_subst_bv never
+-- goes under binders
+unbind (BindOpen ss a) = multi_subst_bv 0 ss a
 unbind (BindClose k vs a) = multi_close_rec k vs a
 {-# INLINEABLE unbind #-}
 
-{-
-substBind :: Exp -> IdInt -> Bind Exp -> Bind Exp
-substBind u x (Bind a) = Bind (substFv u x a)
-substBind u x (BindOpen as a) = BindOpen (fmap (substFv u x) as) (substFv u x a)
-substBind u x (BindClose i xs a) = BindClose i xs (substFv u x a)
-  --  if x `elem` xs then
-  --    Bind (subst u x (unbind b))
-  --  else
--}
-
-instance (OpenC a a) => AlphaC (Bind a) where
+instance (SubstC a a) => AlphaC (Bind a) where
   fv :: Bind a -> Set IdInt
   fv b = fv (unbind b)
 
@@ -150,10 +142,22 @@ instance (OpenC a a) => AlphaC (Bind a) where
   {-# INLINE fv #-}
   {-# INLINE multi_close_rec #-}
 
-instance OpenC a a => OpenC a (Bind a) where
-  multi_open_rec _k vn (BindOpen vm b) = (BindOpen (vm <> vn) b)
-  multi_open_rec _k vn b = (BindOpen vn (unbind b))
-  {-# INLINE multi_open_rec #-}
+instance SubstC a a => SubstC a (Bind a) where
+  -- we know k will be 0 here because we never need to
+  -- go under a binder with multi_subst_bv. We just gather the
+  -- substitutions together at the first binder that we find.
+  multi_subst_bv 0 vn (BindOpen vm b) = (BindOpen (vm <> vn) b)
+  multi_subst_bv k vn (BindOpen vm _b) =
+    error $
+      "multi_subst_bv BindOpen called with k=" ++ show k
+        ++ "|vn|="
+        ++ show (length vn)
+        ++ " and |vm|="
+        ++ show (length vm)
+  multi_subst_bv 0 vn b = (BindOpen vn (unbind b))
+  multi_subst_bv k _vn _b =
+    error $ "multi_subst_bv Bind called with k=" ++ show k
+  {-# INLINE multi_subst_bv #-}
 
 -- keep track of the opening that has been done already
 -- via bound-variable substitution
@@ -164,10 +168,11 @@ instance OpenC a a => OpenC a (Bind a) where
 -- k=2    0 -> 0 , 1 -> 1 , 2 -> 2, k+1 -> x, k+2 -> y, ...
 -- more generally, we have the scope depth k and a n-ary mapping for variables k+i for 0<=i<n
 
-open :: (OpenC a a) => Bind a -> a -> a
-open (BindOpen vs e) u = multi_open_rec 0 (u : vs) e -- this needs to be 0
-open b u = multi_open_rec 0 [u] (unbind b)
-{-# INLINEABLE open #-}
+-- | Note: the binding should be localy closed
+instantiate :: (SubstC a a) => Bind a -> a -> a
+instantiate (BindOpen vs e) u = multi_subst_bv 0 (u : vs) e -- this needs to be 0
+instantiate b u = multi_subst_bv 0 [u] (unbind b)
+{-# INLINEABLE instantiate #-}
 
 -----------------------------------------------------------------
 
@@ -182,86 +187,86 @@ class GAlpha f where
   gmulti_close_rec :: Int -> [IdInt] -> f a -> f a
 
 class GOpen b f where
-  gmulti_open_rec :: Int -> [b] -> f a -> f a
+  gmulti_subst_bv :: Int -> [b] -> f a -> f a
 
 -------------------------------------------------------------------
 newtype Ignore a = Ignore a
 
 -- Constant types
-instance (OpenC b c) => GOpen b (K1 i c) where
-  gmulti_open_rec s vs (K1 c) = K1 (multi_open_rec s vs c)
-  {-# INLINE gmulti_open_rec #-}
+instance (SubstC b c) => GOpen b (K1 i c) where
+  gmulti_subst_bv s vs (K1 c) = K1 (multi_subst_bv s vs c)
+  {-# INLINE gmulti_subst_bv #-}
 
 instance GOpen b U1 where
-  gmulti_open_rec _s _v U1 = U1
-  {-# INLINE gmulti_open_rec #-}
+  gmulti_subst_bv _s _v U1 = U1
+  {-# INLINE gmulti_subst_bv #-}
 
 instance GOpen b f => GOpen b (M1 i c f) where
-  gmulti_open_rec s vs = M1 . gmulti_open_rec s vs . unM1
-  {-# INLINE gmulti_open_rec #-}
+  gmulti_subst_bv s vs = M1 . gmulti_subst_bv s vs . unM1
+  {-# INLINE gmulti_subst_bv #-}
 
 instance GOpen b V1 where
-  gmulti_open_rec _s _vs = id
-  {-# INLINE gmulti_open_rec #-}
+  gmulti_subst_bv _s _vs = id
+  {-# INLINE gmulti_subst_bv #-}
 
 instance (GOpen b f, GOpen b g) => GOpen b (f :*: g) where
-  gmulti_open_rec s vs (f :*: g) = gmulti_open_rec s vs f :*: gmulti_open_rec s vs g
-  {-# INLINE gmulti_open_rec #-}
+  gmulti_subst_bv s vs (f :*: g) = gmulti_subst_bv s vs f :*: gmulti_subst_bv s vs g
+  {-# INLINE gmulti_subst_bv #-}
 
 instance (GOpen b f, GOpen b g) => GOpen b (f :+: g) where
-  gmulti_open_rec s vs (L1 f) = L1 $ gmulti_open_rec s vs f
-  gmulti_open_rec s vs (R1 g) = R1 $ gmulti_open_rec s vs g
-  {-# INLINE gmulti_open_rec #-}
+  gmulti_subst_bv s vs (L1 f) = L1 $ gmulti_subst_bv s vs f
+  gmulti_subst_bv s vs (R1 g) = R1 $ gmulti_subst_bv s vs g
+  {-# INLINE gmulti_subst_bv #-}
 
-instance OpenC b (Ignore a) where
-  multi_open_rec _ _ = id
-  {-# INLINE multi_open_rec #-}
+instance SubstC b (Ignore a) where
+  multi_subst_bv _ _ = id
+  {-# INLINE multi_subst_bv #-}
 
-instance OpenC b Int where
-  multi_open_rec _ _ = id
-  {-# INLINE multi_open_rec #-}
+instance SubstC b Int where
+  multi_subst_bv _ _ = id
+  {-# INLINE multi_subst_bv #-}
 
-instance OpenC b Bool where
-  multi_open_rec _ _ = id
-  {-# INLINE multi_open_rec #-}
+instance SubstC b Bool where
+  multi_subst_bv _ _ = id
+  {-# INLINE multi_subst_bv #-}
 
-instance OpenC b () where
-  multi_open_rec _ _ = id
-  {-# INLINE multi_open_rec #-}
+instance SubstC b () where
+  multi_subst_bv _ _ = id
+  {-# INLINE multi_subst_bv #-}
 
-instance OpenC b Char where
-  multi_open_rec _ _ = id
-  {-# INLINE multi_open_rec #-}
+instance SubstC b Char where
+  multi_subst_bv _ _ = id
+  {-# INLINE multi_subst_bv #-}
 
-instance OpenC b Var where
-  multi_open_rec _ _ = id
-  {-# INLINE multi_open_rec #-}
+instance SubstC b Var where
+  multi_subst_bv _ _ = id
+  {-# INLINE multi_subst_bv #-}
 
-instance (Generic a, AlphaC a, GOpen b (Rep [a])) => OpenC b [a] where
-  multi_open_rec s xs x = to $ gmulti_open_rec s xs (from x)
-  {-# INLINE multi_open_rec #-}
+instance (Generic a, AlphaC a, GOpen b (Rep [a])) => SubstC b [a] where
+  multi_subst_bv s xs x = to $ gmulti_subst_bv s xs (from x)
+  {-# INLINE multi_subst_bv #-}
 
-instance (Generic a, AlphaC a, GOpen b (Rep (Maybe a))) => OpenC b (Maybe a) where
-  multi_open_rec s xs x = to $ gmulti_open_rec s xs (from x)
-  {-# INLINE multi_open_rec #-}
+instance (Generic a, AlphaC a, GOpen b (Rep (Maybe a))) => SubstC b (Maybe a) where
+  multi_subst_bv s xs x = to $ gmulti_subst_bv s xs (from x)
+  {-# INLINE multi_subst_bv #-}
 
-instance (Generic (Either a1 a2), AlphaC (Either a1 a2), GOpen b (Rep (Either a1 a2))) => OpenC b (Either a1 a2) where
-  multi_open_rec s xs x = to $ gmulti_open_rec s xs (from x)
-  {-# INLINE multi_open_rec #-}
+instance (Generic (Either a1 a2), AlphaC (Either a1 a2), GOpen b (Rep (Either a1 a2))) => SubstC b (Either a1 a2) where
+  multi_subst_bv s xs x = to $ gmulti_subst_bv s xs (from x)
+  {-# INLINE multi_subst_bv #-}
 
-instance (Generic (a, b), AlphaC (a, b), GOpen c (Rep (a, b))) => OpenC c (a, b) where
-  multi_open_rec s xs x = to $ gmulti_open_rec s xs (from x)
-  {-# INLINE multi_open_rec #-}
+instance (Generic (a, b), AlphaC (a, b), GOpen c (Rep (a, b))) => SubstC c (a, b) where
+  multi_subst_bv s xs x = to $ gmulti_subst_bv s xs (from x)
+  {-# INLINE multi_subst_bv #-}
 
 instance
   ( Generic (a, b, d),
     AlphaC (a, b, d),
     GOpen c (Rep (a, b, d))
   ) =>
-  OpenC c (a, b, d)
+  SubstC c (a, b, d)
   where
-  multi_open_rec s xs x = to $ gmulti_open_rec s xs (from x)
-  {-# INLINE multi_open_rec #-}
+  multi_subst_bv s xs x = to $ gmulti_subst_bv s xs (from x)
+  {-# INLINE multi_subst_bv #-}
 
 ----------------------------------------------------------------
 

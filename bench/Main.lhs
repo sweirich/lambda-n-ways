@@ -9,7 +9,7 @@
 > import Util.Misc ()
 > import Util.Lambda ( LC )
 > import Util.IdInt ( IdInt )
-> import Util.Impl ( LambdaImpl(..), toIdInt, getTerm, getTerms )
+> import Util.Impl ( LambdaImpl(..), toIdInt, getTerm, getTerms, lambdaFalse )
 > import Suite ( impls )
 > import qualified Named.Simple as Simple
 > import qualified Named.Unique as Unique
@@ -33,11 +33,12 @@
 >     Bench impl_name (rnf . impl_fromLC) lc
 
 > -- | Benchmarks for timing normal form calculation (multiple terms)
-> nf_bss :: [LC IdInt] -> [Bench]
-> nf_bss lcs = map impl2nf impls where
+> nf_bss :: [LC IdInt] -> [LC IdInt] -> [Bench]
+> nf_bss lcs nflcs = map impl2nf impls where
 >   impl2nf LambdaImpl {..} =
 >     let! tms = force (map impl_fromLC lcs) in
->     Bench (impl_name <> "/") (rnf . map impl_nf) tms
+>     let! nftms = force (map impl_fromLC nflcs) in
+>     Bench (impl_name <> "/") (rnf . (map (\(t,r) -> impl_aeq (impl_nf t) r))) (zip tms nftms)
 
 > -- | Benchmarks for timing normal form calculation (multiple groups of multiple terms)
 > constructed_bss :: String ->[LC IdInt] -> [Bench]
@@ -72,7 +73,9 @@
 > main = do
 >   lennart <- toIdInt <$> getTerm "lams/lennart.lam"
 >   random15_terms <- getTerms "lams/random15.lam"
+>   random15_nfterms <- getTerms "lams/random15.nf.lam"
 >   random20_terms <- getTerms "lams/random20.lam"
+>   random20_nfterms <- getTerms "lams/random20.nf.lam"
 >   random25_terms <- getTerms "lams/random25.lam"
 >   random35_terms <- getTerms "lams/random35.lam"
 >   onesubst_terms <- getTerms "lams/onesubst.lam"
@@ -85,8 +88,8 @@
 >   adjust_terms <- getTerms "lams/adjust.lam"
 >   adjustb_terms <- getTerms "lams/adjustb.lam"
 >   defaultMain [
->      bgroup "random15" $ map runBench (nf_bss random15_terms)
->    , bgroup "random20" $ map runBench (nf_bss random20_terms)
+>      bgroup "random15" $ map runBench (nf_bss random15_terms random15_nfterms)
+>    , bgroup "random20" $ map runBench (nf_bss random20_terms random20_nfterms)
 >    {- , bgroup "random25" $ map runBench (nf_bss random25_terms)
 >    , bgroup "random35" $ map runBench (nf_bss random35_terms)
 >    , bgroup "onesubst" $ map runBench (nf_bss onesubst_terms)
@@ -94,8 +97,8 @@
 >    , bgroup "threesubst" $ map runBench (nf_bss threesubst_terms)
 >    , bgroup "foursubst" $ map runBench (nf_bss foursubst_terms) 
 >    , bgroup "conv" $ map runBench (conv_bs lennart)  -}
->    , bgroup "nf"   $ map runBench (nf_bss [lennart]) 
->    , bgroup "aeq"  $ map runBench (aeq_fresh_bs lennart)
+>    , bgroup "nf"   $ map runBench (nf_bss [lennart] [lambdaFalse]) 
+>    -- , bgroup "aeq"  $ map runBench (aeq_fresh_bs lennart)
 >    {- , bgroup "aeqs" $ map runBench (aeq_bs lennart lennart) 
 >      bgroup "ids" $ map runBench (constructed_bss "ids" id_terms)
 >    , bgroup "con"  $ map runBench (constructed_bss "con" con_terms)

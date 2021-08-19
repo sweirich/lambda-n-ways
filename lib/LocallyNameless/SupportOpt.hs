@@ -68,14 +68,14 @@ instance AlphaC Exp where
           (multi_close_rec k xs e2)
           (multi_close_rec k xs e3)
 
-instance OpenC Exp Exp where
-  multi_open_rec :: Int -> [Exp] -> Exp -> Exp
-  multi_open_rec k vn e =
+instance SubstC Exp Exp where
+  multi_subst_bv :: Int -> [Exp] -> Exp -> Exp
+  multi_subst_bv k vn e =
     case e of
       Var v -> openVar k vn v
-      Abs b -> Abs (multi_open_rec k vn b)
+      Abs b -> Abs (multi_subst_bv k vn b)
       App e1 e2 ->
-        App (multi_open_rec k vn e1) (multi_open_rec k vn e2)
+        App (multi_subst_bv k vn e1) (multi_subst_bv k vn e2)
 
 --------------------------------------------------------------
 
@@ -99,12 +99,12 @@ nf' :: Exp -> N Exp
 nf' e@(Var _) = return e
 nf' (Abs b) = do
   x <- newVar
-  b' <- nf' (open b (Var (F x)))
+  b' <- nf' (instantiate b (Var (F x)))
   return $ Abs (close x b')
 nf' (App f a) = do
   f' <- whnf f
   case f' of
-    Abs b -> nf' (open b a)
+    Abs b -> nf' (instantiate b a)
     _ -> App <$> nf' f' <*> nf' a
 
 -- Compute the weak head normal form.

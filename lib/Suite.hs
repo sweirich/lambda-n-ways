@@ -34,6 +34,7 @@ import qualified DeBruijn.Par.P
 import qualified DeBruijn.Par.Scoped
 import qualified DeBruijn.TAPL
 import qualified Lennart.DeBruijn
+import qualified Lennart.DeBruijnC
 import qualified Lennart.HOAS
 import qualified Lennart.Simple
 import qualified Lennart.Unique
@@ -63,6 +64,7 @@ import qualified LocallyNameless.UGEBind
 import qualified LocallyNameless.UGSubstBind
 import qualified LocallyNameless.UGSubstEBind
 import qualified LocallyNameless.UnboundGenerics
+import qualified LocallyNameless.UnboundNonGenerics
 import qualified LocallyNameless.UnboundRep
 import qualified Named.Lazy.NominalG
 import qualified Named.Lazy.SimpleGH
@@ -80,7 +82,7 @@ import Util.Impl (LambdaImpl)
 -- | Implementations used in the benchmarking/test suite
 -- must be a single variable name for Makefile
 impls :: [LambdaImpl]
-impls = all_impls
+impls = locallyNameless
 
 interleave :: [a] -> [a] -> [a]
 interleave (a1 : a1s) (a2 : a2s) = a1 : a2 : interleave a1s a2s
@@ -93,7 +95,13 @@ interleave _ _ = []
 
 all_impls :: [LambdaImpl]
 all_impls =
-  debruijn ++ debruijn_lazy ++ locallyNameless ++ locallyNameless_lazy ++ named ++ named_lazy ++  hackage
+  debruijn ++ debruijn_lazy ++ locallyNameless ++ locallyNameless_lazy ++ named ++ named_lazy ++ hackage
+
+all_debruijn :: [LambdaImpl]
+all_debruijn = debruijn ++ debruijn_lazy
+
+all_locallyNameless :: [LambdaImpl]
+all_locallyNameless = locallyNameless ++ locallyNameless_lazy
 
 -- | deBruijn index-based implementations
 debruijn :: [LambdaImpl]
@@ -189,16 +197,27 @@ debruijn_nfi_lazy =
 -- | Locally Nameless based implmentations
 locallyNameless :: [LambdaImpl]
 locallyNameless =
-  [ LocallyNameless.Ott.impl,
-    LocallyNameless.TypedOtt.impl,
-    LocallyNameless.ParScoped.impl,
-    LocallyNameless.ParOpt.impl,
-    LocallyNameless.Opt.impl,
-    LocallyNameless.SupportOpt.impl,
-    LocallyNameless.GenericOpt.impl,
+  [ --LocallyNameless.Ott.impl,
+    --LocallyNameless.TypedOtt.impl,
+    --LocallyNameless.ParScoped.impl,
+    --LocallyNameless.ParOpt.impl,
+    --LocallyNameless.Opt.impl,
+    --LocallyNameless.SupportOpt.impl,
+    --LocallyNameless.GenericOpt.impl,
     -- LocallyNameless.TypedOpt.impl,
-    LocallyNameless.UnboundRep.impl, -- unbound
+    --LocallyNameless.UnboundRep.impl, -- unbound
+    --LocallyNameless.UnboundGenerics.impl, -- unbound-generics (original)
+    --LocallyNameless.UnboundNonGenerics.impl,
+    LocallyNameless.UGEBind.impl -- unbound-generics mod2
+    --LocallyNameless.UGSubstBind.impl, -- unbound-generics mod2
+    --LocallyNameless.UGSubstEBind.impl -- unbound-generics mod2
+  ]
+
+unbound :: [LambdaImpl]
+unbound =
+  [ LocallyNameless.UnboundRep.impl, -- unbound
     LocallyNameless.UnboundGenerics.impl, -- unbound-generics (original)
+    LocallyNameless.UnboundNonGenerics.impl,
     LocallyNameless.UGEBind.impl, -- unbound-generics mod2
     LocallyNameless.UGSubstBind.impl, -- unbound-generics mod2
     LocallyNameless.UGSubstEBind.impl -- unbound-generics mod2
