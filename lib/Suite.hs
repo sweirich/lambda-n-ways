@@ -202,13 +202,13 @@ locallyNameless =
     --LocallyNameless.ParScoped.impl,
     --LocallyNameless.ParOpt.impl,
     --LocallyNameless.Opt.impl,
-    --LocallyNameless.SupportOpt.impl,
+    LocallyNameless.SupportOpt.impl
     --LocallyNameless.GenericOpt.impl,
     -- LocallyNameless.TypedOpt.impl,
     --LocallyNameless.UnboundRep.impl, -- unbound
     --LocallyNameless.UnboundGenerics.impl, -- unbound-generics (original)
     --LocallyNameless.UnboundNonGenerics.impl,
-    LocallyNameless.UGEBind.impl -- unbound-generics mod2
+    --LocallyNameless.UGEBind.impl -- unbound-generics mod2
     --LocallyNameless.UGSubstBind.impl, -- unbound-generics mod2
     --LocallyNameless.UGSubstEBind.impl -- unbound-generics mod2
   ]

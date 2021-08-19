@@ -53,18 +53,26 @@ class AlphaC a where
   default fv :: (Generic a, GAlpha (Rep a)) => a -> Set IdInt
   fv x = gfv (from x)
 
+  -- | replace bound variables with a list of free variables
+  multi_open_rec :: [IdInt] -> a -> a
+
+  -- | replace free variables (noted as "IdInt") with their respective bound variables
   multi_close_rec :: Int -> [IdInt] -> a -> a
   default multi_close_rec :: (Generic a, GAlpha (Rep a)) => Int -> [IdInt] -> a -> a
   multi_close_rec k vs x = to (gmulti_close_rec k vs (from x))
+
   {-# INLINE fv #-}
   {-# INLINE multi_close_rec #-}
 
 class AlphaC a => SubstC b a where
+  -- | substitute for bound variables
   multi_subst_bv :: Int -> [b] -> a -> a
   default multi_subst_bv :: (Generic a, VarC b, GOpen b (Rep a), a ~ b) => Int -> [b] -> a -> a
-  multi_subst_bv k vs x = case isvar x of
-    Just v -> openVar k vs v
-    Nothing -> to (gmulti_subst_bv k vs (from x))
+  multi_subst_bv k vs x
+    | k == 0 = case isvar x of
+      Just v -> substBvVar k vs v
+      Nothing -> to (gmulti_subst_bv k vs (from x))
+    | otherwise = error $ "multi_subst_bv: called with k=" ++ show k
   {-# INLINE multi_subst_bv #-}
 
 --------------------------------------------------------------
@@ -72,6 +80,10 @@ class AlphaC a => SubstC b a where
 data Var = B Int | F IdInt deriving (Generic, Eq)
 
 instance NFData Var
+
+instance VarC Var where
+  var = id
+  isvar x = Just x
 
 instance AlphaC Var where
   fv (B _) = S.empty
@@ -85,12 +97,14 @@ instance AlphaC Var where
   {-# INLINE fv #-}
   {-# INLINE multi_close_rec #-}
 
-openVar :: VarC a => Int -> [a] -> Var -> a
-openVar _ _ (F x) = var (F x)
-openVar k vs (B i)
+  multi_open_rec vs v = substBvVar 0 (map F vs) v
+
+substBvVar :: VarC a => Int -> [a] -> Var -> a
+substBvVar _ _ (F x) = var (F x)
+substBvVar k vs (B i)
   | i >= k = vs !! (i - k)
   | otherwise = var (B i)
-{-# INLINEABLE openVar #-}
+{-# INLINEABLE substBvVar #-}
 
 substFvVar :: VarC a => a -> IdInt -> Var -> a
 substFvVar _ _ (B n) = var (B n)
@@ -105,12 +119,14 @@ substFvVar u y (F x) = if x == y then u else (var (F x))
 
 data Bind a where
   Bind :: !a -> Bind a
-  BindOpen :: ![a] -> !a -> Bind a
+  BindSubst :: ![a] -> !a -> Bind a
+  BindOpen :: ![IdInt] -> !a -> Bind a
   BindClose :: !Int -> ![IdInt] -> !a -> Bind a
 
 instance (NFData a) => NFData (Bind a) where
-  rnf (BindOpen s a) = rnf s `seq` rnf a
+  rnf (BindSubst s a) = rnf s `seq` rnf a
   rnf (Bind a) = rnf a
+  rnf (BindOpen s a) = rnf s `seq` rnf a
   rnf (BindClose k v a) =
     rnf k
       `seq` rnf v
@@ -128,13 +144,17 @@ unbind :: SubstC a a => Bind a -> a
 unbind (Bind a) = a
 -- this is always 0 because multi_subst_bv never
 -- goes under binders
-unbind (BindOpen ss a) = multi_subst_bv 0 ss a
+unbind (BindSubst ss a) = multi_subst_bv 0 ss a
+unbind (BindOpen ss a) = multi_open_rec ss a
 unbind (BindClose k vs a) = multi_close_rec k vs a
 {-# INLINEABLE unbind #-}
 
 instance (SubstC a a) => AlphaC (Bind a) where
   fv :: Bind a -> Set IdInt
   fv b = fv (unbind b)
+
+  multi_open_rec vn (BindOpen vm b) = BindOpen (vm <> vn) b
+  multi_open_rec vn b = BindOpen vn (unbind b)
 
   multi_close_rec k xs b = case b of
     (BindClose k0 ys a) -> (BindClose k0 (ys <> xs) a)
@@ -146,15 +166,15 @@ instance SubstC a a => SubstC a (Bind a) where
   -- we know k will be 0 here because we never need to
   -- go under a binder with multi_subst_bv. We just gather the
   -- substitutions together at the first binder that we find.
-  multi_subst_bv 0 vn (BindOpen vm b) = (BindOpen (vm <> vn) b)
-  multi_subst_bv k vn (BindOpen vm _b) =
+  multi_subst_bv 0 vn (BindSubst vm b) = (BindSubst (vm <> vn) b)
+  multi_subst_bv k vn (BindSubst vm _b) =
     error $
-      "multi_subst_bv BindOpen called with k=" ++ show k
+      "multi_subst_bv BindSubst called with k=" ++ show k
         ++ "|vn|="
         ++ show (length vn)
         ++ " and |vm|="
         ++ show (length vm)
-  multi_subst_bv 0 vn b = (BindOpen vn (unbind b))
+  multi_subst_bv 0 vn b = (BindSubst vn (unbind b))
   multi_subst_bv k _vn _b =
     error $ "multi_subst_bv Bind called with k=" ++ show k
   {-# INLINE multi_subst_bv #-}
@@ -170,11 +190,15 @@ instance SubstC a a => SubstC a (Bind a) where
 
 -- | Note: the binding should be localy closed
 instantiate :: (SubstC a a) => Bind a -> a -> a
-instantiate (BindOpen vs e) u = multi_subst_bv 0 (u : vs) e -- this needs to be 0
+instantiate (BindSubst vs e) u = multi_subst_bv 0 (u : vs) e -- this needs to be 0
 instantiate b u = multi_subst_bv 0 [u] (unbind b)
 {-# INLINEABLE instantiate #-}
 
 -----------------------------------------------------------------
+
+open :: SubstC a a => Bind a -> IdInt -> a
+open b x = multi_open_rec [x] (unbind b)
+{-# INLINEABLE open #-}
 
 close :: IdInt -> a -> Bind a
 close x e = BindClose 0 [x] e
@@ -311,36 +335,42 @@ instance (GAlpha f, GAlpha g) => GAlpha (f :+: g) where
 
 instance AlphaC (Ignore a) where
   fv _ = S.empty
+  multi_open_rec _ = id
   multi_close_rec _ _ = id
   {-# INLINE fv #-}
   {-# INLINE multi_close_rec #-}
 
 instance AlphaC Int where
   fv _ = S.empty
+  multi_open_rec _ = id
   multi_close_rec _ _ = id
   {-# INLINE fv #-}
   {-# INLINE multi_close_rec #-}
 
 instance AlphaC Bool where
   fv _ = S.empty
+  multi_open_rec _ = id
   multi_close_rec _ _ = id
   {-# INLINE fv #-}
   {-# INLINE multi_close_rec #-}
 
 instance AlphaC () where
   fv _ = S.empty
+  multi_open_rec _ = id
   multi_close_rec _ _ = id
   {-# INLINE fv #-}
   {-# INLINE multi_close_rec #-}
 
 instance AlphaC Char where
   fv _ = S.empty
+  multi_open_rec _ = id
   multi_close_rec _ _ = id
   {-# INLINE fv #-}
   {-# INLINE multi_close_rec #-}
 
 instance AlphaC String where
   fv _ = S.empty
+  multi_open_rec _ = id
   multi_close_rec _ _ = id
   {-# INLINE fv #-}
   {-# INLINE multi_close_rec #-}

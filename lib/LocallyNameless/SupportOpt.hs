@@ -58,6 +58,15 @@ instance AlphaC Exp where
       (Var v) -> fv v
       (Abs b) -> fv b
       (App e1 e2) -> fv e1 `Set.union` fv e2
+
+  multi_open_rec :: [IdInt] -> Exp -> Exp
+  multi_open_rec vn e =
+    case e of
+      Var v -> Var (multi_open_rec vn v)
+      Abs b -> Abs (multi_open_rec vn b)
+      App e1 e2 ->
+        App (multi_open_rec vn e1) (multi_open_rec vn e2)
+
   multi_close_rec :: Int -> [IdInt] -> Exp -> Exp
   multi_close_rec k xs e =
     case e of
@@ -72,7 +81,7 @@ instance SubstC Exp Exp where
   multi_subst_bv :: Int -> [Exp] -> Exp -> Exp
   multi_subst_bv k vn e =
     case e of
-      Var v -> openVar k vn v
+      Var v -> substBvVar k vn v
       Abs b -> Abs (multi_subst_bv k vn b)
       App e1 e2 ->
         App (multi_subst_bv k vn e1) (multi_subst_bv k vn e2)
