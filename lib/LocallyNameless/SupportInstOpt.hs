@@ -3,13 +3,9 @@
 module LocallyNameless.SupportInstOpt (impl, substFv, fv) where
 
 import qualified Control.Monad.State as State
-import qualified Data.IntMap as IM
-import Data.List (elemIndex)
-import qualified Data.Set as Set
-import Debug.Trace
-import GHC.Stack
 import Support.SubstOpt
 import Util.IdInt (IdInt (..), firstBoundId)
+import qualified Util.IdInt.Set as Set
 import Util.Impl (LambdaImpl (..))
 import Util.Imports hiding (S, from, to)
 import qualified Util.Lambda as LC
@@ -43,6 +39,7 @@ pretty (Abs b) = "(Abs " ++ pretty (unbind b) ++ ")"
 -------------------------------------------------------------------
 
 -- free variable substitution
+{-
 substFv :: Exp -> IdInt -> Exp -> Exp
 substFv u y e =
   subst0 e
@@ -52,6 +49,7 @@ substFv u y e =
       (Var v) -> substFvVar u y v
       (Abs b) -> Abs (bind (subst0 (unbind b)))
       (App e1 e2) -> App (subst0 e1) (subst0 e2)
+-}
 
 instance VarC Exp where
   var = Var
@@ -70,7 +68,7 @@ instance AlphaC Exp where
       App e1 e2 ->
         App (multi_open_rec k vn e1) (multi_open_rec k vn e2)
 
-  multi_close_rec :: HasCallStack => Int -> [IdInt] -> Exp -> Exp
+  multi_close_rec :: Int -> [IdInt] -> Exp -> Exp
   multi_close_rec k xs e =
     case e of
       Var v -> Var (multi_close_rec k xs v)
@@ -87,6 +85,12 @@ instance SubstC Exp Exp where
       Abs b -> Abs (multi_subst_bv k vn b)
       App e1 e2 ->
         App (multi_subst_bv k vn e1) (multi_subst_bv k vn e2)
+  multi_subst_fv vn e =
+    case e of
+      Var v -> multiSubstFvVar vn v
+      Abs b -> Abs (multi_subst_fv vn b)
+      App e1 e2 ->
+        App (multi_subst_fv vn e1) (multi_subst_fv vn e2)
 
 --------------------------------------------------------------
 
@@ -98,14 +102,14 @@ newVar = do
   put (succ i)
   return i
 
-nfd :: HasCallStack => Exp -> Exp
+nfd :: Exp -> Exp
 nfd e =
   State.evalState (nf' e) v
   where
     v :: IdInt
     v = succ (fromMaybe firstBoundId (Set.lookupMax (fv e)))
 
-nf' :: HasCallStack => Exp -> N Exp
+nf' :: Exp -> N Exp
 nf' e@(Var _) = return e
 nf' (Abs b) = do
   x <- newVar

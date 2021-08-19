@@ -14,6 +14,7 @@ module Util.IdInt.Set
     isSubsetOf,
     insert,
     newIdInt,
+    lookupMax,
   )
 where
 
@@ -65,3 +66,6 @@ newIdInt :: IdIntSet -> IdInt
 newIdInt (IdIntSet s)
   | IntSet.null s = firstBoundId
   | otherwise = succ (coerce (IntSet.findMax s))
+
+lookupMax :: IdIntSet -> Maybe IdInt
+lookupMax s = if coerce IntSet.null s then Nothing else Just (coerce IntSet.findMax s)

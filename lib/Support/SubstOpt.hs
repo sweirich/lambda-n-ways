@@ -1,33 +1,36 @@
 {-# LANGUAGE DefaultSignatures #-}
 
--- | Binding library
+-- | Binding library for locally nameless representation
 module Support.SubstOpt
   ( VarC (..),
     AlphaC (..),
     SubstC (..),
     Var (..),
     prettyVar,
-    substBvVar,
     multiSubstBvVar,
+    multiSubstFvVar,
     substFvVar,
+    substBvVar,
     Bind,
     bind,
     unbind,
     instantiate,
     open,
     close,
+    substFv,
     GAlpha (..),
     GSubst (..),
   )
 where
 
 import qualified Control.Monad.State as State
-import qualified Data.IntMap as IM
 import Data.List (elemIndex)
-import qualified Data.Set as S
+import Debug.Trace
 import GHC.Generics
 import GHC.Stack
 import Util.IdInt (IdInt (..), firstBoundId)
+import qualified Util.IdInt.Map as M
+import qualified Util.IdInt.Set as S
 import Util.Impl (LambdaImpl (..))
 import Util.Imports hiding (S, from, to)
 import qualified Util.Lambda as LC
@@ -45,8 +48,8 @@ class VarC a where
 -- | Type for syntactic forms
 class AlphaC a where
   -- | calculate the free variables of a term
-  fv :: a -> Set IdInt
-  default fv :: (Generic a, GAlpha (Rep a)) => a -> Set IdInt
+  fv :: a -> S.IdIntSet
+  default fv :: (Generic a, GAlpha (Rep a)) => a -> S.IdIntSet
   fv x = gfv (from x)
   {-# INLINE fv #-}
 
@@ -66,7 +69,12 @@ class AlphaC a where
 -- | Type class for substitution functions
 class AlphaC a => SubstC b a where
   -- | substitute for multiple free variables
-  -- multi_subst_fv :: [b] -> [IdInt] -> a -> a
+  multi_subst_fv :: M.IdIntMap b -> a -> a
+  default multi_subst_fv :: (Generic a, VarC b, GSubst b (Rep a), a ~ b) => M.IdIntMap b -> a -> a
+  multi_subst_fv vs x =
+    case isvar x of
+      Just v -> multiSubstFvVar vs v
+      Nothing -> to (gmulti_subst_fv vs (from x))
 
   -- | substitute for multiple bound variables (starting at index k)
   multi_subst_bv :: Int -> [b] -> a -> a
@@ -116,28 +124,44 @@ instance AlphaC Var where
 
 -- We need this instance for the generic version
 -- but we should *never* use it
--- NB: may make sense to include overlapping instances
+-- NB: may make sense to include overlapping instances?
 -- b/c the SubstC Var Var instance does make sense.
 instance SubstC b Var where
+  multi_subst_fv _ _ = error "BUG: should not reach here"
   multi_subst_bv _k _ = error "BUG: should not reach here"
   {-# INLINE multi_subst_bv #-}
 
--- | multi substitution for a single bound variable, starting at index k
--- leaves all other variables alone
+nthWithDefault :: forall a. a -> [a] -> Int -> a
+nthWithDefault a xs i
+  | i < 0 = a
+  | otherwise = go i xs
+  where
+    go :: Int -> [a] -> a
+    go 0 (x : _) = x
+    go j (_ : ys) = go (j - 1) ys
+    go _ [] = a
+{-# INLINE nthWithDefault #-}
+
+-- | multi substitution for a single bound variable
+-- starts at index k leaves all other variables alone
 multiSubstBvVar :: VarC a => Int -> [a] -> Var -> a
-multiSubstBvVar _ _ (F x) = var (F x)
-multiSubstBvVar k vs (B i)
-  | i >= k && i - k < length vs = vs !! (i - k)
-  | otherwise = var (B i)
+multiSubstBvVar k vs v@(B i) = nthWithDefault (var v) vs (i - k)
+multiSubstBvVar _ _ v = var v
 {-# INLINEABLE multiSubstBvVar #-}
 
+-- | multi substitution for a single free variable
+multiSubstFvVar :: VarC a => M.IdIntMap a -> Var -> a
+multiSubstFvVar m v@(F x) = M.findWithDefault (var v) x m
+multiSubstFvVar _ v@(B _) = var v
+
+-- | single substitution for a single bound variable (0)
 substBvVar :: VarC a => a -> Var -> a
 substBvVar u = multiSubstBvVar 0 [u]
 
 -- | single substitution for a single free variable
 substFvVar :: VarC a => a -> IdInt -> Var -> a
-substFvVar _ _ (B n) = var (B n)
-substFvVar u y (F x) = if x == y then u else (var (F x))
+substFvVar u y (F x) | x == y = u
+substFvVar _ _ v = var v
 {-# INLINEABLE substFvVar #-}
 
 -------------------------------------------------------------------
@@ -147,11 +171,18 @@ substFvVar u y (F x) = if x == y then u else (var (F x))
 -- in a binder so that multiple traversals can fuse together
 
 data Bind a where
-  Bind :: !a -> Bind a
-  BindSubstBv :: !Int -> ![a] -> !a -> Bind a
-  BindOpen :: !Int -> ![Var] -> !a -> Bind a
-  BindClose :: !Int -> ![IdInt] -> !a -> Bind a
+  Bind :: !(BindInfo a) -> !a -> Bind a
   deriving (Generic, Show)
+
+data BindInfo a where
+  NoInfo :: BindInfo a
+  SubstBv :: !Int -> ![a] -> BindInfo a
+  SubstFv :: !(M.IdIntMap a) -> BindInfo a
+  Open :: !Int -> ![Var] -> BindInfo a
+  Close :: !Int -> ![IdInt] -> BindInfo a
+  deriving (Generic, Show)
+
+instance (NFData a) => NFData (BindInfo a)
 
 instance (NFData a) => NFData (Bind a)
 
@@ -160,124 +191,148 @@ instance (Eq a, SubstC a a, Show a) => Eq (Bind a) where
 
 -- | create a binding by "abstracting a variable"
 bind :: a -> Bind a
-bind = Bind
+bind = Bind NoInfo
 {-# INLINEABLE bind #-}
 
 unbind :: (SubstC a a, Show a) => Bind a -> a
 unbind b =
   go b
   where
-    go (Bind a) = a
-    go (BindSubstBv k ss a) = multi_subst_bv (k + 1) ss a
-    go (BindOpen k ss a) = multi_open_rec (k + 1) ss a
-    go (BindClose k vs a) = multi_close_rec k vs a
+    go (Bind NoInfo a) = a
+    go (Bind (SubstBv k ss) a) = multi_subst_bv (k + 1) ss a
+    go (Bind (SubstFv m) a) = multi_subst_fv m a
+    go (Bind (Open k ss) a) = multi_open_rec (k + 1) ss a
+    go (Bind (Close k vs) a) = multi_close_rec k vs a
 {-# INLINEABLE unbind #-}
 
 instance (SubstC a a, Show a) => AlphaC (Bind a) where
   {-# SPECIALIZE instance (SubstC a a, Show a) => AlphaC (Bind a) #-}
-  fv :: Bind a -> Set IdInt
+  fv :: Bind a -> S.IdIntSet
   fv b = fv (unbind b)
   {-# INLINE fv #-}
 
-  multi_open_rec _k vn (BindOpen l vm b) = BindOpen l (vm <> vn) b
-  multi_open_rec k vn b = BindOpen k vn (unbind b)
+  multi_open_rec _k vn (Bind (Open l vm) b) = Bind (Open l (vm <> vn)) b
+  multi_open_rec k vn b = Bind (Open k vn) (unbind b)
   {-# INLINE multi_open_rec #-}
 
-  multi_close_rec _k xs (BindClose k0 ys a) = (BindClose k0 (ys <> xs) a)
-  multi_close_rec k xs b = (BindClose (k + 1) xs (unbind b))
+  multi_close_rec _k xs (Bind (Close k0 ys) a) = (Bind (Close k0 (ys <> xs)) a)
+  multi_close_rec k xs b = (Bind (Close (k + 1) xs) (unbind b))
   {-# INLINE multi_close_rec #-}
 
 instance (SubstC a a, Show a) => SubstC a (Bind a) where
   {-# SPECIALIZE instance (SubstC a a, Show a) => SubstC a (Bind a) #-}
-  multi_subst_bv _k vn (BindSubstBv l vm b) = BindSubstBv l (vm <> vn) b
-  multi_subst_bv k vn b = BindSubstBv k vn (unbind b)
+  multi_subst_bv _k vn (Bind (SubstBv l vm) b) = Bind (SubstBv l (vm <> vn)) b
+  multi_subst_bv k vn b = Bind (SubstBv k vn) (unbind b)
   {-# INLINE multi_subst_bv #-}
 
--- | Note: in this case, the binding should be localy closed
+  -- multi_subst_fv m1 (Bind (SubstFv m2) b) = Bind (SubstFv (m1 <> m2)) b
+  multi_subst_fv m1 b = Bind (SubstFv m1) (unbind b)
+
+-- | Note: in this case, the binding should be locally closed
 instantiate :: (SubstC a a, Show a) => Bind a -> a -> a
-instantiate (BindSubstBv k vs e) u = multi_subst_bv k (u : vs) e
+instantiate (Bind (SubstBv k vs) e) u = multi_subst_bv k (u : vs) e
 instantiate b u = multi_subst_bv 0 [u] (unbind b)
 {-# INLINEABLE instantiate #-}
 
 -----------------------------------------------------------------
 
 open :: SubstC a a => Show a => Bind a -> Var -> a
-open (BindOpen k vs e) x = multi_open_rec k (x : vs) e
+open (Bind (Open k vs) e) x = multi_open_rec k (x : vs) e
 open b x = multi_open_rec 0 [x] (unbind b)
 {-# INLINEABLE open #-}
 
 close :: Show a => IdInt -> a -> Bind a
-close x e = BindClose 0 [x] e
+close x e = Bind (Close 0 [x]) e
 {-# INLINEABLE close #-}
+
+substFv :: SubstC b a => b -> IdInt -> a -> a
+substFv b x a = multi_subst_fv (M.singleton x b) a
+{-# INLINEABLE substFv #-}
 
 ---------------------------------------------------------------------
 
 class GAlpha f where
-  gfv :: f a -> Set IdInt
+  gfv :: f a -> S.IdIntSet
   gmulti_open_rec :: Int -> [Var] -> f a -> f a
   gmulti_close_rec :: Int -> [IdInt] -> f a -> f a
 
 class GSubst b f where
   gmulti_subst_bv :: Int -> [b] -> f a -> f a
+  gmulti_subst_fv :: M.IdIntMap b -> f a -> f a
 
 -------------------------------------------------------------------
 
 -- | Generic instances for substitution
 instance (SubstC b c) => GSubst b (K1 i c) where
   gmulti_subst_bv k vs (K1 c) = K1 (multi_subst_bv k vs c)
+  gmulti_subst_fv m (K1 c) = K1 (multi_subst_fv m c)
   {-# INLINE gmulti_subst_bv #-}
 
 instance GSubst b U1 where
   gmulti_subst_bv _k _v U1 = U1
+  gmulti_subst_fv _m U1 = U1
   {-# INLINE gmulti_subst_bv #-}
 
 instance GSubst b f => GSubst b (M1 i c f) where
   gmulti_subst_bv k vs = M1 . gmulti_subst_bv k vs . unM1
+  gmulti_subst_fv vs = M1 . gmulti_subst_fv vs . unM1
   {-# INLINE gmulti_subst_bv #-}
 
 instance GSubst b V1 where
   gmulti_subst_bv _k _vs = id
+  gmulti_subst_fv _vs = id
   {-# INLINE gmulti_subst_bv #-}
 
 instance (GSubst b f, GSubst b g) => GSubst b (f :*: g) where
   gmulti_subst_bv k vs (f :*: g) = gmulti_subst_bv k vs f :*: gmulti_subst_bv k vs g
+  gmulti_subst_fv vs (f :*: g) = gmulti_subst_fv vs f :*: gmulti_subst_fv vs g
   {-# INLINE gmulti_subst_bv #-}
 
 instance (GSubst b f, GSubst b g) => GSubst b (f :+: g) where
   gmulti_subst_bv k vs (L1 f) = L1 $ gmulti_subst_bv k vs f
   gmulti_subst_bv k vs (R1 g) = R1 $ gmulti_subst_bv k vs g
+  gmulti_subst_fv vs (L1 f) = L1 $ gmulti_subst_fv vs f
+  gmulti_subst_fv vs (R1 g) = R1 $ gmulti_subst_fv vs g
   {-# INLINE gmulti_subst_bv #-}
 
 instance SubstC b Int where
   multi_subst_bv _k _ = id
+  multi_subst_fv _ = id
   {-# INLINE multi_subst_bv #-}
 
 instance SubstC b Bool where
   multi_subst_bv _k _ = id
+  multi_subst_fv _ = id
   {-# INLINE multi_subst_bv #-}
 
 instance SubstC b () where
   multi_subst_bv _k _ = id
+  multi_subst_fv _ = id
   {-# INLINE multi_subst_bv #-}
 
 instance SubstC b Char where
   multi_subst_bv _k _ = id
+  multi_subst_fv _ = id
   {-# INLINE multi_subst_bv #-}
 
 instance (Generic a, AlphaC a, GSubst b (Rep [a])) => SubstC b [a] where
   multi_subst_bv k xs x = to $ gmulti_subst_bv k xs (from x)
+  multi_subst_fv m x = to $ gmulti_subst_fv m (from x)
   {-# INLINE multi_subst_bv #-}
 
 instance (Generic a, AlphaC a, GSubst b (Rep (Maybe a))) => SubstC b (Maybe a) where
   multi_subst_bv k xs x = to $ gmulti_subst_bv k xs (from x)
+  multi_subst_fv xs x = to $ gmulti_subst_fv xs (from x)
   {-# INLINE multi_subst_bv #-}
 
 instance (Generic (Either a1 a2), AlphaC (Either a1 a2), GSubst b (Rep (Either a1 a2))) => SubstC b (Either a1 a2) where
   multi_subst_bv k xs x = to $ gmulti_subst_bv k xs (from x)
+  multi_subst_fv xs x = to $ gmulti_subst_fv xs (from x)
   {-# INLINE multi_subst_bv #-}
 
 instance (Generic (a, b), AlphaC (a, b), GSubst c (Rep (a, b))) => SubstC c (a, b) where
   multi_subst_bv k xs x = to $ gmulti_subst_bv k xs (from x)
+  multi_subst_fv xs x = to $ gmulti_subst_fv xs (from x)
   {-# INLINE multi_subst_bv #-}
 
 instance
@@ -288,6 +343,7 @@ instance
   SubstC c (a, b, d)
   where
   multi_subst_bv k xs x = to $ gmulti_subst_bv k xs (from x)
+  multi_subst_fv xs x = to $ gmulti_subst_fv xs (from x)
   {-# INLINE multi_subst_bv #-}
 
 ----------------------------------------------------------------

@@ -171,4 +171,6 @@ main = do
   nfMoreTests <- mapM nfRandomTests ["tests", "onesubst", "twosubst", "threesubst", "foursubst"]
   lennart <- nfLennartUnitTests
   nft6 <- mapM nfRandomTests ["t6"]
-  defaultMain $ testGroup "tests" ([rtQCs, aeqQCs, nfQCs] ++ nfRandoms ++ nfLamTests ++ nfSimple ++ nfMoreTests) -- ++ [lennart])
+  defaultMain $ testGroup "tests" nft6
+
+-- defaultMain $ testGroup "tests" ([rtQCs, aeqQCs, nfQCs] ++ nfRandoms ++ nfLamTests ++ nfSimple ++ nfMoreTests) -- ++ [lennart])

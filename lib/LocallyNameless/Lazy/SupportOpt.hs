@@ -5,9 +5,9 @@ module LocallyNameless.Lazy.SupportOpt (impl, substFv, fv) where
 import qualified Control.Monad.State as State
 import qualified Data.IntMap as IM
 import Data.List (elemIndex)
-import qualified Data.Set as Set
 import Support.SubstOpt
 import Util.IdInt (IdInt (..), firstBoundId)
+import qualified Util.IdInt.Set as IS
 import Util.Impl (LambdaImpl (..))
 import Util.Imports hiding (S, from, to)
 import qualified Util.Lambda as LC
@@ -35,6 +35,7 @@ instance NFData Exp
 -------------------------------------------------------------------
 
 -- free variable substitution
+{-
 substFv :: Exp -> IdInt -> Exp -> Exp
 substFv u y = subst0
   where
@@ -45,6 +46,7 @@ substFv u y = subst0
       -- ALT: (Abs b) -> Abs (substBind u y b)
       -- the version w/o substBind is actually faster for some reason
       (App e1 e2) -> App (subst0 e1) (subst0 e2)
+-}
 
 instance VarC Exp where
   var = Var
@@ -54,7 +56,7 @@ instance AlphaC Exp where
     case e of
       (Var v) -> fv v
       (Abs b) -> fv b
-      (App e1 e2) -> fv e1 `Set.union` fv e2
+      (App e1 e2) -> fv e1 `IS.union` fv e2
 
   multi_open_rec k vn e =
     case e of
@@ -74,6 +76,13 @@ instance AlphaC Exp where
           (multi_close_rec k xs e3)
 
 instance SubstC Exp Exp where
+  multi_subst_fv m e =
+    case e of
+      Var v -> multiSubstFvVar m v
+      Abs b -> Abs (multi_subst_fv m b)
+      App e1 e2 ->
+        App (multi_subst_fv m e1) (multi_subst_fv m e2)
+
   multi_subst_bv k vn e =
     case e of
       Var v -> multiSubstBvVar k vn v
@@ -97,7 +106,7 @@ nfd :: Exp -> Exp
 nfd e = State.evalState (nf' e) v
   where
     v :: IdInt
-    v = succ (fromMaybe firstBoundId (Set.lookupMax (fv e)))
+    v = succ (fromMaybe firstBoundId (IS.lookupMax (fv e)))
 
 nf' :: Exp -> N Exp
 nf' e@(Var _) = return e
@@ -129,7 +138,7 @@ nfi :: Int -> Exp -> Stats.M Exp
 nfi n e = State.evalStateT (nfi' n e) v
   where
     v :: IdInt
-    v = succ (fromMaybe firstBoundId (Set.lookupMax (fv e)))
+    v = succ (fromMaybe firstBoundId (IS.lookupMax (fv e)))
 
 type NM a = State.StateT IdInt Stats.M a
 

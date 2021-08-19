@@ -5,11 +5,11 @@ module LocallyNameless.SupportOpt (impl, substFv, fv) where
 import qualified Control.Monad.State as State
 import qualified Data.IntMap as IM
 import Data.List (elemIndex)
-import qualified Data.Set as Set
 import Debug.Trace
 import GHC.Stack
 import Support.SubstOpt
 import Util.IdInt (IdInt (..), firstBoundId)
+import qualified Util.IdInt.Set as Set
 import Util.Impl (LambdaImpl (..))
 import Util.Imports hiding (S, from, to)
 import qualified Util.Lambda as LC
@@ -43,6 +43,7 @@ pretty (Abs b) = "(Abs " ++ pretty (unbind b) ++ ")"
 -------------------------------------------------------------------
 
 -- free variable substitution
+{-
 substFv :: Exp -> IdInt -> Exp -> Exp
 substFv u y e =
   subst0 e
@@ -52,6 +53,7 @@ substFv u y e =
       (Var v) -> substFvVar u y v
       (Abs b) -> Abs (bind (subst0 (unbind b)))
       (App e1 e2) -> App (subst0 e1) (subst0 e2)
+-}
 
 instance VarC Exp where
   var = Var
@@ -87,6 +89,12 @@ instance SubstC Exp Exp where
       Abs b -> Abs (multi_subst_bv k vn b)
       App e1 e2 ->
         App (multi_subst_bv k vn e1) (multi_subst_bv k vn e2)
+  multi_subst_fv vn e =
+    case e of
+      Var v -> multiSubstFvVar vn v
+      Abs b -> Abs (multi_subst_fv vn b)
+      App e1 e2 ->
+        App (multi_subst_fv vn e1) (multi_subst_fv vn e2)
 
 --------------------------------------------------------------
 
