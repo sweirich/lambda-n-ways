@@ -80,7 +80,7 @@ instance AlphaC Exp where
 instance SubstC Exp Exp where
   multi_subst_bv vn e =
     case e of
-      Var v -> substBvVar 0 vn v
+      Var v -> substBvVar vn v
       Abs b -> Abs (multi_subst_bv vn b)
       App e1 e2 ->
         App (multi_subst_bv vn e1) (multi_subst_bv vn e2)

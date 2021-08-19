@@ -68,11 +68,10 @@ class AlphaC a => SubstC b a where
   -- | substitute for bound variables
   multi_subst_bv :: [b] -> a -> a
   default multi_subst_bv :: (Generic a, VarC b, GOpen b (Rep a), a ~ b) => [b] -> a -> a
-  multi_subst_bv vs x
-    = case isvar x of
-      Just v -> substBvVar 0 vs v
+  multi_subst_bv vs x =
+    case isvar x of
+      Just v -> substBvVar vs v
       Nothing -> to (gmulti_subst_bv vs (from x))
-    {- | otherwise = error $ "multi_subst_bv: called with k=" ++ show k -}
   {-# INLINE multi_subst_bv #-}
 
 --------------------------------------------------------------
@@ -97,13 +96,11 @@ instance AlphaC Var where
   {-# INLINE fv #-}
   {-# INLINE multi_close_rec #-}
 
-  multi_open_rec vs v = substBvVar 0 (map F vs) v
+  multi_open_rec vs v = substBvVar (map F vs) v
 
-substBvVar :: VarC a => Int -> [a] -> Var -> a
-substBvVar _ _ (F x) = var (F x)
-substBvVar k vs (B i)
-  | i >= k = vs !! (i - k)
-  | otherwise = var (B i)
+substBvVar :: VarC a => [a] -> Var -> a
+substBvVar _ (F x) = var (F x)
+substBvVar vs (B i) = vs !! i
 {-# INLINEABLE substBvVar #-}
 
 substFvVar :: VarC a => a -> IdInt -> Var -> a
