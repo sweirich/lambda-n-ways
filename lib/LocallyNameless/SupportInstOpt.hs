@@ -1,6 +1,6 @@
 -- | Based directly on transliteration of Coq output for Ott Locally Nameless Backend
 -- uses Support.SubstOp library
-module LocallyNameless.SupportOpt (impl, substFv, fv) where
+module LocallyNameless.SupportInstOpt (impl, substFv, fv) where
 
 import qualified Control.Monad.State as State
 import qualified Data.IntMap as IM
@@ -18,7 +18,7 @@ import qualified Util.Stats as Stats
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "LocallyNameless.SupportOpt",
+    { impl_name = "LocallyNameless.SupportInstOpt",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
       impl_nf = nfd,
@@ -115,10 +115,7 @@ nf' (App f a) = do
   f' <- whnf f
   case f' of
     Abs b -> do
-      -- nf' (instantiate b a)
-      y <- newVar
-      let b' = open b (F y)
-      nf' (substFv a y b')
+      nf' (instantiate b a)
     _ -> App <$> nf' f' <*> nf' a
 
 -- Compute the weak head normal form.
@@ -129,11 +126,7 @@ whnf (App f a) = do
   f' <- whnf f
   case f' of
     (Abs b) ->
-      -- whnf (instantiate b a)
-      do
-        y <- newVar
-        let b' = open b (F y)
-        whnf (substFv a y b')
+      whnf (instantiate b a)
     _ -> return $ App f' a
 
 -- Fueled version

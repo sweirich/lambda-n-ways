@@ -65,6 +65,7 @@ library
       DeBruijn.Lazy.Par.Scoped
       LocallyNameless.Ott
       LocallyNameless.Opt
+      LocallyNameless.SupportInstOpt
       LocallyNameless.SupportOpt
       LocallyNameless.GenericOpt
       LocallyNameless.ParScoped

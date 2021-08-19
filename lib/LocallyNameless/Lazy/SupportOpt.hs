@@ -74,12 +74,12 @@ instance AlphaC Exp where
           (multi_close_rec k xs e3)
 
 instance SubstC Exp Exp where
-  multi_subst_bv vn e =
+  multi_subst_bv k vn e =
     case e of
-      Var v -> substBvVar vn v
-      Abs b -> Abs (multi_subst_bv vn b)
+      Var v -> multiSubstBvVar k vn v
+      Abs b -> Abs (multi_subst_bv k vn b)
       App e1 e2 ->
-        App (multi_subst_bv vn e1) (multi_subst_bv vn e2)
+        App (multi_subst_bv k vn e1) (multi_subst_bv k vn e2)
 
 --------------------------------------------------------------
 

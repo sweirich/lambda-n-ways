@@ -56,13 +56,7 @@ instance VarC Exp where
   isvar (Var v) = Just v
   isvar _ = Nothing
 
-instance AlphaC Exp where
-  multi_open_rec k vn e =
-    case e of
-      Var v -> Var (multi_open_rec k vn v)
-      Abs b -> Abs (multi_open_rec k vn b)
-      App e1 e2 ->
-        App (multi_open_rec k vn e1) (multi_open_rec k vn e2)
+instance AlphaC Exp
 
 instance SubstC Exp Exp
 

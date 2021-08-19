@@ -57,6 +57,7 @@ import qualified LocallyNameless.Opt
 import qualified LocallyNameless.Ott
 import qualified LocallyNameless.ParOpt
 import qualified LocallyNameless.ParScoped
+import qualified LocallyNameless.SupportInstOpt
 import qualified LocallyNameless.SupportOpt
 --import qualified LocallyNameless.TypedOpt
 import qualified LocallyNameless.TypedOtt
@@ -203,7 +204,8 @@ locallyNameless =
     --LocallyNameless.ParScoped.impl,
     --LocallyNameless.ParOpt.impl,
     --LocallyNameless.Opt.impl,
-    LocallyNameless.SupportOpt.impl
+    LocallyNameless.SupportOpt.impl,
+    LocallyNameless.SupportInstOpt.impl
     --LocallyNameless.GenericOpt.impl,
     -- LocallyNameless.TypedOpt.impl,
     --LocallyNameless.UnboundRep.impl, -- unbound
