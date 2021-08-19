@@ -1,0 +1,41 @@
+Darwin sixteen.local 19.6.0 Darwin Kernel Version 19.6.0: Tue Jun 22 19:49:55 PDT 2021; root:xnu-6153.141.35~1/RELEASE_X86_64 x86_64
+benchmarking nf/LocallyNameless.SupportOpt/
+time                 4.600 s    (3.642 s .. NaN s)
+                     0.990 R²   (0.971 R² .. 1.000 R²)
+mean                 4.777 s    (4.509 s .. 4.949 s)
+std dev              279.8 ms   (146.0 ms .. 393.9 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking nf/LocallyNameless.SupportInstOpt/
+time                 3.467 ms   (3.400 ms .. 3.559 ms)
+                     0.998 R²   (0.996 R² .. 1.000 R²)
+mean                 3.435 ms   (3.417 ms .. 3.466 ms)
+std dev              70.66 μs   (44.18 μs .. 121.4 μs)
+
+benchmarking random15/LocallyNameless.SupportOpt/
+time                 532.7 ms   (469.0 ms .. 576.2 ms)
+                     0.998 R²   (0.995 R² .. 1.000 R²)
+mean                 541.4 ms   (531.1 ms .. 553.3 ms)
+std dev              12.26 ms   (5.693 ms .. 17.11 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking random15/LocallyNameless.SupportInstOpt/
+time                 2.536 ms   (2.519 ms .. 2.552 ms)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 2.549 ms   (2.534 ms .. 2.568 ms)
+std dev              51.84 μs   (38.61 μs .. 70.65 μs)
+
+benchmarking random20/LocallyNameless.SupportOpt/
+time                 1.374 s    (1.352 s .. 1.425 s)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 1.368 s    (1.360 s .. 1.375 s)
+std dev              8.004 ms   (6.060 ms .. 9.430 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking random20/LocallyNameless.SupportInstOpt/
+time                 5.067 ms   (4.778 ms .. 5.340 ms)
+                     0.985 R²   (0.977 R² .. 0.994 R²)
+mean                 4.849 ms   (4.765 ms .. 4.964 ms)
+std dev              290.0 μs   (219.3 μs .. 379.1 μs)
+variance introduced by outliers: 35% (moderately inflated)
+

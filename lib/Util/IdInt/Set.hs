@@ -6,6 +6,7 @@ module Util.IdInt.Set
     union,
     (\\),
     toList,
+    fromList,
     Util.IdInt.Set.null,
     findMax,
     delete,
@@ -40,6 +41,9 @@ union = coerce IntSet.union
 
 toList :: IdIntSet -> [IdInt]
 toList = coerce IntSet.toList
+
+fromList :: [IdInt] -> IdIntSet
+fromList = coerce IntSet.fromList
 
 null :: IdIntSet -> Bool
 null = coerce IntSet.null

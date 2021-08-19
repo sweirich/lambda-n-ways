@@ -6,6 +6,8 @@ module Support.SubstOpt
     AlphaC (..),
     SubstC (..),
     Var (..),
+    isBound,
+    isFree,
     prettyVar,
     multiSubstBvVar,
     multiSubstFvVar,
@@ -90,6 +92,14 @@ class AlphaC a => SubstC b a where
 -- | Variables, bound and free
 data Var = B Int | F IdInt deriving (Generic, Eq, Show)
 
+isBound :: Var -> Bool
+isBound (B _) = True
+isBound (F _) = False
+
+isFree :: Var -> Bool
+isFree (B _) = False
+isFree (F _) = True
+
 -- | Display the variable without the outermost constructor
 prettyVar :: Var -> String
 prettyVar (B i) = "b" ++ show i
@@ -171,7 +181,7 @@ substFvVar _ _ v = var v
 -- in a binder so that multiple traversals can fuse together
 
 data Bind a where
-  Bind :: !(BindInfo a) -> !a -> Bind a
+  Bind :: !(BindInfo a) -> S.IdIntSet -> !a -> Bind a
   deriving (Generic, Show)
 
 data BindInfo a where
@@ -190,59 +200,84 @@ instance (Eq a, SubstC a a, Show a) => Eq (Bind a) where
   b1 == b2 = unbind b1 == unbind b2
 
 -- | create a binding by "abstracting a variable"
-bind :: a -> Bind a
-bind = Bind NoInfo
+bind :: AlphaC a => a -> Bind a
+bind a = Bind NoInfo (fv a) a
 {-# INLINEABLE bind #-}
 
 unbind :: (SubstC a a, Show a) => Bind a -> a
 unbind b =
   go b
   where
-    go (Bind NoInfo a) = a
-    go (Bind (SubstBv k ss) a) = multi_subst_bv (k + 1) ss a
-    go (Bind (SubstFv m) a) = multi_subst_fv m a
-    go (Bind (Open k ss) a) = multi_open_rec (k + 1) ss a
-    go (Bind (Close k vs) a) = multi_close_rec k vs a
+    go (Bind NoInfo _ a) = a
+    go (Bind (SubstBv k ss) _ a) = multi_subst_bv (k + 1) ss a
+    go (Bind (SubstFv m) _ a) = multi_subst_fv m a
+    go (Bind (Open k ss) _ a) = multi_open_rec (k + 1) ss a
+    go (Bind (Close k vs) _ a) = multi_close_rec k vs a
 {-# INLINEABLE unbind #-}
+
+freeVars :: [Var] -> S.IdIntSet
+freeVars [] = S.empty
+freeVars (F x : xs) = S.insert x (freeVars xs)
+freeVars (B _ : xs) = freeVars xs
 
 instance (SubstC a a, Show a) => AlphaC (Bind a) where
   {-# SPECIALIZE instance (SubstC a a, Show a) => AlphaC (Bind a) #-}
   fv :: Bind a -> S.IdIntSet
   fv b = fv (unbind b)
+  {-
+  fv (Bind (SubstBv _ bs) f _) = foldr S.union f (map fv bs)
+  fv (Bind (SubstFv m) f _) = (foldr S.union f (map fv (M.elems m))) S.\\ (M.keysSet m)
+  fv (Bind (Open _ ss) f _) = f `S.union` (freeVars ss)
+  fv (Bind (Close _ ss) f _) = f S.\\ S.fromList ss
+  fv (Bind NoInfo f _) = f
+  -}
   {-# INLINE fv #-}
 
-  multi_open_rec _k vn (Bind (Open l vm) b) = Bind (Open l (vm <> vn)) b
-  multi_open_rec k vn b = Bind (Open k vn) (unbind b)
+  multi_open_rec _k vn (Bind (Open l vm) f b) = Bind (Open l (vm <> vn)) f b
+  multi_open_rec k vn b = Bind (Open k vn) (fv b) (unbind b)
   {-# INLINE multi_open_rec #-}
 
-  multi_close_rec _k xs (Bind (Close k0 ys) a) = (Bind (Close k0 (ys <> xs)) a)
-  multi_close_rec k xs b = (Bind (Close (k + 1) xs) (unbind b))
+  multi_close_rec _k xs (Bind (Close k0 ys) f a) = (Bind (Close k0 (ys <> xs)) f a)
+  multi_close_rec k xs b = (Bind (Close (k + 1) xs) (fv b) (unbind b))
   {-# INLINE multi_close_rec #-}
 
 instance (SubstC a a, Show a) => SubstC a (Bind a) where
   {-# SPECIALIZE instance (SubstC a a, Show a) => SubstC a (Bind a) #-}
-  multi_subst_bv _k vn (Bind (SubstBv l vm) b) = Bind (SubstBv l (vm <> vn)) b
-  multi_subst_bv k vn b = Bind (SubstBv k vn) (unbind b)
+  multi_subst_bv _k vn (Bind (SubstBv l vm) f b) = Bind (SubstBv l (vm <> vn)) f b
+  multi_subst_bv k vn b = Bind (SubstBv k vn) (fv b) (unbind b)
   {-# INLINE multi_subst_bv #-}
 
-  -- multi_subst_fv m1 (Bind (SubstFv m2) b) = Bind (SubstFv (m1 <> m2)) b
-  multi_subst_fv m1 b = Bind (SubstFv m1) (unbind b)
+  multi_subst_fv m1 (Bind (SubstFv m2) f b) = Bind (SubstFv (m1 `comp` m2)) f b
+  multi_subst_fv m1 b = Bind (SubstFv m1) (fv b) (unbind b)
 
 -- | Note: in this case, the binding should be locally closed
 instantiate :: (SubstC a a, Show a) => Bind a -> a -> a
-instantiate (Bind (SubstBv k vs) e) u = multi_subst_bv k (u : vs) e
+instantiate (Bind (SubstBv k vs) _ e) u = multi_subst_bv k (u : vs) e
 instantiate b u = multi_subst_bv 0 [u] (unbind b)
 {-# INLINEABLE instantiate #-}
+
+substSub :: (Functor f, SubstC b a) => M.IdIntMap b -> f a -> f a
+substSub s2 s1 = fmap (multi_subst_fv s2) s1
+{-# INLINEABLE substSub #-}
+
+comp :: SubstC a a => M.IdIntMap a -> M.IdIntMap a -> M.IdIntMap a
+comp s1 s2
+  | M.null s1 = s2
+  | M.null s2 = s1
+  -- union is left biased. We want the value from s2 if there is also a definition in s1
+  -- but we also want the range of s2 to be substituted by s1
+  | otherwise = substSub s1 s2 <> s1
+{-# INLINEABLE comp #-}
 
 -----------------------------------------------------------------
 
 open :: SubstC a a => Show a => Bind a -> Var -> a
-open (Bind (Open k vs) e) x = multi_open_rec k (x : vs) e
+open (Bind (Open k vs) _ e) x = multi_open_rec k (x : vs) e
 open b x = multi_open_rec 0 [x] (unbind b)
 {-# INLINEABLE open #-}
 
-close :: Show a => IdInt -> a -> Bind a
-close x e = Bind (Close 0 [x]) e
+close :: (AlphaC a, Show a) => IdInt -> a -> Bind a
+close x e = Bind (Close 0 [x]) (fv e) e
 {-# INLINEABLE close #-}
 
 substFv :: SubstC b a => b -> IdInt -> a -> a
@@ -259,8 +294,6 @@ class GAlpha f where
 class GSubst b f where
   gmulti_subst_bv :: Int -> [b] -> f a -> f a
   gmulti_subst_fv :: M.IdIntMap b -> f a -> f a
-
--------------------------------------------------------------------
 
 -- | Generic instances for substitution
 instance (SubstC b c) => GSubst b (K1 i c) where
