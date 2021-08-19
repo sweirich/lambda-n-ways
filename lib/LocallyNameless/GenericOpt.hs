@@ -33,7 +33,7 @@ data Exp where
   Var :: !Var -> Exp
   Abs :: !(Bind Exp) -> Exp
   App :: !Exp -> !Exp -> Exp
-  deriving (Generic, Eq)
+  deriving (Generic, Eq, Show)
 
 instance NFData Exp
 
@@ -57,13 +57,12 @@ instance VarC Exp where
   isvar _ = Nothing
 
 instance AlphaC Exp where
-  multi_open_rec :: [IdInt] -> Exp -> Exp
-  multi_open_rec vn e =
+  multi_open_rec k vn e =
     case e of
-      Var v -> Var (multi_open_rec vn v)
-      Abs b -> Abs (multi_open_rec vn b)
+      Var v -> Var (multi_open_rec k vn v)
+      Abs b -> Abs (multi_open_rec k vn b)
       App e1 e2 ->
-        App (multi_open_rec vn e1) (multi_open_rec vn e2)
+        App (multi_open_rec k vn e1) (multi_open_rec k vn e2)
 
 instance SubstC Exp Exp
 

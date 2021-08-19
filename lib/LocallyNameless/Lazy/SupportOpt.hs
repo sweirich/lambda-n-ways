@@ -1,8 +1,5 @@
 -- | Based directly on transliteration of Coq output for Ott Locally Nameless Backend
--- Then with multi substitutions
--- And caching openning substitutions at binders
--- and caching closing substitutions at binders
--- and removing types so we can use ints instead of unary nats
+-- uses library in Support.SubstOpt
 module LocallyNameless.Lazy.SupportOpt (impl, substFv, fv) where
 
 import qualified Control.Monad.State as State
@@ -31,7 +28,7 @@ data Exp where
   Var :: Var -> Exp
   Abs :: (Bind Exp) -> Exp
   App :: Exp -> Exp -> Exp
-  deriving (Generic, Eq)
+  deriving (Generic, Eq, Show)
 
 instance NFData Exp
 
@@ -59,13 +56,12 @@ instance AlphaC Exp where
       (Abs b) -> fv b
       (App e1 e2) -> fv e1 `Set.union` fv e2
 
-  multi_open_rec :: [IdInt] -> Exp -> Exp
-  multi_open_rec vn e =
+  multi_open_rec k vn e =
     case e of
-      Var v -> Var (multi_open_rec vn v)
-      Abs b -> Abs (multi_open_rec vn b)
+      Var v -> Var (multi_open_rec k vn v)
+      Abs b -> Abs (multi_open_rec k vn b)
       App e1 e2 ->
-        App (multi_open_rec vn e1) (multi_open_rec vn e2)
+        App (multi_open_rec k vn e1) (multi_open_rec k vn e2)
 
   multi_close_rec :: Int -> [IdInt] -> Exp -> Exp
   multi_close_rec k xs e =
@@ -107,7 +103,9 @@ nf' :: Exp -> N Exp
 nf' e@(Var _) = return e
 nf' (Abs b) = do
   x <- newVar
-  b' <- nf' (instantiate b (Var (F x)))
+  b' <-
+    nf' (instantiate b (Var (F x)))
+  -- (open b x)
   return $ Abs (close x b')
 nf' (App f a) = do
   f' <- whnf f

@@ -63,6 +63,7 @@ import qualified LocallyNameless.TypedOtt
 import qualified LocallyNameless.UGEBind
 import qualified LocallyNameless.UGSubstBind
 import qualified LocallyNameless.UGSubstEBind
+import qualified LocallyNameless.UNGSubstBind
 import qualified LocallyNameless.UnboundGenerics
 import qualified LocallyNameless.UnboundNonGenerics
 import qualified LocallyNameless.UnboundRep
@@ -208,9 +209,10 @@ locallyNameless =
     --LocallyNameless.UnboundRep.impl, -- unbound
     --LocallyNameless.UnboundGenerics.impl, -- unbound-generics (original)
     --LocallyNameless.UnboundNonGenerics.impl,
-    --LocallyNameless.UGEBind.impl -- unbound-generics mod2
+    --LocallyNameless.UGEBind.impl, -- unbound-generics mod2 -- FAILS test case
     --LocallyNameless.UGSubstBind.impl, -- unbound-generics mod2
-    --LocallyNameless.UGSubstEBind.impl -- unbound-generics mod2
+    --LocallyNameless.UNGSubstBind.impl
+    -- LocallyNameless.UGSubstEBind.impl -- unbound-generics mod2 -- FAILS test cases
   ]
 
 unbound :: [LambdaImpl]

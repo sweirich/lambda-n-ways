@@ -1,14 +1,13 @@
 -- | Based directly on transliteration of Coq output for Ott Locally Nameless Backend
--- Then with multi substitutions
--- And caching openning substitutions at binders
--- and caching closing substitutions at binders
--- and removing types so we can use ints instead of unary nats
+-- uses Support.SubstOp library
 module LocallyNameless.SupportOpt (impl, substFv, fv) where
 
 import qualified Control.Monad.State as State
 import qualified Data.IntMap as IM
 import Data.List (elemIndex)
 import qualified Data.Set as Set
+import Debug.Trace
+import GHC.Stack
 import Support.SubstOpt
 import Util.IdInt (IdInt (..), firstBoundId)
 import Util.Impl (LambdaImpl (..))
@@ -31,17 +30,27 @@ data Exp where
   Var :: !Var -> Exp
   Abs :: !(Bind Exp) -> Exp
   App :: !Exp -> !Exp -> Exp
-  deriving (Generic, Eq)
+  deriving (Generic, Eq, Show)
 
 instance NFData Exp
+
+-- NOTE: this does not preserve local closure as it traverses the term
+pretty :: HasCallStack => Exp -> String
+pretty (Var x) = show x
+pretty (App a1 a2) = "(App " ++ pretty a1 ++ " " ++ pretty a2 ++ ")"
+pretty (Abs b) = "(Abs " ++ pretty (unbind b) ++ ")"
 
 -------------------------------------------------------------------
 
 -- free variable substitution
-substFv :: Exp -> IdInt -> Exp -> Exp
-substFv u y = subst0
+substFv :: HasCallStack => Exp -> IdInt -> Exp -> Exp
+substFv u y e =
+  --trace ("sub call:" ++ show u ++ " for " ++ show y ++ " in " ++ show e) $
+  --trace ("sub res :" ++ show (subst0 e)) $
+  -- trace ("pretty  :" ++ pretty (subst0 e)) $
+  subst0 e
   where
-    subst0 :: Exp -> Exp
+    subst0 :: HasCallStack => Exp -> Exp
     subst0 e0 = case e0 of
       (Var v) -> substFvVar u y v
       (Abs b) -> Abs (bind (subst0 (unbind b)))
@@ -59,15 +68,20 @@ instance AlphaC Exp where
       (Abs b) -> fv b
       (App e1 e2) -> fv e1 `Set.union` fv e2
 
-  multi_open_rec :: [IdInt] -> Exp -> Exp
-  multi_open_rec vn e =
+  bv e =
     case e of
-      Var v -> Var (multi_open_rec vn v)
-      Abs b -> Abs (multi_open_rec vn b)
-      App e1 e2 ->
-        App (multi_open_rec vn e1) (multi_open_rec vn e2)
+      (Var v) -> bv v
+      (Abs b) -> bv b
+      (App e1 e2) -> bv e1 `Set.union` bv e2
 
-  multi_close_rec :: Int -> [IdInt] -> Exp -> Exp
+  multi_open_rec k vn e =
+    case e of
+      Var v -> Var (substBvVarVar k vn v)
+      Abs b -> Abs (multi_open_rec k vn b)
+      App e1 e2 ->
+        App (multi_open_rec k vn e1) (multi_open_rec k vn e2)
+
+  multi_close_rec :: HasCallStack => Int -> [IdInt] -> Exp -> Exp
   multi_close_rec k xs e =
     case e of
       Var v -> Var (multi_close_rec k xs v)
@@ -97,22 +111,32 @@ newVar = do
   put (succ i)
   return i
 
-nfd :: Exp -> Exp
-nfd e = State.evalState (nf' e) v
+nfd :: HasCallStack => Exp -> Exp
+nfd e =
+  -- trace ("norm: " ++ pretty e) $
+  State.evalState (nf' e) v
   where
     v :: IdInt
     v = succ (fromMaybe firstBoundId (Set.lookupMax (fv e)))
 
-nf' :: Exp -> N Exp
+nf' :: HasCallStack => Exp -> N Exp
 nf' e@(Var _) = return e
 nf' (Abs b) = do
   x <- newVar
-  b' <- nf' (instantiate b (Var (F x)))
-  return $ Abs (close x b')
+  let ob = open b (F x)
+  -- traceM ("open result: " ++ pretty ob)
+  b' <- nf' ob
+  let b'' = Abs (close x b')
+  -- traceM ("close result: " ++ pretty b'')
+  return $ b''
 nf' (App f a) = do
   f' <- whnf f
   case f' of
-    Abs b -> nf' (instantiate b a)
+    Abs b -> do
+      -- nf' (instantiate b a)
+      y <- newVar
+      let b' = open b (F y)
+      nf' (substFv a y b')
     _ -> App <$> nf' f' <*> nf' a
 
 -- Compute the weak head normal form.
@@ -122,7 +146,12 @@ whnf e@(Abs _) = return e
 whnf (App f a) = do
   f' <- whnf f
   case f' of
-    (Abs b) -> whnf (instantiate b a)
+    (Abs b) ->
+      -- whnf (instantiate b a)
+      do
+        y <- newVar
+        let b' = open b (F y)
+        whnf (substFv a y b')
     _ -> return $ App f' a
 
 -- Fueled version
@@ -165,7 +194,8 @@ toDB :: LC.LC IdInt -> Exp
 toDB = to 0 []
   where
     to :: Int -> [(IdInt, Int)] -> LC.LC IdInt -> Exp
-    to _k vs (LC.Var v) = maybe (Var (F v)) (Var . B) (lookup v vs)
+    to _k vs (LC.Var v) =
+      maybe (Var (F v)) (Var . B) (lookup v vs)
     to k vs (LC.Lam x b) = Abs (bind b')
       where
         b' = to (k + 1) ((x, 0) : mapSnd (1 +) vs) b
