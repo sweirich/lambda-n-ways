@@ -66,13 +66,13 @@ class AlphaC a where
 
 class AlphaC a => SubstC b a where
   -- | substitute for bound variables
-  multi_subst_bv :: Int -> [b] -> a -> a
-  default multi_subst_bv :: (Generic a, VarC b, GOpen b (Rep a), a ~ b) => Int -> [b] -> a -> a
-  multi_subst_bv k vs x
-    | k == 0 = case isvar x of
-      Just v -> substBvVar k vs v
-      Nothing -> to (gmulti_subst_bv k vs (from x))
-    | otherwise = error $ "multi_subst_bv: called with k=" ++ show k
+  multi_subst_bv :: [b] -> a -> a
+  default multi_subst_bv :: (Generic a, VarC b, GOpen b (Rep a), a ~ b) => [b] -> a -> a
+  multi_subst_bv vs x
+    = case isvar x of
+      Just v -> substBvVar 0 vs v
+      Nothing -> to (gmulti_subst_bv 0 vs (from x))
+    {- | otherwise = error $ "multi_subst_bv: called with k=" ++ show k -}
   {-# INLINE multi_subst_bv #-}
 
 --------------------------------------------------------------
@@ -144,7 +144,7 @@ unbind :: SubstC a a => Bind a -> a
 unbind (Bind a) = a
 -- this is always 0 because multi_subst_bv never
 -- goes under binders
-unbind (BindSubst ss a) = multi_subst_bv 0 ss a
+unbind (BindSubst ss a) = multi_subst_bv ss a
 unbind (BindOpen ss a) = multi_open_rec ss a
 unbind (BindClose k vs a) = multi_close_rec k vs a
 {-# INLINEABLE unbind #-}
@@ -166,17 +166,17 @@ instance SubstC a a => SubstC a (Bind a) where
   -- we know k will be 0 here because we never need to
   -- go under a binder with multi_subst_bv. We just gather the
   -- substitutions together at the first binder that we find.
-  multi_subst_bv 0 vn (BindSubst vm b) = (BindSubst (vm <> vn) b)
-  multi_subst_bv k vn (BindSubst vm _b) =
+  multi_subst_bv vn (BindSubst vm b) = (BindSubst (vm <> vn) b)
+  {- multi_subst_bv k vn (BindSubst vm _b) =
     error $
       "multi_subst_bv BindSubst called with k=" ++ show k
         ++ "|vn|="
         ++ show (length vn)
         ++ " and |vm|="
-        ++ show (length vm)
-  multi_subst_bv 0 vn b = (BindSubst vn (unbind b))
-  multi_subst_bv k _vn _b =
-    error $ "multi_subst_bv Bind called with k=" ++ show k
+        ++ show (length vm) -}
+  multi_subst_bv vn b = (BindSubst vn (unbind b))
+  {- multi_subst_bv k _vn _b =
+    error $ "multi_subst_bv Bind called with k=" ++ show k -}
   {-# INLINE multi_subst_bv #-}
 
 -- keep track of the opening that has been done already
@@ -190,8 +190,8 @@ instance SubstC a a => SubstC a (Bind a) where
 
 -- | Note: the binding should be localy closed
 instantiate :: (SubstC a a) => Bind a -> a -> a
-instantiate (BindSubst vs e) u = multi_subst_bv 0 (u : vs) e -- this needs to be 0
-instantiate b u = multi_subst_bv 0 [u] (unbind b)
+instantiate (BindSubst vs e) u = multi_subst_bv (u : vs) e -- this needs to be 0
+instantiate b u = multi_subst_bv [u] (unbind b)
 {-# INLINEABLE instantiate #-}
 
 -----------------------------------------------------------------
@@ -218,7 +218,7 @@ newtype Ignore a = Ignore a
 
 -- Constant types
 instance (SubstC b c) => GOpen b (K1 i c) where
-  gmulti_subst_bv s vs (K1 c) = K1 (multi_subst_bv s vs c)
+  gmulti_subst_bv _s vs (K1 c) = K1 (multi_subst_bv vs c)
   {-# INLINE gmulti_subst_bv #-}
 
 instance GOpen b U1 where
@@ -243,43 +243,43 @@ instance (GOpen b f, GOpen b g) => GOpen b (f :+: g) where
   {-# INLINE gmulti_subst_bv #-}
 
 instance SubstC b (Ignore a) where
-  multi_subst_bv _ _ = id
+  multi_subst_bv _ = id
   {-# INLINE multi_subst_bv #-}
 
 instance SubstC b Int where
-  multi_subst_bv _ _ = id
+  multi_subst_bv _ = id
   {-# INLINE multi_subst_bv #-}
 
 instance SubstC b Bool where
-  multi_subst_bv _ _ = id
+  multi_subst_bv _ = id
   {-# INLINE multi_subst_bv #-}
 
 instance SubstC b () where
-  multi_subst_bv _ _ = id
+  multi_subst_bv _ = id
   {-# INLINE multi_subst_bv #-}
 
 instance SubstC b Char where
-  multi_subst_bv _ _ = id
+  multi_subst_bv _ = id
   {-# INLINE multi_subst_bv #-}
 
 instance SubstC b Var where
-  multi_subst_bv _ _ = id
+  multi_subst_bv _ = id
   {-# INLINE multi_subst_bv #-}
 
 instance (Generic a, AlphaC a, GOpen b (Rep [a])) => SubstC b [a] where
-  multi_subst_bv s xs x = to $ gmulti_subst_bv s xs (from x)
+  multi_subst_bv xs x = to $ gmulti_subst_bv 0 xs (from x)
   {-# INLINE multi_subst_bv #-}
 
 instance (Generic a, AlphaC a, GOpen b (Rep (Maybe a))) => SubstC b (Maybe a) where
-  multi_subst_bv s xs x = to $ gmulti_subst_bv s xs (from x)
+  multi_subst_bv xs x = to $ gmulti_subst_bv 0 xs (from x)
   {-# INLINE multi_subst_bv #-}
 
 instance (Generic (Either a1 a2), AlphaC (Either a1 a2), GOpen b (Rep (Either a1 a2))) => SubstC b (Either a1 a2) where
-  multi_subst_bv s xs x = to $ gmulti_subst_bv s xs (from x)
+  multi_subst_bv xs x = to $ gmulti_subst_bv 0 xs (from x)
   {-# INLINE multi_subst_bv #-}
 
 instance (Generic (a, b), AlphaC (a, b), GOpen c (Rep (a, b))) => SubstC c (a, b) where
-  multi_subst_bv s xs x = to $ gmulti_subst_bv s xs (from x)
+  multi_subst_bv xs x = to $ gmulti_subst_bv 0 xs (from x)
   {-# INLINE multi_subst_bv #-}
 
 instance
@@ -289,7 +289,7 @@ instance
   ) =>
   SubstC c (a, b, d)
   where
-  multi_subst_bv s xs x = to $ gmulti_subst_bv s xs (from x)
+  multi_subst_bv xs x = to $ gmulti_subst_bv 0 xs (from x)
   {-# INLINE multi_subst_bv #-}
 
 ----------------------------------------------------------------
