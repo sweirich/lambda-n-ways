@@ -60,7 +60,7 @@ import qualified LocallyNameless.ParOpt
 import qualified LocallyNameless.ParScoped
 import qualified LocallyNameless.SupportInstOpt
 import qualified LocallyNameless.SupportOpt
---import qualified LocallyNameless.TypedOpt
+import qualified LocallyNameless.TypedOpt
 import qualified LocallyNameless.TypedOtt
 import qualified LocallyNameless.UGEBind
 import qualified LocallyNameless.UGSubstBind
@@ -205,17 +205,18 @@ locallyNameless =
     --LocallyNameless.ParScoped.impl,
     --LocallyNameless.ParOpt.impl,
     --LocallyNameless.Opt.impl,
-    LocallyNameless.SupportOpt.impl,
-    LocallyNameless.SupportInstOpt.impl
+    -- LocallyNameless.SupportOpt.impl,
+    LocallyNameless.TypedOpt.impl
+    -- LocallyNameless.SupportInstOpt.impl,
     --LocallyNameless.GenericOpt.impl,
     --LocallyNameless.GenericInstOpt.impl
     -- LocallyNameless.TypedOpt.impl,
     --LocallyNameless.UnboundRep.impl, -- unbound
     --LocallyNameless.UnboundGenerics.impl, -- unbound-generics (original)
     --LocallyNameless.UnboundNonGenerics.impl,
-    --LocallyNameless.UGEBind.impl, -- unbound-generics mod2 -- FAILS test case
-    --LocallyNameless.UGSubstBind.impl, -- unbound-generics mod2
-    --LocallyNameless.UNGSubstBind.impl
+    --LocallyNameless.UGSubstBind.impl, -- unbound-generics mod2 -- PASSES
+    -- LocallyNameless.UNGSubstBind.impl, -- PASSES
+    -- LocallyNameless.UGEBind.impl, -- unbound-generics mod2 -- FAILS test case
     -- LocallyNameless.UGSubstEBind.impl -- unbound-generics mod2 -- FAILS test cases
   ]
 
@@ -315,10 +316,12 @@ fast =
   [ Lennart.HOAS.impl,
     LocallyNameless.Opt.impl,
     LocallyNameless.Lazy.Opt.impl,
-    LocallyNameless.SupportOpt.impl,
-    LocallyNameless.Lazy.SupportOpt.impl,
-    LocallyNameless.GenericOpt.impl,
-    LocallyNameless.Lazy.GenericOpt.impl,
+    LocallyNameless.SupportInstOpt.impl,
+    --LocallyNameless.SupportOpt.impl,
+    --LocallyNameless.Lazy.SupportOpt.impl,
+    --LocallyNameless.GenericOpt.impl,
+    --LocallyNameless.Lazy.GenericOpt.impl,
+    LocallyNameless.GenericInstOpt.impl,
     LocallyNameless.ParOpt.impl,
     LocallyNameless.Lazy.ParOpt.impl,
     DeBruijn.Par.Scoped.impl,

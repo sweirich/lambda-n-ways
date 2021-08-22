@@ -29,6 +29,7 @@ library
       Support.Par.SubstScoped
       Support.SubstH
       Support.SubstOpt
+      Support.TypedSubstOpt
       DeBruijn.Cornell
       DeBruijn.CPDT
       DeBruijn.Lennart
@@ -72,7 +73,7 @@ library
       LocallyNameless.ParScoped
       LocallyNameless.ParOpt
       LocallyNameless.TypedOtt
---      LocallyNameless.TypedOpt
+      LocallyNameless.TypedOpt
       LocallyNameless.UnboundRep
       LocallyNameless.UnboundGenerics
       LocallyNameless.UnboundNonGenerics
