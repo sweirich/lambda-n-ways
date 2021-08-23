@@ -117,6 +117,7 @@ nf' :: HasCallStack => Exp -> N Exp
 nf' e@(Var _) = return e
 nf' (Abs b) = do
   x <- newVar
+  --b' <- nf' (instantiate b (Var (F x)))
   b' <- nf' (open b (F x))
   return $ Abs (close x b')
 nf' (App f a) = do

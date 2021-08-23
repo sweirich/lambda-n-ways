@@ -320,6 +320,12 @@ unbind (Bind bis a) = applyAll bis a
 {-# INLINEABLE addBindInfo #-}
 -}
 
+plus_assoc :: forall m n p. Plus (Plus m n) p :~: Plus m (Plus n p)
+plus_assoc = Unsafe.unsafeCoerce Refl
+
+plus_comm :: forall m n. Plus m n :~: Plus n m
+plus_comm = Unsafe.unsafeCoerce Refl
+
 instance (SubstC (a 'Z) a) => AlphaC (Bind a) where
   fv b = fv (unbind b)
   {-# INLINE fv #-}
@@ -347,6 +353,20 @@ instance (SubstC (a 'Z) a) => AlphaC (Bind a) where
     Vec IdInt n ->
     Bind a k ->
     Bind a (Plus n k)
+  multi_close_rec
+    (_k :: SNat k)
+    xs
+    ( Bind
+        ( Cons
+            (Close (m :: SNat m1) (ys :: Vec IdInt n1))
+            (bis :: BindInfoList a ('S m) m1)
+          )
+        (b :: a ('S m))
+      )
+      | Refl <- plus_S_r @n @k,
+        Refl <- plus_comm @n1 @n,
+        Refl <- plus_assoc @n @n1 @m1 =
+        Bind (Cons (Close m (append ys xs)) bis) b
   multi_close_rec k xs (Bind bis b)
     | Refl <- plus_S_r @n @k =
       Bind
@@ -374,6 +394,9 @@ isDom fm m = S.fromList fm == M.keysSet m
 
 -- | Note: in this case, the binding should be locally closed
 instantiate :: (Show (a 'Z), SubstC (a 'Z) a) => Bind a 'Z -> a 'Z -> a 'Z
+instantiate (Bind (Cons (SubstBv (Sub (SS SZ) (vs :: Vec (a 'Z) n))) bis) b) u
+  | Refl <- plus_S_r @n @'Z =
+    multi_subst_bv (Sub SZ (VCons u vs)) (unbind (Bind bis b))
 instantiate b u = result
   where
     result = multi_subst_bv (Sub SZ (VCons u VNil)) (unbind b)
@@ -395,6 +418,9 @@ comp s1 s2
 -----------------------------------------------------------------
 
 open :: (Show (a 'Z), SubstC (a 'Z) a) => Bind a 'Z -> IdInt -> a 'Z
+open (Bind (Cons (Open (Sub (SS SZ) (vs :: Vec IdInt n))) bis) b) u
+  | Refl <- plus_S_r @n @'Z =
+    multi_open_rec (Sub SZ (VCons u vs)) (unbind (Bind bis b))
 open b x = result
   where
     result = multi_open_rec (Sub SZ (VCons x VNil)) (unbind b)

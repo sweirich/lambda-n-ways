@@ -3,6 +3,7 @@
 module LocallyNameless.SupportInstOpt (impl, substFv, fv) where
 
 import qualified Control.Monad.State as State
+import Debug.Trace
 import Support.SubstOpt
 import Util.IdInt (IdInt (..), firstBoundId)
 import qualified Util.IdInt.Set as Set
@@ -84,7 +85,8 @@ instance SubstC Exp Exp where
       Var v -> multiSubstBvVar k vn v
       Abs b -> Abs (multi_subst_bv k vn b)
       App e1 e2 ->
-        App (multi_subst_bv k vn e1) (multi_subst_bv k vn e2)
+        let e2' = multi_subst_bv k vn e2
+         in App (multi_subst_bv k vn e1) e2'
   multi_subst_fv vn e =
     case e of
       Var v -> multiSubstFvVar vn v
@@ -113,8 +115,10 @@ nf' :: Exp -> N Exp
 nf' e@(Var _) = return e
 nf' (Abs b) = do
   x <- newVar
-  b' <- nf' (open b (F x))
-  return $ Abs (close x b')
+  let bb = (instantiate b (Var (F x)))
+  b' <- nf' bb
+  let bb' = close x b'
+  return $ Abs bb'
 nf' (App f a) = do
   f' <- whnf f
   case f' of

@@ -127,9 +127,8 @@ instance AlphaC Var where
   {-# INLINE multi_close_rec #-}
 
   multi_open_rec _k _ (F x) = F x
-  multi_open_rec k vs (B i)
-    | i >= k && i - k < length vs = vs !! (i - k)
-    | otherwise = B i
+  multi_open_rec k vs v@(B i) =
+    nthWithDefault (var v) vs (i - k)
   {-# INLINE multi_open_rec #-}
 
 -- We need this instance for the generic version

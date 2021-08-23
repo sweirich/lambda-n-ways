@@ -47,3 +47,9 @@ newIdInt :: IdIntMap a -> IdInt
 newIdInt (IdIntMap s)
   | M.null s = firstBoundId
   | otherwise = succ (coerce (fst (M.findMax s)))
+
+(!) :: forall a. IdIntMap a -> IdInt -> a
+(!) = coerce ((M.!) @a)
+
+(!?) :: forall a. IdIntMap a -> IdInt -> Maybe a
+(!?) = coerce ((M.!?) @a)

@@ -204,8 +204,8 @@ locallyNameless =
     --LocallyNameless.TypedOtt.impl,
     --LocallyNameless.ParScoped.impl,
     --LocallyNameless.ParOpt.impl,
-    --LocallyNameless.Opt.impl,
-    -- LocallyNameless.SupportOpt.impl,
+    --LocallyNameless.Opt.impl
+    LocallyNameless.SupportOpt.impl,
     LocallyNameless.TypedOpt.impl
     -- LocallyNameless.SupportInstOpt.impl,
     --LocallyNameless.GenericOpt.impl,

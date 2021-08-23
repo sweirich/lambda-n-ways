@@ -64,7 +64,8 @@ nfd :: Exp -> U.FreshM Exp
 nfd e@(Var _) = return e
 nfd (Lam e) =
   do
-    (x, e') <- U.unebind e
+    x <- U.fresh (U.s2n "x")
+    let e' = U.substEBind e (Var x)
     e1 <- nfd e'
     return $ Lam (U.ebind x e1)
 nfd (App f a) = do

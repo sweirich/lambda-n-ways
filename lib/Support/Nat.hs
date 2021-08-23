@@ -35,8 +35,6 @@ shift :: SNat m -> Idx n -> Idx (Plus m n)
 shift SZ x = x
 shift (SS m) x = FS (shift m x)
 
-
-
 -- Keep the index the same, just change its type
 weakenIdx :: forall n. Idx n -> Idx ('S n)
 weakenIdx FZ = FZ
@@ -62,7 +60,6 @@ cmpIdx n1 n2 =
     (FZ, FZ) -> FZ
     (FZ, FS _n) -> FS FZ
 
-
 instance NFData (Idx a) where
   rnf FZ = ()
   rnf (FS s) = rnf s
@@ -72,8 +69,11 @@ instance NFData (SNat a) where
   rnf (SS s) = rnf s
 
 instance Show (SNat m) where
-  show SZ = "SZ"
-  show (SS n) = "(SS " ++ show n ++ ")"
+  show n = show (toi n)
+    where
+      toi :: SNat n -> Int
+      toi SZ = 0
+      toi (SS n) = 1 + toi n
 
 instance Eq (Idx n) where
   FZ == FZ = True
@@ -81,7 +81,6 @@ instance Eq (Idx n) where
   _ == _ = False
 
 instance Show (Idx n) where
-  show FZ = "FZ"
-  show (FS n) = "(FS " ++ show n ++ ")"
+  show n = show (toInt n)
 
 ----------------------------------------------------

@@ -60,6 +60,12 @@ instance U.Subst Exp Exp where
   subst x b (App a1 a2) = App (U.subst x b a1) (U.subst x b a2)
   {-# INLINE U.subst #-}
 
+  substBvMulti x vs v@(Var y) = U.substBvMultiName v x vs y
+  substBvMulti x vs (Lam bnd) = Lam (U.substBvMulti x vs bnd)
+  substBvMulti x vs (App a1 a2) =
+    App (U.substBvMulti x vs a1) (U.substBvMulti x vs a2)
+  {-# INLINE U.substBvMulti #-}
+
 {-# SPECIALIZE U.aeq :: Exp -> Exp -> Bool #-}
 
 {-# SPECIALIZE U.bind :: Var -> Exp -> U.Bind Var Exp #-}

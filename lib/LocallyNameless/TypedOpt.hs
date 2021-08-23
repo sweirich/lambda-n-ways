@@ -131,12 +131,13 @@ nf' e@(Var (F _)) = return e
 --nf' e@(Var_b _) = error "should not reach this"
 nf' (Abs b) = do
   x <- newVar
-  b' <- nf' (instantiate b (Var (F x)))
+  b' <- nf' (open b x)
   return $ Abs (close x b')
 nf' (App f a) = do
   f' <- whnf f
   case f' of
-    Abs b -> nf' (instantiate b a)
+    Abs b ->
+      nf' (instantiate b a)
     _ -> App <$> nf' f' <*> nf' a
 
 -- Compute the weak head normal form.
