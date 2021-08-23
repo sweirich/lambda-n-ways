@@ -180,7 +180,7 @@ substFvVar _ _ v = var v
 -- in a binder so that multiple traversals can fuse together
 
 data Bind a where
-  Bind :: !(BindInfo a) -> S.IdIntSet -> !a -> Bind a
+  Bind :: !(BindInfo a) -> !a -> Bind a
   deriving (Generic, Show)
 
 data BindInfo a where
@@ -200,18 +200,18 @@ instance (Eq a, SubstC a a, Show a) => Eq (Bind a) where
 
 -- | create a binding by "abstracting a variable"
 bind :: AlphaC a => a -> Bind a
-bind a = Bind NoInfo (fv a) a
+bind a = Bind NoInfo a
 {-# INLINEABLE bind #-}
 
 unbind :: (SubstC a a, Show a) => Bind a -> a
 unbind b =
   go b
   where
-    go (Bind NoInfo _ a) = a
-    go (Bind (SubstBv k ss) _ a) = multi_subst_bv (k + 1) ss a
-    go (Bind (SubstFv m) _ a) = multi_subst_fv m a
-    go (Bind (Open k ss) _ a) = multi_open_rec (k + 1) ss a
-    go (Bind (Close k vs) _ a) = multi_close_rec k vs a
+    go (Bind NoInfo a) = a
+    go (Bind (SubstBv k ss) a) = multi_subst_bv (k + 1) ss a
+    go (Bind (SubstFv m) a) = multi_subst_fv m a
+    go (Bind (Open k ss) a) = multi_open_rec (k + 1) ss a
+    go (Bind (Close k vs) a) = multi_close_rec k vs a
 {-# INLINEABLE unbind #-}
 
 freeVars :: [Var] -> S.IdIntSet
@@ -232,28 +232,22 @@ instance (SubstC a a, Show a) => AlphaC (Bind a) where
   -}
   {-# INLINE fv #-}
 
-  multi_open_rec _k vn (Bind (Open l vm) f b) = Bind (Open l (vm <> vn)) f b
-  multi_open_rec k vn b = Bind (Open k vn) (fv b) (unbind b)
+  multi_open_rec _k vn (Bind (Open l vm) b) = error "Bind (Open l (vm <> vn)) b"
+  multi_open_rec k vn b = Bind (Open (k + 1) vn) (unbind b)
   {-# INLINE multi_open_rec #-}
 
-  multi_close_rec _k xs (Bind (Close k0 ys) f a) = (Bind (Close k0 (ys <> xs)) f a)
-  multi_close_rec k xs b = (Bind (Close (k + 1) xs) (fv b) (unbind b))
+  multi_close_rec _k xs (Bind (Close k0 ys) a) = (Bind (Close k0 (ys <> xs)) a)
+  multi_close_rec k xs b = (Bind (Close (k + 1) xs) (unbind b))
   {-# INLINE multi_close_rec #-}
 
 instance (SubstC a a, Show a) => SubstC a (Bind a) where
   {-# SPECIALIZE instance (SubstC a a, Show a) => SubstC a (Bind a) #-}
-  multi_subst_bv _k vn (Bind (SubstBv l vm) f b) = Bind (SubstBv l (vm <> vn)) f b
-  multi_subst_bv k vn b = Bind (SubstBv k vn) (fv b) (unbind b)
+  multi_subst_bv _k vn (Bind (SubstBv l vm) b) = error "Bind (SubstBv l (vm <> vn)) b"
+  multi_subst_bv k vn b = Bind (SubstBv (k + 1) vn) (unbind b)
   {-# INLINE multi_subst_bv #-}
 
-  multi_subst_fv m1 (Bind (SubstFv m2) f b) = Bind (SubstFv (m1 `comp` m2)) f b
-  multi_subst_fv m1 b = Bind (SubstFv m1) (fv b) (unbind b)
-
--- | Note: in this case, the binding should be locally closed
-instantiate :: (SubstC a a, Show a) => Bind a -> a -> a
-instantiate (Bind (SubstBv k vs) _ e) u = multi_subst_bv k (u : vs) e
-instantiate b u = multi_subst_bv 0 [u] (unbind b)
-{-# INLINEABLE instantiate #-}
+  multi_subst_fv m1 (Bind (SubstFv m2) b) = Bind (SubstFv (m1 `comp` m2)) b
+  multi_subst_fv m1 b = Bind (SubstFv m1) (unbind b)
 
 substSub :: (Functor f, SubstC b a) => M.IdIntMap b -> f a -> f a
 substSub s2 s1 = fmap (multi_subst_fv s2) s1
@@ -271,13 +265,18 @@ comp s1 s2
 -----------------------------------------------------------------
 
 open :: SubstC a a => Show a => Bind a -> Var -> a
-open (Bind (Open k vs) _ e) x = multi_open_rec k (x : vs) e
+open (Bind (Open 1 vs) e) x = multi_open_rec 0 (x : vs) e
 open b x = multi_open_rec 0 [x] (unbind b)
 {-# INLINEABLE open #-}
 
 close :: (AlphaC a, Show a) => IdInt -> a -> Bind a
-close x e = Bind (Close 0 [x]) (fv e) e
+close x e = Bind (Close 0 [x]) e
 {-# INLINEABLE close #-}
+
+instantiate :: (SubstC a a, Show a) => Bind a -> a -> a
+instantiate (Bind (SubstBv 1 vs) e) u = multi_subst_bv 0 (u : vs) e
+instantiate b u = multi_subst_bv 0 [u] (unbind b)
+{-# INLINEABLE instantiate #-}
 
 substFv :: SubstC b a => b -> IdInt -> a -> a
 substFv b x a = multi_subst_fv (M.singleton x b) a
