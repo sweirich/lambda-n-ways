@@ -6,10 +6,7 @@
 -- alpha-renames bound variables during substitution if they would ever
 -- capture a free variable.
 -- It is based on Lennart Augustsson's version from "lambda-calculus cooked four ways"
--- But uses Data.IntSet instead [Int] for variable sets
--- Also fixes a bug in selecting free variables for renaming.
--- Lennart's version only avoid variables in original term b. But we also need to
--- avoid all newly generated variables (and the variable that we are substituting for).
+-- but fixes a bug in selecting free variables for renaming.
 module Lennart.Simple (impl) where
 
 import Control.Monad.Except
@@ -17,10 +14,10 @@ import qualified Control.Monad.State as State
 import Data.List (intersperse, union, (\\))
 import qualified Data.Map as M
 import qualified Data.Set as S
-import Util.IdInt (IdInt, newId)
+import Util.IdInt (IdInt, firstBoundId)
 import Util.Impl (LambdaImpl (..))
 import Util.Imports
-import Util.Lambda
+import Util.Lambda hiding (allVars, freeVars) --- No extra syntax, just uses LC IdInt
 import qualified Util.Stats as Stats
 
 impl :: LambdaImpl
@@ -34,25 +31,50 @@ impl =
       impl_aeq = Util.Lambda.aeq
     }
 
---- No extra syntax, just uses LC IdInt
+freeVars :: (Eq v) => LC v -> [v]
+freeVars (Var v) = [v]
+freeVars (Lam v e) = freeVars e \\ [v]
+freeVars (App f a) = freeVars f `union` freeVars a
+
+-- Compute all variables in an expression.
+
+allVars :: (Eq v) => LC v -> [v]
+allVars (Var v) = [v]
+allVars (Lam _ e) = allVars e
+allVars (App f a) = allVars f `union` allVars a
+
+-- NOTE: Lennart's original version had a bug.
+-- it chose the new variable avoiding free variables of s + all of the variables
+-- in the original term b.  However, this doesn't avoid any *new*
+-- binding variables that are introduced into b to avoid capture. Nor does
+-- it include x!
+-- Instead, this should be replaced by the variables of the
+-- current term e. (Just the freevariables is sufficient, but it
+-- is faster to collect all of the variables and not remove the bound ones.)
+
+newId :: [IdInt] -> IdInt
+newId vs = head ([firstBoundId ..] \\ vs)
 
 subst :: IdInt -> LC IdInt -> LC IdInt -> LC IdInt
-subst x a = sub
+subst x s b = sub b
   where
-    sub :: LC IdInt -> LC IdInt
-    sub b@(Var v)
-      | v == x = a
-      | otherwise = b
-    sub b@(Lam v e')
-      | v == x = b
+    sub e@(Var v)
+      | v == x = s
+      | otherwise = e
+    sub e@(Lam v e')
+      -- terminate early
+      | v == x = e
+      -- watch out for capture!
       | v `elem` fvs = Lam v' (sub e'')
+      -- usual case
       | otherwise = Lam v (sub e')
       where
-        v' = newId (fvs `S.union` allVars b)
+        v' = newId (vs `union` allVars e')
         e'' = subst v (Var v') e'
-    sub (App f g) = App (sub f) (sub g)
+    sub (App f a) = App (sub f) (sub a)
 
-    fvs = freeVars a `S.union` (S.singleton x)
+    fvs = freeVars s
+    vs = x : fvs
 
 -- make sure we don't rename v' to variable we are sub'ing for
 
@@ -96,7 +118,7 @@ nfi n (Lam x e) = Lam x <$> nfi (n -1) e
 nfi n (App f a) = do
   f' <- whnfi (n - 1) f
   case f' of
-    Lam x b -> nfi (n -1) (subst x a b)
+    Lam x b -> Stats.count >> nfi (n -1) (subst x a b)
     _ -> App <$> nfi (n -1) f' <*> nfi (n -1) a
 
 whnfi :: Int -> LC IdInt -> Stats.M (LC IdInt)
@@ -106,5 +128,5 @@ whnfi _n e@(Lam _ _) = return e
 whnfi n (App f a) = do
   f' <- whnfi (n - 1) f
   case f' of
-    Lam x b -> whnfi (n - 1) (subst x a b)
+    Lam x b -> Stats.count >> whnfi (n - 1) (subst x a b)
     _ -> return $ App f' a

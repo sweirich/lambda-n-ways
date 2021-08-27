@@ -16,6 +16,10 @@ module Util.Lambda
     size,
     occs,
     captures,
+    Perm,
+    applyPerm,
+    extendPerm,
+    emptyPerm,
   )
 where
 

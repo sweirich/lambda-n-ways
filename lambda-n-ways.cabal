@@ -109,6 +109,7 @@ library
       Named.SimpleH
       Named.SimpleGH
       Named.SimpleM
+      Named.Lazy.Simple
       Named.Lazy.NominalG
       Named.Lazy.SimpleH
       Named.Lazy.SimpleGH

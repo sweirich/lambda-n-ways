@@ -16,11 +16,11 @@ However, when programming we must be more explicit. We might implement this usin
 
 The lambda calculus itself comes with two key operations on expressions. The first, *alpha-equivalence* is a function that determines whether two terms are equal, up to the renaming of bound variables. On paper, we might write this function as 
 
-        a ==_alpha b
+        a ≡ b
 
 For example, we have that 
 
-        \x.x ==_alpha \y.y
+        \x.x ≡ \y.y
 
 evaluates to true. Analogously, in our implementation, we need a function that determines the alpha-equivalence of expressions above. 
 
@@ -63,13 +63,12 @@ This is all very abstract, but how should fill in the details? Unfortunately, we
 - Canonically Named
 - ...
 
-These implementations differ not just in their representations of syntax (i.e. the type  definitions for variables and binders), but also in the algorithms that they use for the 
-implementation of alpha-equivalence and capture-avoiding substitution functions. Each of these choices also leads to invariants that must be maintained when working with this data structure,especially when working with open terms. 
-For example, when using de Bruijn indicies, it is important to keep track of the current scope (i.e. number of variables in scope) so that terms can be shifted when they change scope. Similarly, when working with names, an implementation might keep track of the names that are currently in scope (or all of the names that have ever been mentioned) so that new names can be chosen that are "fresh enough".
+These implementations differ not just in their representations of syntax (i.e. the type  definitions for variables and binders), but also in the algorithms that they use for the implementation of alpha-equivalence and capture-avoiding substitution functions. Each of these choices also leads to invariants that must be maintained when working with this data structure, especially when working with open terms. 
+For example, when using de Bruijn indicies, it is important to keep track of the current scope (i.e. number of variables in scope) so that terms can be shifted when they change scope. Similarly, when working with names, an implementation might keep track of the variables that are currently in scope (or all of the names that have ever been mentioned) so that new names can be chosen that are "fresh enough".
 
 Why are there so many?  
 
-What should we think about when selecting an implementation?
+And, what should we think about when selecting an implementation?
 
 
 What do we want from a binding implementation?
@@ -81,9 +80,29 @@ What do we want from a binding implementation?
 
     Of course, if we only had to implement these operations for this language, we'd be done already. However, we want a general notion of translating the ideas of variable occurrences and binding to arbitrary languages, and implementing these operations in that context.
 
+    For example, we'd like a library to provide appropriate definitions for variable (`Var`) and binding types (`Bind`), as well as an interface for alpha equality and capture-avoiding substitution. 
+
+           class Alpha a where
+              
+              aeq :: a -> a -> Bool
+              aeq = ... default definition  
+
+              -- | substitute b for x in a
+              subst :: a -> Var -> a -> a 
+              subst = ... default definition 
+
+    Furthermore, the library might provide easy mechanisms for users to create instances of this type class for their datatypes, such as default functions based on generic programming.
+
+        instance Alpha Exp where ...   
+
+    This way, users get these definitions "for free" and can be more confident that the definitions are correct than if they tried to write them from scratch.
+
 * An interface that helps us use these operations safely
 
-    Depending on what we choose for our implementation, `aeq` or `subst` may or may not have the types given above. Furthermore, there may be some invariants that must be maintained about our code, when we call these operations. 
+    Depending on what we choose for our implementation, `aeq` or `subst` may or may not have the types given above. Furthermore, there may be some invariants that must be maintained about our code, when we call these operations inside other 
+    functions. 
+
+    
 
 * Fast-ish execution
 
@@ -100,8 +119,8 @@ Why is this difficult?
 
 * Benchmarking is difficult. These substitutions are general, yet existing implmentations are diverse in their application. So there isn't a representative set of thems.
 
-Contributions
---------------
+What is in this repository
+--------------------------
 
 1.   A library of binding implmentations and variations of the untyped lambda calculus. 
 
