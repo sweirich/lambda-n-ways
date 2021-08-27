@@ -1,3 +1,5 @@
+{-# OPTIONS -fexpose-all-unfoldings #-}
+
 -- | A Finite map, key'ed by IdInts
 -- Underneath this is just a coerced Data.IntMap
 module Util.IdInt.Map where

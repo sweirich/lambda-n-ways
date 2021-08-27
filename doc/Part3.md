@@ -7,21 +7,24 @@ We can keep the same interface but dramatically improve the performance by gener
 
 * [Named.SimpleH](lib/Named/SimpleH.hs)
 
-For named representation, this means defining a multi-substitution operation, representing substitutions using a finite map from identifiers to expressions.
+   For named representation, this means defining a multi-substitution operation, representing substitutions using a finite map from identifiers to expressions.
 
         type Sub a = IdMap a 
 
         subst :: Sub Exp -> Exp -> Exp
 
-Store a paused substitution, plus the set of free variables, at every binder.
+   Store a set of free variables at every binder.
 
         data Bind a = Bind
-        { bind_subst :: !(Sub a),   --- cached substitution to apply to the body
-          bind_fvs :: !(IdSet),     -- cached set of free variables in the body
-          bind_var :: !Id,
+        { 
+          bind_fvs :: !VarSet,     -- cached set of free variables in the body
+          bind_var :: !IdInt,
           bind_body :: !a
         }
 
+  When we substitute through a binder, we do two things:
+    + trim the substitution so that its domain only includes to the free variables of the term
+    + compose it with any necessary renamings to avoid variable capture
 
 
 * [DeBruijn.Par.B](lib/DeBruijnPar/B.hs)

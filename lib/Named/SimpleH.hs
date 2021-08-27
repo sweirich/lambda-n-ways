@@ -39,14 +39,17 @@ instance NFData Exp where
 -------------------------------------------------------------------
 
 instance VarC Exp where
+  {-# SPECIALIZE instance VarC Exp #-}
   var = Var
 
 instance FreeVarsC Exp where
+  {-# SPECIALIZE instance FreeVarsC Exp #-}
   freeVars (Var v) = freeVars v
   freeVars (Lam b) = freeVars b
   freeVars (App f a) = freeVars f `S.union` freeVars a
 
 instance SubstC Exp Exp where
+  {-# SPECIALIZE instance SubstC Exp Exp #-}
   subst s (Var v) = substVar s v
   subst s (Lam b) = Lam (subst s b)
   subst s (App f a) = App (subst s f) (subst s a)
@@ -57,10 +60,9 @@ instance SubstC Exp Exp where
 
 nfd :: Exp -> Exp
 nfd e@(Var _) = e
-nfd (Lam b) = b'
+nfd (Lam b) = Lam (bind x (nfd a))
   where
     (x, a) = unbind b
-    b' = Lam (bind x (nfd a))
 nfd (App f a) =
   case whnf f of
     Lam b -> nfd (instantiate b a)

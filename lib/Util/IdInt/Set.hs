@@ -1,3 +1,5 @@
+{-# OPTIONS -fexpose-all-unfoldings #-}
+
 -- | A Finite set of IdInt, based on Data.IntSet
 module Util.IdInt.Set
   ( IdIntSet (..),
@@ -16,6 +18,7 @@ module Util.IdInt.Set
     insert,
     newIdInt,
     lookupMax,
+    varSetMax,
   )
 where
 
@@ -25,7 +28,8 @@ import qualified Data.IntSet as IntSet
 import Util.IdInt
 import Util.Lambda hiding (freeVars)
 
-newtype IdIntSet = IdIntSet IntSet.IntSet deriving (Eq, Ord, Show, Semigroup, Monoid, NFData)
+newtype IdIntSet = IdIntSet IntSet.IntSet
+  deriving (Eq, Ord, Show, Semigroup, Monoid, NFData)
 
 empty :: IdIntSet
 empty = coerce IntSet.empty
@@ -73,3 +77,6 @@ newIdInt (IdIntSet s)
 
 lookupMax :: IdIntSet -> Maybe IdInt
 lookupMax s = if coerce IntSet.null s then Nothing else Just (coerce IntSet.findMax s)
+
+varSetMax :: IdIntSet -> IdInt
+varSetMax s = maybe (toEnum 0) succ (lookupMax s)
