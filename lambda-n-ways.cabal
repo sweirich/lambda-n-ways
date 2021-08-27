@@ -99,6 +99,7 @@ library
       Named.Simple
       Named.Unique
       Lennart.HOAS
+      Lennart.SimpleOrig
       Lennart.Simple
       Lennart.Unique
       Lennart.DeBruijn

@@ -3,7 +3,7 @@
 -- And caching bound variable substitutions at binders
 --    (in this file, bv subst is called "open")
 -- and caching closing substitutions at binders
--- (this version uses instantiate)
+-- (this version uses instantiate/bv substitution in nf)
 -- and removing types so we can use ints instead of unary nats
 module LocallyNameless.Opt (impl, substFv, fv) where
 

@@ -44,39 +44,35 @@ newtype Bind t = Bind t deriving (Eq, Generic, NFData)
 {-
 Given a term t and a function onvar, the result of tmmap onvar t is a term of the same shape as
 t in which every variable has been replaced by the result of calling onvar on
-that variable.
+that variable. 
 
 The arguments to 'onvar' are the current binding level (c) and the index of the
 variable.
 -}
 
-tmMap :: (Int -> Var -> Term) -> Int -> Term -> Term
-tmMap onvar = walk
+tmap :: (Int -> Var -> Term) -> Int -> Term -> Term
+tmap onvar = walk 
   where
     walk c (Var x) = onvar c x
     walk c (Lam (Bind t2)) = Lam (Bind (walk (c + 1) t2))
     walk c (App t1 t2) = App (walk c t1) (walk c t2)
+{-# INLINE tmap #-}
 
-termShiftAbove :: Int -> Int -> Term -> Term
-termShiftAbove d = tmMap f
+shift :: Int -> Term -> Term
+shift d = tmap f 0
   where
     f c (V x) = if x >= c then Var (V (x + d)) else Var (V x)
-{-# INLINE termShiftAbove #-}
+{-# INLINE shift #-}
 
-termShift :: Int -> Term -> Term
-termShift d t = termShiftAbove d 0 t
-{-# INLINE termShift #-}
-
-termSubst :: Var -> Term -> Term -> Term
-termSubst (V j) t = tmMap f 0
+subst :: Var -> Term -> Term -> Term
+subst (V j) t = tmap f 0
   where
-    f c (V x) = if x == j + c then termShiftAbove c 0 t else Var (V x)
-{-# INLINE termSubst #-}
+    f c (V x) = if x == j + c then shift c t else Var (V x)
+{-# INLINE subst #-}
 
-termSubstTop :: Term -> Term -> Term
-termSubstTop s t =
-  termShift (-1) (termSubst (V 0) (termShift 1 s) t)
-{-# INLINE termSubstTop #-}
+instantiate :: Bind Term -> Term -> Term
+instantiate (Bind b) a = shift (-1) (subst (V 0) (shift 1 a) b)
+{-# INLINE instantiate #-}
 
 {-
 The treatment of substitution presented in this chapter, though sufficient
@@ -119,9 +115,6 @@ nfb :: Bind Term -> Bind Term
 nfb (Bind e) = Bind (nf e)
 {-# INLINE nfb #-}
 
-instantiate :: Bind Term -> Term -> Term
-instantiate (Bind b) a = termSubstTop a b
-{-# INLINE instantiate #-}
 
 
 nfi :: Int -> Term -> Stats.M Term

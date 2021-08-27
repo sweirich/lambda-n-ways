@@ -392,16 +392,6 @@ instance (SubstC (a 'Z) a) => SubstC (a 'Z) (Bind a) where
 isDom :: [IdInt] -> M.IdIntMap a -> Bool
 isDom fm m = S.fromList fm == M.keysSet m
 
--- | Note: in this case, the binding should be locally closed
-instantiate :: (Show (a 'Z), SubstC (a 'Z) a) => Bind a 'Z -> a 'Z -> a 'Z
-instantiate (Bind (Cons (SubstBv (Sub (SS SZ) (vs :: Vec (a 'Z) n))) bis) b) u
-  | Refl <- plus_S_r @n @'Z =
-    multi_subst_bv (Sub SZ (VCons u vs)) (unbind (Bind bis b))
-instantiate b u = result
-  where
-    result = multi_subst_bv (Sub SZ (VCons u VNil)) (unbind b)
-{-# INLINEABLE instantiate #-}
-
 substSub :: (Functor f, SubstC (a 'Z) a) => M.IdIntMap (a 'Z) -> f (a k) -> f (a k)
 substSub s2 s1 = fmap (multi_subst_fv s2) s1
 {-# INLINEABLE substSub #-}
@@ -431,6 +421,16 @@ close x e = bind result
   where
     result = (multi_close_rec SZ (VCons x VNil) e)
 {-# INLINEABLE close #-}
+
+-- | Note: in this case, the binding should be locally closed
+instantiate :: (Show (a 'Z), SubstC (a 'Z) a) => Bind a 'Z -> a 'Z -> a 'Z
+instantiate (Bind (Cons (SubstBv (Sub (SS SZ) (vs :: Vec (a 'Z) n))) bis) b) u
+  | Refl <- plus_S_r @n @'Z =
+    multi_subst_bv (Sub SZ (VCons u vs)) (unbind (Bind bis b))
+instantiate b u = result
+  where
+    result = multi_subst_bv (Sub SZ (VCons u VNil)) (unbind b)
+{-# INLINEABLE instantiate #-}
 
 substFv :: (SubstC b a) => b -> IdInt -> a k -> a k
 substFv b x a =

@@ -10,7 +10,7 @@ module QuickBench where
 import Control.Monad
 import qualified Data.List as List
 import qualified DeBruijn.Par.Scoped as Scoped
-import qualified Named.Simple as Simple
+import qualified Named.Lazy.Simple as Simple
 import qualified Named.Unique as Unique
 import Suite
 import System.IO

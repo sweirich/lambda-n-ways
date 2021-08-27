@@ -37,6 +37,7 @@ import qualified Lennart.DeBruijn
 import qualified Lennart.DeBruijnC
 import qualified Lennart.HOAS
 import qualified Lennart.Simple
+import qualified Lennart.SimpleOrig
 import qualified Lennart.Unique
 --import qualified LocallyNameless.Lazy.TypedOpt
 
@@ -70,6 +71,7 @@ import qualified LocallyNameless.UnboundGenerics
 import qualified LocallyNameless.UnboundNonGenerics
 import qualified LocallyNameless.UnboundRep
 import qualified Named.Lazy.NominalG
+import qualified Named.Lazy.Simple
 import qualified Named.Lazy.SimpleGH
 import qualified Named.Lazy.SimpleH
 import qualified Named.Lazy.SimpleM
@@ -85,7 +87,7 @@ import Util.Impl (LambdaImpl)
 -- | Implementations used in the benchmarking/test suite
 -- must be a single variable name for Makefile
 impls :: [LambdaImpl]
-impls = locallyNameless
+impls = ifl_talk
 
 interleave :: [a] -> [a] -> [a]
 interleave (a1 : a1s) (a2 : a2s) = a1 : a2 : interleave a1s a2s
@@ -206,17 +208,17 @@ locallyNameless =
     --LocallyNameless.ParOpt.impl,
     --LocallyNameless.Opt.impl
     LocallyNameless.SupportOpt.impl,
-    LocallyNameless.TypedOpt.impl
-    -- LocallyNameless.SupportInstOpt.impl,
+    --LocallyNameless.TypedOpt.impl
+    LocallyNameless.SupportInstOpt.impl,
     --LocallyNameless.GenericOpt.impl,
     --LocallyNameless.GenericInstOpt.impl
     -- LocallyNameless.TypedOpt.impl,
     --LocallyNameless.UnboundRep.impl, -- unbound
     --LocallyNameless.UnboundGenerics.impl, -- unbound-generics (original)
     --LocallyNameless.UnboundNonGenerics.impl,
-    --LocallyNameless.UGSubstBind.impl, -- unbound-generics mod2 -- PASSES
-    -- LocallyNameless.UNGSubstBind.impl, -- PASSES
-    -- LocallyNameless.UGEBind.impl, -- unbound-generics mod2 -- FAILS test case
+    LocallyNameless.UGSubstBind.impl, -- unbound-generics mod2 -- PASSES
+    LocallyNameless.UNGSubstBind.impl -- PASSES
+    --LocallyNameless.UGEBind.impl, -- unbound-generics mod2 -- FAILS test case
     -- LocallyNameless.UGSubstEBind.impl -- unbound-generics mod2 -- FAILS test cases
   ]
 
@@ -432,3 +434,35 @@ really_slow = [Named.NominalG.impl] -- nominal
 
 --------------------------------------------------------------
 --------------------------------------------------------------
+
+ifl_talk :: [LambdaImpl]
+ifl_talk = basic ++ basic_strict ++ opt ++ opt_generic
+
+basic :: [LambdaImpl]
+basic =
+  [ Lennart.SimpleOrig.impl,
+    Lennart.Simple.impl,
+    Lennart.DeBruijn.impl,
+    LocallyNameless.Lazy.Ott.impl
+  ]
+
+basic_strict :: [LambdaImpl]
+basic_strict =
+  [ Named.Simple.impl,
+    DeBruijn.Lennart.impl,
+    LocallyNameless.Ott.impl
+  ]
+
+opt :: [LambdaImpl]
+opt =
+  [ Named.SimpleH.impl,
+    DeBruijn.Par.B.impl,
+    LocallyNameless.Opt.impl
+  ]
+
+opt_generic :: [LambdaImpl]
+opt_generic =
+  [ Named.SimpleGH.impl,
+    DeBruijn.Par.GB.impl,
+    LocallyNameless.SupportInstOpt.impl
+  ]

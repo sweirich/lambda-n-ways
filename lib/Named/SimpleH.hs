@@ -10,7 +10,7 @@ import Util.IdInt (IdInt)
 import qualified Util.IdInt.Map as M
 import qualified Util.IdInt.Set as S
 import Util.Impl (LambdaImpl (..))
-import Util.Imports (Generic, NFData)
+import Util.Imports (NFData (..))
 import qualified Util.Lambda as LC
 import qualified Util.Stats as Stats
 
@@ -29,9 +29,12 @@ data Exp
   = Var !Var
   | Lam !(Bind Exp)
   | App !Exp !Exp
-  deriving (Generic, Eq)
+  deriving (Eq)
 
-instance NFData Exp
+instance NFData Exp where
+  rnf (Var v) = rnf v
+  rnf (Lam a) = rnf a
+  rnf (App a b) = rnf a `seq` rnf b
 
 -------------------------------------------------------------------
 
@@ -39,13 +42,13 @@ instance VarC Exp where
   var = Var
 
 instance FreeVarsC Exp where
-  freeVars (Var (V v)) = S.singleton v
-  freeVars (Lam b) = freeVarsBind b
+  freeVars (Var v) = freeVars v
+  freeVars (Lam b) = freeVars b
   freeVars (App f a) = freeVars f `S.union` freeVars a
 
 instance SubstC Exp Exp where
-  subst s (Var v@(V i)) = M.findWithDefault (Var v) i s
-  subst s (Lam b) = Lam (substBind s b)
+  subst s (Var v) = substVar s v
+  subst s (Lam b) = Lam (subst s b)
   subst s (App f a) = App (subst s f) (subst s a)
 
 -------------------------------------------------------------------

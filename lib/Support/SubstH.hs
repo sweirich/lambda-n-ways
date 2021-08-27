@@ -2,6 +2,7 @@
 
 module Support.SubstH
   ( Var (..),
+    substVar,
     Bind,
     bind,
     unbind,
@@ -130,6 +131,13 @@ substSub s2 s1 = fmap (subst s2) s1
 {-# INLINEABLE substSub #-}
 
 --------------------------------------------------------
+-- var operations
+
+substVar :: VarC a => Sub a -> Var -> a
+substVar s v@(V i) = M.findWithDefault (var v) i s
+{-# INLINEABLE substVar #-}
+
+--------------------------------------------------------
 -- bind operations
 
 validBind :: (FreeVarsC a, Eq a) => Bind a -> Bool
@@ -187,8 +195,11 @@ freeVarsBind b = freeVarsSub s <> (bind_fvs b S.\\ M.keysSet s)
     (_, s, _) = unbindHelper b
 {-# INLINEABLE freeVarsBind #-}
 
+-- Push a substitution through a binding.
+-- this is the Bind instance of the SubstC class
 substBind :: (VarC a, SubstC a a) => Sub a -> Bind a -> Bind a
 substBind s2 b@(Bind s1 _fv _x _a)
+  -- if the substitution is empty, don't do
   | M.null s2 = b
   -- forcing this substitution, instead of delaying it,  seems to be particularly
   -- important for the lennart/nf benchmark. (14.0 sec -> 0.11 sec)
@@ -337,7 +348,7 @@ instance FreeVarsC String where
   {-# INLINE freeVars #-}
 
 instance FreeVarsC Var where
-  freeVars _ = S.empty
+  freeVars (V v) = S.singleton v
   {-# INLINE freeVars #-}
 
 instance (VarC b, SubstC b b) => FreeVarsC (Bind b) where

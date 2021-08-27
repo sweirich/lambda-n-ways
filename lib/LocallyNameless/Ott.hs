@@ -99,6 +99,7 @@ close x1 e1 = close_exp_wrt_exp_rec 0 x1 e1
 {-
 -- version based on reader monad (i.e. variables need only be
 -- fresh for the current scope, not globally fresh
+-- this part is currently unusued
 
 type N a = IdInt -> a
 
@@ -189,7 +190,7 @@ nfi' _n (Var_b _) = error "should not reach this"
 nfi' n (Abs e) = do
   x <- newVar
   e' <- nfi' (n - 1) (open e (Var_f x))
-  return $ Abs e'
+  return $ Abs (close x e')
 nfi' n (App f a) = do
   f' <- whnfi (n - 1) f
   case f' of

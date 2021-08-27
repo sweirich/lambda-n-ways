@@ -173,4 +173,4 @@ main = do
   nft6 <- mapM nfRandomTests ["t4"]
   -- defaultMain $ testGroup "tests" nfLamTests
 
-  defaultMain $ testGroup "tests" ([rtQCs, aeqQCs, nfQCs] ++ nfRandoms ++ nfLamTests ++ nfSimple ++ nfMoreTests) -- ++ [lennart])
+  defaultMain $ testGroup "tests" ([rtQCs, aeqQCs, nfQCs] ++ nfRandoms ++ nfLamTests ++ nfSimple ++ nfMoreTests ++ [lennart])

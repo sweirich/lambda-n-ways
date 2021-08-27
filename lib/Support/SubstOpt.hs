@@ -187,7 +187,7 @@ data BindInfo a where
   NoInfo :: BindInfo a
   SubstBv :: !Int -> ![a] -> BindInfo a
   SubstFv :: !(M.IdIntMap a) -> BindInfo a
-  Open :: !Int -> ![Var] -> BindInfo a
+  -- Open :: !Int -> ![Var] -> BindInfo a
   Close :: !Int -> ![IdInt] -> BindInfo a
   deriving (Generic, Show)
 
@@ -203,14 +203,15 @@ bind :: AlphaC a => a -> Bind a
 bind a = Bind NoInfo a
 {-# INLINEABLE bind #-}
 
+-- why do SubstBv and Open incr, but close does not?
 unbind :: (SubstC a a, Show a) => Bind a -> a
 unbind b =
   go b
   where
     go (Bind NoInfo a) = a
-    go (Bind (SubstBv k ss) a) = multi_subst_bv (k + 1) ss a
+    go (Bind (SubstBv k ss) a) = multi_subst_bv k ss a
     go (Bind (SubstFv m) a) = multi_subst_fv m a
-    go (Bind (Open k ss) a) = multi_open_rec (k + 1) ss a
+    -- go (Bind (Open k ss) a) = multi_open_rec (k + 1) ss a
     go (Bind (Close k vs) a) = multi_close_rec k vs a
 {-# INLINEABLE unbind #-}
 
@@ -232,8 +233,8 @@ instance (SubstC a a, Show a) => AlphaC (Bind a) where
   -}
   {-# INLINE fv #-}
 
-  multi_open_rec _k vn (Bind (Open l vm) b) = error "Bind (Open l (vm <> vn)) b"
-  multi_open_rec k vn b = Bind (Open (k + 1) vn) (unbind b)
+  --multi_open_rec _k vn (Bind (Open l vm) b) = error "Bind (Open l (vm <> vn)) b"
+  multi_open_rec k vn b = Bind NoInfo (multi_open_rec (k + 1) vn (unbind b))
   {-# INLINE multi_open_rec #-}
 
   multi_close_rec _k xs (Bind (Close k0 ys) a) = (Bind (Close k0 (ys <> xs)) a)
@@ -265,7 +266,7 @@ comp s1 s2
 -----------------------------------------------------------------
 
 open :: SubstC a a => Show a => Bind a -> Var -> a
-open (Bind (Open 1 vs) e) x = multi_open_rec 0 (x : vs) e
+--open (Bind (Open 1 vs) e) x = multi_open_rec 0 (x : vs) e
 open b x = multi_open_rec 0 [x] (unbind b)
 {-# INLINEABLE open #-}
 
