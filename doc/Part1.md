@@ -144,7 +144,7 @@ Overall, benchmarking is difficult because binding is so fundamental it is used 
 
 Another issue with benchmarking is that this language (the lambda calculus) is deliberately impoverished. This is good because it makes it very easy to add new implementations to the suite. This is bad because we need to use encodings for everything. But, we don't want our benchmark suite to be influenced by the encodings that we choose. (Or do we?)
 
-
+[Next page](doc/Part2.md)
 
 
 References

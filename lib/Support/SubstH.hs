@@ -8,7 +8,7 @@
 module Support.SubstH
   ( Var (..),
     substVar,
-    Bind,
+    type Bind,
     bind,
     unbind,
     freeVarsBind,
@@ -42,10 +42,10 @@ type Sub = M.IdIntMap
 
 -- In this implementation we cache fv sets at binders.
 --
-data Bind e = Bind
+data Bind a = B
   { bind_fvs :: !(VarSet),
     bind_var :: !IdInt,
-    bind_body :: !e
+    bind_body :: !a
   }
 
 {-
@@ -88,7 +88,7 @@ class FreeVarsC a => SubstC b a where
 --    subst s x = to (gsubst s (from x))
 
 instantiate :: (VarC a, SubstC a a) => Bind a -> a -> a
-instantiate (Bind _ y a) u = subst (singleSub (V y) u) a
+instantiate (B _ y a) u = subst (singleSub (V y) u) a
 
 -------------------------------------------------------------------
 -- sub operations
@@ -130,16 +130,16 @@ instance SubstC b Var where
 -- bind operations
 
 bind :: (FreeVarsC a) => Var -> a -> Bind a
-bind (V v) a = Bind (S.delete v (freeVars a)) v a
+bind (V v) a = B (S.delete v (freeVars a)) v a
 
 unbind :: (VarC a, SubstC a a) => Bind a -> (Var, a)
-unbind (Bind _ x a) = (V x, a)
+unbind (B _ x a) = (V x, a)
 
 instance (NFData a) => NFData (Bind a) where
-  rnf (Bind f x a) = rnf f `seq` rnf x `seq` rnf a
+  rnf (B f x a) = rnf f `seq` rnf x `seq` rnf a
 
 instance (Eq a, SubstC a a, VarC a) => Eq (Bind a) where
-  b1@(Bind _ x1 a1) == b2@(Bind _ x2 a2)
+  b1@(B _ x1 a1) == b2@(B _ x2 a2)
     | x1 == x2 = a1 == a2
     | x1 `S.member` freeVarsBind b2 = False
     | x2 `S.member` freeVarsBind b1 = False
@@ -150,12 +150,12 @@ instance (Eq a, SubstC a a, VarC a) => Eq (Bind a) where
       s = M.singleton x2 (var (V x1))
 
 freeVarsBind :: (VarC a, SubstC a a) => Bind a -> S.IdIntSet
-freeVarsBind (Bind fv _ _) = fv
+freeVarsBind (B fv _ _) = fv
 
 -- Apply a substitution to a binding.
 -- this function is used in the Bind instance of the SubstC class
 substBind :: (VarC a, SubstC a a) => Sub a -> Bind a -> Bind a
-substBind s b@(Bind _fv _x _a)
+substBind s b@(B _fv _x _a)
   -- if the substitution is empty, don't do anything
   | M.null s = b
 -- Use unbindHelper to prune the substitution by the fv set,
@@ -170,7 +170,7 @@ substBind s b = bind (V x) (subst s' a)
 -- 1. (potentially) renaming bound variable to avoid capture
 -- 2. pruning the substitution by the free variables to terminate early
 unbindHelper :: (VarC a, SubstC a a) => Sub a -> Bind a -> (IdInt, Sub a, a)
-unbindHelper s (Bind fv x a)
+unbindHelper s (B fv x a)
   | x `S.member` fv_s = (y, M.insert x (var (V y)) s', a)
   -- usual case, but prune substitution
   | otherwise = (x, s', a)

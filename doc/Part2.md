@@ -177,10 +177,10 @@ In the repository, the most vanilla implementations are:
 Comparison chart
 ----------------
 
-[Fill in here]
+All results are available in the repository, but you'll need to look at the talk slides to see the graphs.
 
-Note: making our expression data structure strict improves this benchmark. So at this point we will only work with strict versions.
+[results/sixteen.local/ifl_talk/nf_bench.csv](results/sixteen.local/ifl_talk/nf_bench.csv)
 
-[Fill in strict version]
+These results were obtained by executing the command `make normalize` when `Suite.hs` has been directed to benchmark the set `ifl_talk`.
 
-
+[Next page](doc/Part3.md)

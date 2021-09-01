@@ -59,3 +59,5 @@ The key idea that makes this work is that we can optimize when we compose.
 * [LocallyNameless.Opt](lib/LocallyNameless/SupportInstOpt.hs)
 
 Finally, this idea also works for locally nameless implementation. 
+
+[Next page](doc/Part4.md)

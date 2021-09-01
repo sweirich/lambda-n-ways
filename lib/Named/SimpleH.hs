@@ -1,3 +1,5 @@
+{-# LANGUAGE ViewPatterns #-}
+
 -- | This module is trying to make a "delayed" substitution version
 -- of the "Simple" implementation.
 -- Strangely, composing substitutions too much causes this impl to really slow
@@ -60,9 +62,7 @@ instance SubstC Exp Exp where
 
 nfd :: Exp -> Exp
 nfd e@(Var _) = e
-nfd (Lam b) = Lam (bind x (nfd a))
-  where
-    (x, a) = unbind b
+nfd (Lam (unbind -> (x, a))) = Lam (bind x (nfd a))
 nfd (App f a) =
   case whnf f of
     Lam b -> nfd (instantiate b a)
@@ -83,7 +83,7 @@ whnf (App f a) =
 nfi :: Int -> Exp -> Stats.M Exp
 nfi 0 _e = Stats.done
 nfi _n e@(Var _) = return e
-nfi n (Lam b) = Lam . bind x <$> nfi (n -1) a where (x, a) = unbind b
+nfi n (Lam (unbind -> (x, a))) = Lam . bind x <$> nfi (n -1) a
 nfi n (App f a) = do
   f' <- whnfi (n - 1) f
   case f' of
@@ -115,9 +115,7 @@ fromExp :: Exp -> LC.LC IdInt
 fromExp = from
   where
     from (Var (V i)) = LC.Var i
-    from (Lam b) = LC.Lam x (from a)
-      where
-        (V x, a) = unbind b
+    from (Lam (unbind -> (V x, a))) = LC.Lam x (from a)
     from (App f a) = LC.App (from f) (from a)
 
 ---------------------------------------------------------

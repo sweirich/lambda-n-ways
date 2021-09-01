@@ -29,7 +29,7 @@ but has been slightly modified to to fit into this setting.
 Variables are represented by their binding depth, i.e., how many
 $\lambda$s out the binding $\lambda$ is.  
 
-> data DB = DVar Int | DLam DB | DApp DB DB
+> data DB = DVar !Int | DLam DB | DApp DB DB
 >   deriving (Eq, Generic)
 
 > instance NFData DB where

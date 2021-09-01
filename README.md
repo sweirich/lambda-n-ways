@@ -6,7 +6,13 @@ History: The repo was inspired by and initially derived from Lennart Augustsson'
 
 For an overview of the *n*-implementations available here, see [here](doc/Implementations.md).
 
-For a general overview of the project see the slides: [plclub-2021.pptx](plclub-2021.pptx).
+For a general overview of the project see the slides: [ifl-2021.pptx](ifl-2021.pptx). The plan for this 
+talk is also available:
+    - [Part 1](doc/Part1.md)
+    - [Part 2](doc/Part2.md)
+    - [Part 3](doc/Part3.md)
+    - [Part 4](doc/Part4.md)
+    - [Part 5](doc/Part5.md)
 
 ## Compiling the library
 

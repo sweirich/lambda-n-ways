@@ -86,4 +86,4 @@ This treatment is not unique to the named representation, we can also define sim
 
 But what is the cost of this genericity? Generic programming does have a small effect on runtime, but it is not much compared to the win we gain from using our optimized library. Furthermore, the same library can be used without generic programming.
 
-[Benchmark chart here]
+[Next page](doc/Part5.md)

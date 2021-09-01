@@ -1,6 +1,8 @@
 
 Implementation using the Nominal library (available from hackage)
 
+-- https://hackage.haskell.org/package/nominal
+
 > {-# LANGUAGE FlexibleInstances #-}
 > {-# LANGUAGE DeriveGeneric #-}
 > {-# LANGUAGE DeriveAnyClass #-}
