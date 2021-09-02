@@ -23,7 +23,7 @@ impl =
     { impl_name = "LocallyNameless.Ott",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
-      impl_nf = nfd,
+      impl_nf = nf,
       impl_nfi = nfi,
       impl_aeq = (==)
     }
@@ -96,84 +96,38 @@ close :: IdInt -> Exp -> Exp
 close x1 e1 = close_exp_wrt_exp_rec 0 x1 e1
 
 ----------------------------------------------------------------
-{-
--- version based on reader monad (i.e. variables need only be
--- fresh for the current scope, not globally fresh
--- this part is currently unusued
 
-type N a = IdInt -> a
-
-scope :: (IdInt -> N a) -> N a
-scope f = \i -> f i (succ i)
-
-nfd :: Exp -> Exp
-nfd e = nf' e v where
-  v = succ (fromMaybe firstBoundId (Set.lookupMax (fv e)))
-
-nf' :: Exp -> N Exp
-nf' e@(Var_f _) = return e
-nf' (Var_b _) = error "should not reach this"
-nf' (Abs e) =
-  scope $ \x -> do
-    b' <- nf' (open e (Var_f x))
-    return $ Abs (close x b')
-nf' (App f a) = do
-  f' <- whnf f
-  case f' of
-    Abs b -> nf' (open b a)
-    _ -> App <$> nf' f' <*> nf' a
-
-whnf :: Exp -> N Exp
-whnf e@(Var_f _) = return e
-whnf (Var_b _) = error "should not reach this"
-whnf e@(Abs _) = return e
-whnf (App f a) = do
-  f' <- whnf f
-  case f' of
-    (Abs b) -> whnf (open b a)
-    _ -> return $ App f' a
--}
-----------------------------------------------------------------
-
-type N a = State IdInt a
-
--- version based on state monad
-
-nfd :: Exp -> Exp
-nfd e = State.evalState (nf' e) v
-  where
-    v = succ (fromMaybe firstBoundId (Set.lookupMax (fv e)))
-
-nf' :: Exp -> N Exp
-nf' e@(Var_f _) = return e
-nf' (Var_b _) = error "should not reach this"
-nf' (Abs e) = do
-  x <- newVar
-  b' <- nf' (open e (Var_f x))
-  return $ Abs (close x b')
-nf' (App f a) = do
-  f' <- whnf f
-  case f' of
-    Abs b -> nf' (open b a)
-    _ -> App <$> nf' f' <*> nf' a
+nf :: Exp -> Exp
+nf e@(Var_f _) = e
+nf (Var_b _) = error "should not reach this"
+nf (Abs e) =
+  let x = fresh e
+      b' = nf (open e (Var_f x))
+   in Abs (close x b')
+nf (App f a) = do
+  case whnf f of
+    Abs b -> nf (open b a)
+    f' -> App (nf f') (nf a)
 
 -- Compute the weak head normal form.
-whnf :: Exp -> N Exp
-whnf e@(Var_f _) = return e
+whnf :: Exp -> Exp
+whnf e@(Var_f _) = e
 whnf (Var_b _) = error "should not reach this"
-whnf e@(Abs _) = return e
-whnf (App f a) = do
-  f' <- whnf f
-  case f' of
+whnf e@(Abs _) = e
+whnf (App f a) =
+  case whnf f of
     (Abs b) -> whnf (open b a)
-    _ -> return $ App f' a
+    f' -> App f' a
 
 -- Fueled version
 
 nfi :: Int -> Exp -> Stats.M Exp
 nfi n e = State.evalStateT (nfi' n e) v
   where
-    v = succ (fromMaybe firstBoundId (Set.lookupMax (fv e)))
+    v = fresh e
+
+fresh :: Exp -> IdInt
+fresh e = succ (fromMaybe firstBoundId (Set.lookupMax (fv e)))
 
 type NM a = State.StateT IdInt Stats.M a
 

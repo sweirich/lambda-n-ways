@@ -23,7 +23,7 @@ impl =
     { impl_name = "LocallyNameless.Lazy.Ott",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
-      impl_nf = nfd,
+      impl_nf = nf,
       impl_nfi = nfi,
       impl_aeq = (==)
     }
@@ -97,6 +97,31 @@ close x1 e1 = close_exp_wrt_exp_rec 0 x1 e1
 
 ----------------------------------------------------------------
 
+fresh :: Exp -> IdInt
+fresh e = succ (fromMaybe firstBoundId (Set.lookupMax (fv e)))
+
+nf :: Exp -> Exp
+nf e@(Var_f _) = e
+nf (Var_b _) = error "should not reach this"
+nf (Abs e) =
+  let x = fresh e
+      b' = nf (open e (Var_f x))
+   in Abs (close x b')
+nf (App f a) = do
+  case whnf f of
+    Abs b -> nf (open b a)
+    f' -> App (nf f') (nf a)
+
+-- Compute the weak head normal form.
+whnf :: Exp -> Exp
+whnf e@(Var_f _) = e
+whnf (Var_b _) = error "should not reach this"
+whnf e@(Abs _) = e
+whnf (App f a) =
+  case whnf f of
+    (Abs b) -> whnf (open b a)
+    f' -> App f' a
+
 type N a = State IdInt a
 
 newVar :: (MonadState IdInt m) => m IdInt
@@ -105,6 +130,7 @@ newVar = do
   put (succ i)
   return i
 
+{-
 nfd :: Exp -> Exp
 nfd e = State.evalState (nf' e) v
   where
@@ -133,6 +159,7 @@ whnf (App f a) = do
   case f' of
     (Abs b) -> whnf (open b a)
     _ -> return $ App f' a
+-}
 
 -- Fueled version
 

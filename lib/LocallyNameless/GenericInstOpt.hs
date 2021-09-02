@@ -21,7 +21,7 @@ impl =
     { impl_name = "LocallyNameless.GenericInstOpt",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
-      impl_nf = nfd,
+      impl_nf = nf,
       impl_nfi = nfi,
       impl_aeq = (==)
     }
@@ -67,6 +67,29 @@ instance SubstC Exp Exp where
 
 --------------------------------------------------------------
 
+fresh :: Exp -> IdInt
+fresh e = succ (fromMaybe firstBoundId (Set.lookupMax (fv e)))
+
+nf :: Exp -> Exp
+nf e@(Var _) = e
+nf (Abs e) =
+  let x = fresh (unbind e)
+      b' = nf (instantiate e (Var (F x)))
+   in Abs (close x b')
+nf (App f a) = do
+  case whnf f of
+    Abs b -> nf (instantiate b a)
+    f' -> App (nf f') (nf a)
+
+-- Compute the weak head normal form.
+whnf :: Exp -> Exp
+whnf e@(Var _) = e
+whnf e@(Abs _) = e
+whnf (App f a) =
+  case whnf f of
+    (Abs b) -> whnf (instantiate b a)
+    f' -> App f' a
+
 type N a = State IdInt a
 
 newVar :: (MonadState IdInt m) => m IdInt
@@ -75,6 +98,7 @@ newVar = do
   put (succ i)
   return i
 
+{-
 nfd :: Exp -> Exp
 nfd e = State.evalState (nf' e) v
   where
@@ -102,6 +126,7 @@ whnf (App f a) = do
   case f' of
     (Abs b) -> whnf (instantiate b a)
     _ -> return $ App f' a
+-}
 
 -- Fueled version
 

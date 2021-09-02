@@ -414,7 +414,7 @@ ifl_talk = basic ++ basic_strict ++ opt ++ opt_generic
 
 basic :: [LambdaImpl]
 basic =
-  [ Lennart.SimpleOrig.impl,
+  [ -- Lennart.SimpleOrig.impl,
     Lennart.Simple.impl,
     Lennart.DeBruijn.impl,
     LocallyNameless.Lazy.Ott.impl
@@ -439,5 +439,5 @@ opt_generic :: [LambdaImpl]
 opt_generic =
   [ Named.SimpleGH.impl,
     DeBruijn.Par.GB.impl,
-    LocallyNameless.SupportInstOpt.impl
+    LocallyNameless.GenericInstOpt.impl
   ]

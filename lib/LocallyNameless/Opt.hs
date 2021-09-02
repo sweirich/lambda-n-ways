@@ -46,7 +46,7 @@ impl =
     { impl_name = "LocallyNameless.Opt",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
-      impl_nf = nfd,
+      impl_nf = nf,
       impl_nfi = nfi,
       impl_aeq = (==)
     }
@@ -81,6 +81,9 @@ fv e =
     (Var_f x) -> Set.singleton x
     (Abs b) -> fv (unbind b)
     (App e1 e2) -> fv e1 `Set.union` fv e2
+
+fvBind :: Bind Exp -> Set IdInt
+fvBind b = fv (unbind b)
 
 --------------------------------------------------------------
 -- Caching open/close at binders.
@@ -193,13 +196,33 @@ close x e = BindClose 0 [x] e
 
 {- --------------------------------------- -}
 
-type N a = State IdInt a
+fresh :: Exp -> IdInt
+fresh e = succ (fromMaybe firstBoundId (Set.lookupMax (fv e)))
 
-newVar :: (MonadState IdInt m) => m IdInt
-newVar = do
-  i <- get
-  put (succ i)
-  return i
+nf :: Exp -> Exp
+nf e@(Var_f _) = e
+nf (Var_b _) = error "should not reach this"
+nf (Abs e) =
+  let x = fresh (unbind e)
+      b' = nf (instantiate e (Var_f x))
+   in Abs (close x b')
+nf (App f a) = do
+  case whnf f of
+    Abs b -> nf (instantiate b a)
+    f' -> App (nf f') (nf a)
+
+-- Compute the weak head normal form.
+whnf :: Exp -> Exp
+whnf e@(Var_f _) = e
+whnf (Var_b _) = error "should not reach this"
+whnf e@(Abs _) = e
+whnf (App f a) =
+  case whnf f of
+    (Abs b) -> whnf (instantiate b a)
+    f' -> App f' a
+
+{-
+type N a = State IdInt a
 
 nfd :: Exp -> Exp
 nfd e = State.evalState (nf' e) v
@@ -230,8 +253,14 @@ whnf (App f a) = do
   case f' of
     (Abs b) -> whnf (instantiate b a)
     _ -> return $ App f' a
+-}
 
 -- Fueled version
+newVar :: (MonadState IdInt m) => m IdInt
+newVar = do
+  i <- get
+  put (succ i)
+  return i
 
 nfi :: Int -> Exp -> Stats.M Exp
 nfi n e = State.evalStateT (nfi' n e) v
