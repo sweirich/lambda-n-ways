@@ -8,10 +8,12 @@ variables are unique.
 > {-# LANGUAGE FlexibleContexts #-}
 > {-# LANGUAGE ScopedTypeVariables #-}
 > module Lennart.Unique(impl) where
-> import Util.Lambda as LC
+> import Util.Lambda (LC(..))
+> import Data.List(union)
+> import qualified Util.Lambda as LC
 > import qualified Data.Map as M
 > import Control.Monad.State
-> import Util.IdInt
+> import Util.IdInt hiding (newId)
 > import Data.Maybe (fromMaybe)
 > import Control.DeepSeq
 > 
@@ -192,5 +194,14 @@ freshening function with the maxium variable found in the term.
 
 > initState :: LC IdInt -> IdInt
 > initState e = succ x where
->      vs = LC.allVars e
+>      vs = allVars e
 >      x  = newId vs 
+
+> newId :: [IdInt] -> IdInt
+> newId [] = firstBoundId
+> newId vs = succ (maximum vs)
+
+> allVars :: LC IdInt -> [IdInt]
+> allVars (Var v) = [v]
+> allVars (Lam _ e) = allVars e
+> allVars (App f a) = allVars f `union` allVars a

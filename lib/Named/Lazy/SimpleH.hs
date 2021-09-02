@@ -1,16 +1,15 @@
--- | This module is trying to make a "delayed" substitution version
--- of the "Simple" implementation.
--- Strangely, composing substitutions too much causes this impl to really slow
--- down on the lennart/nf benchmark.
--- Most of the logic of this implementation is in the Support.SimpleH library
+{-# LANGUAGE ViewPatterns #-}
+
+-- | This module optimizes the "Simple" implementation by caching free variables
+-- at binders.  The ideas in this implementation are made more general in the module
+--  Support.SubstH
 module Named.Lazy.SimpleH (impl) where
 
-import Support.SubstH
 import Util.IdInt (IdInt)
 import qualified Util.IdInt.Map as M
 import qualified Util.IdInt.Set as S
 import Util.Impl (LambdaImpl (..))
-import Util.Imports (Generic, NFData)
+import Util.Imports (NFData (..))
 import qualified Util.Lambda as LC
 import qualified Util.Stats as Stats
 
@@ -29,24 +28,24 @@ data Exp
   = Var Var
   | Lam (Bind Exp)
   | App Exp Exp
-  deriving (Generic, Eq)
+  deriving (Eq)
 
-instance NFData Exp
+instance NFData Exp where
+  rnf (Var v) = rnf v
+  rnf (Lam a) = rnf a
+  rnf (App a b) = rnf a `seq` rnf b
 
 -------------------------------------------------------------------
 
-instance VarC Exp where
-  var = Var
+freeVars :: Exp -> S.IdIntSet
+freeVars (Var v) = freeVarsVar v
+freeVars (Lam b) = freeVarsBind b
+freeVars (App f a) = freeVars f `S.union` freeVars a
 
-instance FreeVarsC Exp where
-  freeVars (Var (V v)) = S.singleton v
-  freeVars (Lam b) = freeVarsBind b
-  freeVars (App f a) = freeVars f `S.union` freeVars a
-
-instance SubstC Exp Exp where
-  subst s (Var v@(V i)) = M.findWithDefault (Var v) i s
-  subst s (Lam b) = Lam (substBind s b)
-  subst s (App f a) = App (subst s f) (subst s a)
+subst :: Sub Exp -> Exp -> Exp
+subst s (Var v) = substVar s v
+subst s (Lam b) = Lam (substBind s b)
+subst s (App f a) = App (subst s f) (subst s a)
 
 -------------------------------------------------------------------
 
@@ -54,10 +53,7 @@ instance SubstC Exp Exp where
 
 nfd :: Exp -> Exp
 nfd e@(Var _) = e
-nfd (Lam b) = b'
-  where
-    (x, a) = unbind b
-    b' = Lam (bind x (nfd a))
+nfd (Lam (unbind -> (x, a))) = Lam (bind x (nfd a))
 nfd (App f a) =
   case whnf f of
     Lam b -> nfd (instantiate b a)
@@ -78,7 +74,7 @@ whnf (App f a) =
 nfi :: Int -> Exp -> Stats.M Exp
 nfi 0 _e = Stats.done
 nfi _n e@(Var _) = return e
-nfi n (Lam b) = Lam . bind x <$> nfi (n -1) a where (x, a) = unbind b
+nfi n (Lam (unbind -> (x, a))) = Lam . bind x <$> nfi (n -1) a
 nfi n (App f a) = do
   f' <- whnfi (n - 1) f
   case f' of
@@ -110,66 +106,113 @@ fromExp :: Exp -> LC.LC IdInt
 fromExp = from
   where
     from (Var (V i)) = LC.Var i
-    from (Lam b) = LC.Lam x (from a)
-      where
-        (V x, a) = unbind b
+    from (Lam (unbind -> (V x, a))) = LC.Lam x (from a)
     from (App f a) = LC.App (from f) (from a)
 
 ---------------------------------------------------------
+-------------------------------------------
 
--- * use max to calculate fresh vars
+-- | Variables are just Ints internally, but we treat them as names
+newtype Var = V IdInt deriving (Show, Eq, NFData)
+
+type VarSet = S.IdIntSet
+
+type Sub = M.IdIntMap
+
+-- In this implementation we cache fv sets at binders.
+--
+data Bind a = B
+  { bind_fvs :: !(VarSet),
+    bind_var :: !IdInt,
+    bind_body :: !a
+  }
 
 {-
+Invariant:
 
-benchmarking nf/SimpleB
-time                 522.2 ms   (497.9 ms .. 538.7 ms)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 521.9 ms   (519.3 ms .. 525.9 ms)
-std dev              3.822 ms   (768.6 μs .. 5.013 ms)
-variance introduced by outliers: 19% (moderately inflated)
+1. bind_fvs is the freeVars of e (bind_body), minus v  (bind_var)
 
-* use M.restrictSet
-
-benchmarking nf/SimpleB
-time                 544.4 ms   (515.5 ms .. 611.7 ms)
-                     0.998 R²   (0.996 R² .. 1.000 R²)
-mean                 526.0 ms   (519.5 ms .. 537.3 ms)
-std dev              10.74 ms   (2.108 ms .. 13.46 ms)
-variance introduced by outliers: 19% (moderately inflated)
-
-* make components of bind strict
-
-benchmarking nf/SimpleB
-time                 482.8 ms   (468.3 ms .. 511.9 ms)
-                     1.000 R²   (0.999 R² .. 1.000 R²)
-mean                 482.2 ms   (474.1 ms .. 487.9 ms)
-std dev              8.283 ms   (3.923 ms .. 11.59 ms)
-variance introduced by outliers: 19% (moderately inflated)
-
-* specialize var type to IdInt
-
-benchmarking nf/SimpleB
-time                 252.7 ms   (249.4 ms .. 255.4 ms)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 254.9 ms   (253.5 ms .. 256.8 ms)
-std dev              1.894 ms   (1.186 ms .. 2.261 ms)
-variance introduced by outliers: 16% (moderately inflated)
-
-* Data.Set -> Data.IntSet & Data.Map -> Data.IntMap
-
-benchmarking nf/SimpleB
-time                 178.7 ms   (177.4 ms .. 181.2 ms)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 177.4 ms   (176.6 ms .. 178.3 ms)
-std dev              1.301 ms   (991.4 μs .. 1.690 ms)
-variance introduced by outliers: 12% (moderately inflated)
-
-* a few more inlining pragmas
-
-benchmarking nf/SimpleB
-time                 173.5 ms   (171.8 ms .. 175.7 ms)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 174.6 ms   (173.9 ms .. 175.2 ms)
-std dev              921.1 μs   (506.0 μs .. 1.416 ms)
-variance introduced by outliers: 12% (moderately inflated)
 -}
+
+-------------------------------------------------------------------
+
+-- NOTE: the default definition of subst only applies when b ~ a
+-- For operations like type substitution in terms, the instance can be
+-- generically created with the definition:
+--    subst s x = to (gsubst s (from x))
+
+instantiate :: Bind Exp -> Exp -> Exp
+instantiate (B _ y a) u = subst (singleSub (V y) u) a
+
+-------------------------------------------------------------------
+-- sub operations
+
+singleSub :: Var -> e -> Sub e
+singleSub (V x) = M.singleton x
+
+freeVarsSub :: Sub Exp -> S.IdIntSet
+freeVarsSub = foldMap freeVars
+
+--------------------------------------------------------
+-- var operations
+
+freeVarsVar :: Var -> S.IdIntSet
+freeVarsVar (V v) = S.singleton v
+{-# INLINE freeVarsVar #-}
+
+substVar :: Sub Exp -> Var -> Exp
+substVar s v@(V i) = M.findWithDefault (Var v) i s
+{-# INLINE substVar #-}
+
+--------------------------------------------------------
+-- bind operations
+
+bind :: Var -> Exp -> Bind Exp
+bind (V v) a = B (S.delete v (freeVars a)) v a
+
+unbind :: Bind Exp -> (Var, Exp)
+unbind (B _ x a) = (V x, a)
+
+instance (NFData a) => NFData (Bind a) where
+  rnf (B f x a) = rnf f `seq` rnf x `seq` rnf a
+
+instance Eq (Bind Exp) where
+  b1@(B _ x1 a1) == b2@(B _ x2 a2)
+    | x1 == x2 = a1 == a2
+    | x1 `S.member` freeVarsBind b2 = False
+    | x2 `S.member` freeVarsBind b1 = False
+    | otherwise =
+      a1 == subst s a2
+    where
+      s = M.singleton x2 (Var (V x1))
+
+freeVarsBind :: Bind Exp -> S.IdIntSet
+freeVarsBind (B fv _ _) = fv
+
+-- Apply a substitution to a binding.
+-- this function is used in the Bind instance of the SubstC class
+substBind :: Sub Exp -> Bind Exp -> Bind Exp
+substBind s b@(B _fv _x _a)
+  -- if the substitution is empty, don't do anything
+  | M.null s = b
+-- Use unbindHelper to prune the substitution by the fv set,
+-- and compose it with any potential renaming to avoid capture
+substBind s b = bind (V x) (subst s' a)
+  where
+    (x, s', a) = unbindHelper s b
+
+-- | This part does the dirty work with pushing a substitution through
+-- the binder. It returns but does not actually apply the substitution.
+-- This has two steps:
+-- 1. (potentially) renaming bound variable to avoid capture
+-- 2. pruning the substitution by the free variables to terminate early
+unbindHelper :: M.IdIntMap Exp -> Bind c -> (IdInt, M.IdIntMap Exp, c)
+unbindHelper s (B fv x a)
+  | x `S.member` fv_s = (y, M.insert x (Var (V y)) s', a)
+  -- usual case, but prune substitution
+  | otherwise = (x, s', a)
+  where
+    -- restrict to the free variables of the term
+    s' = M.restrictKeys s fv
+    fv_s = freeVarsSub s'
+    y = maximum (fmap S.varSetMax [fv, fv_s])

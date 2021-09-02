@@ -50,11 +50,6 @@ import qualified LocallyNameless.Lazy.ParOpt
 import qualified LocallyNameless.Lazy.ParScoped
 import qualified LocallyNameless.Lazy.SupportOpt
 import qualified LocallyNameless.Lazy.TypedOtt
-import qualified LocallyNameless.Lazy.UGEBind
-import qualified LocallyNameless.Lazy.UGSubstBind
-import qualified LocallyNameless.Lazy.UGSubstEBind
-import qualified LocallyNameless.Lazy.UnboundGenerics
-import qualified LocallyNameless.Lazy.UnboundRep
 import qualified LocallyNameless.Opt
 import qualified LocallyNameless.Ott
 import qualified LocallyNameless.ParOpt
@@ -63,18 +58,12 @@ import qualified LocallyNameless.SupportInstOpt
 import qualified LocallyNameless.SupportOpt
 import qualified LocallyNameless.TypedOpt
 import qualified LocallyNameless.TypedOtt
-import qualified LocallyNameless.UGEBind
-import qualified LocallyNameless.UGSubstBind
-import qualified LocallyNameless.UGSubstEBind
-import qualified LocallyNameless.UNGSubstBind
-import qualified LocallyNameless.UnboundGenerics
-import qualified LocallyNameless.UnboundNonGenerics
-import qualified LocallyNameless.UnboundRep
 import qualified Named.Lazy.NominalG
 import qualified Named.Lazy.Simple
 import qualified Named.Lazy.SimpleGH
 import qualified Named.Lazy.SimpleH
 import qualified Named.Lazy.SimpleM
+import qualified Named.Lennart
 import qualified Named.Nom
 import qualified Named.NominalG
 import qualified Named.Simple
@@ -82,6 +71,13 @@ import qualified Named.SimpleGH
 import qualified Named.SimpleH
 import qualified Named.SimpleM
 import qualified Named.Unique
+import qualified Unbound.UGEBind
+import qualified Unbound.UGSubstBind
+import qualified Unbound.UGSubstEBind
+import qualified Unbound.UNGSubstBind
+import qualified Unbound.UnboundGenerics
+import qualified Unbound.UnboundNonGenerics
+import qualified Unbound.UnboundRep
 import Util.Impl (LambdaImpl)
 
 -- | Implementations used in the benchmarking/test suite
@@ -209,27 +205,20 @@ locallyNameless =
     --LocallyNameless.Opt.impl
     LocallyNameless.SupportOpt.impl,
     --LocallyNameless.TypedOpt.impl
-    LocallyNameless.SupportInstOpt.impl,
+    LocallyNameless.SupportInstOpt.impl
     --LocallyNameless.GenericOpt.impl,
     --LocallyNameless.GenericInstOpt.impl
-    -- LocallyNameless.TypedOpt.impl,
-    --LocallyNameless.UnboundRep.impl, -- unbound
-    --LocallyNameless.UnboundGenerics.impl, -- unbound-generics (original)
-    --LocallyNameless.UnboundNonGenerics.impl,
-    LocallyNameless.UGSubstBind.impl, -- unbound-generics mod2 -- PASSES
-    LocallyNameless.UNGSubstBind.impl -- PASSES
-    --LocallyNameless.UGEBind.impl, -- unbound-generics mod2 -- FAILS test case
-    -- LocallyNameless.UGSubstEBind.impl -- unbound-generics mod2 -- FAILS test cases
+    -- LocallyNameless.TypedOpt.impl
   ]
 
 unbound :: [LambdaImpl]
 unbound =
-  [ LocallyNameless.UnboundRep.impl, -- unbound
-    LocallyNameless.UnboundGenerics.impl, -- unbound-generics (original)
-    LocallyNameless.UnboundNonGenerics.impl,
-    LocallyNameless.UGEBind.impl, -- unbound-generics mod2
-    LocallyNameless.UGSubstBind.impl, -- unbound-generics mod2
-    LocallyNameless.UGSubstEBind.impl -- unbound-generics mod2
+  [ Unbound.UnboundRep.impl, -- unbound
+    Unbound.UnboundGenerics.impl, -- unbound-generics (original)
+    Unbound.UnboundNonGenerics.impl,
+    Unbound.UGEBind.impl, -- unbound-generics mod2
+    Unbound.UGSubstBind.impl, -- unbound-generics mod2
+    Unbound.UGSubstEBind.impl -- unbound-generics mod2
   ]
 
 locallyNameless_lazy :: [LambdaImpl]
@@ -240,13 +229,7 @@ locallyNameless_lazy =
     LocallyNameless.Lazy.ParOpt.impl,
     LocallyNameless.Lazy.Opt.impl,
     LocallyNameless.Lazy.SupportOpt.impl,
-    LocallyNameless.Lazy.GenericOpt.impl,
-    -- LocallyNameless.Lazy.TypedOpt.impl,
-    LocallyNameless.Lazy.UnboundRep.impl, -- unbound
-    LocallyNameless.Lazy.UnboundGenerics.impl, -- unbound-generics
-    LocallyNameless.Lazy.UGEBind.impl, -- unbound-generics mod2
-    LocallyNameless.Lazy.UGSubstBind.impl,
-    LocallyNameless.Lazy.UGSubstEBind.impl -- unbound-generics mod2
+    LocallyNameless.Lazy.GenericOpt.impl
   ]
 
 locallyNameless_opt :: [LambdaImpl]
@@ -292,10 +275,8 @@ hackage =
     Named.NominalG.impl, -- nominal, generally too slow (12s vs. <200 ms for everything else)
     -- https://hackage.haskell.org/package/nominal
     Named.Lazy.NominalG.impl,
-    LocallyNameless.UnboundRep.impl, -- unbound
-    LocallyNameless.Lazy.UnboundRep.impl, -- unbound
-    LocallyNameless.UnboundGenerics.impl, -- unbound-generics
-    LocallyNameless.Lazy.UnboundGenerics.impl, -- unbound-generics
+    Unbound.UnboundRep.impl, -- unbound
+    Unbound.UnboundGenerics.impl, -- unbound-generics
     DeBruijn.Bound.impl, -- bound
     DeBruijn.Lazy.Bound.impl -- bound
   ]
@@ -319,10 +300,6 @@ fast =
     LocallyNameless.Opt.impl,
     LocallyNameless.Lazy.Opt.impl,
     LocallyNameless.SupportInstOpt.impl,
-    --LocallyNameless.SupportOpt.impl,
-    --LocallyNameless.Lazy.SupportOpt.impl,
-    --LocallyNameless.GenericOpt.impl,
-    --LocallyNameless.Lazy.GenericOpt.impl,
     LocallyNameless.GenericInstOpt.impl,
     LocallyNameless.ParOpt.impl,
     LocallyNameless.Lazy.ParOpt.impl,
@@ -404,10 +381,8 @@ fast_debruijn_lazy =
 fast_locally_nameless :: [LambdaImpl]
 fast_locally_nameless =
   [ LocallyNameless.Opt.impl,
-    LocallyNameless.ParOpt.impl,
+    LocallyNameless.ParOpt.impl
     --    LocallyNameless.TypedOpt.impl,
-    LocallyNameless.UGSubstBind.impl,
-    LocallyNameless.UnboundGenerics.impl -- unbound-generics
   ]
 
 fast_named :: [LambdaImpl]
@@ -424,7 +399,6 @@ slow =
     DeBruijn.Par.P.impl,
     LocallyNameless.ParScoped.impl,
     --    LocallyNameless.TypedOtt.impl,
-    LocallyNameless.UnboundRep.impl, -- unbound
     Named.Simple.impl,
     Named.Unique.impl
   ]
@@ -448,7 +422,8 @@ basic =
 
 basic_strict :: [LambdaImpl]
 basic_strict =
-  [ Named.Simple.impl,
+  [ Named.Lennart.impl,
+    Named.Simple.impl,
     DeBruijn.Lennart.impl,
     LocallyNameless.Ott.impl
   ]

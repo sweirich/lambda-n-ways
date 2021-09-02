@@ -9,6 +9,11 @@ Many implementations come with both strict and lazy variations.
   Renames bound variables to avoid capture.
   This version fixes a bug from Lennart's original version.
 
+- Lennart.SimpleOrig
+
+  Lennart's original version. Works for the large normalization benchmark, 
+  but fails some tests.
+
 - Lennart.Unique
 
   Maintains the invariant that all bound variables are unique. Needs to 
@@ -36,10 +41,8 @@ The algorithm given in Pierce's Types and Programming Languages, translated from
 
 + DeBruijn.Cornell/DeBruijn.Lift
 
-  Two versions of an implementation found in the Cornell lecture notes:
+  Two versions of an implementation described in the Cornell lecture notes:
   https://www.cs.cornell.edu/courses/cs4110/2018fa/lectures/lecture15.pdf 
-
-+ List (deprecated)
 
 ## Variants for "Parallel Substitution"
 
@@ -92,18 +95,18 @@ The algorithm given in Pierce's Types and Programming Languages, translated from
 
 # Locally-Nameless implementations (both strict and lazy)
 
-+ UnboundRep
-
-  Uses the [unbound](https://hackage.haskell.org/package/unbound) library
-  
-+ UnboundGenerics/UGSubstBind
-
-  Uses Stephanie's fork of the [unbound-generics](https://github.com/sweirich/unbound-generics) library (a port of Unbound that uses GHC.Generics). 
-
-+ Ott/Opt/SupportOpt/GenericOpt
++ Ott/Opt/SupportInstOpt/GenericInstOpt
 
   Various versions that start with the output of Ott's locally nameless backend, and then 
-  optimize the deBruijn index portion similar to the Par implementations above.
+  optimize the deBruijn index portion.
+
+  -- Ott: translated from Ott's locally nameless Coq backend
+  -- Opt: optimized by multi-bv-substitutions/multi-close
+  -- SupportInstOpt: uses library + type classes
+  -- GenericInstOpt: uses library + type classes + generic programming
+
+  -- SupportOpt (WIP: also optimizing open & free var substitution)
+  -- GenericOpt (WIP: also optimizing open & free var substitution)
 
 + ParScoped/ParOpt
 
@@ -115,24 +118,53 @@ The algorithm given in Pierce's Types and Programming Languages, translated from
 
 # Named representations
 
+  (See also Lazy versions of these modules)
+
+- Named.Lennart
+
+  Lennart.Simple, but with strictness annotations on the datatype
+
 - Named.Simple
 
   Like Lennart.Simple
-
-- Named.NominalG 
-
-  Uses [nominal](https://hackage.haskell.org/package/nominal) package & generic programming
-
+  --     strict datatype for expressions, with unpacked fields
+  --     sets instead of lists for free variables
+  --     map instead of single substitution for renaming
+  --     fvset tracked during substitution
+  
 - Named.SimpleH
 
-  Optimizes the "simple" approach by caching the substitution and free variable set at binders. 
+  Optimizes the "simple" approach by caching free variable set at binders. 
 
 - Named.SimpleGH
+
   Uses library + generic programming to make it easy to use SimpleH.
 
 - Named.SimpleM
 
   Version of SimpleH that uses a freshness monad to generate fresh variables.
+
+- Named.NominalG 
+
+  Uses [nominal](https://hackage.haskell.org/package/nominal) package & generic programming
+
+- Named.Nom
+
+  Uses [nom](https://hackage.haskell.org/package/nom) package
+
+- Named.Unique
+
+  Like Lennart.Unique
+
+# Variations that use Unbound or unbound-generics
+
++ Unbound.UnboundRep
+
+  Uses the [unbound](https://hackage.haskell.org/package/unbound) library
+  
++ Unbound.UnboundGenerics/UGSubstBind
+
+  Uses Stephanie's fork of the [unbound-generics](https://github.com/sweirich/unbound-generics) library (a port of Unbound that uses GHC.Generics). 
 
 
 # Other

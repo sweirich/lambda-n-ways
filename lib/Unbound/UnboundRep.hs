@@ -4,7 +4,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE UndecidableInstances #-}
 
-module LocallyNameless.UnboundRep (impl) where
+module Unbound.UnboundRep (impl) where
 
 import qualified Control.DeepSeq as DS
 import Control.Monad.Trans (lift)
@@ -58,7 +58,7 @@ $(U.derive [''Exp])
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "LocallyNameless.UnboundRep",
+    { impl_name = "Unbound.UnboundRep",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
       impl_nf = nf,

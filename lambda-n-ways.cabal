@@ -34,10 +34,8 @@ library
       DeBruijn.CPDT
       DeBruijn.Lennart
       DeBruijn.Lift
-      -- DeBruijn.List
       DeBruijn.Bound
       DeBruijn.Nested
---      DeBruijn.Nested2
       DeBruijn.Kit
       DeBruijn.Par.P
       DeBruijn.Par.B
@@ -51,10 +49,8 @@ library
       DeBruijn.Lazy.CPDT
       DeBruijn.Lazy.Lennart
       DeBruijn.Lazy.Lift
-      -- DeBruijn.Lazy.List
       DeBruijn.Lazy.Bound
       DeBruijn.Lazy.Nested
-      -- DeBruijn.Lazy.Nested2
       DeBruijn.Lazy.TAPL
       DeBruijn.Lazy.Kit
       DeBruijn.Lazy.Par.P
@@ -74,13 +70,6 @@ library
       LocallyNameless.ParOpt
       LocallyNameless.TypedOtt
       LocallyNameless.TypedOpt
-      LocallyNameless.UnboundRep
-      LocallyNameless.UnboundGenerics
-      LocallyNameless.UnboundNonGenerics
-      LocallyNameless.UGSubstBind
-      LocallyNameless.UGEBind
-      LocallyNameless.UGSubstEBind
-      LocallyNameless.UNGSubstBind
       LocallyNameless.Lazy.Ott
       LocallyNameless.Lazy.Opt
       LocallyNameless.Lazy.SupportOpt
@@ -88,24 +77,24 @@ library
       LocallyNameless.Lazy.ParScoped
       LocallyNameless.Lazy.ParOpt
       LocallyNameless.Lazy.TypedOtt
+      Unbound.UnboundRep
+      Unbound.UnboundGenerics
+      Unbound.UnboundNonGenerics
+      Unbound.UGEBind
+      Unbound.UGSubstBind
+      Unbound.UGSubstEBind
+      Unbound.UNGSubstBind
 
---      LocallyNameless.Lazy.TypedOpt
-      LocallyNameless.Lazy.UnboundRep
-      LocallyNameless.Lazy.UnboundGenerics
-      LocallyNameless.Lazy.UGSubstBind
-      LocallyNameless.Lazy.UGEBind
-      LocallyNameless.Lazy.UGSubstEBind
-
-      Named.Simple
-      Named.Unique
       Lennart.HOAS
       Lennart.SimpleOrig
       Lennart.Simple
       Lennart.Unique
       Lennart.DeBruijn
       Lennart.DeBruijnC
+      Named.Lennart
+      Named.Simple
+      Named.Unique
       Named.Nom  
---      Named.Nominal
       Named.NominalG
       Named.SimpleH
       Named.SimpleGH
@@ -126,8 +115,7 @@ library
       Core.UniqDFM
       Core.UniqSet
       Core.Nf
---      Kmett.Type
---      Kmett.IndicesAndLevels
+
   ghc-options:  -O2 -funfolding-use-threshold=16 -fno-warn-unticked-promoted-constructors -fcross-module-specialise
   build-depends:
                   base >= 4.13

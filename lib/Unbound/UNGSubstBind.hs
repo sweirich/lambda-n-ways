@@ -2,7 +2,7 @@
 -- with this operation, the normalization function does not need
 -- to unbind terms before instantiation, saving a step. However, this
 -- operation is limited to single binding only
-module LocallyNameless.UGSubstBind (impl) where
+module Unbound.UNGSubstBind (impl) where
 
 import qualified Control.DeepSeq as DS
 import GHC.Generics (Generic)
@@ -14,7 +14,7 @@ import qualified Util.Lambda as LC
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "LocallyNameless.UGSubstBind",
+    { impl_name = "Unbound.UNGSubstBind",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
       impl_nf = nf,
@@ -32,18 +32,39 @@ data Exp
 
 instance DS.NFData Exp
 
--- With representation types, the default implementation of Alpha
--- provides alpha-equivalence, open, close, and free variable calculation.
+instance U.Alpha Exp where
+  {-# SPECIALIZE instance U.Alpha Exp #-}
 
-instance U.Alpha Exp
+  openMulti c np (Var n) = Var (U.openMulti c np n)
+  openMulti c np (Lam bnd) = Lam (U.openMulti c np bnd)
+  openMulti c np (App a1 a2) =
+    App (U.openMulti c np a1) (U.openMulti c np a2)
+  {-# INLINE U.openMulti #-}
 
--- | The subst class uses generic programming to implement capture
--- avoiding substitution. It just needs to know where the variables
--- are.
+  closeMulti c np (Var n) = Var (U.closeMulti c np n)
+  closeMulti c np (Lam bnd) = Lam (U.closeMulti c np bnd)
+  closeMulti c np (App a1 a2) =
+    App (U.closeMulti c np a1) (U.closeMulti c np a2)
+  {-# INLINE U.closeMulti #-}
+
+  aeq' c (Var x) (Var y) = U.aeq' c x y
+  aeq' c (Lam bnd1) (Lam bnd2) = U.aeq' c bnd1 bnd2
+  aeq' c (App a1 a2) (App b1 b2) = U.aeq' c a1 b1 && U.aeq' c a2 b2
+  {-# INLINE U.aeq' #-}
+
 instance U.Subst Exp Exp where
-  isvar (Var x) = Just (U.SubstName x)
-  isvar _ = Nothing
-  {-# INLINE U.isvar #-}
+  {-# SPECIALIZE instance U.Subst Exp Exp #-}
+
+  subst x b a@(Var y) = if x == y then b else a
+  subst x b (Lam bnd) = Lam (U.subst x b bnd)
+  subst x b (App a1 a2) = App (U.subst x b a1) (U.subst x b a2)
+  {-# INLINE U.subst #-}
+
+  substBvMulti x vs v@(Var y) = U.substBvMultiName v x vs y
+  substBvMulti x vs (Lam bnd) = Lam (U.substBvMulti x vs bnd)
+  substBvMulti x vs (App a1 a2) =
+    App (U.substBvMulti x vs a1) (U.substBvMulti x vs a2)
+  {-# INLINE U.substBvMulti #-}
 
 {-# SPECIALIZE U.aeq :: Exp -> Exp -> Bool #-}
 

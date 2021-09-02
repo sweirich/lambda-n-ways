@@ -2,7 +2,8 @@ The DeBruijn module implements the Normal Form function by
 using de Bruijn indicies. 
 
 It is originally from Lennart Augustsson's repository
-but has been modified to to fit into this setting.
+but has been modified to to fit into this setting and 
+makes the entire datatype strict.
 
 
 > module DeBruijn.Lennart(impl, toDB, fromDB, nfd, nfi) where

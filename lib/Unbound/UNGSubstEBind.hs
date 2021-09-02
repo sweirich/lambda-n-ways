@@ -1,6 +1,6 @@
 -- | uses unbound-generics library with new "EBind" and "substEBind"
 -- functions
-module LocallyNameless.UGSubstEBind (impl) where
+module Unbound.UNGSubstEBind (impl) where
 
 import qualified Control.DeepSeq as DS
 import Control.Monad.Trans (MonadTrans (lift))
@@ -14,7 +14,7 @@ import qualified Util.Stats as Stats
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "LocallyNameless.UGSubstEBind",
+    { impl_name = "Unbound.UNGSubstEBind",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
       impl_nf = nf,
@@ -58,14 +58,13 @@ instance U.Subst Exp Exp where
 nf :: Exp -> Exp
 nf = U.runFreshM . nfd
 
-name :: U.Name Exp
-name = U.s2n "x"
+-- Computing the normal form proceeds as usual.
 
 nfd :: Exp -> U.FreshM Exp
 nfd e@(Var _) = return e
 nfd (Lam e) =
   do
-    x <- U.fresh name
+    x <- U.fresh (U.s2n "x")
     let e' = U.substEBind e (Var x)
     e1 <- nfd e'
     return $ Lam (U.ebind x e1)

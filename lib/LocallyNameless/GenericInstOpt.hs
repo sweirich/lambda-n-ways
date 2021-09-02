@@ -2,7 +2,6 @@
 -- Then with multi substitutions
 -- And caching openning substitutions at binders
 -- and caching closing substitutions at binders
--- and removing types so we can use ints instead of unary nats
 -- and using support.SubstOpt classes
 -- and generic programming
 module LocallyNameless.GenericInstOpt (impl, substFv, fv) where

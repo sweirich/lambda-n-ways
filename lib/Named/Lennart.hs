@@ -6,19 +6,14 @@
 -- alpha-renames bound variables during substitution if they would ever
 -- capture a free variable.
 -- It is based on Lennart Augustsson's version from "lambda-calculus cooked four ways"
--- however applies simple optimizations:
---     strict datatype for expressions, with unpacked fields
---     sets instead of lists for free variables
---     map instead of single substitution for renaming
---     fvset tracked during substitution
-module Named.Simple (nf, whnf, nfi, impl, subst) where
+-- but fixes a bug in selecting free variables for renaming and makes the data type
+-- definition strict
+module Named.Lennart (impl) where
 
 import Control.Monad.Except
 import qualified Control.Monad.State as State
 import Data.List (intersperse, union, (\\))
-import Util.IdInt (IdInt)
-import qualified Util.IdInt.Map as M
-import qualified Util.IdInt.Set as S
+import Util.IdInt (IdInt, firstBoundId)
 import Util.Impl (LambdaImpl (..))
 import Util.Imports
 import qualified Util.Lambda as LC
@@ -27,7 +22,7 @@ import qualified Util.Stats as Stats
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "Named.Simple",
+    { impl_name = "Named.Lennart",
       impl_fromLC = fromLC,
       impl_toLC = toLC,
       impl_nf = nf,
@@ -50,33 +45,32 @@ toLC (Var v) = LC.Var v
 toLC (Lam v e) = LC.Lam v (toLC e)
 toLC (App a b) = LC.App (toLC a) (toLC b)
 
-freeVars :: Exp -> S.IdIntSet
-freeVars (Var v) = S.singleton v
-freeVars (Lam v e) = freeVars e S.\\ S.singleton v
-freeVars (App f a) = freeVars f `S.union` freeVars a
+freeVars :: Exp -> [IdInt]
+freeVars (Var v) = [v]
+freeVars (Lam v e) = freeVars e \\ [v]
+freeVars (App f a) = freeVars f `union` freeVars a
 
--- Compute *all* variables in an expression.
+-- Compute all variables in an expression.
 
-allVars :: Exp -> S.IdIntSet
-allVars (Var v) = S.singleton v
+allVars :: Exp -> [IdInt]
+allVars (Var v) = [v]
 allVars (Lam _ e) = allVars e
-allVars (App f a) = allVars f `S.union` allVars a
+allVars (App f a) = allVars f `union` allVars a
 
---------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------
 
 applyPermLC :: LC.Perm IdInt -> Exp -> Exp
 applyPermLC m (Var x) = Var (LC.applyPerm m x)
 applyPermLC m (Lam x e) = Lam (LC.applyPerm m x) (applyPermLC m e)
 applyPermLC m (App t u) = App (applyPermLC m t) (applyPermLC m u)
 
--- inefficient version
 aeq :: Exp -> Exp -> Bool
 aeq = aeqd
   where
     aeqd (Var v1) (Var v2) = v1 == v2
     aeqd (Lam v1 e1) (Lam v2 e2)
       | v1 == v2 = aeqd e1 e2
-      | v1 `S.member` freeVars (Lam v2 e2) = False
+      | v1 `elem` freeVars (Lam v2 e2) = False
       | otherwise = aeqd e1 (applyPermLC p e2)
       where
         p = (LC.extendPerm LC.emptyPerm v1 v2)
@@ -84,25 +78,40 @@ aeq = aeqd
       aeqd a1 b1 && aeqd a2 b2
     aeqd _ _ = False
 
+----------------------------------------------------------------------------------
+
+-- NOTE: Lennart's original version had a bug.
+-- it chose the new variable avoiding free variables of s + all of the variables
+-- in the original term b.  However, this doesn't avoid any *new*
+-- binding variables that are introduced into b to avoid capture. Nor does
+-- it include x!
+-- Instead, this should be replaced by the variables of the
+-- current term e. (Just the freevariables is sufficient, but it
+-- is faster to collect all of the variables and not remove the bound ones.)
+
+newId :: [IdInt] -> IdInt
+newId vs = head ([firstBoundId ..] \\ vs)
+
 subst :: IdInt -> Exp -> Exp -> Exp
-subst x s b = sub (M.singleton x s) vs0 b
+subst x s b = sub b
   where
-    sub :: M.IdIntMap Exp -> S.IdIntSet -> Exp -> Exp
-    sub ss _ e@(Var v)
-      | v `M.member` ss = (ss M.! v)
+    sub e@(Var v)
+      | v == x = s
       | otherwise = e
-    sub ss vs e@(Lam v e')
-      | v `M.member` ss = e
-      | v `S.member` fvs = Lam v' (sub ss (S.insert v' vs) e'')
-      | otherwise = Lam v (sub ss (S.insert v vs) e')
+    sub e@(Lam v e')
+      -- terminate early
+      | v == x = e
+      -- watch out for capture!
+      | v `elem` fvs = Lam v' (sub e'')
+      -- usual case
+      | otherwise = Lam v (sub e')
       where
-        v' = S.newIdInt vs
+        v' = newId (vs `union` allVars e')
         e'' = subst v (Var v') e'
-    sub ss vs (App f g) = App (sub ss vs f) (sub ss vs g)
+    sub (App f a) = App (sub f) (sub a)
 
     fvs = freeVars s
-    vs0 = fvs `S.union` allVars b `S.union` (S.singleton x)
-{-# INLINE subst #-}
+    vs = x : fvs
 
 -- make sure we don't rename v' to variable we are sub'ing for
 

@@ -24,7 +24,7 @@ impl =
     }
 
 data Exp where
-  Var :: !Var -> Exp
+  Var :: {-# UNPACK #-} !Var -> Exp
   Abs :: !(Bind Exp) -> Exp
   App :: !Exp -> !Exp -> Exp
   deriving (Generic, Eq, Show)

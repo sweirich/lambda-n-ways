@@ -3,8 +3,7 @@
 -- And caching bound variable substitutions at binders
 --    (in this file, bv subst is called "open")
 -- and caching closing substitutions at binders
--- (this version uses instantiate/bv substitution in nf)
--- and removing types so we can use ints instead of unary nats
+--    (this version uses instantiate/bv substitution in nf)
 module LocallyNameless.Opt (impl, substFv, fv) where
 
 import qualified Control.Monad.State as State
@@ -73,7 +72,6 @@ substFv u y = subst0
       (Var_f x) -> (if x == y then u else (Var_f x))
       (Abs b) -> Abs (bind (subst0 (unbind b)))
       -- ALT: (Abs b) -> Abs (substBind u y b)
-      -- the version w/o substBind is actually faster for some reason
       (App e1 e2) -> App (subst0 e1) (subst0 e2)
 
 fv :: Exp -> Set IdInt
