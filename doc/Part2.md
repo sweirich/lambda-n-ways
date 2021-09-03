@@ -183,4 +183,4 @@ All results are available in the repository, but you'll need to look at the talk
 
 These results were obtained by executing the command `make normalize` when `Suite.hs` has been directed to benchmark the set `ifl_talk`.
 
-[Next page](doc/Part3.md)
+[Next page](Part3.md)

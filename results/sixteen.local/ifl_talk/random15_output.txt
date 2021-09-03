@@ -1,0 +1,87 @@
+benchmarking random15/Lennart.Simple/
+time                 549.4 ms   (524.6 ms .. 572.8 ms)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 548.3 ms   (544.1 ms .. 551.2 ms)
+std dev              4.229 ms   (1.728 ms .. 5.412 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking random15/Lennart.DeBruijn/
+time                 1.123 ms   (1.110 ms .. 1.136 ms)
+                     0.999 R²   (0.997 R² .. 1.000 R²)
+mean                 1.123 ms   (1.117 ms .. 1.133 ms)
+std dev              25.71 μs   (17.88 μs .. 43.99 μs)
+variance introduced by outliers: 12% (moderately inflated)
+
+benchmarking random15/LocallyNameless.Lazy.Ott/
+time                 126.4 ms   (123.9 ms .. 129.9 ms)
+                     0.999 R²   (0.998 R² .. 1.000 R²)
+mean                 125.0 ms   (124.4 ms .. 126.4 ms)
+std dev              1.413 ms   (455.4 μs .. 2.230 ms)
+variance introduced by outliers: 11% (moderately inflated)
+
+benchmarking random15/Named.Lennart/
+time                 510.0 ms   (494.7 ms .. 544.0 ms)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 496.5 ms   (492.7 ms .. 503.5 ms)
+std dev              6.843 ms   (1.245 ms .. 8.782 ms)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking random15/Named.Simple/
+time                 177.4 ms   (176.6 ms .. 178.0 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 176.4 ms   (175.7 ms .. 177.0 ms)
+std dev              983.0 μs   (672.9 μs .. 1.404 ms)
+variance introduced by outliers: 12% (moderately inflated)
+
+benchmarking random15/DeBruijn.Lennart/
+time                 327.2 ms   (322.4 ms .. 332.1 ms)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 327.9 ms   (325.9 ms .. 329.6 ms)
+std dev              2.266 ms   (1.433 ms .. 3.135 ms)
+variance introduced by outliers: 16% (moderately inflated)
+
+benchmarking random15/LocallyNameless.Ott/
+time                 233.4 ms   (229.8 ms .. 236.2 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 237.6 ms   (235.4 ms .. 239.5 ms)
+std dev              2.604 ms   (1.598 ms .. 3.667 ms)
+variance introduced by outliers: 14% (moderately inflated)
+
+benchmarking random15/Named.SimpleH/
+time                 5.934 ms   (5.905 ms .. 5.961 ms)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 5.921 ms   (5.891 ms .. 5.952 ms)
+std dev              90.57 μs   (72.03 μs .. 127.6 μs)
+
+benchmarking random15/DeBruijn.Par.B/
+time                 1.170 ms   (1.163 ms .. 1.177 ms)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 1.189 ms   (1.182 ms .. 1.196 ms)
+std dev              23.12 μs   (19.20 μs .. 28.56 μs)
+
+benchmarking random15/LocallyNameless.Opt/
+time                 14.38 ms   (14.29 ms .. 14.46 ms)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 14.41 ms   (14.36 ms .. 14.51 ms)
+std dev              191.8 μs   (112.0 μs .. 305.8 μs)
+
+benchmarking random15/Named.SimpleGH/
+time                 9.032 ms   (8.982 ms .. 9.094 ms)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 9.141 ms   (9.096 ms .. 9.216 ms)
+std dev              158.5 μs   (99.23 μs .. 240.2 μs)
+
+benchmarking random15/DeBruijn.Par.GB/
+time                 1.471 ms   (1.443 ms .. 1.505 ms)
+                     0.997 R²   (0.994 R² .. 0.999 R²)
+mean                 1.453 ms   (1.441 ms .. 1.471 ms)
+std dev              45.93 μs   (32.63 μs .. 80.28 μs)
+variance introduced by outliers: 20% (moderately inflated)
+
+benchmarking random15/LocallyNameless.GenericInstOpt/
+time                 24.64 ms   (23.17 ms .. 26.07 ms)
+                     0.989 R²   (0.981 R² .. 0.996 R²)
+mean                 23.07 ms   (22.63 ms .. 23.71 ms)
+std dev              1.195 ms   (811.0 μs .. 1.517 ms)
+variance introduced by outliers: 19% (moderately inflated)
+

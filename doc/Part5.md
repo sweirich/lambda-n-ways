@@ -5,7 +5,7 @@ This project was inspired by Lennart Augustsson's "Lambda Calculus Four Ways" as
 
 * Cheney - FreshLib (names)
 * Weirich and Yorgey - Unbound (locally nameless)
-   Modern version: unbound-generics by Aleksey Kliger
+* Modern version of unbound: unbound-generics by Aleksey Kliger
 * Kmett - Bound  (de Bruijn indices)
 
 
@@ -28,6 +28,7 @@ What you have seen:
 Future work:
 - Publish these three libraries as a separate Haskell package
 - Generalize to pattern binding
+- Update unbound-generics with these ideas
 
 
 
