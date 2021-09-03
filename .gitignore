@@ -16,3 +16,5 @@ stack.yaml.lock
 *~
 ~$*.pptx
 .DS_Store
+.vscode/
+.stack-work/
