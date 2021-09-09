@@ -1,14 +1,16 @@
 -- | Based directly on transliteration of Coq output for Ott Locally Nameless Backend
 -- Then with multi substitutions
--- And caching openning substitutions at binders
+-- And caching bound variable substitutions at binders
+--    (in this file, bv subst is called "open")
 -- and caching closing substitutions at binders
--- and removing types so we can use ints instead of unary nats
+--    (this version uses instantiate/bv substitution in nf)
 module LocallyNameless.Lazy.Opt (impl, substFv, fv) where
 
 import qualified Control.Monad.State as State
 import qualified Data.IntMap as IM
 import Data.List (elemIndex)
 import qualified Data.Set as Set
+import Debug.Trace
 import Util.IdInt (IdInt (..), firstBoundId)
 import Util.Impl (LambdaImpl (..))
 import Util.Imports hiding (S, from, to)
@@ -44,16 +46,16 @@ impl =
     { impl_name = "LocallyNameless.Lazy.Opt",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
-      impl_nf = nfd,
+      impl_nf = nf,
       impl_nfi = nfi,
       impl_aeq = (==)
     }
 
 data Exp where
-  Var_b :: Int -> Exp
-  Var_f :: IdInt -> Exp
-  Abs :: (Bind Exp) -> Exp
-  App :: Exp -> Exp -> Exp
+  Var_b :: {-# UNPACK #-} !Int -> Exp
+  Var_f :: !IdInt -> Exp
+  Abs :: !(Bind Exp) -> Exp
+  App :: !Exp -> !Exp -> Exp
   deriving (Generic, Eq)
 
 instance NFData Exp
@@ -70,7 +72,6 @@ substFv u y = subst0
       (Var_f x) -> (if x == y then u else (Var_f x))
       (Abs b) -> Abs (bind (subst0 (unbind b)))
       -- ALT: (Abs b) -> Abs (substBind u y b)
-      -- the version w/o substBind is actually faster for some reason
       (App e1 e2) -> App (subst0 e1) (subst0 e2)
 
 fv :: Exp -> Set IdInt
@@ -81,6 +82,9 @@ fv e =
     (Abs b) -> fv (unbind b)
     (App e1 e2) -> fv e1 `Set.union` fv e2
 
+fvBind :: Bind Exp -> Set IdInt
+fvBind b = fv (unbind b)
+
 --------------------------------------------------------------
 -- Caching open/close at binders.
 -- To speed up this implementation, we delay the execution of open / close
@@ -88,11 +92,11 @@ fv e =
 
 data Bind a where
   Bind :: !a -> Bind a
-  BindOpen :: ![a] -> !a -> Bind a
+  BindOpen :: !Int -> ![a] -> !a -> Bind a
   BindClose :: !Int -> ![IdInt] -> !a -> Bind a
 
 instance (NFData a) => NFData (Bind a) where
-  rnf (BindOpen s a) = rnf s `seq` rnf a
+  rnf (BindOpen k s a) = rnf k `seq` rnf s `seq` rnf a
   rnf (Bind a) = rnf a
   rnf (BindClose k v a) =
     rnf k
@@ -102,28 +106,19 @@ instance (NFData a) => NFData (Bind a) where
 instance (Eq Exp) => Eq (Bind Exp) where
   b1 == b2 = unbind b1 == unbind b2
 
--- create a binding by "abstracting a variable"
+-- | create a binding by abstracting a variable
 bind :: Exp -> Bind Exp
 bind = Bind
 {-# INLINEABLE bind #-}
 
+-- | expose the body of an abstraction
 unbind :: Bind Exp -> Exp
 unbind (Bind a) = a
-unbind (BindOpen ss a) =
-  multi_open_exp_wrt_exp_rec 0 ss a
+unbind (BindOpen k ss a) =
+  multi_open_exp_wrt_exp_rec k ss a
 unbind (BindClose k vs a) =
   multi_close_exp_wrt_exp_rec k vs a
 {-# INLINEABLE unbind #-}
-
-{-
-substBind :: Exp -> IdInt -> Bind Exp -> Bind Exp
-substBind u x (Bind a) = Bind (substFv u x a)
-substBind u x (BindOpen as a) = BindOpen (fmap (substFv u x) as) (substFv u x a)
-substBind u x (BindClose i xs a) = BindClose i xs (substFv u x a)
-  --  if x `elem` xs then
-  --    Bind (subst u x (unbind b))
-  --  else
--}
 
 -- keep track of the opening that has been done already
 -- via bound-variable substitution
@@ -139,27 +134,39 @@ multi_open_exp_wrt_exp_rec k vn e =
   case e of
     Var_b i -> openIdx i k vn
     Var_f x -> Var_f x
-    Abs (BindOpen vm b) ->
-      Abs (BindOpen (vm <> vn) b)
+    Abs (BindOpen _l _vm _b) -> error "we missed an optimization"
     Abs b ->
-      Abs (BindOpen vn (unbind b))
+      Abs (BindOpen (k + 1) vn (unbind b))
     (App e1 e2) ->
       App
         (multi_open_exp_wrt_exp_rec k vn e1)
         (multi_open_exp_wrt_exp_rec k vn e2)
 
+-- | Access the nth element in the list xs
+-- If n is out of range, return default a
+nthWithDefault :: forall a. a -> [a] -> Int -> a
+nthWithDefault a xs n
+  | n < 0 = a
+  | otherwise = go n xs
+  where
+    go :: Int -> [a] -> a
+    go 0 (x : _) = x
+    go j (_ : ys) = go (j - 1) ys
+    go _ [] = a
+{-# INLINE nthWithDefault #-}
+
 -- when we find a bound variable, determine whether we should
 -- leave it alone or replace it
 openIdx :: Int -> Int -> [Exp] -> Exp
-openIdx i k v
-  | i >= k = v !! (i - k)
-  | otherwise = Var_b 0
+openIdx i k v = nthWithDefault (Var_b i) v (i - k)
 {-# INLINEABLE openIdx #-}
 
-open :: Bind Exp -> Exp -> Exp
-open (BindOpen vs e) u = multi_open_exp_wrt_exp_rec 0 (u : vs) e -- this needs to be 0
-open b u = multi_open_exp_wrt_exp_rec 0 [u] (unbind b)
-{-# INLINEABLE open #-}
+instantiate :: Bind Exp -> Exp -> Exp
+instantiate (BindOpen 1 vs e) u = multi_open_exp_wrt_exp_rec 0 (u : vs) e
+instantiate (BindOpen _ _ _) _ = error "instantiate missed optimization opportunity"
+instantiate (BindClose 0 [y] e) (Var_f x) | x == y = trace "found close/open" $ e
+instantiate b u = multi_open_exp_wrt_exp_rec 0 [u] (unbind b)
+{-# INLINEABLE instantiate #-}
 
 -----------------------------------------------------------------
 
@@ -189,13 +196,33 @@ close x e = BindClose 0 [x] e
 
 {- --------------------------------------- -}
 
-type N a = State IdInt a
+fresh :: Exp -> IdInt
+fresh e = succ (fromMaybe firstBoundId (Set.lookupMax (fv e)))
 
-newVar :: (MonadState IdInt m) => m IdInt
-newVar = do
-  i <- get
-  put (succ i)
-  return i
+nf :: Exp -> Exp
+nf e@(Var_f _) = e
+nf (Var_b _) = error "should not reach this"
+nf (Abs e) =
+  let x = fresh (unbind e)
+      b' = nf (instantiate e (Var_f x))
+   in Abs (close x b')
+nf (App f a) = do
+  case whnf f of
+    Abs b -> nf (instantiate b a)
+    f' -> App (nf f') (nf a)
+
+-- Compute the weak head normal form.
+whnf :: Exp -> Exp
+whnf e@(Var_f _) = e
+whnf (Var_b _) = error "should not reach this"
+whnf e@(Abs _) = e
+whnf (App f a) =
+  case whnf f of
+    (Abs b) -> whnf (instantiate b a)
+    f' -> App f' a
+
+{-
+type N a = State IdInt a
 
 nfd :: Exp -> Exp
 nfd e = State.evalState (nf' e) v
@@ -208,12 +235,12 @@ nf' e@(Var_f _) = return e
 nf' (Var_b _) = error "should not reach this"
 nf' (Abs b) = do
   x <- newVar
-  b' <- nf' (open b (Var_f x))
+  b' <- nf' (instantiate b (Var_f x))
   return $ Abs (close x b')
 nf' (App f a) = do
   f' <- whnf f
   case f' of
-    Abs b -> nf' (open b a)
+    Abs b -> nf' (instantiate b a)
     _ -> App <$> nf' f' <*> nf' a
 
 -- Compute the weak head normal form.
@@ -224,10 +251,16 @@ whnf e@(Abs _) = return e
 whnf (App f a) = do
   f' <- whnf f
   case f' of
-    (Abs b) -> whnf (open b a)
+    (Abs b) -> whnf (instantiate b a)
     _ -> return $ App f' a
+-}
 
 -- Fueled version
+newVar :: (MonadState IdInt m) => m IdInt
+newVar = do
+  i <- get
+  put (succ i)
+  return i
 
 nfi :: Int -> Exp -> Stats.M Exp
 nfi n e = State.evalStateT (nfi' n e) v
@@ -243,12 +276,12 @@ nfi' _n e@(Var_f _) = return e
 nfi' _n (Var_b _) = error "should not reach this"
 nfi' n (Abs e) = do
   x <- newVar
-  e' <- nfi' (n - 1) (open e (Var_f x))
+  e' <- nfi' (n - 1) (instantiate e (Var_f x))
   return $ Abs (close x e')
 nfi' n (App f a) = do
   f' <- whnfi (n - 1) f
   case f' of
-    Abs b -> State.lift Stats.count >> nfi' (n - 1) (open b a)
+    Abs b -> State.lift Stats.count >> nfi' (n - 1) (instantiate b a)
     _ -> App <$> nfi' (n - 1) f' <*> nfi' (n -1) a
 
 -- Compute the weak head normal form.
@@ -260,7 +293,7 @@ whnfi _n e@(Abs _) = return e
 whnfi n (App f a) = do
   f' <- whnfi (n -1) f
   case f' of
-    (Abs b) -> State.lift Stats.count >> whnfi (n -1) (open b a)
+    (Abs b) -> State.lift Stats.count >> whnfi (n -1) (instantiate b a)
     _ -> return $ App f' a
 
 {- ------------------------------------------ -}

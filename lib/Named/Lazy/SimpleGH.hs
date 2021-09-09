@@ -35,13 +35,16 @@ instance NFData Exp
 -------------------------------------------------------------------
 
 instance VarC Exp where
+  {-# SPECIALIZE instance VarC Exp #-}
   var = Var
   isvar (Var v) = Just v
   isvar _ = Nothing
 
-instance FreeVarsC Exp
+instance FreeVarsC Exp where
+  {-# SPECIALIZE instance FreeVarsC Exp #-}
 
-instance SubstC Exp Exp
+instance SubstC Exp Exp where
+  {-# SPECIALIZE instance SubstC Exp Exp #-}
 
 -------------------------------------------------------------------
 

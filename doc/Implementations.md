@@ -204,3 +204,9 @@ Module supports computations over infinite structures using logical formulas and
 - Dolan and White, Shifted names
 http://tydeworkshop.org/2019-abstracts/paper16.pdf
 https://github.com/lpw25/shifted-names/tree/master/src
+
+- Namespaced de Bruijn
+https://www.haskellforall.com/2021/08/namespaced-de-bruijn-indices.html
+
+- OCaml bindlib
+https://github.com/rlepigre/ocaml-bindlib/

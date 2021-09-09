@@ -43,6 +43,7 @@ import qualified Lennart.Unique
 
 import qualified LocallyNameless.GenericInstOpt
 import qualified LocallyNameless.GenericOpt
+import qualified LocallyNameless.Lazy.GenericInstOpt
 import qualified LocallyNameless.Lazy.GenericOpt
 import qualified LocallyNameless.Lazy.Opt
 import qualified LocallyNameless.Lazy.Ott
@@ -83,7 +84,7 @@ import Util.Impl (LambdaImpl)
 -- | Implementations used in the benchmarking/test suite
 -- must be a single variable name for Makefile
 impls :: [LambdaImpl]
-impls = ifl_talk
+impls = love_all
 
 interleave :: [a] -> [a] -> [a]
 interleave (a1 : a1s) (a2 : a2s) = a1 : a2 : interleave a1s a2s
@@ -409,11 +410,11 @@ really_slow = [Named.NominalG.impl] -- nominal
 --------------------------------------------------------------
 --------------------------------------------------------------
 
-ifl_talk :: [LambdaImpl]
-ifl_talk = basic ++ basic_strict ++ opt ++ opt_generic
+love_talk :: [LambdaImpl]
+love_talk = basic_lazy ++ basic_strict ++ opt_lazy ++ opt_strict ++  opt_lazy_generic ++ opt_strict_generic 
 
-basic :: [LambdaImpl]
-basic =
+basic_lazy :: [LambdaImpl]
+basic_lazy =
   [ -- Lennart.SimpleOrig.impl,
     Lennart.Simple.impl,
     Lennart.DeBruijn.impl,
@@ -423,21 +424,59 @@ basic =
 basic_strict :: [LambdaImpl]
 basic_strict =
   [ Named.Lennart.impl,
-    Named.Simple.impl,
+    -- Named.Simple.impl,
     DeBruijn.Lennart.impl,
     LocallyNameless.Ott.impl
   ]
 
-opt :: [LambdaImpl]
-opt =
+opt_strict :: [LambdaImpl]
+opt_strict =
   [ Named.SimpleH.impl,
     DeBruijn.Par.B.impl,
     LocallyNameless.Opt.impl
   ]
 
-opt_generic :: [LambdaImpl]
-opt_generic =
+opt_lazy :: [LambdaImpl]
+opt_lazy =
+  [ Named.Lazy.SimpleH.impl,
+    DeBruijn.Lazy.Par.B.impl,
+    LocallyNameless.Lazy.Opt.impl
+  ]
+
+opt_strict_generic :: [LambdaImpl]
+opt_strict_generic =
   [ Named.SimpleGH.impl,
     DeBruijn.Par.GB.impl,
     LocallyNameless.GenericInstOpt.impl
+  ]
+
+opt_lazy_generic :: [LambdaImpl]
+opt_lazy_generic =
+  [ Named.Lazy.SimpleGH.impl,
+    DeBruijn.Lazy.Par.GB.impl,
+    LocallyNameless.Lazy.GenericInstOpt.impl
+  ]
+
+
+love_all = [
+  Lennart.Simple.impl,
+  Named.Lennart.impl,
+  Named.SimpleH.impl,
+  Named.Lazy.SimpleH.impl,
+  Named.SimpleGH.impl,
+  Named.Lazy.SimpleGH.impl,
+  
+  Lennart.DeBruijn.impl,
+  DeBruijn.Lennart.impl,
+  DeBruijn.Par.B.impl,  
+  DeBruijn.Lazy.Par.B.impl,
+  DeBruijn.Par.GB.impl,
+  DeBruijn.Lazy.Par.GB.impl,
+
+  LocallyNameless.Lazy.Ott.impl,  
+  LocallyNameless.Ott.impl,
+  LocallyNameless.Opt.impl,
+  LocallyNameless.Lazy.Opt.impl,
+  LocallyNameless.GenericInstOpt.impl,
+  LocallyNameless.Lazy.GenericInstOpt.impl
   ]

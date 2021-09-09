@@ -73,6 +73,7 @@ library
       LocallyNameless.Lazy.Ott
       LocallyNameless.Lazy.Opt
       LocallyNameless.Lazy.SupportOpt
+      LocallyNameless.Lazy.GenericInstOpt
       LocallyNameless.Lazy.GenericOpt
       LocallyNameless.Lazy.ParScoped
       LocallyNameless.Lazy.ParOpt
