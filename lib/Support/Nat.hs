@@ -5,6 +5,7 @@ module Support.Nat where
 
 import Control.DeepSeq (NFData (..))
 import Data.Kind (Type)
+import Data.Some
 
 data Nat = Z | S Nat
   deriving (Eq, Show)
@@ -29,6 +30,18 @@ type family Pred (n :: Nat) :: Nat where
 toInt :: Idx n -> Int
 toInt FZ = 0
 toInt (FS n) = 1 + toInt n
+
+fromInt :: Int -> Some SNat
+fromInt 0 = Some SZ
+fromInt n | n < 0 = error "negative"
+fromInt n = case fromInt (n -1) of
+  Some m -> Some (SS m)
+
+fromIntToIdx :: Int -> Some Idx
+fromIntToIdx 0 = Some FZ
+fromIntToIdx n | n < 0 = error "negative"
+fromIntToIdx n = case fromIntToIdx (n -1) of
+  Some m -> Some (FS m)
 
 -- update the index by a given amount
 shift :: SNat m -> Idx n -> Idx (Plus m n)
@@ -84,3 +97,7 @@ instance Show (Idx n) where
   show n = show (toInt n)
 
 ----------------------------------------------------
+
+sNat2Idx :: SNat n -> Idx ('S n)
+sNat2Idx SZ = FZ
+sNat2Idx (SS x) = FS (sNat2Idx x)

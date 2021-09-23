@@ -15,7 +15,7 @@ import Util.Imports
 
 -- | An IdInt is just another name for an Int. We only use the nonnegative Ints though
 newtype IdInt = IdInt Int
-  deriving (Eq, Ord, Generic)
+  deriving (Eq, Ord, Generic, Num)
 
 instance NFData IdInt
 
