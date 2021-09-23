@@ -9,8 +9,8 @@ import Util.IdInt (IdInt (..), firstBoundId)
 import qualified Util.IdInt.Set as Set
 import Util.Impl (LambdaImpl (..))
 import Util.Imports hiding (S, from, to)
-import qualified Util.Lambda as LC
 import qualified Util.Stats as Stats
+import qualified Util.Syntax.Lambda as LC
 
 impl :: LambdaImpl
 impl =

@@ -9,7 +9,7 @@ import GHC.Generics (Generic)
 import qualified Unbound.Generics.LocallyNameless as U
 import Util.IdInt (IdInt (..))
 import Util.Impl (LambdaImpl (..))
-import qualified Util.Lambda as LC
+import qualified Util.Syntax.Lambda as LC
 
 impl :: LambdaImpl
 impl =

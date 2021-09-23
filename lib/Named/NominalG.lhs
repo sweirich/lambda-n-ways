@@ -10,7 +10,7 @@ Implementation using the Nominal library (available from hackage)
 
 > module Named.NominalG(nf,nfi,impl) where
 > import Data.List(union, (\\))
-> import qualified Util.Lambda as LC
+> import qualified Util.Syntax.Lambda as LC
 > import Util.IdInt ( IdInt )
 
 > import Nominal

@@ -7,7 +7,7 @@ module Named.Kovacs where
 import Data.Maybe (fromJust)
 import Util.IdInt
 import Util.Impl
-import Util.Lambda
+import Util.Syntax.Lambda
 
 impl :: LambdaImpl
 impl =

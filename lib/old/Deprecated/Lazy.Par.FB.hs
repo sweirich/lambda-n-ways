@@ -17,7 +17,7 @@ import Text.PrettyPrint.HughesPJ
 import qualified Text.PrettyPrint.HughesPJ as PP
 import Util.IdInt
 import Util.Impl
-import Util.Lambda
+import Util.Syntax.Lambda
 
 impl :: LambdaImpl
 impl =

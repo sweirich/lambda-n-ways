@@ -28,8 +28,8 @@ import Util.Imports
     NFData (..),
     State,
   )
-import qualified Util.Lambda as LC
 import qualified Util.Stats as Stats
+import qualified Util.Syntax.Lambda as LC
 
 impl :: LambdaImpl
 impl =
@@ -297,7 +297,7 @@ whnf (App f a) = do
 ---------------------------------------------------------
 
 nfi :: Int -> Exp -> Stats.M Exp
-nfi k e = Stats.runF (nfdi k e) (succ (S.findMax (allVars e))) 
+nfi k e = Stats.runF (nfdi k e) (succ (S.findMax (allVars e)))
 
 nfdi :: Int -> Exp -> Stats.FM Exp
 nfdi 0 _e = Stats.doneFM

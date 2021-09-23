@@ -6,8 +6,8 @@ import Control.DeepSeq
 import Data.List (elemIndex)
 import Util.IdInt
 import Util.Impl
-import Util.Lambda
 import qualified Util.Stats as Stats
+import Util.Syntax.Lambda
 
 impl :: LambdaImpl
 impl =

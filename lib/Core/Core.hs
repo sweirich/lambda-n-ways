@@ -4,7 +4,7 @@ import Core.Unique
 import Data.List (foldl')
 import Data.Maybe (fromMaybe)
 import Util.IdInt
-import Util.Lambda
+import Util.Syntax.Lambda
 
 type Var = IdInt
 

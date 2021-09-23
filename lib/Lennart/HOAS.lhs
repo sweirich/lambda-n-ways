@@ -4,7 +4,7 @@ This makes it possible to use the native substitution of Haskell.
 
 > module Lennart.HOAS(impl) where
 > import qualified Data.Map as M
-> import Util.Lambda hiding (aeq)
+> import Util.Syntax.Lambda hiding (aeq)
 > import Util.IdInt
 > import Control.DeepSeq
 > import Data.Maybe(fromMaybe)
@@ -28,7 +28,7 @@ language.
 We still need to represent variables for free variables and also during
 conversion.
 
-> data HOAS = HVar IdInt | HLam (HOAS -> HOAS) | HApp HOAS HOAS
+> data HOAS = HVar {-# unpack #-} !IdInt | HLam !(HOAS -> HOAS) | HApp !HOAS !HOAS
 >
 > instance NFData HOAS where
 >   rnf (HVar i) = rnf i

@@ -17,7 +17,7 @@ import Data.Maybe
 import Data.Traversable
 import Util.IdInt
 import Util.Impl
-import Util.Lambda
+import Util.Syntax.Lambda
 
 -- show Var
 data Var b a

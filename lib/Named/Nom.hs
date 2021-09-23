@@ -21,8 +21,8 @@ import Language.Nominal.Utilities
 import Util.IdInt (IdInt (..))
 import Util.Impl (LambdaImpl (..))
 import Util.Imports
-import qualified Util.Lambda as LC
 import qualified Util.Stats as Stats
+import qualified Util.Syntax.Lambda as LC
 
 impl :: LambdaImpl
 impl =

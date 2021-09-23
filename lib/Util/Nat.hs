@@ -1,7 +1,7 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 
 -- | Natural numbers for dependent types
-module Support.Nat where
+module Util.Nat where
 
 import Control.DeepSeq (NFData (..))
 import Data.Kind (Type)
@@ -30,6 +30,10 @@ type family Pred (n :: Nat) :: Nat where
 toInt :: Idx n -> Int
 toInt FZ = 0
 toInt (FS n) = 1 + toInt n
+
+sNat2Int :: SNat n -> Int
+sNat2Int SZ = 0
+sNat2Int (SS n) = 1 + sNat2Int n
 
 fromInt :: Int -> Some SNat
 fromInt 0 = Some SZ

@@ -6,7 +6,6 @@ module DeBruijn.Par.Scoped (toDB, impl) where
 
 import Control.DeepSeq (NFData (..))
 import Data.Maybe (fromJust)
-import Support.Nat (Idx (..), Nat (..), toInt)
 import Support.Par.SubstScoped
 import Text.PrettyPrint.HughesPJ
   ( Doc,
@@ -19,8 +18,9 @@ import Text.PrettyPrint.HughesPJ
 import qualified Text.PrettyPrint.HughesPJ as PP
 import Util.IdInt (IdInt (..), firstBoundId)
 import Util.Impl (LambdaImpl (..))
-import Util.Lambda (LC (..))
+import Util.Nat (Idx (..), Nat (..), toInt)
 import qualified Util.Stats as Stats
+import Util.Syntax.Lambda (LC (..))
 
 impl :: LambdaImpl
 impl =

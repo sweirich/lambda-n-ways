@@ -17,19 +17,18 @@ Guillaume Allais, James Chapman, Conor McBride, James McKinna
 
 module DeBruijn.Kit (impl, prettyPrint) where
 
-import Support.Nat
-import Util.IdInt
 import Util.Impl
 import Util.Imports
-import Util.Lambda
+import Util.Nat
 import qualified Util.Stats as Stats
+import Util.Syntax.ScopedDeBruijn
 
 impl :: LambdaImpl
 impl =
   LambdaImpl
     { impl_name = "DeBruijn.Kit",
-      impl_fromLC = fromLC,
-      impl_toLC = toLC,
+      impl_fromLC = toDB,
+      impl_toLC = fromDB,
       impl_nf = nfd,
       impl_nfi = nfi,
       impl_aeq = (==)
@@ -38,20 +37,6 @@ impl =
 type Con = Nat
 
 type SCon = SNat
-
--- A variable is a fancy de Bruijn index
-
-data Term :: Nat -> Type where
-  DVar :: !(Idx g) -> Term g
-  DLam :: !(Term ('S g)) -> Term g
-  DApp :: !(Term g) -> !(Term g) -> Term g
-
-instance NFData (Term a) where
-  rnf (DVar i) = rnf i
-  rnf (DLam d) = rnf d
-  rnf (DApp a b) = rnf a `seq` rnf b
-
-deriving instance Eq (Term n)
 
 -- An (evaluation) environment is a collection of environment
 -- values covering a given context `g`.
@@ -179,48 +164,6 @@ prettyPrint g t = evalState (runConstant $ evalTerm prettyPrinting g t) names
     alphaInt = concatMap (\i -> fmap (: show i) alpha) [(0 :: Integer) ..]
 
 ------------------------------------------------------------------------
--- Conversion to/from LC IdInt
-------------------------------------------------------------------------
-
-toLCsem :: Semantics (Constant (LC IdInt)) (Constant (State [IdInt] (LC IdInt)))
-toLCsem =
-  Semantics
-    { weak = \_ -> Constant . runConstant,
-      embed = Constant . Var . IdInt . toInt,
-      var = Constant . return . runConstant,
-      app = \mf mt ->
-        Constant $ do
-          f <- runConstant mf
-          t <- runConstant mt
-          return $ App f t,
-      lam = \mbody -> Constant $ do
-        ys <- get
-        let (x : xs) = (ys :: [IdInt])
-        () <- put xs
-        body <- runConstant $ mbody (top refl) (Constant (Var x))
-        return $ Lam x body
-    }
-
-toLC :: Term Z -> LC IdInt
-toLC t = evalState (runConstant $ evalTerm toLCsem SZ t) names
-  where
-    names :: [IdInt]
-    names = [firstBoundId ..]
-
-fromLC :: LC IdInt -> Term Z
-fromLC = toT []
-  where
-    toT :: [(IdInt, Idx n)] -> LC IdInt -> Term n
-    toT vs (Var v) = DVar (fromJust (lookup v vs))
-    toT vs (Lam v b) = DLam b'
-      where
-        b' = toT ((v, FZ) : mapSnd FS vs) b
-    toT vs (App f a) = DApp (toT vs f) (toT vs a)
-
-mapSnd :: (a -> b) -> [(c, a)] -> [(c, b)]
-mapSnd f = map (second f)
-
-------------------------------------------------------------------------
 -- Benchmark normalization function (SCW)
 ------------------------------------------------------------------------
 
@@ -243,24 +186,22 @@ whnf (DApp f a) =
 instantiate :: Term ('S n) -> Term n -> Term n
 instantiate t u = substTe (singleSub u) t
 
-
 nfi :: Int -> Term a -> Stats.M (Term a)
 nfi 0 _e = Stats.done
 nfi _n e@(DVar _) = return e
-nfi n (DLam b) = DLam <$> nfi (n-1) b
+nfi n (DLam b) = DLam <$> nfi (n -1) b
 nfi n (DApp f a) = do
-    f' <- whnfi (n-1) f 
-    case f' of
-        DLam b -> Stats.count >> nfi (n-1) (instantiate b a)
-        _ -> DApp <$> nfi n f' <*> nfi n a
+  f' <- whnfi (n -1) f
+  case f' of
+    DLam b -> Stats.count >> nfi (n -1) (instantiate b a)
+    _ -> DApp <$> nfi n f' <*> nfi n a
 
 whnfi :: Int -> Term a -> Stats.M (Term a)
 whnfi 0 _e = Stats.done
 whnfi _n e@(DVar _) = return e
 whnfi _n e@(DLam _) = return e
 whnfi n (DApp f a) = do
-    f' <- whnfi (n-1) f 
-    case f' of
-        DLam b -> Stats.count >> whnfi (n-1) (instantiate b a)
-        _ -> return $ DApp f' a
-
+  f' <- whnfi (n -1) f
+  case f' of
+    DLam b -> Stats.count >> whnfi (n -1) (instantiate b a)
+    _ -> return $ DApp f' a

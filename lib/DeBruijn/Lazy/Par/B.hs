@@ -18,8 +18,8 @@ import Text.PrettyPrint.HughesPJ
 import qualified Text.PrettyPrint.HughesPJ as PP
 import Util.IdInt
 import Util.Impl
-import Util.Lambda
 import qualified Util.Stats as Stats
+import Util.Syntax.Lambda
 
 impl :: LambdaImpl
 impl =
@@ -59,6 +59,16 @@ nf :: DB -> DB
 nf e@(DVar _) = e
 nf (DLam b) = DLam (bind (nf (unbind b)))
 nf (DApp f a) =
+  case (nf f, nf a) of
+    (DLam b, va) ->
+      nf (instantiate b va)
+    (f', a') -> DApp f' a'
+
+{-
+nf :: DB -> DB
+nf e@(DVar _) = e
+nf (DLam b) = DLam (bind (nf (unbind b)))
+nf (DApp f a) =
   case whnf f of
     DLam b ->
       nf (instantiate b a)
@@ -71,7 +81,7 @@ whnf (DApp f a) =
   case whnf f of
     DLam b -> whnf (instantiate b a)
     f' -> DApp f' a
-
+-}
 ---------------------------------------------------------
 
 nfi :: Int -> DB -> Stats.M DB
@@ -90,7 +100,7 @@ whnfi _n e@(DVar _) = return e
 whnfi _n e@(DLam _) = return e
 whnfi n (DApp f a) = do
   f' <- whnfi (n -1) f
-  case whnf f' of
+  case f' of
     DLam b -> Stats.count >> whnfi (n -1) (instantiate b a)
     _ -> return $ DApp f' a
 

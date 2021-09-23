@@ -6,7 +6,7 @@ Compare this version to Lennart's version and the one called "Cornell".
 
 > module DeBruijn.Lazy.Lift(impl, toDB, fromDB, nfd, nfi) where
 > import Data.List(elemIndex)
-> import Util.Lambda
+> import Util.Syntax.Lambda
 > import Util.IdInt
 > import Control.DeepSeq
 > import qualified Util.Stats as Stats

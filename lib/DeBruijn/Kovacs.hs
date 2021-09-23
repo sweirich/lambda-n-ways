@@ -10,9 +10,9 @@
 -- Q1: Can we add laziness to the other nf functions in a nice way?
 module DeBruijn.Kovacs where
 
-import Util.DeBruijn
 import Util.IdInt
 import Util.Impl
+import Util.Syntax.DeBruijn
 import Prelude hiding (length, lookup)
 
 impl :: LambdaImpl
@@ -38,7 +38,7 @@ data Closure
   = Closure Env DB
 
 data Val
-  = VVar Lvl
+  = VVar {-# UNPACK #-} Lvl
   | VApp Val ~Val
   | VLam {-# UNPACK #-} Closure
 

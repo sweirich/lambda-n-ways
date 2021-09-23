@@ -20,8 +20,8 @@ import Text.PrettyPrint.HughesPJ
 import qualified Text.PrettyPrint.HughesPJ as PP
 import Util.IdInt
 import Util.Impl
-import Util.Lambda
 import qualified Util.Stats as Stats
+import Util.Syntax.Lambda
 
 impl :: LambdaImpl
 impl =

@@ -9,7 +9,7 @@ variables are unique.
 > {-# LANGUAGE ScopedTypeVariables #-}
 > module Named.Unique(nf,Named.Unique.aeq, 
 >                       toUnique, fromUnique, impl, Unique) where
-> import Util.Lambda as LC
+> import Util.Syntax.Lambda as LC
 > import qualified Data.Map as M
 > import qualified Util.IdInt.Set as S
 > import Control.Monad.State

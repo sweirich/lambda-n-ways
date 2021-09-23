@@ -1,16 +1,16 @@
 -- Common infrastructure for (strict) implementations with well-scoped
 -- DeBruijn indices
 -- Datatype definition, equality, NFData instance, conversion to/from named representation
-module Util.ScopedDeBruijn where
+module Util.Syntax.ScopedDeBruijn where
 
 import Control.DeepSeq
 import Data.List (elemIndex)
-import Support.Nat
 import Text.PrettyPrint.HughesPJ as PP
 import Util.IdInt
 import Util.Impl
 import Util.Imports hiding (from, to)
-import Util.Lambda
+import Util.Syntax.Lambda
+import Util.Nat
 
 data Term :: Nat -> Type where
   DVar :: !(Idx g) -> Term g

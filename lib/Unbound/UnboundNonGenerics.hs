@@ -10,8 +10,8 @@ import qualified Unbound.Generics.LocallyNameless as U
 import qualified Unbound.Generics.LocallyNameless.Bind as U
 import Util.IdInt (IdInt (..))
 import Util.Impl (LambdaImpl (..))
-import qualified Util.Lambda as LC hiding (aeq)
 import qualified Util.Stats as Stats
+import qualified Util.Syntax.Lambda as LC hiding (aeq)
 
 impl :: LambdaImpl
 impl =

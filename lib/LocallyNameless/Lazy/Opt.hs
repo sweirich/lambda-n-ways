@@ -14,8 +14,8 @@ import Debug.Trace
 import Util.IdInt (IdInt (..), firstBoundId)
 import Util.Impl (LambdaImpl (..))
 import Util.Imports hiding (S, from, to)
-import qualified Util.Lambda as LC
 import qualified Util.Stats as Stats
+import qualified Util.Syntax.Lambda as LC
 
 -- 0. Original (Ott derived version)
 -- lennart: 1.03s

@@ -19,7 +19,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module DeBruijnC (impl) where
 
-import Util.Lambda
+import Util.Syntax.Lambda
 import Util.IdInt
 import Data.List
 import Control.DeepSeq hiding (force)

@@ -1,7 +1,7 @@
-module Support.Vec where
+module Util.Vec where
 
-import Support.Nat
 import Util.Imports hiding (S)
+import Util.Nat
 import Prelude hiding (length)
 
 data Vec (n :: Nat) a where

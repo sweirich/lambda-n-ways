@@ -13,8 +13,8 @@ import Control.DeepSeq
 import Control.Monad
 import Util.IdInt
 import Util.Impl
-import Util.Lambda
 import qualified Util.Stats as Stats
+import Util.Syntax.Lambda
 
 impl :: LambdaImpl
 impl =
@@ -174,23 +174,22 @@ fromDB = from firstBoundId
     from n (DLam b) = Lam n (from (succ n) (apply (DVar n) b))
     from n (DApp (f, a)) = App (from n f) (from n a)
 
-
 nfi :: Int -> DB a -> Stats.M (DB a)
 nfi 0 _e = Stats.done
 nfi _n e@(DVar _) = return e
-nfi n (DLam b) = DLam <$> nfi (n-1) b
+nfi n (DLam b) = DLam <$> nfi (n -1) b
 nfi n (DApp (f, a)) = do
-    f' <- whnfi (n-1) f 
-    case f' of
-        DLam b -> Stats.count >> nfi (n-1) (apply a b)
-        _ -> DApp <$> ((,) <$> nfi n f' <*> nfi n a)
+  f' <- whnfi (n -1) f
+  case f' of
+    DLam b -> Stats.count >> nfi (n -1) (apply a b)
+    _ -> DApp <$> ((,) <$> nfi n f' <*> nfi n a)
 
 whnfi :: Int -> DB a -> Stats.M (DB a)
 whnfi 0 _e = Stats.done
 whnfi _n e@(DVar _) = return e
 whnfi _n e@(DLam _) = return e
 whnfi n (DApp (f, a)) = do
-    f' <- whnfi (n-1) f 
-    case f' of
-        DLam b -> Stats.count >> whnfi (n-1) (apply a b)
-        _ -> return $ DApp (f', a)
+  f' <- whnfi (n -1) f
+  case f' of
+    DLam b -> Stats.count >> whnfi (n -1) (apply a b)
+    _ -> return $ DApp (f', a)

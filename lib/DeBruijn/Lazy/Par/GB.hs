@@ -12,8 +12,8 @@ import GHC.Generics (Generic (..))
 import Support.Par.Subst
 import Util.IdInt (IdInt (..), firstBoundId)
 import Util.Impl
-import Util.Lambda
 import qualified Util.Stats as Stats
+import Util.Syntax.Lambda
 
 impl :: LambdaImpl
 impl =

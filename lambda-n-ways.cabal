@@ -15,7 +15,10 @@ library
   exposed-modules:
       Util.Imports
       Util.Impl
-      Util.Lambda
+      Util.Syntax.Lambda
+      Util.Syntax.Named
+      Util.Syntax.DeBruijn
+      Util.Syntax.ScopedDeBruijn
       Util.Misc
       Suite
       QuickBench
@@ -24,7 +27,8 @@ library
       Util.IdInt.Map
       Util.IdInt.Set
       Util.Stats
-      Support.Nat
+      Util.Nat
+      Util.Vec
       Support.Par.Subst
       Support.Par.SubstScoped
       Support.SubstH
@@ -95,6 +99,7 @@ library
       Named.Lennart
       Named.Simple
       Named.Unique
+      Named.Kovacs
       Named.Nom  
       Named.NominalG
       Named.SimpleH
@@ -116,6 +121,10 @@ library
       Core.UniqDFM
       Core.UniqSet
       Core.Nf
+      DeBruijn.Krivine
+      DeBruijn.KrivineScoped
+      DeBruijn.Kovacs
+      DeBruijn.KovacsScoped
 
   ghc-options:  -O2 -funfolding-use-threshold=16 -fno-warn-unticked-promoted-constructors -fcross-module-specialise
   build-depends:

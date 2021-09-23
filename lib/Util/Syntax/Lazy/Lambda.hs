@@ -2,7 +2,7 @@
 -- \lambda-calculus together with a parser and a printer for it.
 -- It also exports a simple type of identifiers that parse and
 -- print in a nice way.
-module Util.Lambda
+module Util.Syntax.Lazy.Lambda
   ( LC (..),
     freeVars,
     allVars,

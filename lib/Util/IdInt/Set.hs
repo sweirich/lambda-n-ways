@@ -26,7 +26,6 @@ import Control.DeepSeq
 import Data.Coerce
 import qualified Data.IntSet as IntSet
 import Util.IdInt
-import Util.Lambda hiding (freeVars)
 
 newtype IdIntSet = IdIntSet IntSet.IntSet
   deriving (Eq, Ord, Show, Semigroup, Monoid, NFData)

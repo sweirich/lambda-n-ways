@@ -7,7 +7,7 @@ but has been slightly modified to to fit into this setting.
 > module Lennart.DeBruijn(impl) where
 > import Data.List(elemIndex)
 > import Data.Maybe(mapMaybe)
-> import Util.Lambda
+> import Util.Syntax.Lambda
 > import Util.IdInt
 > import Control.DeepSeq
 > import GHC.Generics ( Generic )

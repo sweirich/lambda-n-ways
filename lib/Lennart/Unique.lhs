@@ -8,9 +8,9 @@ variables are unique.
 > {-# LANGUAGE FlexibleContexts #-}
 > {-# LANGUAGE ScopedTypeVariables #-}
 > module Lennart.Unique(impl) where
-> import Util.Lambda (LC(..))
+> import Util.Syntax.Lambda (LC(..))
 > import Data.List(union)
-> import qualified Util.Lambda as LC
+> import qualified Util.Syntax.Lambda as LC
 > import qualified Data.Map as M
 > import Control.Monad.State
 > import Util.IdInt hiding (newId)

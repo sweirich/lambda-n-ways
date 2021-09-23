@@ -16,8 +16,9 @@ import qualified Data.Set as S
 import Util.IdInt (IdInt, firstBoundId)
 import Util.Impl (LambdaImpl (..))
 import Util.Imports
-import Util.Lambda hiding (allVars, freeVars) --- No extra syntax, just uses LC IdInt
+--- No extra syntax, just uses LC IdInt
 import qualified Util.Stats as Stats
+import Util.Syntax.Lambda hiding (allVars, freeVars)
 
 impl :: LambdaImpl
 impl =
@@ -27,7 +28,7 @@ impl =
       impl_toLC = id,
       impl_nf = nf,
       impl_nfi = nfi,
-      impl_aeq = Util.Lambda.aeq
+      impl_aeq = Util.Syntax.Lambda.aeq
     }
 
 freeVars :: (Eq v) => LC v -> [v]

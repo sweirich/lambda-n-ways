@@ -7,7 +7,7 @@
 > module Main where
 > import qualified Data.List as List
 > import Util.Misc ()
-> import Util.Lambda ( LC )
+> import Util.Syntax.Lambda ( LC )
 > import Util.IdInt ( IdInt )
 > import Util.Impl ( LambdaImpl(..), toIdInt, getTerm, getTerms, lambdaFalse )
 > import Suite ( impls )

@@ -8,11 +8,11 @@ module DeBruijn.Lazy.CPDT where
 import Control.DeepSeq
 import Data.Maybe (fromJust)
 import Data.Type.Equality
-import Support.Nat
 import Util.IdInt
 import Util.Impl
-import Util.Lambda
+import Util.Nat
 import qualified Util.Stats as Stats
+import Util.Syntax.Lambda
 
 impl :: LambdaImpl
 impl =

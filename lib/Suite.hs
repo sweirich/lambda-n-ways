@@ -5,16 +5,28 @@ import qualified DeBruijn.Bound
 import qualified DeBruijn.CPDT
 import qualified DeBruijn.Cornell
 import qualified DeBruijn.Kit
+--import qualified DeBruijn.Lazy.List
+
+--import qualified DeBruijn.Lazy.Par.FB
+
+-- import qualified DeBruijn.List
+
+-- import qualified DeBruijn.Par.FB
+
+--import qualified LocallyNameless.Lazy.TypedOpt
+
+import qualified DeBruijn.Kovacs
+import qualified DeBruijn.KovacsScoped
+import qualified DeBruijn.Krivine
+import qualified DeBruijn.KrivineScoped
 import qualified DeBruijn.Lazy.Bound
 import qualified DeBruijn.Lazy.CPDT
 import qualified DeBruijn.Lazy.Cornell
 import qualified DeBruijn.Lazy.Kit
 import qualified DeBruijn.Lazy.Lennart
 import qualified DeBruijn.Lazy.Lift
---import qualified DeBruijn.Lazy.List
 import qualified DeBruijn.Lazy.Nested
 import qualified DeBruijn.Lazy.Par.B
---import qualified DeBruijn.Lazy.Par.FB
 import qualified DeBruijn.Lazy.Par.Fun
 import qualified DeBruijn.Lazy.Par.GB
 import qualified DeBruijn.Lazy.Par.L
@@ -23,10 +35,8 @@ import qualified DeBruijn.Lazy.Par.Scoped
 import qualified DeBruijn.Lazy.TAPL
 import qualified DeBruijn.Lennart
 import qualified DeBruijn.Lift
--- import qualified DeBruijn.List
 import qualified DeBruijn.Nested
 import qualified DeBruijn.Par.B
--- import qualified DeBruijn.Par.FB
 import qualified DeBruijn.Par.Fun
 import qualified DeBruijn.Par.GB
 import qualified DeBruijn.Par.L
@@ -39,8 +49,6 @@ import qualified Lennart.HOAS
 import qualified Lennart.Simple
 import qualified Lennart.SimpleOrig
 import qualified Lennart.Unique
---import qualified LocallyNameless.Lazy.TypedOpt
-
 import qualified LocallyNameless.GenericInstOpt
 import qualified LocallyNameless.GenericOpt
 import qualified LocallyNameless.Lazy.GenericInstOpt
@@ -59,6 +67,7 @@ import qualified LocallyNameless.SupportInstOpt
 import qualified LocallyNameless.SupportOpt
 import qualified LocallyNameless.TypedOpt
 import qualified LocallyNameless.TypedOtt
+import qualified Named.Kovacs
 import qualified Named.Lazy.NominalG
 import qualified Named.Lazy.Simple
 import qualified Named.Lazy.SimpleGH
@@ -84,7 +93,9 @@ import Util.Impl (LambdaImpl)
 -- | Implementations used in the benchmarking/test suite
 -- must be a single variable name for Makefile
 impls :: [LambdaImpl]
-impls = love_all
+impls = kovacs
+
+kovacs = [DeBruijn.KovacsScoped.impl, DeBruijn.Kovacs.impl]
 
 interleave :: [a] -> [a] -> [a]
 interleave (a1 : a1s) (a2 : a2s) = a1 : a2 : interleave a1s a2s
@@ -411,7 +422,7 @@ really_slow = [Named.NominalG.impl] -- nominal
 --------------------------------------------------------------
 
 love_talk :: [LambdaImpl]
-love_talk = basic_lazy ++ basic_strict ++ opt_lazy ++ opt_strict ++  opt_lazy_generic ++ opt_strict_generic 
+love_talk = basic_lazy ++ basic_strict ++ opt_lazy ++ opt_strict ++ opt_lazy_generic ++ opt_strict_generic
 
 basic_lazy :: [LambdaImpl]
 basic_lazy =
@@ -433,7 +444,12 @@ opt_strict :: [LambdaImpl]
 opt_strict =
   [ Named.SimpleH.impl,
     DeBruijn.Par.B.impl,
-    LocallyNameless.Opt.impl
+    LocallyNameless.Opt.impl,
+    DeBruijn.Krivine.impl,
+    Lennart.HOAS.impl,
+    Lennart.DeBruijnC.impl,
+    DeBruijn.Kovacs.impl,
+    Named.Kovacs.impl
   ]
 
 opt_lazy :: [LambdaImpl]
@@ -457,26 +473,23 @@ opt_lazy_generic =
     LocallyNameless.Lazy.GenericInstOpt.impl
   ]
 
-
-love_all = [
-  Lennart.Simple.impl,
-  Named.Lennart.impl,
-  Named.SimpleH.impl,
-  Named.Lazy.SimpleH.impl,
-  Named.SimpleGH.impl,
-  Named.Lazy.SimpleGH.impl,
-  
-  Lennart.DeBruijn.impl,
-  DeBruijn.Lennart.impl,
-  DeBruijn.Par.B.impl,  
-  DeBruijn.Lazy.Par.B.impl,
-  DeBruijn.Par.GB.impl,
-  DeBruijn.Lazy.Par.GB.impl,
-
-  LocallyNameless.Lazy.Ott.impl,  
-  LocallyNameless.Ott.impl,
-  LocallyNameless.Opt.impl,
-  LocallyNameless.Lazy.Opt.impl,
-  LocallyNameless.GenericInstOpt.impl,
-  LocallyNameless.Lazy.GenericInstOpt.impl
+love_all =
+  [ Lennart.Simple.impl,
+    Named.Lennart.impl,
+    Named.SimpleH.impl,
+    Named.Lazy.SimpleH.impl,
+    Named.SimpleGH.impl,
+    Named.Lazy.SimpleGH.impl,
+    Lennart.DeBruijn.impl,
+    DeBruijn.Lennart.impl,
+    DeBruijn.Par.B.impl,
+    DeBruijn.Lazy.Par.B.impl,
+    DeBruijn.Par.GB.impl,
+    DeBruijn.Lazy.Par.GB.impl,
+    LocallyNameless.Lazy.Ott.impl,
+    LocallyNameless.Ott.impl,
+    LocallyNameless.Opt.impl,
+    LocallyNameless.Lazy.Opt.impl,
+    LocallyNameless.GenericInstOpt.impl,
+    LocallyNameless.Lazy.GenericInstOpt.impl
   ]

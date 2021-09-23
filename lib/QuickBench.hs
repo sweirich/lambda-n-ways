@@ -18,8 +18,8 @@ import Test.QuickCheck
 import Util.Id
 import Util.IdInt
 import Util.Impl
-import Util.Lambda
 import Util.Misc
+import Util.Syntax.Lambda
 
 -- Stats for random.lam
 -- sz: 100000
@@ -152,7 +152,7 @@ nfTerms tms = do
     let stm = Scoped.toDB tm
     case Simple.iNf 2000 tm of
       Just (tm', ss) ->
-        if not (tm `Util.Lambda.aeq` tm')
+        if not (tm `Util.Syntax.Lambda.aeq` tm')
           then do
             return $
               NfTerm

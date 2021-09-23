@@ -5,14 +5,11 @@
 -- Compare this version to Par.Scoped
 module DeBruijn.CPDT where
 
-import Control.DeepSeq
-import Data.Maybe (fromJust)
 import Data.Type.Equality
-import Support.Nat
-import Util.IdInt
 import Util.Impl
-import Util.Lambda
+import Util.Nat
 import qualified Util.Stats as Stats
+import Util.Syntax.ScopedDeBruijn
 
 impl :: LambdaImpl
 impl =
@@ -26,13 +23,6 @@ impl =
     }
 
 -------------------------------------------------------
--- NOTE: for comparison with Par.Scoped, we don't make the index strict. But maybe we should.
-
-data DB (n :: Nat) where
-  DVar :: !(Idx n) -> DB n
-  DLam :: !(DB ('S n)) -> DB n
-  DApp :: !(DB n) -> !(DB n) -> DB n
-
 {-
 The classic implementation of substitution in de Bruijn terms requires an auxiliary operation, lifting, which increments the indices of all free variables in an expression. We need to lift whenever we "go under a binder." It is useful to write an auxiliary function liftVar that lifts a variable; that is, liftVar x y will return y + 1 if y >= x, and it will return y otherwise. This simple description uses numbers rather than our dependent fin family, so the actual specification is more involved.
 
@@ -44,29 +34,11 @@ liftVar FZ y = FS y
 liftVar (FS _) FZ = FZ
 liftVar (FS x') (FS y') = FS (liftVar x' y')
 
-{-
-liftVar :: Idx n -> Idx (Pred n) -> Idx n
-liftVar x y =
-  case x of
-    FZ -> FS y
-    FS x' -> case y of
-      FZ -> FZ
-      FS y' -> FS (liftVar x' y')
--}
-
-{-
-Now it is easy to implement the main lifting operation.
--}
-
-lift :: DB n -> Idx ('S n) -> DB ('S n)
+lift :: Term n -> Idx ('S n) -> Term ('S n)
 lift e = case e of
   DVar f' -> \f -> DVar (liftVar f f')
   DApp e1 e2 -> \f -> DApp (lift e1 f) (lift e2 f)
   DLam e1 -> \f -> DLam (lift e1 (FS f))
-
-{-
-To define substitution itself, we will need to apply some explicit type casts, based on equalities between types. A single equality will suffice for all of our casts. Its statement is somewhat strange: it quantifies over a variable f of type fin n, but then never mentions f. Rather, quantifying over f is useful because fin is a dependent type that is inhabited or not depending on its index. The body of the theorem, S pred( n) = n, is true only for n , but we can prove it by contradiction when n = 0, because we have around a value f of the uninhabited type fin 0.
--}
 
 nzf :: Idx n -> 'S (Pred n) :~: n
 nzf FZ = Refl
@@ -82,24 +54,7 @@ substVar (FS x') (FS y')
     f <- substVar x' y'
     Just $ FS f
 
-{-
-substVar :: Idx n -> Idx n -> Maybe (Idx (Pred n))
-substVar x = case x of
-  FZ -> \y ->
-    case y of
-      FZ -> Nothing
-      FS f' -> Just f'
-  FS x' -> \y ->
-    ( case y of
-        FZ -> Just $ case (nzf x') of Refl -> FZ
-        FS y' ->
-          case substVar x' y' of
-            Nothing -> Nothing
-            Just f -> Just $ case (nzf y') of Refl -> FS f
-    )
--}
-
-subst :: DB n -> Idx n -> DB (Pred n) -> DB (Pred n)
+subst :: Term n -> Idx n -> Term (Pred n) -> Term (Pred n)
 subst e f v = case e of
   DVar f' -> case substVar f f' of
     Nothing -> v
@@ -109,23 +64,12 @@ subst e f v = case e of
     case (nzf f) of
       Refl -> DLam (subst e1 (FS f) (lift v FZ))
 
-instantiate :: DB ('S n) -> DB n -> DB n
+instantiate :: Term ('S n) -> Term n -> Term n
 instantiate b a = subst b FZ a
-
------------------------------------------------------
-
-instance NFData (DB a) where
-  rnf (DVar i) = rnf i
-  rnf (DLam d) = rnf d
-  rnf (DApp a b) = rnf a `seq` rnf b
-
--- standalone b/c GADT
--- alpha equivalence is (==)
-deriving instance Eq (DB n)
 
 -------------------------------------------------------
 
-nfd :: DB n -> DB n
+nfd :: Term n -> Term n
 nfd e@(DVar _) = e
 nfd (DLam b) = DLam (nfd b)
 nfd (DApp f a) =
@@ -133,7 +77,7 @@ nfd (DApp f a) =
     DLam b -> nfd (instantiate b a)
     f' -> DApp (nfd f') (nfd a)
 
-whnf :: DB n -> DB n
+whnf :: Term n -> Term n
 whnf e@(DVar _) = e
 whnf e@(DLam _) = e
 whnf (DApp f a) =
@@ -143,7 +87,7 @@ whnf (DApp f a) =
 
 -------------------------------------------------------
 
-nfi :: Int -> DB n -> Stats.M (DB n)
+nfi :: Int -> Term n -> Stats.M (Term n)
 nfi 0 _e = Stats.done
 nfi _n e@(DVar _) = return e
 nfi n (DLam b) = DLam <$> nfi (n -1) b
@@ -153,7 +97,7 @@ nfi n (DApp f a) = do
     DLam b -> Stats.count >> nfi (n -1) (instantiate b a)
     _ -> DApp <$> nfi n f' <*> nfi n a
 
-whnfi :: Int -> DB n -> Stats.M (DB n)
+whnfi :: Int -> Term n -> Stats.M (Term n)
 whnfi 0 _e = Stats.done
 whnfi _n e@(DVar _) = return e
 whnfi _n e@(DLam _) = return e
@@ -162,29 +106,3 @@ whnfi n (DApp f a) = do
   case whnf f' of
     DLam b -> Stats.count >> whnfi (n -1) (instantiate b a)
     _ -> return $ DApp f' a
-
--------------------------------------------------------
-
-toDB :: LC IdInt -> DB 'Z
-toDB = to []
-  where
-    to :: [(IdInt, Idx n)] -> LC IdInt -> DB n
-    to vs (Var v) = DVar (fromJust (lookup v vs))
-    to vs (Lam v b) = DLam (b')
-      where
-        b' = to ((v, FZ) : mapSnd FS vs) b
-    to vs (App f a) = DApp (to vs f) (to vs a)
-
-fromDB :: DB n -> LC IdInt
-fromDB = from firstBoundId
-  where
-    from :: IdInt -> DB n -> LC IdInt
-    from (IdInt n) (DVar i)
-      | toInt i < 0 = Var (IdInt $ toInt i)
-      | toInt i >= n = Var (IdInt $ toInt i)
-      | otherwise = Var (IdInt (n - (toInt i) -1))
-    from n (DLam b) = Lam n (from (succ n) b)
-    from n (DApp f a) = App (from n f) (from n a)
-
-mapSnd :: (a -> b) -> [(c, a)] -> [(c, b)]
-mapSnd f = map (\(v, i) -> (v, f i))

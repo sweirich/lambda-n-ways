@@ -1,6 +1,6 @@
 -- Common infrastructure for (strict) implementations with DeBruijn indices
 -- Datatype definition, equality, NFData instance, conversion to/from named representation
-module Util.DeBruijn where
+module Util.Syntax.DeBruijn where
 
 import Control.DeepSeq
 import Data.List (elemIndex)
@@ -8,7 +8,7 @@ import Text.PrettyPrint.HughesPJ as PP
 import Util.IdInt
 import Util.Impl
 import Util.Imports
-import Util.Lambda
+import Util.Syntax.Lambda
 
 data DB
   = DVar {-# UNPACK #-} !Int

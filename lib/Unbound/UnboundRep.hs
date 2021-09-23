@@ -35,8 +35,8 @@ import Unbound.LocallyNameless as U
   )
 import Util.IdInt (IdInt (..))
 import Util.Impl (LambdaImpl (..))
-import qualified Util.Lambda as LC
 import qualified Util.Stats as Stats
+import qualified Util.Syntax.Lambda as LC
 
 type Var = U.Name Exp
 

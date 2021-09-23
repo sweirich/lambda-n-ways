@@ -15,18 +15,18 @@
 module DeBruijn.KovacsScoped where
 
 import Data.Type.Equality
-import Support.Nat
-import qualified Support.Vec as V
 import Unsafe.Coerce (unsafeCoerce)
 import Util.IdInt
 import Util.Impl
-import Util.ScopedDeBruijn
+import Util.Nat
+import Util.Syntax.ScopedDeBruijn
+import qualified Util.Vec as V
 import Prelude hiding (length, lookup)
 
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "DeBruijn.Kovacs",
+    { impl_name = "DeBruijn.KovacsScoped",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
       impl_nf = nf,
@@ -40,52 +40,48 @@ impl =
 -- value must be updated (shifted) if context/range is weakened/strengthened
 type Ix = Idx
 
--- de Bruijn level, type ensures within range
+-- de Bruijn level
 -- offset from the beginning of the context
 -- A, B, C |- 0 : A
 -- no update required to update the context/range
-type Lvl = Idx
+type Lvl = Int
 
 -- An environment provides definitions for *indices* and maps them
--- to values in some scope.
-data Env l n where
-  Nil :: Env l 'Z
-  Define :: Env l n -> ~(Val l) -> Env l ('S n)
+-- to values.
+data Env n where
+  Nil :: Env 'Z
+  Define :: Env n -> ~Val -> Env ('S n)
 
 -- A closure is a term + delayed substitution
-data Closure l
-  = forall n. Closure (Env l n) (Term ('S n))
+data Closure
+  = forall n. Closure (Env n) (Term ('S n))
 
-data Val l
-  = VVar (Lvl l)
-  | VApp (Val l) ~(Val l)
-  | VLam (Closure l) -- cannot unpack it because of existential
-
--- NOTE: We can weaken values/environments/closures for free
--- it would be nice if we could do this *safely*
-weakenClosure :: Closure l -> Closure ('S l)
-weakenClosure = unsafeCoerce
+data Val
+  = VVar Lvl
+  | VApp Val ~Val
+  | -- | existential in closure prevents this auto-unpacking
+    forall n. VLam (Env n) (Term ('S n))
 
 -- Count bindings in the environment
-length :: Env l n -> SNat n
+length :: Env n -> SNat n
 length Nil = SZ
 length (Define e _) = SS (length e)
 
 -- lookup a value in the environment, based on an *index*
-lookupIx :: Ix n -> Env l n -> Val l
+lookupIx :: Ix n -> Env n -> Val
 lookupIx FZ (Define _env v) = v
 lookupIx (FS x) (Define env _) = lookupIx x env
 
-cApp :: Closure l -> Val l -> Val l
-cApp (Closure env t) ~u = eval (Define env u) t
+cApp :: (Env n) -> (Term ('S n)) -> Val -> Val
+cApp env t ~u = eval (Define env u) t
 
-eval :: forall l n. Env l n -> Term n -> Val l
+eval :: forall n. Env n -> Term n -> Val
 eval env = \case
   DVar x -> lookupIx x env
   DApp t u -> case (eval env t, eval env u) of
-    (VLam t0, u0) -> cApp t0 u0
+    (VLam t0 e0, u0) -> cApp t0 e0 u0
     (t0, u0) -> VApp t0 u0
-  DLam t -> VLam (Closure env t)
+  DLam t -> VLam env t
 
 -- Normalization
 --------------------------------------------------------------------------------
@@ -93,25 +89,25 @@ eval env = \case
 -- switching between indices and levels
 -- i.e.  lvl2Ix x n = n - x - 1
 -- unfortunately linear time instead of constant time.
+-- but adds minimal overhead.
+lvl2Ix :: forall n. Int -> SNat n -> Ix n
+lvl2Ix x l = toIdx l (sNat2Int l - x - 1)
 
--- go 0 3 = 2
--- go 2 3 = 0
-lvl2Ix :: forall n. Lvl n -> SNat n -> Ix n
-lvl2Ix FZ (SS n) = sNat2Idx n
-lvl2Ix (FS m) (SS n) = FS (lvl2Ix m n)
+toIdx :: SNat n -> Int -> Ix n
+toIdx (SS _n) 0 = FZ
+toIdx (SS n) m | m > 0 = FS (toIdx n (m -1))
+toIdx _ m = error "error"
 
-quote :: forall l. SNat l -> Val l -> Term l
+quote :: forall l. SNat l -> Val -> Term l
 quote l = \case
   VVar x -> DVar (lvl2Ix x l)
   VApp t u -> DApp (quote l t) (quote l u)
-  VLam t -> DLam (quote (SS l) (cApp t' (VVar vl)))
+  VLam t e -> DLam (quote (SS l) (cApp t e (VVar vl)))
     where
-      t' :: Closure ('S l)
-      t' = weakenClosure t
-      vl :: Lvl ('S l)
-      vl = sNat2Idx l
+      vl :: Lvl
+      vl = sNat2Int l
 
-nf' :: Env n n -> Term n -> Term n
+nf' :: Env n -> Term n -> Term n
 nf' env t = quote (length env) (eval env t)
 
 nf :: Term 'Z -> Term 'Z

@@ -57,7 +57,7 @@ import Core.Unique
 import Core.VarEnv
 import Core.VarSet
 import Data.List (mapAccumL)
-import qualified Util.Lambda as LC
+import qualified Util.Syntax.Lambda as LC
 
 {-
 

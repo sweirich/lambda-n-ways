@@ -18,8 +18,8 @@ import Text.PrettyPrint.HughesPJ
 import qualified Text.PrettyPrint.HughesPJ as PP
 import Util.IdInt
 import Util.Impl
-import Util.Lambda
 import qualified Util.Stats as Stats
+import Util.Syntax.Lambda
 
 impl :: LambdaImpl
 impl =
@@ -48,12 +48,23 @@ instance NFData DB where
 var = DVar
 
 subst s = go
-    where
-      go (DVar i) = applySub s i
-      go (DLam b) = DLam (substBind s b)
-      go (DApp f a) = DApp (go f) (go a)
+  where
+    go (DVar i) = applySub s i
+    go (DLam b) = DLam (substBind s b)
+    go (DApp f a) = DApp (go f) (go a)
 
 ---------------------------------------------------------
+
+{-
+nf :: DB -> DB
+nf e@(DVar _) = e
+nf (DLam b) = DLam (bind (nf (unbind b)))
+nf (DApp f a) =
+  case (nf f, nf a) of
+    (DLam b, va) ->
+      nf (instantiate b va)
+    (f', a') -> DApp f' a'
+-}
 
 nf :: DB -> DB
 nf e@(DVar _) = e
@@ -162,14 +173,11 @@ bind :: a -> Bind a
 bind = Bind nil
 {-# INLINE bind #-}
 
-
 unbind (Bind s a) = subst s a
 {-# INLINE unbind #-}
 
-
 instantiate (Bind s a) b = subst (s `comp` single b) a
 {-# INLINE instantiate #-}
-
 
 -- NOTE: use comp instead of :<>
 substBind s2 (Bind s1 e) = Bind (s1 `comp` lift s2) e
@@ -190,8 +198,6 @@ data Sub a
   deriving (Show)
 
 ----------------------------------------------------------------------
-
-
 
 applySub (Inc y) (V x) = var (V (y + x))
 applySub (Cons t ts) (V x)

@@ -10,8 +10,9 @@ import Data.List (elemIndex)
 import GHC.Generics (Generic)
 import Util.IdInt (IdInt (..), firstBoundId)
 import Util.Impl (LambdaImpl (..))
-import qualified Util.Lambda as LC
 import qualified Util.Stats as Stats
+import Util.Syntax.DeBruijn
+import qualified Util.Syntax.Lambda as LC
 
 impl :: LambdaImpl
 impl =
@@ -24,54 +25,39 @@ impl =
       impl_aeq = (==)
     }
 
-{-
-The representation of a variable is a number—its de Bruijn index. The
-representation of an abstraction carries just a subterm for the abstraction’s body.
-An application carries the two subterms being applied.
--}
-data Term
-  = Var {-# UNPACK #-} !Var
-  | Lam !(Bind Term)
-  | App !Term !Term
-  deriving (Eq, Generic)
-
-instance NFData Term
-
-newtype Var = V Int deriving (Eq, Generic, NFData)
-
-newtype Bind t = Bind t deriving (Eq, Generic, NFData)
+type Var = Int
 
 {-
 Given a term t and a function onvar, the result of tmmap onvar t is a term of the same shape as
 t in which every variable has been replaced by the result of calling onvar on
-that variable. 
+that variable.
 
 The arguments to 'onvar' are the current binding level (c) and the index of the
 variable.
 -}
 
-tmap :: (Int -> Var -> Term) -> Int -> Term -> Term
-tmap onvar = walk 
+tmap :: (Int -> Var -> DB) -> Int -> DB -> DB
+tmap onvar = walk
   where
-    walk c (Var x) = onvar c x
-    walk c (Lam (Bind t2)) = Lam (Bind (walk (c + 1) t2))
-    walk c (App t1 t2) = App (walk c t1) (walk c t2)
+    walk c (DVar x) = onvar c x
+    walk c (DLam t2) = DLam (walk (c + 1) t2)
+    walk c (DApp t1 t2) = DApp (walk c t1) (walk c t2)
 {-# INLINE tmap #-}
 
-shift :: Int -> Term -> Term
+shift :: Int -> DB -> DB
 shift d = tmap f 0
   where
-    f c (V x) = if x >= c then Var (V (x + d)) else Var (V x)
+    f c x = if x >= c then DVar (x + d) else DVar x
 {-# INLINE shift #-}
 
-subst :: Var -> Term -> Term -> Term
-subst (V j) t = tmap f 0
+subst :: Var -> DB -> DB -> DB
+subst j t = tmap f 0
   where
-    f c (V x) = if x == j + c then shift c t else Var (V x)
+    f c x = if x == j + c then shift c t else DVar x
 {-# INLINE subst #-}
 
-instantiate :: Bind Term -> Term -> Term
-instantiate (Bind b) a = shift (-1) (subst (V 0) (shift 1 a) b)
+instantiate :: DB -> DB -> DB
+instantiate b a = shift (-1) (subst 0 (shift 1 a) b)
 {-# INLINE instantiate #-}
 
 {-
@@ -95,63 +81,38 @@ and Lévy (1991a) and have since become an active research area.
 
 -------------------------------------------------------------------
 
-nf :: Term -> Term
-nf e@(Var _) = e
-nf (Lam (Bind e)) = Lam (Bind (nf e))
-nf (App f a) =
+nf :: DB -> DB
+nf e@(DVar _) = e
+nf (DLam e) = DLam (nf e)
+nf (DApp f a) =
   case whnf f of
-    Lam b -> nf (instantiate b a)
-    f' -> App (nf f') (nf a)
+    DLam b -> nf (instantiate b a)
+    f' -> DApp (nf f') (nf a)
 
-whnf :: Term -> Term
-whnf e@(Var _) = e
-whnf e@(Lam _) = e
-whnf (App f a) =
+whnf :: DB -> DB
+whnf e@(DVar _) = e
+whnf e@(DLam _) = e
+whnf (DApp f a) =
   case whnf f of
-    Lam b -> whnf (instantiate b a)
-    f' -> App f' a
+    DLam b -> whnf (instantiate b a)
+    f' -> DApp f' a
 
-nfb :: Bind Term -> Bind Term
-nfb (Bind e) = Bind (nf e)
-{-# INLINE nfb #-}
-
-
-
-nfi :: Int -> Term -> Stats.M Term
+nfi :: Int -> DB -> Stats.M DB
 nfi 0 _e = Stats.done
-nfi _n e@(Var _) = return e
-nfi n (Lam(Bind b)) = Lam . Bind <$> nfi (n -1) b
-nfi n (App f a) = do
+nfi _n e@(DVar _) = return e
+nfi n (DLam b) = DLam <$> nfi (n -1) b
+nfi n (DApp f a) = do
   f' <- whnfi (n -1) f
   case f' of
-    Lam b -> Stats.count >> nfi (n -1) (instantiate b a)
-    _ -> App <$> nfi n f' <*> nfi n a
+    DLam b -> Stats.count >> nfi (n -1) (instantiate b a)
+    _ -> DApp <$> nfi n f' <*> nfi n a
 
-whnfi :: Int -> Term -> Stats.M Term
+whnfi :: Int -> DB -> Stats.M DB
 whnfi 0 _e = Stats.done
-whnfi _n e@(Var _) = return e
-whnfi _n e@(Lam _) = return e
-whnfi n (App f a) = do
+whnfi _n e@(DVar _) = return e
+whnfi _n e@(DLam _) = return e
+whnfi n (DApp f a) = do
   f' <- whnfi (n -1) f
   case whnf f' of
-    Lam b -> Stats.count >> whnfi (n -1) (instantiate b a)
-    _ -> return $ App f' a
-
-
--------------------------------------------------------------------
-toDB :: LC.LC IdInt -> Term
-toDB = to []
-  where
-    to vs (LC.Var v@(IdInt i)) = maybe (Var (V i)) (Var . V) (elemIndex v vs)
-    to vs (LC.Lam x b) = Lam (Bind (to (x : vs) b))
-    to vs (LC.App f a) = App (to vs f) (to vs a)
-
-fromDB :: Term -> LC.LC IdInt
-fromDB = from firstBoundId
-  where
-    from (IdInt n) (Var (V i))
-      | i < 0 = LC.Var (IdInt i)
-      | i >= n = LC.Var (IdInt i)
-      | otherwise = LC.Var (IdInt (n - i -1))
-    from n (Lam (Bind b)) = LC.Lam n (from (succ n) b)
-    from n (App f a) = LC.App (from n f) (from n a)
+    DLam b -> Stats.count >> whnfi (n -1) (instantiate b a)
+    _ -> return $ DApp f' a

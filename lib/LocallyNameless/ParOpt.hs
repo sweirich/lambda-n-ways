@@ -10,7 +10,6 @@ import qualified Control.Monad.State as State
 import qualified Data.IntMap as IM
 import Data.List (elemIndex)
 import qualified Data.Set as Set
-import Support.Nat (Idx (..), Nat (..), Plus, cmpIdx, toInt)
 import Support.Par.SubstScoped
   ( Bind (..),
     Sub (..),
@@ -36,8 +35,9 @@ import Util.Imports
     State,
     fromMaybe,
   )
-import qualified Util.Lambda as LC
+import Util.Nat (Idx (..), Nat (..), Plus, cmpIdx, toInt)
 import qualified Util.Stats as Stats
+import qualified Util.Syntax.Lambda as LC
 
 -- 0. (Lazy.Ott) Original
 -- lennart: 1.03s

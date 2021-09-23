@@ -12,8 +12,8 @@ import Core.VarEnv
 import Core.VarSet
 import Util.IdInt
 import Util.Impl
-import Util.Lambda as LC
 import qualified Util.Stats as Stats
+import Util.Syntax.Lambda as LC
 
 impl :: LambdaImpl
 impl =
@@ -101,7 +101,7 @@ nfi i expr = go i init_subst expr
     go :: Int -> Subst -> LC IdInt -> Stats.M (LC IdInt)
     go 0 _ _ = Stats.done
     go _i s (Var v) = return $ lookupIdSubst ("nf") s v
-    go _i s (Lam x b) = Lam y <$> go (i-1) s' b
+    go _i s (Lam x b) = Lam y <$> go (i -1) s' b
       where
         (s', y) = substBndr s x
     go i s (App f a) = do
@@ -112,7 +112,7 @@ nfi i expr = go i init_subst expr
           let is = mkEmptySubst (substInScope s)
           Stats.count
           s' <- extendIdSubst is x <$> go i s a
-          go (i-1) s' b
+          go (i -1) s' b
         _ -> App f' <$> go i s a
 
     whnf :: Int -> Subst -> LC IdInt -> Stats.M (LC IdInt)
@@ -124,11 +124,10 @@ nfi i expr = go i init_subst expr
     whnf n s (App f a) = do
       f' <- whnf (n - 1) s f
       case f' of
-        Lam x b -> do 
+        Lam x b -> do
           let is = mkEmptySubst (substInScope s)
           a' <- go n s a
           let s' = extendIdSubst is x a'
           Stats.count
-          whnf (n-1) s' b
-          
+          whnf (n -1) s' b
         _ -> return $ App f' (substExpr "whnf" s a)

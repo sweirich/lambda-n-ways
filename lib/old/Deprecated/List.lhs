@@ -6,7 +6,7 @@ This version uses a memo table so that all occurrences can share the same comput
 
 > module DeBruijn.List(impl) where
 > import Data.List(elemIndex)
-> import Util.Lambda
+> import Util.Syntax.Lambda
 > import Util.IdInt
 > import Control.DeepSeq
 

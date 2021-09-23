@@ -13,12 +13,12 @@ import qualified Data.IntMap as IM
 import Data.List (elemIndex)
 import qualified Data.Set as Set
 import Data.Type.Equality (type (:~:) (..))
-import Support.Nat
 import Util.IdInt (IdInt (..), firstBoundId)
 import Util.Impl (LambdaImpl (..))
 import Util.Imports hiding (S, from, to)
-import qualified Util.Lambda as LC
+import Util.Nat
 import qualified Util.Stats as Stats
+import qualified Util.Syntax.Lambda as LC
 
 -- 0. (Ott) Original
 -- lennart: 1.03s

@@ -17,15 +17,15 @@ module LocallyNameless.TypedOpt (impl) where
 
 import qualified Control.Monad.State as State
 import Data.List (elemIndex)
-import Support.Nat
 import Support.TypedSubstOpt
 import Util.IdInt
 import qualified Util.IdInt.Map as M
 import qualified Util.IdInt.Set as S
 import Util.Impl
 import Util.Imports hiding (S, from, to)
-import qualified Util.Lambda as LC
+import Util.Nat
 import qualified Util.Stats as Stats
+import qualified Util.Syntax.Lambda as LC
 
 -------------------------------------------------------------------
 

@@ -7,7 +7,7 @@ but has been modified to to fit into this setting.
 > module DeBruijn.Lazy.Lennart(impl, toDB, fromDB, nfd, nfi) where
 > import Data.List(elemIndex)
 > import Data.Maybe(mapMaybe)
-> import Util.Lambda
+> import Util.Syntax.Lambda
 > import Util.IdInt
 > import Control.DeepSeq
 

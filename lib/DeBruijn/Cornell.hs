@@ -11,12 +11,9 @@ It separates substitution from instantiation.
 
 module DeBruijn.Cornell (impl) where
 
-import Control.DeepSeq
-import Data.List (elemIndex)
-import Util.IdInt
 import Util.Impl
-import Util.Lambda
 import qualified Util.Stats as Stats
+import Util.Syntax.DeBruijn
 
 impl :: LambdaImpl
 impl =
@@ -28,17 +25,6 @@ impl =
       impl_nfi = nfi,
       impl_aeq = (==)
     }
-
-data DB
-  = DVar {-# UNPACK #-} !Int
-  | DLam !DB
-  | DApp !DB !DB
-  deriving (Eq)
-
-instance NFData DB where
-  rnf (DVar i) = rnf i
-  rnf (DLam d) = rnf d
-  rnf (DApp a b) = rnf a `seq` rnf b
 
 ----------------------------------------------------------
 
@@ -79,25 +65,6 @@ whnfi n (DApp f a) = do
   case whnf f' of
     DLam b -> Stats.count >> whnfi (n -1) (instantiate b a)
     _ -> return $ DApp f' a
-
-----------------------------------------------------------
-
-toDB :: LC IdInt -> DB
-toDB = to []
-  where
-    to vs (Var v@(IdInt i)) = maybe (DVar i) DVar (elemIndex v vs)
-    to vs (Lam x b) = DLam (to (x : vs) b)
-    to vs (App f a) = DApp (to vs f) (to vs a)
-
-fromDB :: DB -> LC IdInt
-fromDB = from firstBoundId
-  where
-    from (IdInt n) (DVar i)
-      | i < 0 = Var (IdInt i)
-      | i >= n = Var (IdInt i)
-      | otherwise = Var (IdInt (n - i -1))
-    from n (DLam b) = Lam n (from (succ n) b)
-    from n (DApp f a) = App (from n f) (from n a)
 
 ----------------------------------------------------------
 

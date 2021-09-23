@@ -7,11 +7,11 @@
 -- capture a free variable.
 -- It is based on Lennart Augustsson's version from "lambda-calculus cooked four ways"
 -- however applies simple optimizations:
---     strict datatype for expressions, with unpacked fields
+--     strict datatype for Expressions, with unpacked fields
 --     sets instead of lists for free variables
 --     map instead of single substitution for renaming
 --     fvset tracked during substitution
-module Named.Simple (nf, whnf, nfi, impl, subst) where
+module Named.Simple (nf, whnf, nfi, impl, subst, aeq) where
 
 import Control.Monad.Except
 import qualified Control.Monad.State as State
@@ -21,8 +21,8 @@ import qualified Util.IdInt.Map as M
 import qualified Util.IdInt.Set as S
 import Util.Impl (LambdaImpl (..))
 import Util.Imports
-import qualified Util.Lambda as LC
 import qualified Util.Stats as Stats
+import Util.Syntax.Named
 
 impl :: LambdaImpl
 impl =
@@ -35,59 +35,10 @@ impl =
       impl_aeq = aeq
     }
 
-data Exp = Var {-# UNPACK #-} !IdInt | Lam {-# UNPACK #-} !IdInt !Exp | App !Exp !Exp
-  deriving (Eq, Generic)
-
-instance NFData Exp
-
-fromLC :: LC.LC IdInt -> Exp
-fromLC (LC.Var v) = Var v
-fromLC (LC.Lam v e) = Lam v (fromLC e)
-fromLC (LC.App a b) = App (fromLC a) (fromLC b)
-
-toLC :: Exp -> LC.LC IdInt
-toLC (Var v) = LC.Var v
-toLC (Lam v e) = LC.Lam v (toLC e)
-toLC (App a b) = LC.App (toLC a) (toLC b)
-
-freeVars :: Exp -> S.IdIntSet
-freeVars (Var v) = S.singleton v
-freeVars (Lam v e) = freeVars e S.\\ S.singleton v
-freeVars (App f a) = freeVars f `S.union` freeVars a
-
--- Compute *all* variables in an expression.
-
-allVars :: Exp -> S.IdIntSet
-allVars (Var v) = S.singleton v
-allVars (Lam _ e) = allVars e
-allVars (App f a) = allVars f `S.union` allVars a
-
---------------------------------------------------------------------------------------
-
-applyPermLC :: LC.Perm IdInt -> Exp -> Exp
-applyPermLC m (Var x) = Var (LC.applyPerm m x)
-applyPermLC m (Lam x e) = Lam (LC.applyPerm m x) (applyPermLC m e)
-applyPermLC m (App t u) = App (applyPermLC m t) (applyPermLC m u)
-
--- inefficient version
-aeq :: Exp -> Exp -> Bool
-aeq = aeqd
-  where
-    aeqd (Var v1) (Var v2) = v1 == v2
-    aeqd (Lam v1 e1) (Lam v2 e2)
-      | v1 == v2 = aeqd e1 e2
-      | v1 `S.member` freeVars (Lam v2 e2) = False
-      | otherwise = aeqd e1 (applyPermLC p e2)
-      where
-        p = (LC.extendPerm LC.emptyPerm v1 v2)
-    aeqd (App a1 a2) (App b1 b2) =
-      aeqd a1 b1 && aeqd a2 b2
-    aeqd _ _ = False
-
-subst :: IdInt -> Exp -> Exp -> Exp
+subst :: IdInt -> Term -> Term -> Term
 subst x s b = sub (M.singleton x s) vs0 b
   where
-    sub :: M.IdIntMap Exp -> S.IdIntSet -> Exp -> Exp
+    sub :: M.IdIntMap Term -> S.IdIntSet -> Term -> Term
     sub ss _ e@(Var v)
       | v `M.member` ss = (ss M.! v)
       | otherwise = e
@@ -117,7 +68,7 @@ non-leftmost reductions.  Instead we use the {\tt whnf}
 function.
 -}
 
-nf :: Exp -> Exp
+nf :: Term -> Term
 nf e@(Var _) = e
 nf (Lam x e) = Lam x (nf e)
 nf (App f a) =
@@ -129,7 +80,7 @@ nf (App f a) =
 -- but it does not reduce under $\lambda$, nor does it touch an application
 -- that is not a $\beta$-redex.
 
-whnf :: Exp -> Exp
+whnf :: Term -> Term
 whnf e@(Var _) = e
 whnf e@(Lam _ _) = e
 whnf (App f a) =
@@ -139,7 +90,7 @@ whnf (App f a) =
 
 -- For testing, we can add a "fueled" version that also counts the number of substitutions
 
-nfi :: Int -> Exp -> Stats.M Exp
+nfi :: Int -> Term -> Stats.M Term
 nfi 0 _e = Stats.done
 nfi _n e@(Var _) = return e
 nfi n (Lam x e) = Lam x <$> nfi (n -1) e
@@ -149,7 +100,7 @@ nfi n (App f a) = do
     Lam x b -> Stats.count >> nfi (n -1) (subst x a b)
     _ -> App <$> nfi (n -1) f' <*> nfi (n -1) a
 
-whnfi :: Int -> Exp -> Stats.M Exp
+whnfi :: Int -> Term -> Stats.M Term
 whnfi 0 _e = Stats.done
 whnfi _n e@(Var _) = return e
 whnfi _n e@(Lam _ _) = return e

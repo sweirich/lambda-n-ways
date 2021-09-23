@@ -7,12 +7,8 @@ makes the entire datatype strict.
 
 
 > module DeBruijn.Lennart(impl, toDB, fromDB, nfd, nfi) where
-> import Data.List(elemIndex)
-> import Util.Lambda
-> import Util.IdInt
-> import Control.DeepSeq
-> import GHC.Generics ( Generic )
 > import qualified Util.Stats as Stats
+> import Util.Syntax.DeBruijn
 
 > import Util.Impl
 
@@ -30,10 +26,6 @@ makes the entire datatype strict.
 Variables are represented by their binding depth, i.e., how many
 $\lambda$s out the binding $\lambda$ is.  
 
-> data DB = DVar {-# unpack #-} !Int | DLam !DB | DApp !DB !DB
->   deriving (Eq, Generic)
-
-> instance NFData DB where
 
 Computing the normal form proceeds as usual.
 
@@ -78,28 +70,6 @@ Bounded versions
 >         DLam b -> Stats.count >> whnfi (n-1) (instantiate b a)
 >         _ -> return $ DApp f' a
 
-
------------------------------------------------------------
-
-Convert to deBruijn indicies.  Do this by keeping a list of the bound
-variable so the depth can be found of all variables.  Do not touch
-free variables.
-
-> toDB :: LC IdInt -> DB
-> toDB = to []
->   where to vs (Var v@(IdInt i)) = maybe (DVar i) DVar (elemIndex v vs)
->         to vs (Lam x b) = DLam (to (x:vs) b)
->         to vs (App f a) = DApp (to vs f) (to vs a)
-
-Convert back from deBruijn to the LC type.
-
-> fromDB :: DB -> LC IdInt
-> fromDB = from firstBoundId
->   where from (IdInt n) (DVar i) | i < 0     = Var (IdInt i)
->                                 | i >= n    = Var (IdInt i)
->                                 | otherwise = Var (IdInt (n-i-1))
->         from n (DLam b) = Lam n (from (succ n) b)
->         from n (DApp f a) = App (from n f) (from n a)
 
 ----------------------------------------------------------
 

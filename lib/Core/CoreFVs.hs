@@ -52,7 +52,7 @@ where
 import Core.Core
 import Core.FV as FV
 import Core.VarSet
-import qualified Util.Lambda as LC
+import qualified Util.Syntax.Lambda as LC
 
 {-
 import GHC.Prelude

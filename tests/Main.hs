@@ -13,9 +13,9 @@ import Test.Tasty.HUnit
 import Test.Tasty.QuickCheck as QC
 import Util.IdInt
 import Util.Impl
-import Util.Lambda
 import Util.Misc
 import qualified Util.Stats as Stats
+import Util.Syntax.Lambda
 
 -- | Reference version of aeq
 -- convert to DB indices and use (==)
@@ -155,22 +155,24 @@ nfLennartUnitTests :: IO TestTree
 nfLennartUnitTests = do
   tm <- getTerm "lams/lennart.lam"
   let tm1 = toIdInt tm
-  {-let test_impl LambdaImpl {..} = do
+  let test_impl LambdaImpl {..} = do
         let result = (impl_toLC . impl_nf . impl_fromLC) tm1
-        assertBool ("nf produced: " ++ show result) (db_aeq lambdaFalse result) -}
-  let test_impl li = (compareNf tm1 li)
+        assertBool ("nf produced: " ++ show result) (db_aeq lambdaFalse result)
+  -- let test_impl li = (compareNf tm1 li)
   return $
     testGroup "NF Unit Test (Lennart) " $
       map (\i -> testCase (impl_name i) $ test_impl i) impls
 
 main :: IO ()
 main = do
-  nfRandoms <- mapM nfRandomTests ["random", "random2", "random25", "random35", "lams100"]
+  strictness <- mapM nfRandomTests ["full", "full-2", "random25-20"]
+  nfRandoms <- mapM nfRandomTests ["random", "random2", "random35", "lams100"] -- random25
   nfLamTests <- mapM nfRandomTests ["t1", "t2", "t3", "t4", "t5", "t6", "t7"]
+  nfFull <- mapM nfRandomTests ["full"]
   nfSimple <- mapM nfRandomTests ["capture10", "constructed10"]
   nfMoreTests <- mapM nfRandomTests ["tests", "onesubst", "twosubst", "threesubst", "foursubst"]
-  lennart <- nfLennartUnitTests
-  nft6 <- mapM nfRandomTests ["t4"]
-  -- defaultMain $ testGroup "tests" nfLamTests
+  lt <- nfLennartUnitTests
 
-  defaultMain $ testGroup "tests" ([rtQCs, aeqQCs, nfQCs] ++ nfRandoms ++ nfLamTests ++ nfSimple ++ nfMoreTests ++ [lennart])
+  -- defaultMain $ testGroup "tests" [rtQCs]
+
+  defaultMain $ testGroup "tests" ([rtQCs, aeqQCs, nfQCs] ++ nfRandoms ++ nfLamTests ++ nfSimple ++ nfMoreTests ++ [lt])

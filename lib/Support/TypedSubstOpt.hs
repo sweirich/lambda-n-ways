@@ -31,14 +31,14 @@ import Data.List (elemIndex)
 import Data.Type.Equality hiding (apply)
 import Debug.Trace
 import GHC.Stack
-import Support.Nat
 import qualified Unsafe.Coerce as Unsafe
 import Util.IdInt (IdInt (..), firstBoundId)
 import qualified Util.IdInt.Map as M
 import qualified Util.IdInt.Set as S
 import Util.Impl (LambdaImpl (..))
 import Util.Imports hiding (S, from, to)
-import qualified Util.Lambda as LC
+import qualified Util.Syntax.Lambda as LC
+import Util.Nat
 
 -------------------------------------------------------------------
 

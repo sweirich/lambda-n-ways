@@ -26,7 +26,7 @@ How to add a new lambda calculus implementation to this benchmark suite
               -- ^ alpha-equivalence function
         }
 
-4. You can define your own data type to represent lambda calculus terms or use the one (`LC`) provided in `Util.Lambda`. Other modules in `lib/Util` and `lib/Support` may be useful for you. 
+4. You can define your own data type to represent lambda calculus terms or use the one (`LC`) provided in `Util.Syntax.Lambda`. Other modules in `lib/Util` and `lib/Support` may be useful for you. 
 
 5. Don't forget to add your new module(s) to the `lambda-n-ways.cabal` file!
 

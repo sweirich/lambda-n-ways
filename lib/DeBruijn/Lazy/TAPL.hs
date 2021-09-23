@@ -8,8 +8,8 @@ import Data.List (elemIndex)
 import GHC.Generics (Generic)
 import Util.IdInt (IdInt (..), firstBoundId)
 import Util.Impl (LambdaImpl (..))
-import Util.Lambda (LC (..))
 import qualified Util.Stats as Stats
+import Util.Syntax.Lambda (LC (..))
 
 impl :: LambdaImpl
 impl =
@@ -45,7 +45,7 @@ a function onvar, the result of tmmap onvar t is a term of the same shape as
 t in which every variable has been replaced by the result of calling onvar on
 that variable.
 
-The arguments to 'onvar' are the current binding level (c) and the index of the 
+The arguments to 'onvar' are the current binding level (c) and the index of the
 variable.
 -}
 
@@ -107,7 +107,6 @@ whnf (TmApp f a) =
 
 -------------------------------------------------------------------
 
-
 nfi :: Int -> Term -> Stats.M Term
 nfi 0 _e = Stats.done
 nfi _n e@(TmVar _) = return e
@@ -127,7 +126,6 @@ whnfi n (TmApp f a) = do
   case whnf f' of
     TmAbs b -> Stats.count >> whnfi (n -1) (instantiate b a)
     _ -> return $ TmApp f' a
-
 
 instantiate :: Term -> Term -> Term
 instantiate b a = termSubstTop a b

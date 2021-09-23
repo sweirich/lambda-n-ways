@@ -17,12 +17,13 @@ import qualified Data.IntMap as IM
 import Data.List (elemIndex)
 import qualified Data.Set as Set
 import Data.Type.Equality
-import Support.Nat
 import qualified Unsafe.Coerce as Unsafe
 import Util.IdInt
 import Util.Impl
 import Util.Imports hiding (S)
-import qualified Util.Lambda as LC
+import Util.Nat
+import qualified Util.Syntax.Lambda as LC
+import Util.Vec
 
 -- 0. Original
 -- lennart: 1.03s
@@ -111,21 +112,6 @@ data Exp (n :: Nat) where
 -- a larger scope (where the newly bound variables are left alone).
 -- k=2    0 -> 0 , 1 -> 1 , 2 -> 2, k+1 -> x, k+2 -> y, ...
 -- more generally, we have the scope depth k and a n-ary mapping for variables k+i for 0<=i<n
-data Vec a (n :: Nat) where
-  VNil :: Vec a 'Z
-  VCons :: a -> Vec a n -> Vec a ('S n)
-
-nth :: SNat n -> Vec a ('S n) -> a
-nth SZ (VCons a _) = a
-nth (SS m) (VCons _ ss) = nth m ss
-
-inth :: Idx n -> Vec a n -> a
-inth FZ (VCons a _) = a
-inth (FS m) (VCons _ ss) = inth m ss
-
-append :: Vec a m -> Vec a n -> Vec a (Plus m n)
-append VNil v = v
-append (VCons u vm) vn = VCons u (append vm vn)
 
 data Sub n k where
   Sub :: SNat k -> Vec (Exp 'Z) n -> Sub n k

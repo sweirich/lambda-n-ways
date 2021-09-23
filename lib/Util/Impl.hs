@@ -15,9 +15,9 @@ import Util.IdInt
 import Util.IdInt.Set (IdIntSet)
 import qualified Util.IdInt.Set as IdIntSet
 import Util.Imports
-import Util.Lambda
 import qualified Util.Misc as Misc
 import qualified Util.Stats as Stats
+import Util.Syntax.Lambda
 import Prelude hiding (abs)
 
 data LambdaImpl = forall a.
@@ -41,7 +41,7 @@ toIdInt e = evalState (conv e) (0, fvmap)
       Prelude.foldr
         (\(v, i) m -> M.insert v (IdInt i) m)
         M.empty
-        (zip (S.toList (Util.Lambda.freeVars e)) [1 ..])
+        (zip (S.toList (Util.Syntax.Lambda.freeVars e)) [1 ..])
 
     conv :: (Ord v) => LC v -> FreshM v (LC IdInt)
     conv (Var v) = Var <$> convVar v
