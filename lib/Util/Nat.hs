@@ -6,6 +6,7 @@ module Util.Nat where
 import Control.DeepSeq (NFData (..))
 import Data.Kind (Type)
 import Data.Some
+import Data.Type.Equality
 
 data Nat = Z | S Nat
   deriving (Eq, Show)
@@ -105,3 +106,17 @@ instance Show (Idx n) where
 sNat2Idx :: SNat n -> Idx ('S n)
 sNat2Idx SZ = FZ
 sNat2Idx (SS x) = FS (sNat2Idx x)
+
+instance TestEquality SNat where
+  testEquality SZ SZ = Just Refl
+  testEquality (SS x) (SS y) = case testEquality x y of
+    Just Refl -> Just Refl
+    Nothing -> Nothing
+  testEquality _ _ = Nothing
+
+-- | Maybe this should be part of Util.Nat???
+toIdx :: SNat n -> Int -> Idx n
+toIdx (SS _n) 0 = FZ
+toIdx (SS n) m | m > 0 = FS (toIdx n (m -1))
+toIdx SZ _ = error "No indices in Ix Z"
+toIdx _ _m = error "Negative index"

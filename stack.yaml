@@ -1,4 +1,5 @@
-resolver: lts-15.14
+resolver: lts-18.6
+# resolver: lts-15.14
 allow-newer: false
 
 packages:

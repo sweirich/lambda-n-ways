@@ -24,7 +24,7 @@ impl =
     }
 
 data Exp where
-  Var :: {-# UNPACK #-} !Var -> Exp
+  Var :: !Var -> Exp
   Abs :: !(Bind Exp) -> Exp
   App :: !Exp -> !Exp -> Exp
   deriving (Generic, Eq, Show)
@@ -115,6 +115,23 @@ nf' :: Exp -> N Exp
 nf' e@(Var _) = return e
 nf' (Abs b) = do
   x <- newVar
+  let bb = instantiate b (Var (F x))
+  b' <- nf' bb
+  let bb' = close x b'
+  return $ Abs bb'
+nf' (App f a) = do
+  f' <- nf' f
+  a' <- nf' a
+  case f' of
+    Abs b -> do
+      nf' (instantiate b a')
+    _ -> App <$> nf' f' <*> nf' a'
+
+{-
+nf' :: Exp -> N Exp
+nf' e@(Var _) = return e
+nf' (Abs b) = do
+  x <- newVar
   let bb = (instantiate b (Var (F x)))
   b' <- nf' bb
   let bb' = close x b'
@@ -136,6 +153,7 @@ whnf (App f a) = do
     (Abs b) ->
       whnf (instantiate b a)
     _ -> return $ App f' a
+-}
 
 -- Fueled version
 

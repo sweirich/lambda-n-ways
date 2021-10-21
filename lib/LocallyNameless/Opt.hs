@@ -14,8 +14,8 @@ import Debug.Trace
 import Util.IdInt (IdInt (..), firstBoundId)
 import Util.Impl (LambdaImpl (..))
 import Util.Imports hiding (S, from, to)
-import qualified Util.Syntax.Lambda as LC
 import qualified Util.Stats as Stats
+import qualified Util.Syntax.Lambda as LC
 
 -- 0. Original (Ott derived version)
 -- lennart: 1.03s
@@ -46,7 +46,7 @@ impl =
     { impl_name = "LocallyNameless.Opt",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
-      impl_nf = nf,
+      impl_nf = \t -> nf t 0,
       impl_nfi = nfi,
       impl_aeq = (==)
     }
@@ -56,7 +56,7 @@ data Exp where
   Var_f :: !IdInt -> Exp
   Abs :: !(Bind Exp) -> Exp
   App :: !Exp -> !Exp -> Exp
-  deriving (Generic, Eq)
+  deriving (Generic, Eq, Show)
 
 instance NFData Exp
 
@@ -70,16 +70,19 @@ substFv u y = subst0
     subst0 e0 = case e0 of
       (Var_b n) -> Var_b n
       (Var_f x) -> (if x == y then u else (Var_f x))
-      (Abs b) -> Abs (bind (subst0 (unbind b)))
-      -- ALT: (Abs b) -> Abs (substBind u y b)
+      (Abs b) -> Abs (substFvBind u y b)
       (App e1 e2) -> App (subst0 e1) (subst0 e2)
 
+substFvBind :: Exp -> IdInt -> Bind Exp -> Bind Exp
+substFvBind u y b = bind (substFv u y (unbind b))
+
+-- free variable calculation
 fv :: Exp -> Set IdInt
 fv e =
   case e of
     (Var_b _) -> Set.empty
     (Var_f x) -> Set.singleton x
-    (Abs b) -> fv (unbind b)
+    (Abs b) -> fvBind b
     (App e1 e2) -> fv e1 `Set.union` fv e2
 
 fvBind :: Bind Exp -> Set IdInt
@@ -94,6 +97,11 @@ data Bind a where
   Bind :: !a -> Bind a
   BindOpen :: !Int -> ![a] -> !a -> Bind a
   BindClose :: !Int -> ![IdInt] -> !a -> Bind a
+
+instance Show a => Show (Bind a) where
+  show (Bind x) = "Bind " ++ show x
+  show (BindOpen k ks x) = "BindOpen " ++ show k ++ " in " ++ show x
+  show (BindClose k ks x) = "BindClose " ++ show k ++ " in " ++ show x
 
 instance (NFData a) => NFData (Bind a) where
   rnf (BindOpen k s a) = rnf k `seq` rnf s `seq` rnf a
@@ -164,7 +172,10 @@ openIdx i k v = nthWithDefault (Var_b i) v (i - k)
 instantiate :: Bind Exp -> Exp -> Exp
 instantiate (BindOpen 1 vs e) u = multi_open_exp_wrt_exp_rec 0 (u : vs) e
 instantiate (BindOpen _ _ _) _ = error "instantiate missed optimization opportunity"
-instantiate (BindClose 0 [y] e) (Var_f x) | x == y = trace "found close/open" $ e
+instantiate (BindClose 0 [y] e) (Var_f x)
+  | x == y =
+    -- trace ("found close/open " ++ show x) $
+    e
 instantiate b u = multi_open_exp_wrt_exp_rec 0 [u] (unbind b)
 {-# INLINEABLE instantiate #-}
 
@@ -196,6 +207,31 @@ close x e = BindClose 0 [x] e
 
 {- --------------------------------------- -}
 
+type M a = IdInt -> a
+
+ask :: M IdInt
+ask = id
+
+incr :: M Exp -> M Exp
+incr f = f . (+ 1)
+
+nf :: Exp -> M Exp
+nf e@(Var_f _) = return e
+nf e@(Var_b _) = error "should not find b"
+nf (Abs b) = trace ("nf: " ++ show (Abs b)) $ do
+  x <- ask
+  b' <- incr $ nf (instantiate b (Var_f x))
+  return $ Abs (close x b')
+nf (App f a) =
+  trace ("nf: " ++ show (App f a)) $ do
+    f' <- nf f
+    x <- ask
+    case f' of
+      (Abs b) ->
+        nf (instantiate b (nf a x))
+      _ -> return $ App f' (nf a x)
+
+{-
 fresh :: Exp -> IdInt
 fresh e = succ (fromMaybe firstBoundId (Set.lookupMax (fv e)))
 
@@ -220,6 +256,7 @@ whnf (App f a) =
   case whnf f of
     (Abs b) -> whnf (instantiate b a)
     f' -> App f' a
+-}
 
 {-
 type N a = State IdInt a

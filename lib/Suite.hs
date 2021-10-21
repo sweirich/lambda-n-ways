@@ -1,10 +1,6 @@
 module Suite where
 
 import qualified Core.Nf
-import qualified DeBruijn.Bound
-import qualified DeBruijn.CPDT
-import qualified DeBruijn.Cornell
-import qualified DeBruijn.Kit
 --import qualified DeBruijn.Lazy.List
 
 --import qualified DeBruijn.Lazy.Par.FB
@@ -15,8 +11,10 @@ import qualified DeBruijn.Kit
 
 --import qualified LocallyNameless.Lazy.TypedOpt
 
-import qualified DeBruijn.Kovacs
-import qualified DeBruijn.KovacsScoped
+import qualified DeBruijn.Bound
+import qualified DeBruijn.CPDT
+import qualified DeBruijn.Cornell
+import qualified DeBruijn.Kit
 import qualified DeBruijn.Krivine
 import qualified DeBruijn.KrivineScoped
 import qualified DeBruijn.Lazy.Bound
@@ -67,6 +65,10 @@ import qualified LocallyNameless.SupportInstOpt
 import qualified LocallyNameless.SupportOpt
 import qualified LocallyNameless.TypedOpt
 import qualified LocallyNameless.TypedOtt
+import qualified NBE.Aelig
+import qualified NBE.Kovacs
+import qualified NBE.KovacsScoped
+import qualified NBE.KovacsScoped2
 import qualified Named.Kovacs
 import qualified Named.Lazy.NominalG
 import qualified Named.Lazy.Simple
@@ -74,7 +76,7 @@ import qualified Named.Lazy.SimpleGH
 import qualified Named.Lazy.SimpleH
 import qualified Named.Lazy.SimpleM
 import qualified Named.Lennart
-import qualified Named.Nom
+-- import qualified Named.Nom
 import qualified Named.NominalG
 import qualified Named.Simple
 import qualified Named.SimpleGH
@@ -87,15 +89,19 @@ import qualified Unbound.UGSubstEBind
 import qualified Unbound.UNGSubstBind
 import qualified Unbound.UnboundGenerics
 import qualified Unbound.UnboundNonGenerics
-import qualified Unbound.UnboundRep
+--import qualified Unbound.UnboundRep
 import Util.Impl (LambdaImpl)
 
 -- | Implementations used in the benchmarking/test suite
 -- must be a single variable name for Makefile
 impls :: [LambdaImpl]
-impls = kovacs
+impls = nbe
 
-kovacs = [DeBruijn.KovacsScoped.impl, DeBruijn.Kovacs.impl]
+nbe = [NBE.Aelig.impl, NBE.Kovacs.impl]
+
+delayed = [DeBruijn.Par.B.impl]
+
+kovacs = [NBE.KovacsScoped2.impl, NBE.Kovacs.impl]
 
 interleave :: [a] -> [a] -> [a]
 interleave (a1 : a1s) (a2 : a2s) = a1 : a2 : interleave a1s a2s
@@ -225,7 +231,7 @@ locallyNameless =
 
 unbound :: [LambdaImpl]
 unbound =
-  [ Unbound.UnboundRep.impl, -- unbound
+  [ -- Unbound.UnboundRep.impl, -- unbound
     Unbound.UnboundGenerics.impl, -- unbound-generics (original)
     Unbound.UnboundNonGenerics.impl,
     Unbound.UGEBind.impl, -- unbound-generics mod2
@@ -282,12 +288,12 @@ lennart =
 
 hackage :: [LambdaImpl]
 hackage =
-  [ Named.Nom.impl, -- https://hackage.haskell.org/package/nom
-  -- really, really slow.
+  [ -- Named.Nom.impl, -- https://hackage.haskell.org/package/nom
+    -- really, really slow.
     Named.NominalG.impl, -- nominal, generally too slow (12s vs. <200 ms for everything else)
     -- https://hackage.haskell.org/package/nominal
     Named.Lazy.NominalG.impl,
-    Unbound.UnboundRep.impl, -- unbound
+    -- Unbound.UnboundRep.impl, -- unbound
     Unbound.UnboundGenerics.impl, -- unbound-generics
     DeBruijn.Bound.impl, -- bound
     DeBruijn.Lazy.Bound.impl -- bound
@@ -448,7 +454,7 @@ opt_strict =
     DeBruijn.Krivine.impl,
     Lennart.HOAS.impl,
     Lennart.DeBruijnC.impl,
-    DeBruijn.Kovacs.impl,
+    --NBE.Kovacs.impl,
     Named.Kovacs.impl
   ]
 
