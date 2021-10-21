@@ -1,7 +1,7 @@
 {-# LANGUAGE DefaultSignatures #-}
 
 -- | Binding library for locally nameless representation
-module Support.SubstOpt
+module Support.SubstOptRefactor
   ( VarC (..),
     AlphaC (..),
     SubstC (..),

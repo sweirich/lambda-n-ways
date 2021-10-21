@@ -164,7 +164,7 @@ openIdx i k v = nthWithDefault (Var_b i) v (i - k)
 instantiate :: Bind Exp -> Exp -> Exp
 instantiate (BindOpen 1 vs e) u = multi_open_exp_wrt_exp_rec 0 (u : vs) e
 instantiate (BindOpen _ _ _) _ = error "instantiate missed optimization opportunity"
-instantiate (BindClose 0 [y] e) (Var_f x) | x == y = trace "found close/open" $ e
+instantiate (BindClose 0 [y] e) (Var_f x) | x == y = e
 instantiate b u = multi_open_exp_wrt_exp_rec 0 [u] (unbind b)
 {-# INLINEABLE instantiate #-}
 

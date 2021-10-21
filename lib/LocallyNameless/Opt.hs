@@ -218,12 +218,15 @@ incr f = f . (+ 1)
 nf :: Exp -> M Exp
 nf e@(Var_f _) = return e
 nf e@(Var_b _) = error "should not find b"
-nf (Abs b) = trace ("nf: " ++ show (Abs b)) $ do
-  x <- ask
-  b' <- incr $ nf (instantiate b (Var_f x))
-  return $ Abs (close x b')
+nf (Abs b) =
+  -- trace ("nf: " ++ show (Abs b)) $
+  do
+    x <- ask
+    b' <- incr $ nf (instantiate b (Var_f x))
+    return $ Abs (close x b')
 nf (App f a) =
-  trace ("nf: " ++ show (App f a)) $ do
+  -- trace ("nf: " ++ show (App f a)) $
+  do
     f' <- nf f
     x <- ask
     case f' of

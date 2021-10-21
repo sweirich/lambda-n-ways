@@ -19,7 +19,7 @@ import qualified Util.Syntax.Lambda as LC
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "DeBruijn.Boesflug",
+    { impl_name = "NBE.Boesflug",
       impl_fromLC = fromLC,
       impl_toLC = toLC,
       impl_nf = nf,

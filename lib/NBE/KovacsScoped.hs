@@ -26,7 +26,7 @@ import Prelude hiding (length, lookup)
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "DeBruijn.KovacsScoped",
+    { impl_name = "NBE.KovacsScoped",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
       impl_nf = nf,

@@ -15,7 +15,7 @@ import Util.Syntax.Lambda
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "DeBruijn.Felgenhauer",
+    { impl_name = "NBE.Felgenhauer",
       impl_fromLC = fromLC [],
       impl_toLC = toLC 0,
       impl_nf = dbnf [],

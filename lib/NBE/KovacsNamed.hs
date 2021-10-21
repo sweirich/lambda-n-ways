@@ -15,7 +15,7 @@ import Util.Syntax.Lambda
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "Named.Kovacs",
+    { impl_name = "NBE.KovacsNamed",
       impl_fromLC = id,
       impl_toLC = id,
       impl_nf = nf [],

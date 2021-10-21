@@ -33,7 +33,7 @@ import Prelude hiding (length)
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "DeBruijn.KovacsScoped2",
+    { impl_name = "NBE.KovacsScoped2",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
       impl_nf = nf,
@@ -147,7 +147,7 @@ eval env = \case
     DClo (Closure env t)
   DClo c ->
     -- this is an impossible case
-    trace "eval clo" $
+    trace "impossible: eval clo" $
       DClo c
 
 -- | Convert a value to to a term by translating
@@ -162,7 +162,7 @@ quote l = \case
   DApp t u -> DApp (quote l t) (quote l u)
   DLam t ->
     -- this is an impossible case
-    trace "quote lam" $
+    trace "impossible: quote lam" $
       DLam (quote (SS l) (cApp Nil t (DLvl vl)))
   DClo (Closure e t) ->
     -- we call eval here. Why? NBE stuff going on

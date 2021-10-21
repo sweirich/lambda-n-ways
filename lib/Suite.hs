@@ -79,19 +79,14 @@ import qualified Unbound.UGSubstEBind
 import qualified Unbound.UNGSubstBind
 import qualified Unbound.UnboundGenerics
 import qualified Unbound.UnboundNonGenerics
+-- allow newer GHCs
 --import qualified Unbound.UnboundRep
 import Util.Impl (LambdaImpl)
 
 -- | Implementations used in the benchmarking/test suite
 -- must be a single variable name for Makefile
 impls :: [LambdaImpl]
-impls = nbe
-
-nbe = [NBE.Aelig.impl, NBE.Kovacs.impl]
-
-delayed = [DeBruijn.Par.B.impl]
-
-kovacs = [NBE.KovacsScoped2.impl, NBE.Kovacs.impl]
+impls = all_impls
 
 interleave :: [a] -> [a] -> [a]
 interleave (a1 : a1s) (a2 : a2s) = a1 : a2 : interleave a1s a2s
@@ -104,7 +99,10 @@ interleave _ _ = []
 
 all_impls :: [LambdaImpl]
 all_impls =
-  debruijn ++ debruijn_lazy ++ locallyNameless ++ locallyNameless_lazy ++ named ++ named_lazy ++ hackage
+  debruijn ++ debruijn_lazy ++ locallyNameless ++ locallyNameless_lazy ++ named ++ named_lazy
+    ++ lennart
+    ++ unbound
+    ++ nbe
 
 all_debruijn :: [LambdaImpl]
 all_debruijn = debruijn ++ debruijn_lazy
@@ -124,35 +122,12 @@ debruijn =
     DeBruijn.Par.L.impl,
     DeBruijn.Par.Fun.impl,
     DeBruijn.Par.P.impl,
-    DeBruijn.Par.B.impl,
+    -- DeBruijn.Par.B.impl, -- HANGS on Lennart test
     DeBruijn.Par.GB.impl,
     -- Well-scoped single
     DeBruijn.CPDT.impl,
     DeBruijn.Nested.impl,
     DeBruijn.Bound.impl, -- bound
-    -- well-scoped parallel
-    DeBruijn.Kit.impl,
-    DeBruijn.Par.Scoped.impl
-    -- DeBruijn.Nested2.impl, --fails test suite
-  ]
-
-debruijn_nfi :: [LambdaImpl]
-debruijn_nfi =
-  [ -- single substitutions
-    DeBruijn.TAPL.impl,
-    DeBruijn.Cornell.impl,
-    DeBruijn.Lennart.impl,
-    DeBruijn.Lift.impl,
-    -- parallel substitutions
-    DeBruijn.Par.L.impl,
-    DeBruijn.Par.Fun.impl,
-    DeBruijn.Par.P.impl,
-    DeBruijn.Par.B.impl,
-    DeBruijn.Par.GB.impl,
-    -- Well-scoped single
-    DeBruijn.CPDT.impl,
-    DeBruijn.Nested.impl,
-    --DeBruijn.Bound.impl, -- bound
     -- well-scoped parallel
     DeBruijn.Kit.impl,
     DeBruijn.Par.Scoped.impl
@@ -170,7 +145,7 @@ debruijn_lazy =
     DeBruijn.Lazy.Par.Fun.impl,
     DeBruijn.Lazy.Par.L.impl,
     DeBruijn.Lazy.Par.P.impl,
-    DeBruijn.Lazy.Par.B.impl,
+    -- DeBruijn.Lazy.Par.B.impl,  -- hangs on lennart test
     DeBruijn.Lazy.Par.GB.impl,
     -- Well-scoped single
     DeBruijn.Lazy.CPDT.impl,
@@ -181,52 +156,19 @@ debruijn_lazy =
     DeBruijn.Lazy.Par.Scoped.impl
   ]
 
-debruijn_nfi_lazy :: [LambdaImpl]
-debruijn_nfi_lazy =
-  [ -- single substitutions
-    DeBruijn.Lazy.TAPL.impl,
-    DeBruijn.Lazy.Cornell.impl,
-    DeBruijn.Lazy.Lift.impl,
-    DeBruijn.Lazy.Lennart.impl,
-    -- parallel substitutions
-    DeBruijn.Lazy.Par.Fun.impl,
-    DeBruijn.Lazy.Par.L.impl,
-    DeBruijn.Lazy.Par.P.impl,
-    DeBruijn.Lazy.Par.B.impl,
-    DeBruijn.Lazy.Par.GB.impl,
-    -- Well-scoped single
-    DeBruijn.Lazy.CPDT.impl,
-    DeBruijn.Lazy.Nested.impl,
-    --DeBruijn.Lazy.Bound.impl, -- bound
-    -- Well-scoped parallel
-    DeBruijn.Lazy.Kit.impl,
-    DeBruijn.Lazy.Par.Scoped.impl
-  ]
-
 -- | Locally Nameless based implmentations
 locallyNameless :: [LambdaImpl]
 locallyNameless =
-  [ --LocallyNameless.Ott.impl,
-    --LocallyNameless.TypedOtt.impl,
-    --LocallyNameless.ParScoped.impl,
-    --LocallyNameless.ParOpt.impl,
-    --LocallyNameless.Opt.impl
+  [ LocallyNameless.Ott.impl,
+    LocallyNameless.TypedOtt.impl,
+    LocallyNameless.ParScoped.impl,
+    LocallyNameless.ParOpt.impl,
+    -- LocallyNameless.Opt.impl,   -- HANGS on tests (full)
     LocallyNameless.SupportOpt.impl,
-    --LocallyNameless.TypedOpt.impl
-    LocallyNameless.SupportInstOpt.impl
-    --LocallyNameless.GenericOpt.impl,
-    --LocallyNameless.GenericInstOpt.impl
-    -- LocallyNameless.TypedOpt.impl
-  ]
-
-unbound :: [LambdaImpl]
-unbound =
-  [ -- Unbound.UnboundRep.impl, -- unbound
-    Unbound.UnboundGenerics.impl, -- unbound-generics (original)
-    Unbound.UnboundNonGenerics.impl,
-    Unbound.UGEBind.impl, -- unbound-generics mod2
-    Unbound.UGSubstBind.impl, -- unbound-generics mod2
-    Unbound.UGSubstEBind.impl -- unbound-generics mod2
+    -- LocallyNameless.SupportInstOpt.impl, -- HANGS on tests (full)
+    -- LocallyNameless.GenericOpt.impl, throws exception (random-25-20, lennart)
+    -- LocallyNameless.GenericInstOpt.impl, -- throws exception
+    LocallyNameless.TypedOpt.impl
   ]
 
 locallyNameless_lazy :: [LambdaImpl]
@@ -240,14 +182,13 @@ locallyNameless_lazy =
     LocallyNameless.Lazy.GenericOpt.impl
   ]
 
-locallyNameless_opt :: [LambdaImpl]
-locallyNameless_opt =
-  [ LocallyNameless.Opt.impl,
-    LocallyNameless.SupportOpt.impl,
-    LocallyNameless.GenericOpt.impl,
-    LocallyNameless.Lazy.Opt.impl,
-    LocallyNameless.Lazy.SupportOpt.impl,
-    LocallyNameless.Lazy.GenericOpt.impl
+unbound :: [LambdaImpl]
+unbound =
+  [ Unbound.UnboundGenerics.impl, -- unbound-generics (original)
+    Unbound.UnboundNonGenerics.impl,
+    -- Unbound.UGEBind.impl, -- unbound-generics mod2 -- hangs on full
+    Unbound.UGSubstBind.impl -- unbound-generics mod2
+    -- Unbound.UGSubstEBind.impl -- unbound-generics mod2 -- full 2
   ]
 
 -- | Name based/nominal implementations
@@ -256,8 +197,11 @@ named =
   [ Named.SimpleH.impl,
     Named.SimpleGH.impl,
     Named.SimpleM.impl,
+    Named.Lennart.impl,
     Named.Simple.impl,
     Named.Unique.impl
+    -- Named.Nom -- too slow
+    -- Named.NominalG -- too slow
   ]
 
 named_lazy :: [LambdaImpl]
@@ -265,16 +209,34 @@ named_lazy =
   [ Named.Lazy.SimpleH.impl,
     Named.Lazy.SimpleGH.impl,
     Named.Lazy.SimpleM.impl
+    -- Named.Lazy.NominalG -- too slow
   ]
 
 lennart :: [LambdaImpl]
 lennart =
   [ -- Other
     --Lennart.Unique.impl -- buggy
+    --Lennart.SimpleOrig.impl -- buggy
     Lennart.Simple.impl,
     Lennart.DeBruijn.impl,
     Lennart.HOAS.impl
   ]
+
+nbe :: [LambdaImpl]
+nbe =
+  [ NBE.Aelig.impl, -- full 2
+  -- NBE.Boesflug.impl, -- hangs on full
+    NBE.Felgenhauer.impl,
+    NBE.Kovacs.impl,
+    NBE.KovacsNamed.impl,
+    NBE.KovacsScoped.impl,
+    NBE.KovacsScoped2.impl,
+    DeBruijn.Krivine.impl,
+    DeBruijn.KrivineScoped.impl
+  ]
+
+---------------------------------------------------
+---------------------------------------------------
 
 hackage :: [LambdaImpl]
 hackage =
