@@ -18,3 +18,5 @@ stack.yaml.lock
 .DS_Store
 .vscode/
 .stack-work/
+tmp
+lib/old/*
