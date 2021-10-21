@@ -2,7 +2,7 @@
 {-# LANGUAGE Strict #-}
 {-# LANGUAGE ViewPatterns #-}
 
-module Named.Kovacs where
+module NBE.KovacsNamed where
 
 import Data.Maybe (fromJust)
 import Util.IdInt
