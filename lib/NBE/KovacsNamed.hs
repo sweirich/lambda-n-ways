@@ -2,6 +2,9 @@
 {-# LANGUAGE Strict #-}
 {-# LANGUAGE ViewPatterns #-}
 
+-- adapted from
+-- https://github.com/AndrasKovacs/elaboration-zoo/blob/master/01-eval-closures-names/Main.hs
+
 module NBE.KovacsNamed where
 
 import Data.Maybe (fromJust)

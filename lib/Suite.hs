@@ -1,16 +1,6 @@
 module Suite where
 
 import qualified Core.Nf
---import qualified DeBruijn.Lazy.List
-
---import qualified DeBruijn.Lazy.Par.FB
-
--- import qualified DeBruijn.List
-
--- import qualified DeBruijn.Par.FB
-
---import qualified LocallyNameless.Lazy.TypedOpt
-
 import qualified DeBruijn.Bound
 import qualified DeBruijn.CPDT
 import qualified DeBruijn.Cornell
@@ -42,7 +32,6 @@ import qualified DeBruijn.Par.P
 import qualified DeBruijn.Par.Scoped
 import qualified DeBruijn.TAPL
 import qualified Lennart.DeBruijn
-import qualified Lennart.DeBruijnC
 import qualified Lennart.HOAS
 import qualified Lennart.Simple
 import qualified Lennart.SimpleOrig
@@ -66,17 +55,18 @@ import qualified LocallyNameless.SupportOpt
 import qualified LocallyNameless.TypedOpt
 import qualified LocallyNameless.TypedOtt
 import qualified NBE.Aelig
+import qualified NBE.Boesflug
+import qualified NBE.Felgenhauer
 import qualified NBE.Kovacs
+import qualified NBE.KovacsNamed
 import qualified NBE.KovacsScoped
 import qualified NBE.KovacsScoped2
-import qualified Named.Kovacs
 import qualified Named.Lazy.NominalG
 import qualified Named.Lazy.Simple
 import qualified Named.Lazy.SimpleGH
 import qualified Named.Lazy.SimpleH
 import qualified Named.Lazy.SimpleM
 import qualified Named.Lennart
--- import qualified Named.Nom
 import qualified Named.NominalG
 import qualified Named.Simple
 import qualified Named.SimpleGH
@@ -453,9 +443,8 @@ opt_strict =
     LocallyNameless.Opt.impl,
     DeBruijn.Krivine.impl,
     Lennart.HOAS.impl,
-    Lennart.DeBruijnC.impl,
-    --NBE.Kovacs.impl,
-    Named.Kovacs.impl
+    NBE.Felgenhauer.impl,
+    NBE.Kovacs.impl
   ]
 
 opt_lazy :: [LambdaImpl]

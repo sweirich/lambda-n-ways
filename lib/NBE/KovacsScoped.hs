@@ -6,7 +6,7 @@
 
 -- This implementation relies on the laziness of Haskell to implement call-by-need normal order evaluation.
 
--- It also uses well-scoped expressions to keep track of DeBruijn indices
+-- SCW added well-scoped expressions to keep track of DeBruijn indices
 -- and levels.
 
 -- If the ~ were removed below, then this implementation would be for a different evaluation order.

@@ -13,6 +13,9 @@ source-repository head
 library
   hs-source-dirs: lib
   exposed-modules:
+      Suite
+      QuickBench
+
       Util.Imports
       Util.Impl
       Util.Syntax.Lambda
@@ -20,8 +23,6 @@ library
       Util.Syntax.DeBruijn
       Util.Syntax.ScopedDeBruijn
       Util.Misc
-      Suite
-      QuickBench
       Util.Id
       Util.IdInt
       Util.IdInt.Map
@@ -29,11 +30,13 @@ library
       Util.Stats
       Util.Nat
       Util.Vec
+
       Support.Par.Subst
       Support.Par.SubstScoped
       Support.SubstH
       Support.SubstOpt
       Support.TypedSubstOpt
+
       DeBruijn.Cornell
       DeBruijn.CPDT
       DeBruijn.Lennart
@@ -64,6 +67,7 @@ library
       --DeBruijn.Lazy.Par.FB
       DeBruijn.Lazy.Par.L
       DeBruijn.Lazy.Par.Scoped
+
       LocallyNameless.Ott
       LocallyNameless.Opt
       LocallyNameless.SupportInstOpt
@@ -95,11 +99,10 @@ library
       Lennart.Simple
       Lennart.Unique
       Lennart.DeBruijn
-      Lennart.DeBruijnC
+
       Named.Lennart
       Named.Simple
       Named.Unique
-      Named.Kovacs
  --     Named.Nom  
       Named.NominalG
       Named.SimpleH
@@ -110,6 +113,7 @@ library
       Named.Lazy.SimpleH
       Named.Lazy.SimpleGH
       Named.Lazy.SimpleM
+      
       Core.Core
       Core.Unique
       Core.FV
@@ -121,13 +125,18 @@ library
       Core.UniqDFM
       Core.UniqSet
       Core.Nf
+      
       DeBruijn.Krivine
       DeBruijn.KrivineScoped
+      
+      NBE.Aelig
+      NBE.Boesflug
+      NBE.Felgenhauer
       NBE.Kovacs
+      NBE.KovacsNamed
       NBE.KovacsScoped
       NBE.KovacsScoped2
-      NBE.Aelig
-      NBE.Felgenhauer
+
 
   ghc-options:  -O2 -funfolding-use-threshold=16 -fno-warn-unticked-promoted-constructors -fcross-module-specialise
   build-depends:

@@ -9,6 +9,9 @@
 -- It also uses well-scoped expressions to keep track of DeBruijn indices
 -- and levels.
 
+-- It also combines the Term and Val datatypes togther into a single data type
+-- in order to compare with locally nameless representation.
+
 -- If the ~ were removed below, then this implementation would be for a different evaluation order.
 -- As it is, because of Haskell's laziness, it doesn't do nearly as much work as the other versions.
 
