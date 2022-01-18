@@ -207,6 +207,9 @@ close x e = BindClose 0 [x] e
 
 {- --------------------------------------- -}
 
+-- keep track of current scoping level so that
+-- can quickly generate fresh variables when
+-- traversing under lambda expressions.
 type M a = IdInt -> a
 
 ask :: M IdInt
@@ -227,12 +230,20 @@ nf (Abs b) =
 nf (App f a) =
   -- trace ("nf: " ++ show (App f a)) $
   do
-    f' <- nf f
-    x <- ask
+    f' <- whnf f
     case f' of
-      (Abs b) ->
-        nf (instantiate b (nf a x))
-      _ -> return $ App f' (nf a x)
+      Abs b -> nf (instantiate b a)
+      _ -> App <$> nf f <*> nf a
+
+whnf :: Exp -> M Exp
+whnf e@(Var_f _) = return $ e
+whnf (Var_b _) = error "should not reach this"
+whnf e@(Abs _) = return $ e
+whnf (App f a) = do
+  f' <- whnf f
+  case f' of
+    (Abs b) -> whnf (instantiate b a)
+    f' -> return $ App f' a
 
 {-
 fresh :: Exp -> IdInt

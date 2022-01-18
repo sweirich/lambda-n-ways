@@ -73,10 +73,6 @@ import qualified Named.SimpleGH
 import qualified Named.SimpleH
 import qualified Named.SimpleM
 import qualified Named.Unique
-import qualified Unbound.UGEBind
-import qualified Unbound.UGSubstBind
-import qualified Unbound.UGSubstEBind
-import qualified Unbound.UNGSubstBind
 import qualified Unbound.UnboundGenerics
 import qualified Unbound.UnboundNonGenerics
 -- allow newer GHCs
@@ -91,6 +87,10 @@ impls = all_impls
 interleave :: [a] -> [a] -> [a]
 interleave (a1 : a1s) (a2 : a2s) = a1 : a2 : interleave a1s a2s
 interleave _ _ = []
+
+broken :: [LambdaImpl]
+broken =
+  []
 
 --------------------------------------------------------------------------
 --------------------------------------------------------------------------
@@ -122,7 +122,7 @@ debruijn =
     DeBruijn.Par.L.impl,
     DeBruijn.Par.Fun.impl,
     DeBruijn.Par.P.impl,
-    -- DeBruijn.Par.B.impl, -- HANGS on Lennart test
+    DeBruijn.Par.B.impl,
     DeBruijn.Par.GB.impl,
     -- Well-scoped single
     DeBruijn.CPDT.impl,
@@ -145,7 +145,7 @@ debruijn_lazy =
     DeBruijn.Lazy.Par.Fun.impl,
     DeBruijn.Lazy.Par.L.impl,
     DeBruijn.Lazy.Par.P.impl,
-    -- DeBruijn.Lazy.Par.B.impl,  -- hangs on lennart test
+    DeBruijn.Lazy.Par.B.impl,
     DeBruijn.Lazy.Par.GB.impl,
     -- Well-scoped single
     DeBruijn.Lazy.CPDT.impl,
@@ -163,11 +163,11 @@ locallyNameless =
     LocallyNameless.TypedOtt.impl,
     LocallyNameless.ParScoped.impl,
     LocallyNameless.ParOpt.impl,
-    -- LocallyNameless.Opt.impl,   -- HANGS on tests (full)
+    LocallyNameless.Opt.impl,
     LocallyNameless.SupportOpt.impl,
-    -- LocallyNameless.SupportInstOpt.impl, -- HANGS on tests (full)
-    -- LocallyNameless.GenericOpt.impl, throws exception (random-25-20, lennart)
-    -- LocallyNameless.GenericInstOpt.impl, -- throws exception
+    LocallyNameless.SupportInstOpt.impl,
+    LocallyNameless.GenericOpt.impl,
+    LocallyNameless.GenericInstOpt.impl,
     LocallyNameless.TypedOpt.impl
   ]
 
@@ -184,11 +184,8 @@ locallyNameless_lazy =
 
 unbound :: [LambdaImpl]
 unbound =
-  [ Unbound.UnboundGenerics.impl, -- unbound-generics (original)
-    Unbound.UnboundNonGenerics.impl,
-    -- Unbound.UGEBind.impl, -- unbound-generics mod2 -- hangs on full
-    Unbound.UGSubstBind.impl -- unbound-generics mod2
-    -- Unbound.UGSubstEBind.impl -- unbound-generics mod2 -- full 2
+  [ Unbound.UnboundGenerics.impl, -- unbound-generics
+    Unbound.UnboundNonGenerics.impl -- no generic programming
   ]
 
 -- | Name based/nominal implementations
@@ -224,8 +221,8 @@ lennart =
 
 nbe :: [LambdaImpl]
 nbe =
-  [ NBE.Aelig.impl, -- full 2
-  -- NBE.Boesflug.impl, -- hangs on full
+  [ NBE.Aelig.impl,
+    -- NBE.Boesflug.impl, -- hangs on full
     NBE.Felgenhauer.impl,
     NBE.Kovacs.impl,
     NBE.KovacsNamed.impl,
@@ -238,6 +235,7 @@ nbe =
 ---------------------------------------------------
 ---------------------------------------------------
 
+-- implementations available on hackage
 hackage :: [LambdaImpl]
 hackage =
   [ -- Named.Nom.impl, -- https://hackage.haskell.org/package/nom
@@ -378,6 +376,7 @@ really_slow = [Named.NominalG.impl] -- nominal
 
 --------------------------------------------------------------
 --------------------------------------------------------------
+-- Versions discussed in the Haskell.love talk Sept 2021
 
 love_talk :: [LambdaImpl]
 love_talk = basic_lazy ++ basic_strict ++ opt_lazy ++ opt_strict ++ opt_lazy_generic ++ opt_strict_generic
@@ -402,11 +401,7 @@ opt_strict :: [LambdaImpl]
 opt_strict =
   [ Named.SimpleH.impl,
     DeBruijn.Par.B.impl,
-    LocallyNameless.Opt.impl,
-    DeBruijn.Krivine.impl,
-    Lennart.HOAS.impl,
-    NBE.Felgenhauer.impl,
-    NBE.Kovacs.impl
+    LocallyNameless.Opt.impl
   ]
 
 opt_lazy :: [LambdaImpl]
@@ -430,6 +425,7 @@ opt_lazy_generic =
     LocallyNameless.Lazy.GenericInstOpt.impl
   ]
 
+love_all :: [LambdaImpl]
 love_all =
   [ Lennart.Simple.impl,
     Named.Lennart.impl,

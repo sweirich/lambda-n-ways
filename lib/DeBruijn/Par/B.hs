@@ -60,23 +60,20 @@ subst s = go
 
 ---------------------------------------------------------
 
-whnf :: DB -> DB
-whnf e@(DVar _) = e
-whnf (DLam b) = DLam b
-whnf (DApp f a) =
-  case (whnf f) of
-    (DLam b) -> whnf (instantiate b a)
-    f' -> DApp f' a
-
+{-
+-- try normalizing before substitution in a
+-- beta reduction. But it doesn't work.
+--
 nf :: DB -> DB
 nf e@(DVar _) = e
 nf (DLam b) = DLam (bind (nf (unbind b)))
 nf (DApp f a) =
-  case (whnf f) of
+  case whnf f of
     (DLam b) -> nf (instantiate b (nf a))
     f' -> DApp (nf f') (nf a)
 
-{-
+-}
+
 nf :: DB -> DB
 nf e@(DVar _) = e
 nf (DLam b) = DLam (bind (nf (unbind b)))
@@ -93,7 +90,7 @@ whnf (DApp f a) =
   case whnf f of
     DLam b -> whnf (instantiate b a)
     f' -> DApp f' a
--}
+
 ---------------------------------------------------------
 
 {-

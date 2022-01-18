@@ -36,26 +36,28 @@ instance DS.NFData Exp
 
 instance U.Alpha Exp where
   {-# SPECIALIZE instance U.Alpha Exp #-}
-  openMulti c np (Var n) = Var (U.openMulti c np n)
-  openMulti c np (Lam bnd) = Lam (U.openMulti c np bnd)
-  openMulti c np (App a1 a2) =
-    App (U.openMulti c np a1) (U.openMulti c np a2)
-  {-# INLINE U.openMulti #-}
+  open c np (Var n) = Var (U.open c np n)
+  open c np (Lam bnd) = Lam (U.open c np bnd)
+  open c np (App a1 a2) =
+    App (U.open c np a1) (U.open c np a2)
+  {-# INLINE U.open #-}
 
-  closeMulti c np (Var n) = Var (U.closeMulti c np n)
-  closeMulti c np (Lam bnd) = Lam (U.closeMulti c np bnd)
-  closeMulti c np (App a1 a2) =
-    App (U.closeMulti c np a1) (U.closeMulti c np a2)
-  {-# INLINE U.closeMulti #-}
+  close c np (Var n) = Var (U.close c np n)
+  close c np (Lam bnd) = Lam (U.close c np bnd)
+  close c np (App a1 a2) =
+    App (U.close c np a1) (U.close c np a2)
+  {-# INLINE U.close #-}
 
+  aeq' :: U.AlphaCtx -> Exp -> Exp -> Bool
   aeq' c (Var x) (Var y) = U.aeq' c x y
   aeq' c (Lam bnd1) (Lam bnd2) = U.aeq' c bnd1 bnd2
   aeq' c (App a1 a2) (App b1 b2) = U.aeq' c a1 b1 && U.aeq' c a2 b2
+  aeq' _ _ _ = False
   {-# INLINE U.aeq' #-}
 
 instance U.Subst Exp Exp where
   {-# SPECIALIZE instance U.Subst Exp Exp #-}
-
+  subst :: Var -> Exp -> Exp -> Exp
   subst x b a@(Var y) = if x == y then b else a
   subst x b (Lam bnd) = Lam (U.subst x b bnd)
   subst x b (App a1 a2) = App (U.subst x b a1) (U.subst x b a2)

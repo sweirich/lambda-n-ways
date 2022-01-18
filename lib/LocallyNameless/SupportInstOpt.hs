@@ -111,6 +111,7 @@ nfd e =
     v :: IdInt
     v = succ (fromMaybe firstBoundId (Set.lookupMax (fv e)))
 
+{-
 nf' :: Exp -> N Exp
 nf' e@(Var _) = return e
 nf' (Abs b) = do
@@ -126,8 +127,8 @@ nf' (App f a) = do
     Abs b -> do
       nf' (instantiate b a')
     _ -> App <$> nf' f' <*> nf' a'
+-}
 
-{-
 nf' :: Exp -> N Exp
 nf' e@(Var _) = return e
 nf' (Abs b) = do
@@ -153,7 +154,6 @@ whnf (App f a) = do
     (Abs b) ->
       whnf (instantiate b a)
     _ -> return $ App f' a
--}
 
 -- Fueled version
 

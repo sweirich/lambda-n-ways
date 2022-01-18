@@ -243,7 +243,7 @@ instance (SubstC a a, Show a) => AlphaC (Bind a) where
 
 instance (SubstC a a, Show a) => SubstC a (Bind a) where
   {-# SPECIALIZE instance (SubstC a a, Show a) => SubstC a (Bind a) #-}
-  multi_subst_bv _k vn (Bind (SubstBv l vm) b) = error "Bind (SubstBv l (vm <> vn)) b"
+  multi_subst_bv _k vn (Bind (SubstBv l vm) b) = Bind (SubstBv l (vm <> vn)) b
   multi_subst_bv k vn b = Bind (SubstBv (k + 1) vn) (unbind b)
   {-# INLINE multi_subst_bv #-}
 

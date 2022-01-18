@@ -55,6 +55,9 @@ subst s = go
 
 ---------------------------------------------------------
 
+{-
+-- normalize before substition and skip whnf step
+-- doesn't work
 nf :: DB -> DB
 nf e@(DVar _) = e
 nf (DLam b) = DLam (bind (nf (unbind b)))
@@ -63,8 +66,8 @@ nf (DApp f a) =
     (DLam b, va) ->
       nf (instantiate b va)
     (f', a') -> DApp f' a'
+-}
 
-{-
 nf :: DB -> DB
 nf e@(DVar _) = e
 nf (DLam b) = DLam (bind (nf (unbind b)))
@@ -81,7 +84,7 @@ whnf (DApp f a) =
   case whnf f of
     DLam b -> whnf (instantiate b a)
     f' -> DApp f' a
--}
+
 ---------------------------------------------------------
 
 nfi :: Int -> DB -> Stats.M DB

@@ -89,11 +89,7 @@ library
     
       Unbound.UnboundGenerics
       Unbound.UnboundNonGenerics
-      Unbound.UGEBind
-      Unbound.UGSubstBind
-      Unbound.UGSubstEBind
-      Unbound.UNGSubstBind
-
+    
       Lennart.HOAS
       Lennart.SimpleOrig
       Lennart.Simple
@@ -156,11 +152,11 @@ library
                 , tasty-hunit >= 0.10.0.2
                 , tasty-quickcheck >= 0.10.1.1
 --                , unbound >= 0.5.1.3
---                , unbound-generics == 0.4.1
-                , unbound-generics == 0.5
+                , unbound-generics == 0.4.1
                 , hashable
                 , some >= 1.0
                 , constraints >= 0.11
+                , dependent-map
   default-language: Haskell2010
   default-extensions:
                   DataKinds 
@@ -204,7 +200,7 @@ executable LC
                , tasty-hunit >= 0.10.0.2
                , tasty-quickcheck >= 0.10.1.1
   --             , unbound >= 0.5.1.3
-  --             , unbound-generics >= 0.4.1
+               , unbound-generics >= 0.4.1
   default-extensions:
                   DataKinds 
                 , DeriveGeneric
