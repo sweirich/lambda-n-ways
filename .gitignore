@@ -20,3 +20,6 @@ stack.yaml.lock
 .stack-work/
 tmp
 lib/old/*
+*.aux
+*.log
+*.out

@@ -22,7 +22,7 @@ import Util.Vec
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "DeBruijn.Krivine",
+    { impl_name = "DeBruijn.KrivineScoped",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
       impl_nf = nf,

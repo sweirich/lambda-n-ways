@@ -1,0 +1,192 @@
+\documentclass[sigplan]{acmart}
+
+\usepackage{listings}
+ \lstset{language=Haskell,basicstyle=\small\ttfamily}
+\usepackage{url}
+
+\settopmatter{printacmref=false}
+\fancyfoot{}
+\acmDOI{}
+\makeatletter
+\renewcommand\@formatdoi[1]{\ignorespaces}
+\makeatother
+\renewcommand\footnotetextcopyrightpermission[1]{}
+
+\title{Discussion: Benchmarking Binding}
+\author{Stephanie Weirich
+%\orcidID{0000-0002-6756-9168}
+%\affiliation{\department{Computer and Information Science}\institution{University of Pennsylvania}}
+}
+\email{sweirich@cis.upenn.edu}
+
+\begin{document}
+\bibliographystyle{ACM-Reference-Format}
+
+
+\maketitle
+
+\section{How should we represent binding?}
+
+Implementations of type systems, logics and programming languages must often
+answer the question of how to represent and work with binding structures in
+terms. While there may not be a one-size-fits-all solution, I would like to
+understand the trade-offs that various approaches to binding make in terms of
+execution speed and simplicity of implementation.
+
+Binding structures are epitomized in the lambda calculus by the abstraction
+term, $\lambda x. e$, that binds the variable $x$ within the body $e$. All
+occurrences of $x$ in this body are references to this bound variable. Other
+forms of binders include quantifiers
+(e.g. $\forall$,$\exists$,$\Pi$,$\Sigma$,$\nu$), recursive definitions,
+pattern matching, etc.
+
+To that end, I have been constructing a benchmark platform using the Haskell
+programming language and have been gathering multiple implementations of
+binding for comparison and
+experimentation.\footnote{\url{https://github.com/sweirich/lambda-n-ways}.
+This repository is based on a draft paper by Lennart Augustsson, but extends
+his four original implementations of the untyped lambda calculus with many
+additional variations.}
+%
+I propose to use this repository as a focus for a discussion about the
+following questions related to aggregating and comparing implementations of
+binding.
+
+\subsection{What should a benchmark suite contain?}
+
+We don't just representating lambda terms, we also want to work with that
+representation efficiently. Therefore, the goal of a benchmark suite should be
+to evaluate different implmentations of the same operations. But which ones?
+
+The operations that I think are important include:
+
+\begin{itemize}
+ \item Conversion to / from a "raw string" representation 
+%    i.e. if we may create
+%    a term by parsing it from a string and we might like to display it to the
+%    user using a familiar notation.
+  
+  \item Comparing for alpha-equivalence
+%     We need an equality function that is not
+%    sensitive to the names of bound variables, so that $\lambda x.x$ and
+%    $\lambda y.y$.  We might also like to extend these operations to
+%    well-orderings of terms or hash functions.
+
+  \item Capture-avoiding substitution % (replacing a free variable with a term).
+
+  \item Free variable set calculation
+\end{itemize}
+
+Designing a uniform and informative way to evaluate implementations of these
+operations is challenging. One issue is that the operations have different
+types with different binding representations. For example, if an
+implementation of capture-avoiding substitution requires freshening, it may
+require additional arguments to be sure that the new names chosen are
+fresh.
+
+But, more fundamentally, are these the right operations to begin with?  Do
+implementers use capture-avoiding substitution outside of teaching students
+about programming language theory? Should we add others to this list, such as
+normalization, alpha-invariant ordering, or hashing? Certain representations
+may also require additional functions, such as shifting (changing the scope of
+a term), freshening (renaming free variables), or instantiation (replacing a
+binding variable with a term) when working with terms, how do those interact
+with our benchmarks?  Should we only measure larger operations, such as type
+checking or source-to-source translations? How can we do that while still
+comparing a large number of implementations, being sure that they all
+implementing the same operation?
+
+\subsection{What optimizations can we evaluate?}
+
+There are ways to optimize an operation like capture-avoiding substitution
+that are independent of the binding representation chosen.  For example, if we
+know that a variable does not appear in a term, we can terminate the
+substitution operation early. But tracking the free variables of a term comes
+at a cost. Where is the trade off?
+
+Alternatively, if we can suspend substitution operations inside terms, we can
+fuse multiple traversals together, which makes a difference in, say
+normalization, which requires repeated uses of substitution. Furthermore, if
+substitution is interleaved with another function over lambda terms, say
+$[\![a]\!]$, then instead of computing $[\![a \{b/x\} ]\!]$ it might be more
+efficient to compute $[\![a ]\!]\{[\![b]\!]/x\}$ instead, when substitution
+commutes with the operation.
+
+Are there other optimizations that apply to capture-avoiding substitution? To
+the other operations? How can we evaluate their effectiveness?
+
+\subsection{What about library support?}
+
+Several libraries exist to support Haskell programmers in implementing binding
+including
+\texttt{unbound-generics}\footnote{\url{https://hackage.haskell.org/package/unbound-generics}},
+\texttt{bound}\footnote{\url{https://hackage.haskell.org/package/bound}}, and
+others. These libraries simplify working with binding.
+
+% For example, using \texttt{unbound-generics}, the following
+% definitions automatically produce functions that implement alpha-equivalence,
+% capture-avoiding substitution and open bindings with fresh variables.
+% 
+% \begin{lstlisting}
+% data Exp = Var (Name Exp) | App Exp Exp
+%   | Lam (Bind (Name Exp) Exp) 
+%  deriving (Show, Generic)
+%
+% instance Alpha Exp where
+% instance Subst Exp Exp where
+%   isvar (Var x) = Just (SubstName x)
+%   isvar _ = Nothing
+% \end{lstlisting}
+
+The \texttt{unbound-generics} library uses a locally nameless
+representation. The bound \texttt{library} uses a variant of de Bruijn indices
+based on nested datatypes. Other libraries are inspired by nominal logic. What
+representations can we use for such libraries? How can we make them both easy
+to use and efficient? What is the abstraction cost for introducing such a 
+library? Can we design libraries that minimize this cost?
+
+\subsection{What is used in practice?}
+
+Above, I've provided my answers to these questions to make it clear the kinds
+of discussion that I'm looking for. However, I'm keen to hear the experiences
+of others, hence the discussion format.
+
+
+
+\end{document}
+
+Can this knowledge be wrapped up in a library to make it more accessible to
+  programmers? How difficult is that library to use? At what cost to
+  performance compared to hand-rolled implementation?
+  
+  - Minimize the amount of code that users need to write
+  - Capture "scope" via monads, strong types, etc.
+  - Use compile-time code generation or datatype-generic programming? (But, then what cost?)
+
+What would a correctness proof of these implementations look like? Can we
+  easily formalize them in a proof assistant as a function?1
+
+\section{An initial proposal}
+
+A repository to gather Haskell implementations of the untyped lambda
+calculus. This repository should include documentation so that users can
+browse these implementations to better understand the design space and
+trade-offs. I'm proposing the untyped lambda calculus because it is small
+(only three constructors, two of them related to binding) and well
+studied. 
+
+All implementations in the repository should implement the same small, core set
+of operations, using a common interface. As a starting point, my existing core
+set includes alpha-equivalence, conversion to/from "raw" form, and full
+normalization. In the latter case, full normalization permits substitution
+operations with wildly different interfaces, such as environment-based ??
+However, care must be taken that all implementations provide the same
+normalization function.
+
+A suite of benchmarks that use these operations. Both in terms of functions
+implemented with these operations, and
+
+
+\bibliography{weirich}
+
+\end{document}
