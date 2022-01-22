@@ -5,9 +5,7 @@
 
 -- This implementation relies on the laziness of Haskell to implement call-by-need normal order evaluation.
 -- If the ~ were removed below, then this implementation would be for a different evaluation order.
--- As it is, because of Haskell's laziness, it doesn't do nearly as much work as the other versions.
 
--- Q1: Can we add laziness to the other nf functions in a nice way?
 module NBE.Kovacs where
 
 import Util.IdInt

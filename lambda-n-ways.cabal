@@ -99,7 +99,7 @@ library
       Named.Lennart
       Named.Simple
       Named.Unique
- --     Named.Nom  
+      Named.Nom  
       Named.NominalG
       Named.SimpleH
       Named.SimpleGH
