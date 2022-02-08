@@ -6,7 +6,7 @@ History: The repo was inspired by and initially derived from Lennart Augustsson'
 
 For an overview of the *n*-implementations available here, see [here](doc/Implementations.md).
 
-For a general overview of the project see the slides: [ifl-2021.pptx](ifl-2021.pptx). The plan for this 
+For a general overview of the project see the slides: [ifl-2021.pptx](doc/ifl-2021.pptx). The plan for this 
 talk is also available:
     - [Part 1](doc/Part1.md)
     - [Part 2](doc/Part2.md)
