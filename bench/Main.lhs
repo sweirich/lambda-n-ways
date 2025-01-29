@@ -36,15 +36,15 @@
 > nf_bss :: [LC IdInt] -> [LC IdInt] -> [Bench]
 > nf_bss lcs nflcs = map impl2nf impls where
 >   impl2nf LambdaImpl {..} =
->     let! tms = force (map impl_fromLC lcs) in
->     let! nftms = force (map impl_fromLC nflcs) in
+>     let !tms = force (map impl_fromLC lcs) in
+>     let !nftms = force (map impl_fromLC nflcs) in
 >     Bench (impl_name <> "/") (rnf . (map (\(t,r) -> impl_aeq (impl_nf t) r))) (zip tms nftms)
 
 > -- | Benchmarks for timing normal form calculation (multiple groups of multiple terms)
 > constructed_bss :: String ->[LC IdInt] -> [Bench]
 > constructed_bss nm lcs = map impl2nf impls where
 >   impl2nf LambdaImpl {..} =
->     let! tms = force (map impl_fromLC lcs) in
+>     let !tms = force (map impl_fromLC lcs) in
 >     let benches = map (\(t,i) -> Bench (show (i::Int)) (rnf . impl_nf) t) (zip tms [1..]) in
 >     BGroup (impl_name <> "/" <> nm) benches
 
@@ -53,8 +53,8 @@
 > aeq_bs :: LC IdInt -> LC IdInt -> [Bench]
 > aeq_bs lc1 lc2 = map impl2aeq impls where
 >   impl2aeq LambdaImpl {..} =
->     let! tm1 = force (impl_fromLC lc1) in
->     let! tm2 = force (impl_fromLC lc2) in
+>     let !tm1 = force (impl_fromLC lc1) in
+>     let !tm2 = force (impl_fromLC lc2) in
 >     Bench impl_name (\(x,y) -> rnf (impl_aeq x y)) (tm1,tm2)
 
 

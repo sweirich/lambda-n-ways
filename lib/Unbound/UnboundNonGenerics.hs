@@ -29,7 +29,8 @@ type Var = U.Name Exp
 data Exp
   = Var !Var
   | Lam !(U.Bind Var Exp)
-  | App !Exp !Exp
+  | -- | LetRec (U.Bind (U.Rebind Var (U.Embed Exp)) Exp)
+    App !Exp !Exp
   deriving (Show, Generic)
 
 instance DS.NFData Exp
@@ -57,7 +58,9 @@ instance U.Alpha Exp where
 
 instance U.Subst Exp Exp where
   {-# SPECIALIZE instance U.Subst Exp Exp #-}
-  subst :: Var -> Exp -> Exp -> Exp
+
+  -- subst :: Name a -> a -> b -> b
+  subst :: U.Name Exp -> Exp -> Exp -> Exp
   subst x b a@(Var y) = if x == y then b else a
   subst x b (Lam bnd) = Lam (U.subst x b bnd)
   subst x b (App a1 a2) = App (U.subst x b a1) (U.subst x b a2)

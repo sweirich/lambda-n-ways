@@ -1,262 +1,260 @@
 cabal-version: 1.12
-
-name:           lambda-n-ways
-version:        0.0.1
-homepage:       https://github.com/sweirich/lambda-n-ways
-bug-reports:    https://github.com/sweirich/lambda-n-ways
-build-type:     Simple
+name:          lambda-n-ways
+version:       0.0.1
+homepage:      https://github.com/sweirich/lambda-n-ways
+bug-reports:   https://github.com/sweirich/lambda-n-ways
+build-type:    Simple
 
 source-repository head
-  type: git
+  type:     git
   location: https://github.com/sweirich/lambda-n-ways
 
 library
-  hs-source-dirs: lib
+  hs-source-dirs:     lib
   exposed-modules:
-      Suite
-      QuickBench
+    Core.Core
+    Core.CoreFVs
+    Core.FV
+    Core.Nf
+    Core.Subst
+    Core.UniqDFM
+    Core.UniqFM
+    Core.UniqSet
+    Core.Unique
+    Core.VarEnv
+    Core.VarSet
+    DeBruijn.Bound
+    DeBruijn.Cornell
+    DeBruijn.CPDT
+    DeBruijn.Kit
+    DeBruijn.Krivine
+    DeBruijn.KrivineScoped
+    DeBruijn.Lazy.Bound
+    DeBruijn.Lazy.Cornell
+    DeBruijn.Lazy.CPDT
+    DeBruijn.Lazy.Kit
+    DeBruijn.Lazy.Lennart
+    DeBruijn.Lazy.Lift
+    DeBruijn.Lazy.Nested
+    DeBruijn.Lazy.Par.B
+    DeBruijn.Lazy.Par.Fun
+    DeBruijn.Lazy.Par.GB
+    DeBruijn.Lazy.Par.L
+    DeBruijn.Lazy.Par.P
+    DeBruijn.Lazy.Par.Scoped
+    DeBruijn.Lazy.TAPL
+    DeBruijn.Lennart
+    DeBruijn.Lift
+    DeBruijn.Nested
+    DeBruijn.Par.B
+    DeBruijn.Par.Fun
+    DeBruijn.Par.GB
+    DeBruijn.Par.L
+    DeBruijn.Par.P
+    DeBruijn.Par.Scoped
+    DeBruijn.TAPL
+    Lennart.DeBruijn
+    Lennart.HOAS
+    Lennart.Simple
+    Lennart.SimpleOrig
+    Lennart.Unique
+    LocallyNameless.GenericInstOpt
+    LocallyNameless.GenericOpt
+    LocallyNameless.Lazy.GenericInstOpt
+    LocallyNameless.Lazy.GenericOpt
+    LocallyNameless.Lazy.Opt
+    LocallyNameless.Lazy.Ott
+    LocallyNameless.Lazy.ParOpt
+    LocallyNameless.Lazy.ParScoped
+    LocallyNameless.Lazy.SupportOpt
+    LocallyNameless.Lazy.TypedOtt
+    LocallyNameless.Opt
+    LocallyNameless.Ott
+    LocallyNameless.ParOpt
+    LocallyNameless.ParScoped
+    LocallyNameless.SupportInstOpt
+    LocallyNameless.SupportOpt
+    LocallyNameless.TypedOpt
+    LocallyNameless.TypedOtt
+    Named.Lazy.NominalG
+    Named.Lazy.Simple
+    Named.Lazy.SimpleGH
+    Named.Lazy.SimpleH
+    Named.Lazy.SimpleM
+    Named.Lennart
+    Named.NominalG
+    Named.Simple
+    Named.SimpleGH
+    Named.SimpleH
+    Named.SimpleM
+    Named.Unique
+    NBE.Aelig
+    NBE.Boesflug
+    NBE.Felgenhauer
+    NBE.Kovacs
+    NBE.KovacsNamed
+    NBE.KovacsScoped
+    NBE.KovacsScoped2
+    QuickBench
+    Suite
+    Support.Par.Subst
+    Support.Par.SubstScoped
+    Support.SubstH
+    Support.SubstOpt
+    Support.TypedSubstOpt
+    Unbound.UnboundGenerics
+    Unbound.UnboundNonGenerics
+    Util.Id
+    Util.IdInt
+    Util.IdInt.Map
+    Util.IdInt.Set
+    Util.Impl
+    Util.Imports
+    Util.Misc
+    Util.Nat
+    Util.Stats
+    Util.Syntax.DeBruijn
+    Util.Syntax.Lambda
+    Util.Syntax.Named
+    Util.Syntax.ScopedDeBruijn
+    Util.Vec
 
-      Util.Imports
-      Util.Impl
-      Util.Syntax.Lambda
-      Util.Syntax.Named
-      Util.Syntax.DeBruijn
-      Util.Syntax.ScopedDeBruijn
-      Util.Misc
-      Util.Id
-      Util.IdInt
-      Util.IdInt.Map
-      Util.IdInt.Set
-      Util.Stats
-      Util.Nat
-      Util.Vec
+  -- DeBruijn.Par.FB
+  --DeBruijn.Lazy.Par.FB
+  --    Named.Nom  
+  ghc-options:
+    -O2 -funfolding-use-threshold=16
+    -fno-warn-unticked-promoted-constructors -fcross-module-specialise
 
-      Support.Par.Subst
-      Support.Par.SubstScoped
-      Support.SubstH
-      Support.SubstOpt
-      Support.TypedSubstOpt
-
-      DeBruijn.Cornell
-      DeBruijn.CPDT
-      DeBruijn.Lennart
-      DeBruijn.Lift
-      DeBruijn.Bound
-      DeBruijn.Nested
-      DeBruijn.Kit
-      DeBruijn.Par.P
-      DeBruijn.Par.B
-      DeBruijn.Par.GB
-      DeBruijn.Par.Fun
-      -- DeBruijn.Par.FB
-      DeBruijn.Par.L
-      DeBruijn.Par.Scoped
-      DeBruijn.TAPL
-      DeBruijn.Lazy.Cornell
-      DeBruijn.Lazy.CPDT
-      DeBruijn.Lazy.Lennart
-      DeBruijn.Lazy.Lift
-      DeBruijn.Lazy.Bound
-      DeBruijn.Lazy.Nested
-      DeBruijn.Lazy.TAPL
-      DeBruijn.Lazy.Kit
-      DeBruijn.Lazy.Par.P
-      DeBruijn.Lazy.Par.B
-      DeBruijn.Lazy.Par.GB
-      DeBruijn.Lazy.Par.Fun
-      --DeBruijn.Lazy.Par.FB
-      DeBruijn.Lazy.Par.L
-      DeBruijn.Lazy.Par.Scoped
-
-      LocallyNameless.Ott
-      LocallyNameless.Opt
-      LocallyNameless.SupportInstOpt
-      LocallyNameless.SupportOpt
-      LocallyNameless.GenericInstOpt
-      LocallyNameless.GenericOpt
-      LocallyNameless.ParScoped
-      LocallyNameless.ParOpt
-      LocallyNameless.TypedOtt
-      LocallyNameless.TypedOpt
-      LocallyNameless.Lazy.Ott
-      LocallyNameless.Lazy.Opt
-      LocallyNameless.Lazy.SupportOpt
-      LocallyNameless.Lazy.GenericInstOpt
-      LocallyNameless.Lazy.GenericOpt
-      LocallyNameless.Lazy.ParScoped
-      LocallyNameless.Lazy.ParOpt
-      LocallyNameless.Lazy.TypedOtt
-    
-      Unbound.UnboundGenerics
-      Unbound.UnboundNonGenerics
-    
-      Lennart.HOAS
-      Lennart.SimpleOrig
-      Lennart.Simple
-      Lennart.Unique
-      Lennart.DeBruijn
-
-      Named.Lennart
-      Named.Simple
-      Named.Unique
-      Named.Nom  
-      Named.NominalG
-      Named.SimpleH
-      Named.SimpleGH
-      Named.SimpleM
-      Named.Lazy.Simple
-      Named.Lazy.NominalG
-      Named.Lazy.SimpleH
-      Named.Lazy.SimpleGH
-      Named.Lazy.SimpleM
-      
-      Core.Core
-      Core.Unique
-      Core.FV
-      Core.CoreFVs
-      Core.Subst
-      Core.VarEnv
-      Core.VarSet
-      Core.UniqFM
-      Core.UniqDFM
-      Core.UniqSet
-      Core.Nf
-      
-      DeBruijn.Krivine
-      DeBruijn.KrivineScoped
-      
-      NBE.Aelig
-      NBE.Boesflug
-      NBE.Felgenhauer
-      NBE.Kovacs
-      NBE.KovacsNamed
-      NBE.KovacsScoped
-      NBE.KovacsScoped2
-
-
-  ghc-options:  -O2 -funfolding-use-threshold=16 -fno-warn-unticked-promoted-constructors -fcross-module-specialise
   build-depends:
-                  base >= 4.13
-                , QuickCheck >= 2.13.2
---                , RepLib >= 0.5.4.2
-                , bound
-                , containers
-                , deepseq >= 1.4.4.0
-                , deriving-compat
-                , mtl
-                , nominal
---                , nom
-                , pretty
-                , syb >= 0.7
-                , tasty >= 1.2.3
-                , tasty-hunit >= 0.10.0.2
-                , tasty-quickcheck >= 0.10.1.1
---                , unbound >= 0.5.1.3
-                , unbound-generics == 0.4.1
-                , hashable
-                , some >= 1.0
-                , constraints >= 0.11
-                , dependent-map
-  default-language: Haskell2010
+      base              >=4.13
+    , bound
+    , constraints       >=0.11
+    , containers
+    , deepseq           >=1.4.4.0
+    , dependent-map
+    , deriving-compat
+    , hashable
+    , mtl
+    , nominal
+    , pretty
+    , QuickCheck        >=2.13.2
+    , some              >=1.0
+    , syb               >=0.7
+    , tasty             >=1.2.3
+    , tasty-hunit       >=0.10.0.2
+    , tasty-quickcheck  >=0.10.1.1
+    , unbound-generics  ==0.4.4
+
+  --                , RepLib >= 0.5.4.2
+  --                , nom
+  --                , unbound >= 0.5.1.3
+  default-language:   Haskell2010
   default-extensions:
-                  DataKinds 
-                , DeriveGeneric
-                , DeriveTraversable
-                , EmptyCase
-                , ExistentialQuantification
-                , FlexibleContexts
-                , FlexibleInstances
-                , GADTs
-                , GeneralizedNewtypeDeriving
-                , InstanceSigs
-                , MultiParamTypeClasses
-                , PolyKinds
-                , RankNTypes
-                , ScopedTypeVariables
-                , StandaloneDeriving
-                , TupleSections
-                , TypeFamilies
-                , TypeApplications
-                , TypeOperators
-                , UndecidableInstances
+    DataKinds
+    DeriveGeneric
+    DeriveTraversable
+    EmptyCase
+    ExistentialQuantification
+    FlexibleContexts
+    FlexibleInstances
+    GADTs
+    GeneralizedNewtypeDeriving
+    InstanceSigs
+    MultiParamTypeClasses
+    PolyKinds
+    RankNTypes
+    ScopedTypeVariables
+    StandaloneDeriving
+    TupleSections
+    TypeApplications
+    TypeFamilies
+    TypeOperators
+    UndecidableInstances
 
 executable LC
-  hs-source-dirs: bench
-  main-is: Main.lhs
-  default-language: Haskell2010
-  ghc-options:  -O2 -funfolding-use-threshold=16 -fno-warn-unticked-promoted-constructors -fcross-module-specialise
-  build-depends: QuickCheck >= 2.13.2
- --              , RepLib >= 0.5.4.2
-               , base >= 4.13
-               , bound
-               , containers
-               , criterion
-               , deepseq >= 1.4.4.0
-               , deriving-compat
-               , lambda-n-ways
-               , mtl
-               , pretty
-               , tasty >= 1.2.3
-               , tasty-hunit >= 0.10.0.2
-               , tasty-quickcheck >= 0.10.1.1
-  --             , unbound >= 0.5.1.3
-               , unbound-generics >= 0.4.1
-  default-extensions:
-                  DataKinds 
-                , DeriveGeneric
-                , DeriveTraversable
-                , EmptyCase
-                , ExistentialQuantification
-                , FlexibleContexts
-                , FlexibleInstances
-                , GADTs
-                , GeneralizedNewtypeDeriving
-                , InstanceSigs
-                , MultiParamTypeClasses
-                , PolyKinds
-                , RankNTypes
-                , ScopedTypeVariables
-                , StandaloneDeriving
-                , TupleSections
-                , TypeFamilies
-                , TypeApplications
-                , TypeOperators
-                , UndecidableInstances
-                
-test-suite test-timing
-  default-language: Haskell2010
-  hs-source-dirs: tests
-  main-is: Main.hs
-  type:    exitcode-stdio-1.0
-  ghc-options: -O2 -fno-warn-unticked-promoted-constructors -fcross-module-specialise
+  hs-source-dirs:     bench
+  main-is:            Main.lhs
+  default-language:   Haskell2010
+  ghc-options:
+    -O2 -funfolding-use-threshold=16
+    -fno-warn-unticked-promoted-constructors -fcross-module-specialise
+
   build-depends:
-                  base >= 4.13
-                , lambda-n-ways
-                , QuickCheck >= 2.13.2
-                , tasty >= 0.7
-                , tasty >= 1.2.3
-                , tasty-hunit
-                , tasty-hunit >= 0.10.0.2
-                , tasty-quickcheck
-                , tasty-quickcheck >= 0.10.1.1
- default-extensions:
-                  DataKinds 
-                , DeriveGeneric
-                , DeriveTraversable
-                , EmptyCase
-                , ExistentialQuantification
-                , FlexibleContexts
-                , FlexibleInstances
-                , GADTs
-                , GeneralizedNewtypeDeriving
-                , InstanceSigs
-                , MultiParamTypeClasses
-                , PolyKinds
-                , ScopedTypeVariables
-                , RankNTypes
-                , StandaloneDeriving
-                , TupleSections
-                , TypeFamilies
-                , TypeApplications
-                , TypeOperators
-                , UndecidableInstances
+      base              >=4.13
+    , bound
+    , containers
+    , criterion
+    , deepseq           >=1.4.4.0
+    , deriving-compat
+    , lambda-n-ways
+    , mtl
+    , pretty
+    , QuickCheck        >=2.13.2
+    , tasty             >=1.2.3
+    , tasty-hunit       >=0.10.0.2
+    , tasty-quickcheck  >=0.10.1.1
+    , unbound-generics  >=0.4.4
+
+  --              , RepLib >= 0.5.4.2
+  --             , unbound >= 0.5.1.3
+  default-extensions:
+    DataKinds
+    DeriveGeneric
+    DeriveTraversable
+    EmptyCase
+    ExistentialQuantification
+    FlexibleContexts
+    FlexibleInstances
+    GADTs
+    GeneralizedNewtypeDeriving
+    InstanceSigs
+    MultiParamTypeClasses
+    PolyKinds
+    RankNTypes
+    ScopedTypeVariables
+    StandaloneDeriving
+    TupleSections
+    TypeApplications
+    TypeFamilies
+    TypeOperators
+    UndecidableInstances
+
+test-suite test-timing
+  default-language:   Haskell2010
+  hs-source-dirs:     tests
+  main-is:            Main.hs
+  type:               exitcode-stdio-1.0
+  ghc-options:
+    -O2 -fno-warn-unticked-promoted-constructors
+    -fcross-module-specialise
+
+  build-depends:
+      base              >=4.13
+    , lambda-n-ways
+    , QuickCheck        >=2.13.2
+    , tasty             >=1.2.3
+    , tasty-hunit       >=0.10.0.2
+    , tasty-quickcheck  >=0.10.1.1
+
+  default-extensions:
+    DataKinds
+    DeriveGeneric
+    DeriveTraversable
+    EmptyCase
+    ExistentialQuantification
+    FlexibleContexts
+    FlexibleInstances
+    GADTs
+    GeneralizedNewtypeDeriving
+    InstanceSigs
+    MultiParamTypeClasses
+    PolyKinds
+    RankNTypes
+    ScopedTypeVariables
+    StandaloneDeriving
+    TupleSections
+    TypeApplications
+    TypeFamilies
+    TypeOperators
+    UndecidableInstances

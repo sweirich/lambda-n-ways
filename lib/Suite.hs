@@ -82,7 +82,7 @@ import Util.Impl (LambdaImpl)
 -- | Implementations used in the benchmarking/test suite
 -- must be a single variable name for Makefile
 impls :: [LambdaImpl]
-impls = all_impls
+impls = named_imps
 
 interleave :: [a] -> [a] -> [a]
 interleave (a1 : a1s) (a2 : a2s) = a1 : a2 : interleave a1s a2s
@@ -97,12 +97,18 @@ broken =
 -- divided by implementation strategy
 --
 
-all_impls :: [LambdaImpl]
-all_impls =
+all_impls1 :: [LambdaImpl]
+all_impls1 = named_imps
+
+named_imps :: [LambdaImpl]
+named_imps = named ++ lennart ++ [Lennart.SimpleOrig.impl]
+
+{-
   debruijn ++ debruijn_lazy ++ locallyNameless ++ locallyNameless_lazy ++ named ++ named_lazy
     ++ lennart
     ++ unbound
     ++ nbe
+-}
 
 all_debruijn :: [LambdaImpl]
 all_debruijn = debruijn ++ debruijn_lazy

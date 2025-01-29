@@ -110,10 +110,12 @@ so the free variables refer to the correct binders.
 > subst o s v@(DVar i) | i == o = adjust 0 s
 >                      | i >  o = DVar (i-1)
 >                      | otherwise = v
+
 >   where adjust n e@(DVar j) | j >= n = DVar (j+o)
 >                             | otherwise = e
 >         adjust n (DLam e) = DLam (adjust (n+1) e)
 >         adjust n (DApp f a) = DApp (adjust n f) (adjust n a)
+
 > subst o s (DLam e) = DLam (subst (o+1) s e)
 > subst o s (DApp f a) = DApp (subst o s f) (subst o s a)
 

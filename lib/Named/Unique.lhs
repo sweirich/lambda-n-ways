@@ -13,6 +13,7 @@ variables are unique.
 > import qualified Data.Map as M
 > import qualified Util.IdInt.Set as S
 > import Control.Monad.State
+> import Control.Monad
 > import Util.IdInt
 > import Data.Maybe (fromMaybe)
 > import Data.Coerce

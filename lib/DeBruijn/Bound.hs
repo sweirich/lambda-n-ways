@@ -31,7 +31,7 @@ data DB a
   = DVar !a
   | DLam !(Scope () DB a)
   | DApp !(DB a) !(DB a)
-  deriving (Functor, Foldable, Traversable, Generic)
+  deriving (Functor, Foldable, Traversable)
 
 deriving instance Eq a => (Eq (DB a))
 

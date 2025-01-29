@@ -16,7 +16,7 @@ variables are unique.
 > import Util.IdInt hiding (newId)
 > import Data.Maybe (fromMaybe)
 > import Control.DeepSeq
-> 
+> import Control.Monad
 > import Test.QuickCheck
 > import qualified Util.Stats as Stats
 

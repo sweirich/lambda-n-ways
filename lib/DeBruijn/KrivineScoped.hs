@@ -51,7 +51,7 @@ step (State {closure = Closure t0 e, stack = s, level = l}) = case t0 of
       FZ -> State {closure = c, stack = s, level = l}
       -- (2)
       FS m -> State {closure = Closure (DVar m) e1, stack = s, level = l}
-    VNil -> error "unbound variable"
+  -- VNil -> error "unbound variable"
   DLam t -> case s of
     -- (5)
     (Closure u p' : s') ->

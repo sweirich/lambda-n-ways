@@ -1,5 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE Strict #-}
 
 -- | The Simple module implements the Normal Form function by
 -- using a na\"{i}ve version of substitution. In otherwords, this version
@@ -52,6 +53,7 @@ allVars (App f a) = allVars f `union` allVars a
 newId :: [IdInt] -> IdInt
 newId vs = head ([firstBoundId ..] \\ vs)
 
+{-
 subst :: IdInt -> LC IdInt -> LC IdInt -> LC IdInt
 subst x s b = sub b
   where
@@ -63,11 +65,47 @@ subst x s b = sub b
       | v `elem` fvs = Lam v' (sub e'')
       | otherwise = Lam v (sub e')
       where
-        v' = newId vs
+        v' = newId (vs `union` freeVars e')
         e'' = subst v (Var v') e'
     sub (App f a) = App (sub f) (sub a)
     fvs = freeVars s
-    vs = fvs `union` allVars b
+    vs = (x : fvs)
+-}
+
+subst :: IdInt -> LC IdInt -> LC IdInt -> LC IdInt
+subst x s b = sub ((x : freeVars s) `union` freeVars b) x s b
+  where
+    sub vs x s e@(Var v)
+      | v == x = s
+      | otherwise = e
+    sub vs x s e@(Lam v e')
+      | v == x = e
+      | v `elem` freeVars s =
+        let v' = newId vs
+            vs' = (v' : vs)
+            e'' = sub vs' v (Var v') e'
+         in Lam v' (sub vs' x s e'')
+      | otherwise = Lam v (sub (v : vs) x s e')
+    sub vs x s (App f a) = App (sub vs x s f) (sub vs x s a)
+
+{-
+-- important to only rename when capture could occur. this version
+-- is correct, but much slower
+subst :: IdInt -> LC IdInt -> LC IdInt -> LC IdInt
+subst x s b = sub ((x : freeVars s) `union` freeVars b) x s b
+  where
+    sub vs x s e@(Var v)
+      | v == x = s
+      | otherwise = e
+    sub vs x s e@(Lam v e')
+      | v == x = e
+      | otherwise =
+        let v' = newId vs
+            vs' = (v : v' : vs)
+            e'' = sub vs' v (Var v') e'
+         in Lam v' (sub vs' x s e'')
+    sub vs x s (App f a) = App (sub vs x s f) (sub vs x s a)
+-}
 
 {-
 The normal form is computed by repeatedly performing

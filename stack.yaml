@@ -1,4 +1,5 @@
-resolver: lts-18.22
+resolver: lts-22.36
+# resolver: lts-18.22
 # resolver: lts-15.14
 allow-newer: false
 
@@ -6,15 +7,11 @@ packages:
 - '.'
 
 extra-deps: 
-- unbound-generics-0.4.1@sha256:5020e8397dad610846cbd5bdc855e20edf9b9cb74f93f6c09488bba21118c409,5485
+- unbound-generics-0.4.4@sha256:f7fc93641d5043db8938a5e77f463afa7c473edca3ef26097d4b6f98d45e255c,5521
+# - unbound-generics-0.4.1@sha256:5020e8397dad610846cbd5bdc855e20edf9b9cb74f93f6c09488bba21118c409,5485
 - nominal-0.2.0.0@sha256:1d6153134ecfe386c255d1da6466c5fa3e635d5db435d6c69d21643a6c65a27a,2896
 - nom-0.1.0.2@sha256:920c20e386ef12fad6fb3ab95ac8cb140f95150b42ff61aaa57fa07b3fb84e69,4620
 - Unique-0.4.7.8@sha256:9661f45aa31dde119a2114566166ea38b011a45653337045ee4ced75636533c0,2067
 - algebra-4.3.1@sha256:323cf20c508e0b71422b767ff3a89e4188f68aa59b2df9d0fe6e9f9bae7938fb,4129
-- git: git@github.com:sweirich/replib.git
-  commit: b49c038680bd9ae5f52c727e2d838469f53cfed3
-  subdirs:
-  - RepLib 
-  - Unbound
 flags: {}
 extra-package-dbs: []
