@@ -4,7 +4,7 @@ resolver: lts-22.36
 allow-newer: false
 
 packages:
-- '.'
+- .
 
 extra-deps: 
 - unbound-generics-0.4.4@sha256:f7fc93641d5043db8938a5e77f463afa7c473edca3ef26097d4b6f98d45e255c,5521
@@ -13,5 +13,8 @@ extra-deps:
 - nom-0.1.0.2@sha256:920c20e386ef12fad6fb3ab95ac8cb140f95150b42ff61aaa57fa07b3fb84e69,4620
 - Unique-0.4.7.8@sha256:9661f45aa31dde119a2114566166ea38b011a45653337045ee4ced75636533c0,2067
 - algebra-4.3.1@sha256:323cf20c508e0b71422b767ff3a89e4188f68aa59b2df9d0fe6e9f9bae7938fb,4129
+- git: https://github.com/sweirich/autoenv.git
+  commit: 2eed3176e83ed3f58e089ce10146f5a699b687de
+
 flags: {}
 extra-package-dbs: []

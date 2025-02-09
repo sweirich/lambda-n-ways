@@ -1,5 +1,9 @@
+-- Various collections of implementations
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use :" #-}
 module Suite where
 
+import qualified Auto.Scoped
 import qualified Core.Nf
 import qualified DeBruijn.Bound
 import qualified DeBruijn.CPDT
@@ -80,9 +84,9 @@ import qualified Unbound.UnboundNonGenerics
 import Util.Impl (LambdaImpl)
 
 -- | Implementations used in the benchmarking/test suite
--- must be a single variable name for Makefile
+-- RHS must be a single variable name for Makefile
 impls :: [LambdaImpl]
-impls = named_imps
+impls = fast_nf
 
 interleave :: [a] -> [a] -> [a]
 interleave (a1 : a1s) (a2 : a2s) = a1 : a2 : interleave a1s a2s
@@ -96,25 +100,25 @@ broken =
 --------------------------------------------------------------------------
 -- divided by implementation strategy
 --
-
 all_impls1 :: [LambdaImpl]
-all_impls1 = named_imps
-
-named_imps :: [LambdaImpl]
-named_imps = named ++ lennart ++ [Lennart.SimpleOrig.impl]
-
-{-
-  debruijn ++ debruijn_lazy ++ locallyNameless ++ locallyNameless_lazy ++ named ++ named_lazy
-    ++ lennart
-    ++ unbound
-    ++ nbe
--}
+all_impls1 = 
+  all_debruijn ++ all_locallyNameless ++ all_named ++ nbe ++ [Lennart.HOAS.impl]
 
 all_debruijn :: [LambdaImpl]
-all_debruijn = debruijn ++ debruijn_lazy
+all_debruijn = autoenv ++ debruijn ++ debruijn_lazy ++ [Lennart.DeBruijn.impl]
 
 all_locallyNameless :: [LambdaImpl]
 all_locallyNameless = locallyNameless ++ locallyNameless_lazy
+
+all_named :: [LambdaImpl]
+all_named = named ++ lennart ++ [Lennart.Simple.impl]
+
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+-- divided by lib subdirectory
+
+autoenv :: [LambdaImpl]
+autoenv = [ Auto.Scoped.impl ]
 
 -- | deBruijn index-based implementations
 debruijn :: [LambdaImpl]
@@ -162,6 +166,18 @@ debruijn_lazy =
     DeBruijn.Lazy.Par.Scoped.impl
   ]
 
+
+-- Lennart's original implementations
+lennart :: [LambdaImpl]
+lennart =
+  [ -- Other
+    --Lennart.Unique.impl -- buggy
+    --Lennart.SimpleOrig.impl -- buggy
+    Lennart.Simple.impl,
+    Lennart.DeBruijn.impl,
+    Lennart.HOAS.impl
+  ]
+
 -- | Locally Nameless based implmentations
 locallyNameless :: [LambdaImpl]
 locallyNameless =
@@ -188,11 +204,6 @@ locallyNameless_lazy =
     LocallyNameless.Lazy.GenericOpt.impl
   ]
 
-unbound :: [LambdaImpl]
-unbound =
-  [ Unbound.UnboundGenerics.impl, -- unbound-generics
-    Unbound.UnboundNonGenerics.impl -- no generic programming
-  ]
 
 -- | Name based/nominal implementations
 named :: [LambdaImpl]
@@ -215,15 +226,6 @@ named_lazy =
     -- Named.Lazy.NominalG -- too slow
   ]
 
-lennart :: [LambdaImpl]
-lennart =
-  [ -- Other
-    --Lennart.Unique.impl -- buggy
-    --Lennart.SimpleOrig.impl -- buggy
-    Lennart.Simple.impl,
-    Lennart.DeBruijn.impl,
-    Lennart.HOAS.impl
-  ]
 
 nbe :: [LambdaImpl]
 nbe =
@@ -238,8 +240,16 @@ nbe =
     DeBruijn.KrivineScoped.impl
   ]
 
+
+unbound :: [LambdaImpl]
+unbound =
+  [ Unbound.UnboundGenerics.impl, -- unbound-generics
+    Unbound.UnboundNonGenerics.impl -- no generic programming
+  ]
+
 ---------------------------------------------------
 ---------------------------------------------------
+-- implementations divided by source
 
 -- implementations available on hackage
 hackage :: [LambdaImpl]
@@ -254,6 +264,10 @@ hackage =
     DeBruijn.Bound.impl, -- bound
     DeBruijn.Lazy.Bound.impl -- bound
   ]
+
+---------------------------------------------------
+---------------------------------------------------
+-- those that use generic programming somehow
 
 generic :: [LambdaImpl]
 generic =
@@ -293,11 +307,11 @@ fast =
 
 -- fastest implementation in each category in the NF benchmark
 fast_nf :: [LambdaImpl]
-fast_nf =
+fast_nf = [Auto.Scoped.impl] ++ nbe ++
   [ LocallyNameless.Opt.impl, -- 2.56
-    LocallyNameless.SupportOpt.impl, -- 2.59
+    -- LocallyNameless.SupportOpt.impl, -- 2.59  -- new version of GHC degraded performance
     DeBruijn.Par.Scoped.impl, -- 3.00
-    LocallyNameless.GenericOpt.impl, -- 4.36
+    -- LocallyNameless.GenericOpt.impl, -- 4.36    -- new version of GHC degraded performance
     --	LocallyNameless.TypedOpt.impl, -- 3.27
     DeBruijn.Lazy.Par.Scoped.impl, -- 5.35
     DeBruijn.Bound.impl, -- 6.07
@@ -307,11 +321,11 @@ fast_nf =
     DeBruijn.Lazy.Par.GB.impl, -- 11.4
     DeBruijn.Lazy.Par.B.impl, -- 13
     DeBruijn.Lazy.Bound.impl, -- 13.09
-    Lennart.HOAS.impl, -- 17.4
-    Named.SimpleH.impl, -- 122
-    Named.Lazy.SimpleH.impl, -- 166
-    Named.Lazy.SimpleGH.impl, -- 169
-    Named.SimpleGH.impl -- 193
+    Lennart.HOAS.impl -- 17.4
+    -- Named.SimpleH.impl, -- 122
+    -- Named.Lazy.SimpleH.impl, -- 166
+    -- Named.Lazy.SimpleGH.impl, -- 169
+    -- Named.SimpleGH.impl -- 193
   ]
 
 fast_random :: [LambdaImpl]

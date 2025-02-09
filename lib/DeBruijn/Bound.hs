@@ -53,7 +53,7 @@ instance Applicative DB where
   (<*>) = ap
 
 instance Monad DB where
-  return = DVar
+  return = pure
   DVar a >>= f = f a
   DApp x y >>= f = DApp (x >>= f) (y >>= f)
   DLam x >>= f = DLam (x >>>= f)
