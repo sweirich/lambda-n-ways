@@ -89,7 +89,7 @@ import Util.Impl (LambdaImpl)
 -- | Implementations used in the benchmarking/test suite
 -- RHS must be a single variable name for Makefile
 impls :: [LambdaImpl]
-impls = fast_nf
+impls = autoenv
 
 interleave :: [a] -> [a] -> [a]
 interleave (a1 : a1s) (a2 : a2s) = a1 : a2 : interleave a1s a2s
@@ -121,7 +121,8 @@ all_named = named ++ lennart ++ [Lennart.Simple.impl]
 -- divided by lib subdirectory
 
 autoenv :: [LambdaImpl]
-autoenv = [ Auto.Env.impl, Auto.Scoped.impl, Auto.Lazy.Env.impl, Auto.Lazy.Scoped.impl  ]
+autoenv = [ Auto.Env.impl ] -- needs laziness to work for lennart term
+  -- Auto.Scoped.impl, Auto.Lazy.Env.impl, Auto.Lazy.Scoped.impl  ]
 
 -- | deBruijn index-based implementations
 debruijn :: [LambdaImpl]

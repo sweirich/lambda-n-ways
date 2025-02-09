@@ -27,7 +27,7 @@ impl =
     { impl_name = "Auto.Lazy.Env",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
-      impl_nf = dbnf zeroE,
+      impl_nf = nf zeroE,
       impl_nfi = error "NFI unimplemented",
       impl_aeq = (==)
     }
@@ -84,16 +84,29 @@ instance Subst DB DB where
 
 {-# SPECIALIZE bind :: DB (S n) -> Bind DB DB n #-}
 
-----------------------------------------------------------
-dbnf :: Env DB m n -> DB m -> DB n
-dbnf ctx (DVar x) = applyEnv ctx x 
-dbnf ctx (DLam b) = DLam (applyE ctx b)
-dbnf ctx (DApp f a) =
-  case dbnf ctx f of
-    DLam b -> 
-       let v = dbnf ctx a in 
-       instantiateWith b v dbnf
-    f' -> DApp f' (dbnf ctx a)
+{-# SPECIALIZE applyUnder :: (forall m n. Env DB m n -> DB m -> DB n)-> Env DB n1 n2 -> Bind DB DB n1 -> Bind DB DB n2 #-}
+
+  ----------------------------------------------------------
+  -- todo: replace instantiate and nf with 
+
+nf :: Env DB m n -> DB m -> DB n
+nf ctx (DVar x) = applyEnv ctx x 
+nf ctx (DLam b) = 
+  let b' = unbind b in
+  let b'' = nf (up ctx) b' in
+  DLam (bind b'')
+nf ctx (DApp f a) =
+  case whnf ctx f of
+    DLam b -> nf idE (instantiate b (applyE ctx a))
+    f' -> DApp (nf idE f') (nf ctx a)
+
+whnf :: Env DB m n -> DB m -> DB n
+whnf r e@(DVar _) = applyE r e
+whnf r e@(DLam _) = applyE r e
+whnf r (DApp f a) =
+  case whnf r f of
+    DLam b -> whnf idE (instantiate b (applyE r a))
+    f' -> DApp f' (applyE r a)
 
 ---------------------------------------------------------
 {-
