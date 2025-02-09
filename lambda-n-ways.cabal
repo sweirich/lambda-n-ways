@@ -12,7 +12,10 @@ source-repository head
 library
   hs-source-dirs:     lib
   exposed-modules:
+    Auto.Env
     Auto.Scoped
+    Auto.Lazy.Env
+    Auto.Lazy.Scoped
     Core.Core
     Core.CoreFVs
     Core.FV

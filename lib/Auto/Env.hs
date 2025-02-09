@@ -1,15 +1,6 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE QuantifiedConstraints #-}
-
--- | Well-scoped de Bruijn indices + parallel (explicit) substitutions
--- hidden in library (analogous to DeBruijn.Par.Scoped)
-
--- On the nf benchmark:
--- with specialization, 4.76 ms
--- some specialization 4.84 ms
--- without specialization, 4.97 ms
--- all specialization back on 5.02 ms -- this is all 
-module Auto.Scoped (toDB, impl) where
+module Auto.Env (toDB, impl) where
 
 import AutoEnv
 import AutoEnv.Bind.Single
@@ -33,15 +24,15 @@ import Util.Syntax.Lambda (LC (..))
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "Auto.Scoped",
+    { impl_name = "Auto.Env",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
-      impl_nf = nf,
-      impl_nfi = nfi,
+      impl_nf = dbnf zeroE,
+      impl_nfi = error "NFI unimplemented",
       impl_aeq = (==)
     }
 
--- NOTE: making the Idx strict, significantly degrades performance, hmmm....
+
 data DB n where
   DVar :: !(Fin n) -> DB n
   DLam :: !(Bind DB DB n) -> DB n
@@ -63,8 +54,6 @@ instance NFData (Fin n) where
   rnf FZ = ()
   rnf (FS x) = rnf x
 
--- TODO: this is a hack here. But I'm not sure 
--- what we want to do about this 
 instance (Subst v e, forall n. NFData (e n)) => NFData (Bind v e n) where
   rnf b = rnf (unbind b)
 
@@ -97,46 +86,15 @@ instance Subst DB DB where
 {-# SPECIALIZE bind :: DB (S n) -> Bind DB DB n #-}
 
 ----------------------------------------------------------
-
--- Computing the normal form proceeds as usual.
-
-nf :: DB n -> DB n
-nf e@(DVar _) = e
-nf (DLam b) = DLam (bind (nf (unbind b)))
-nf (DApp f a) =
-  case whnf f of
-    DLam b -> nf (instantiate b a)
-    f' -> DApp (nf f') (nf a)
-
-whnf :: DB n -> DB n
-whnf e@(DVar _) = e
-whnf e@(DLam _) = e
-whnf (DApp f a) =
-  case whnf f of
-    DLam b -> whnf (instantiate b a)
-    f' -> DApp f' a
-
----------------------------------------------------------------
-
-nfi :: Int -> DB n -> Stats.M (DB n)
-nfi 0 _ = Stats.done
-nfi _ e@(DVar _) = return e
-nfi n (DLam b) = DLam . bind <$> nfi (n - 1) (unbind b)
-nfi n (DApp f a) = do
-  f' <- whnfi (n - 1) f
-  case f' of
-    DLam b -> Stats.count >> nfi (n - 1) (instantiate b a)
-    _ -> DApp <$> nfi n f' <*> nfi n a
-
-whnfi :: Int -> DB n -> Stats.M (DB n)
-whnfi 0 _ = Stats.done
-whnfi _ e@(DVar _) = return e
-whnfi _ e@(DLam _) = return e
-whnfi n (DApp f a) = do
-  f' <- whnfi (n - 1) f
-  case whnf f' of
-    DLam b -> Stats.count >> whnfi (n - 1) (instantiate b a)
-    _ -> return $ DApp f' a
+dbnf :: Env DB m n -> DB m -> DB n
+dbnf ctx (DVar x) = applyEnv ctx x 
+dbnf ctx (DLam b) = DLam (applyE ctx b)
+dbnf ctx (DApp f a) =
+  case dbnf ctx f of
+    DLam b -> 
+       let v = dbnf ctx a in 
+       instantiateWith b v dbnf
+    f' -> DApp f' (dbnf ctx a)
 
 ---------------------------------------------------------
 {-

@@ -9,7 +9,7 @@
 -- some specialization 4.84 ms
 -- without specialization, 4.97 ms
 -- all specialization back on 5.02 ms -- this is all 
-module Auto.Scoped (toDB, impl) where
+module Auto.Lazy.Scoped (toDB, impl) where
 
 import AutoEnv
 import AutoEnv.Bind.Single
@@ -33,7 +33,7 @@ import Util.Syntax.Lambda (LC (..))
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "Auto.Scoped",
+    { impl_name = "Auto.Lazy.Scoped",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
       impl_nf = nf,
@@ -41,11 +41,10 @@ impl =
       impl_aeq = (==)
     }
 
--- NOTE: making the Idx strict, significantly degrades performance, hmmm....
 data DB n where
-  DVar :: !(Fin n) -> DB n
-  DLam :: !(Bind DB DB n) -> DB n
-  DApp :: !(DB n) -> !(DB n) -> DB n
+  DVar :: (Fin n) -> DB n
+  DLam :: (Bind DB DB n) -> DB n
+  DApp :: (DB n) -> (DB n) -> DB n
 
 -- standalone b/c GADT
 -- alpha equivalence is (==)
@@ -63,8 +62,6 @@ instance NFData (Fin n) where
   rnf FZ = ()
   rnf (FS x) = rnf x
 
--- TODO: this is a hack here. But I'm not sure 
--- what we want to do about this 
 instance (Subst v e, forall n. NFData (e n)) => NFData (Bind v e n) where
   rnf b = rnf (unbind b)
 

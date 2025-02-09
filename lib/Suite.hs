@@ -3,7 +3,10 @@
 {-# HLINT ignore "Use :" #-}
 module Suite where
 
+import qualified Auto.Env
 import qualified Auto.Scoped
+import qualified Auto.Lazy.Env
+import qualified Auto.Lazy.Scoped
 import qualified Core.Nf
 import qualified DeBruijn.Bound
 import qualified DeBruijn.CPDT
@@ -118,7 +121,7 @@ all_named = named ++ lennart ++ [Lennart.Simple.impl]
 -- divided by lib subdirectory
 
 autoenv :: [LambdaImpl]
-autoenv = [ Auto.Scoped.impl ]
+autoenv = [ Auto.Env.impl, Auto.Scoped.impl, Auto.Lazy.Env.impl, Auto.Lazy.Scoped.impl  ]
 
 -- | deBruijn index-based implementations
 debruijn :: [LambdaImpl]
@@ -235,9 +238,9 @@ nbe =
     NBE.Kovacs.impl,
     NBE.KovacsNamed.impl,
     NBE.KovacsScoped.impl,
-    NBE.KovacsScoped2.impl,
-    DeBruijn.Krivine.impl,
-    DeBruijn.KrivineScoped.impl
+    NBE.KovacsScoped2.impl
+    --DeBruijn.Krivine.impl,   -- slower than the rest
+    --DeBruijn.KrivineScoped.impl -- slower than the rest
   ]
 
 
@@ -307,7 +310,7 @@ fast =
 
 -- fastest implementation in each category in the NF benchmark
 fast_nf :: [LambdaImpl]
-fast_nf = [Auto.Scoped.impl] ++ nbe ++
+fast_nf = autoenv ++ nbe ++
   [ LocallyNameless.Opt.impl, -- 2.56
     -- LocallyNameless.SupportOpt.impl, -- 2.59  -- new version of GHC degraded performance
     DeBruijn.Par.Scoped.impl, -- 3.00
