@@ -65,7 +65,7 @@ instance NFData (Fin n) where
 
 -- TODO: this is a hack here. But I'm not sure 
 -- what we want to do about this 
-instance (Subst v e, forall n. NFData (e n)) => NFData (Bind v e n) where
+instance (Subst v e, Subst v v, forall n. NFData (e n)) => NFData (Bind v e n) where
   rnf b = rnf (unbind b)
 
 ----------------------------------------------------------
@@ -86,7 +86,7 @@ instance Subst DB DB where
 
 {-# SPECIALIZE (.>>) :: Env DB m n -> Env DB n p -> Env DB m p #-}
 
-{-# SPECIALIZE singletonE :: DB n -> Env DB (S n) n #-}
+
 
 {-# SPECIALIZE up :: Env DB n m -> Env DB ('S n) ('S m) #-}
 

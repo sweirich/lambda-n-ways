@@ -121,8 +121,8 @@ all_named = named ++ lennart ++ [Lennart.Simple.impl]
 -- divided by lib subdirectory
 
 autoenv :: [LambdaImpl]
-autoenv = [ Auto.Env.impl ] -- needs laziness to work for lennart term
-  -- Auto.Scoped.impl, Auto.Lazy.Env.impl, Auto.Lazy.Scoped.impl  ]
+autoenv = [ Auto.Lazy.Env.impl , Auto.Lazy.Scoped.impl, -- needs laziness to work for lennart term
+            Auto.Scoped.impl  ]
 
 -- | deBruijn index-based implementations
 debruijn :: [LambdaImpl]

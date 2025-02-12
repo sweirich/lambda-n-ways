@@ -27,7 +27,7 @@ impl =
     { impl_name = "Auto.Lazy.Env",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
-      impl_nf = nf zeroE,
+      impl_nf = nf,
       impl_nfi = error "NFI unimplemented",
       impl_aeq = (==)
     }
@@ -53,7 +53,7 @@ instance NFData (Fin n) where
   rnf FZ = ()
   rnf (FS x) = rnf x
 
-instance (Subst v e, forall n. NFData (e n)) => NFData (Bind v e n) where
+instance (Subst v e, Subst v v, forall n. NFData (e n)) => NFData (Bind v e n) where
   rnf b = rnf (unbind b)
 
 ----------------------------------------------------------
@@ -74,7 +74,7 @@ instance Subst DB DB where
 
 {-# SPECIALIZE (.>>) :: Env DB m n -> Env DB n p -> Env DB m p #-}
 
-{-# SPECIALIZE singletonE :: DB n -> Env DB (S n) n #-}
+
 
 {-# SPECIALIZE up :: Env DB n m -> Env DB ('S n) ('S m) #-}
 
@@ -87,25 +87,49 @@ instance Subst DB DB where
 {-# SPECIALIZE applyUnder :: (forall m n. Env DB m n -> DB m -> DB n)-> Env DB n1 n2 -> Bind DB DB n1 -> Bind DB DB n2 #-}
 
   ----------------------------------------------------------
-  -- todo: replace instantiate and nf with 
+  -- todo: replace instantiate and nf 
 
-nf :: Env DB m n -> DB m -> DB n
+{-
+nf :: forall m n. Env DB m n -> DB m -> DB n
 nf ctx (DVar x) = applyEnv ctx x 
 nf ctx (DLam b) = 
-  let b' = unbind b in
-  let b'' = nf (up ctx) b' in
-  DLam (bind b'')
+  -- works
+  unbindWith b (\r' b' -> 
+     let b2 = applyE (up (r' .>> ctx)) b' 
+     in
+     DLam (bind (nf idE b2)))
+  -- doesn't work
+  {- unbindWith b (\r' b' -> 
+     let b2 = applyE (up (r' .>> ctx)) b' 
+     in
+     DLam (bind (nf idE b2))) -}
+     
 nf ctx (DApp f a) =
   case whnf ctx f of
-    DLam b -> nf idE (instantiate b (applyE ctx a))
+    DLam b -> 
+      nf idE (instantiate b (applyE ctx a))
+      -- unbindWith b (\r' b' -> 
+      --   nf (nf ctx a .: r') b')
     f' -> DApp (nf idE f') (nf ctx a)
+-}
+
+
+nf :: DB n -> DB n
+nf e@(DVar _) = e
+nf (DLam b) = DLam (bind (nf (unbind b)))
+nf (DApp f a) =
+  case whnf idE f of
+    DLam b -> nf (instantiate b a)
+    f' -> DApp (nf f') (nf a)
 
 whnf :: Env DB m n -> DB m -> DB n
 whnf r e@(DVar _) = applyE r e
 whnf r e@(DLam _) = applyE r e
 whnf r (DApp f a) =
   case whnf r f of
-    DLam b -> whnf idE (instantiate b (applyE r a))
+    DLam b -> 
+      unbindWith b (\r' b' -> 
+         whnf (applyE r a .: r') b')
     f' -> DApp f' (applyE r a)
 
 ---------------------------------------------------------
