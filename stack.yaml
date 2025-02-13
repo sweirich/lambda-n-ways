@@ -18,7 +18,7 @@ extra-deps:
 # old representation of environment (as fin n -> v m)
 #  commit: dcb9d9f4a180a3669806ef738bf73f0b22a08064
 #  defunctionalized representation of environment
-  commit: 40020914cf38fdf7b174f79e7e30e6b4070563c3
+  commit: 3b95da6c7acfa5eaa2e39a1a1cd7c168a53feff2
 
 flags: {}
 extra-package-dbs: []

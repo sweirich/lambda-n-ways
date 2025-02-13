@@ -15,6 +15,7 @@ library
     Auto.Env
     Auto.Scoped
     Auto.Lazy.Env
+    Auto.Lazy.EnvFelgenhauer    
     Auto.Lazy.Scoped
     Core.Core
     Core.CoreFVs
