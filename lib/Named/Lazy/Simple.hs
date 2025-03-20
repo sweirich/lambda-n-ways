@@ -6,7 +6,7 @@
 -- alpha-renames bound variables during substitution if they would ever
 -- capture a free variable.
 -- It is based on Lennart Augustsson's version from "lambda-calculus cooked four ways"
-module Named.Lazy.Simple (nf, whnf, nfi, impl, iNf, St (..), subst, SubstStat (..), show_stats, mean) where
+module Named.Lazy.Simple (nf, whnf, nfi, impl, iNf,iEval, St (..), subst, SubstStat (..), show_stats, mean) where
 
 import Control.Monad.Except
 import qualified Control.Monad.State as State
@@ -37,7 +37,7 @@ subst x a b = sub (M.singleton x a) vs0 b
   where
     sub :: Map IdInt (LC IdInt) -> S.Set IdInt -> LC IdInt -> LC IdInt
     sub ss _ e@(Var v)
-      | v `M.member` ss = (ss M.! v)
+      | v `M.member` ss = ss M.! v
       | otherwise = e
     sub ss vs e@(Lam v e')
       | v `M.member` ss = e
@@ -49,9 +49,17 @@ subst x a b = sub (M.singleton x a) vs0 b
     sub ss vs (App f g) = App (sub ss vs f) (sub ss vs g)
 
     fvs = freeVars a
-    vs0 = fvs `S.union` allVars b `S.union` (S.singleton x)
+    vs0 = fvs `S.union` allVars b `S.union` S.singleton x
 
 -- make sure we don't rename v' to variable we are sub'ing for
+
+eval :: LC IdInt -> LC IdInt
+eval e@(Var _) = e
+eval e@(Lam _ _) = e
+eval (App f a) =
+  case eval f of
+    Lam x b -> eval (subst x a b)
+    f' -> f'
 
 {-
 The normal form is computed by repeatedly performing
@@ -105,6 +113,16 @@ whnfi n (App f a) = do
   case f' of
     Lam x b -> Stats.count >> whnfi (n - 1) (subst x a b)
     _ -> return $ App f' a
+
+evali :: Int -> LC IdInt -> Stats.M (LC IdInt)
+evali 0 _e = Stats.done
+evali _n e@(Var _) = return e
+evali n e@(Lam _ _) = return e
+evali n (App f a) = do
+  f' <- evali (n - 1) f
+  case f' of
+    Lam x b -> Stats.count >> evali (n -1) (subst x a b)
+    _ -> Stats.done
 
 -- For testing, we can add a "fueled" version. We can also count
 -- the number of beta reductions
@@ -164,8 +182,25 @@ type M a = State.StateT St (Either String) a
 iNf :: Int -> LC IdInt -> Maybe (LC IdInt, St)
 iNf i z = hush $ State.runStateT (nfm i z :: M (LC IdInt)) (St [] [])
 
+iEval :: Int -> LC IdInt -> Maybe (LC IdInt, St)
+iEval i z = hush $ State.runStateT (evalm i z :: M (LC IdInt)) (St [] [])
+
 hush :: Either a b -> Maybe b
 hush = either (const Nothing) Just
+
+
+evalm :: (MonadState St m, MonadError String m) => 
+           Int -> LC IdInt -> m (LC IdInt)
+evalm 0 _e = throwError "timeout"
+evalm _n e@(Var _) = return e
+evalm n e@(Lam _ _) = return e
+evalm n (App f a) = do
+  f' <- evalm (n - 1) f
+  case f' of
+    Lam x b -> do
+      b' <- iSubst x a b 
+      evalm (n -1) b'
+    _ -> throwError "timeout"
 
 nfm :: (MonadState St m, MonadError String m) => Int -> LC IdInt -> m (LC IdInt)
 nfm 0 _e = throwError "timeout"

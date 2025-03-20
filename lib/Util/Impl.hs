@@ -28,8 +28,10 @@ data LambdaImpl = forall a.
     impl_toLC :: a -> LC IdInt,
     impl_nf :: a -> a,
     impl_nfi :: Int -> a -> Stats.M a,
+    impl_eval :: a -> a,
     impl_aeq :: a -> a -> Bool
   }
+
 
 ---------------------------------------------------------
 ---------------------------------------------------------

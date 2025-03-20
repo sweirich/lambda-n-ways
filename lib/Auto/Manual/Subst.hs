@@ -34,7 +34,8 @@ impl =
       impl_toLC = fromDB,
       impl_nf = nf,
       impl_nfi = error "nfi unimplemented",
-      impl_aeq = (==)
+      impl_aeq = (==),
+      impl_eval = eval
     }
 
 data Exp n where

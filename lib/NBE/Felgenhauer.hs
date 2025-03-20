@@ -7,6 +7,10 @@
  -- closure (DCont) for each lambda expression.
  -- This closure is not normalized until the term 
  -- is converted back to the LC form
+
+ -- BUT, the aeq operation is incorrect on this implementation
+ -- as it does not normalize the body of the lambda expression as 
+ -- it should.
 module NBE.Felgenhauer (impl) where
 
 import Control.DeepSeq
@@ -26,6 +30,7 @@ impl =
       impl_nfi = error "undefiend",
       impl_aeq = (==)
     }
+
 
 data DB v
   = DFree v -- free variable

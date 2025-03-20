@@ -132,7 +132,8 @@ library
   --    Named.Nom  
   ghc-options:
     -O2 -funfolding-use-threshold=16
-    -fno-warn-unticked-promoted-constructors -fcross-module-specialise
+    -fno-warn-unticked-promoted-constructors -fcross-module-specialise 
+    -fno-warn-missing-fields
 
   build-depends:
       base              >=4.13

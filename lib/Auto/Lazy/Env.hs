@@ -1,5 +1,7 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE QuantifiedConstraints #-}
+-- Use the autoenv library
+-- environment argument for whnf function
 module Auto.Lazy.Env (toDB, impl) where
 
 import AutoEnv
@@ -73,8 +75,6 @@ instance Subst DB DB where
 {-# SPECIALIZE idE :: Env DB n n #-}
 
 {-# SPECIALIZE (.>>) :: Env DB m n -> Env DB n p -> Env DB m p #-}
-
-
 
 {-# SPECIALIZE up :: Env DB n m -> Env DB ('S n) ('S m) #-}
 

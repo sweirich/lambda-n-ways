@@ -31,7 +31,8 @@ impl =
       impl_toLC = fromDB,
       impl_nf = nf,
       impl_nfi = error "NFI unimplemented",
-      impl_aeq = (==)
+      impl_aeq = (==),
+      impl_eval = eval
     }
 
 

@@ -33,6 +33,7 @@ import Util.Imports
 -- | The LC type of $\lambda$ term is parametrized over the type of the variables.
 -- It has constructors for variables, $\lambda$-abstraction, and application.
 data LC v = Var !v | Lam !v !(LC v) | App !(LC v) !(LC v)
+             | Bool !Bool | If !(LC v) !(LC v) !(LC v)
   deriving (Eq, Generic)
 
 instance NFData a => NFData (LC a)
@@ -43,6 +44,10 @@ freeVars :: (Ord v) => LC v -> S.Set v
 freeVars (Var v) = S.singleton v
 freeVars (Lam v e) = freeVars e S.\\ S.singleton v
 freeVars (App f a) = freeVars f `S.union` freeVars a
+freeVars (Bool b) = S.empty
+freeVars (If a b1 b2) =
+  freeVars a `S.union` freeVars b1 `S.union`
+  freeVars b2
 
 -- Compute *all* variables in an expression.
 
@@ -50,6 +55,10 @@ allVars :: (Ord v) => LC v -> S.Set v
 allVars (Var v) = S.singleton v
 allVars (Lam _ e) = allVars e
 allVars (App f a) = allVars f `S.union` allVars a
+allVars (Bool b) = S.empty
+allVars (If a b1 b2) =
+  allVars a `S.union` allVars b1 `S.union`
+  allVars b2
 
 -- For alpha-equivalence, we can optimize the case where the binding variable is
 -- the same. However, if it is not, we need to check to see if the left binding
@@ -69,6 +78,9 @@ applyPermLC :: Ord v => Perm v -> LC v -> LC v
 applyPermLC m (Var x) = Var (applyPerm m x)
 applyPermLC m (Lam x e) = Lam (applyPerm m x) (applyPermLC m e)
 applyPermLC m (App t u) = App (applyPermLC m t) (applyPermLC m u)
+applyPermLC m (Bool b)  = Bool b
+applyPermLC m (If a b1 b2) = If (applyPermLC m a) (applyPermLC m b1)
+   (applyPermLC m b2)
 
 emptyPerm :: Perm v
 emptyPerm = (M.empty, M.empty)
@@ -86,9 +98,12 @@ aeq = aeqd
       | v1 `elem` freeVars (Lam v2 e2) = False
       | otherwise = aeqd e1 (applyPermLC p e2)
       where
-        p = (extendPerm emptyPerm v1 v2)
+        p = extendPerm emptyPerm v1 v2
     aeqd (App a1 a2) (App b1 b2) =
       aeqd a1 b1 && aeqd a2 b2
+    aeqd (Bool b1) (Bool b2) = b1 == b2
+    aeqd (If a1 b1 c1) (If a2 b2 c2) =
+      aeqd a1 a2 && aeqd b1 b2 && aeqd c1 c2
     aeqd _ _ = False
 
 ---------------------------- Read/Show -------------------------------------
@@ -101,8 +116,9 @@ instance (Read v) => Read (LC v) where
 
 -- A ReadP parser for $\lambda$-expressions.
 
-pLC, pLCAtom, pLCVar, pLCLam, pLCApp :: (Read v) => ReadP (LC v)
-pLC = pLCLam RP.+++ pLCApp RP.+++ pLCLet
+pLC, pLCAtom, pLCVar, pLCLam, pLCApp, pLCIf, pLCtrue, pLCfalse :: (Read v) => ReadP (LC v)
+pLC = pLCLam RP.+++ pLCApp RP.+++ pLCLet RP.+++
+  pLCtrue RP.+++ pLCfalse RP.+++ pLCIf
 pLCVar = do
   v <- pVar
   return $ Var v
@@ -116,6 +132,18 @@ pLCApp = do
   es <- RP.many1 pLCAtom
   return $ foldl1 App es
 pLCAtom = pLCVar RP.+++ (do _ <- schar '('; e <- pLC; _ <- schar ')'; return e)
+
+pLCtrue =
+  sstring "true" >> return (Bool True)
+pLCfalse =
+  sstring "false" >> return (Bool False)
+pLCIf = do
+  sstring "if"
+  e1 <- pLC
+  sstring "then"
+  e2 <- pLC
+  sstring "else"
+  If e1 e2 <$> pLC
 
 -- To make expressions a little easier to read we also allow let expression
 -- as a syntactic sugar for $\lambda$ and application.
@@ -152,6 +180,11 @@ ppLC :: (Show v) => Int -> LC v -> Doc
 ppLC _ (Var v) = PP.text $ show v
 ppLC p (Lam v e) = pparens (p > 0) $ PP.text ("\\" ++ show v ++ ".") PP.<> ppLC 0 e
 ppLC p (App f a) = pparens (p > 1) $ ppLC 1 f PP.<+> ppLC 2 a
+ppLC p (Bool b)  = PP.text $ show b
+ppLC p (If a b c) = PP.text "if" PP.<> ppLC 1 a
+    PP.<> PP.text "then" PP.<> ppLC 1 b
+    PP.<> PP.text "else" PP.<> ppLC 1 c
+
 
 pparens :: Bool -> Doc -> Doc
 pparens True d = PP.parens d
@@ -170,7 +203,10 @@ instance Arbitrary v => Arbitrary (LC v) where
           frequency
             [ (1, Var <$> arbitrary),
               (1, Lam <$> arbitrary <*> gen (n `div` 2)),
-              (1, App <$> gen (n `div` 2) <*> gen (n `div` 2))
+              (1, App <$> gen (n `div` 2) <*> gen (n `div` 2)),
+              (1, Bool <$> arbitrary),
+              (1, If <$> gen (n `div` 2) <*> gen (n `div` 2)
+                  <*> gen (n `div` 2))
             ]
 
   shrink (Var v) = [Var n | n <- shrink v]
@@ -178,6 +214,11 @@ instance Arbitrary v => Arbitrary (LC v) where
   shrink (App e1 e2) =
     [App e1' e1 | e1' <- shrink e1]
       ++ [App e1 e2' | e2' <- shrink e2]
+  shrink (Bool _) = []
+  shrink (If e1 e2 e3) =
+    e1: e2 : e3 : [If e1' e2 e3 | e1' <- shrink e1]
+      ++ [If e1 e2' e3 | e2' <- shrink e2]
+      ++ [If e1 e2 e3' | e3' <- shrink e3]
 
 -- Generate an arbitrary *well-scoped* lambda calculus term
 
@@ -283,6 +324,8 @@ maxBindingDepth = go
     go (Var _v) = 0
     go (Lam _v t) = 1 + go t
     go (App t s) = max (go t) (go s)
+    go (Bool b) = 0
+    go (If e1 e2 e3) = go e1 `max` go e2 `max` go e3
 
 depth :: LC v -> Int
 depth = go
@@ -290,16 +333,22 @@ depth = go
     go (Var _v) = 0
     go (Lam _v t) = 1 + go t
     go (App t s) = 1 + max (go t) (go s)
+    go (Bool b) = 0
+    go (If e1 e2 e3) = 1 + go e1 `max` go e2 `max` go e3
 
 size :: LC v -> Int
 size (Var _) = 1
 size (Lam _ a) = 1 + size a
 size (App t s) = 1 + size t + size s
+size (Bool b) = 1
+size (If a b c) = 1 + size a + size b + size c
 
 occs :: Eq v => v -> LC v -> Int
 occs v (Var w) = if v == w then 1 else 0
 occs v (Lam w a) = if v == w then 0 else occs v a
 occs v (App a b) = occs v a + occs v b
+occs v (Bool b) = 0
+occs v (If a b c) = occs v a + occs v b + occs v c
 
 captures :: Ord v => S.Set v -> v -> LC v -> LC v -> Bool
 captures vs v a (Var w) =
@@ -311,3 +360,7 @@ captures vs v a (Lam w b) =
     then False
     else captures (w `S.insert` vs) v a b
 captures vs v a (App b1 b2) = captures vs v a b1 || captures vs v a b2
+captures vs v a (Bool b) = False
+captures vs v a (If a1 b1 b2) = 
+  captures vs v a a1 ||
+  captures vs v a b1 || captures vs v a b2

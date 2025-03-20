@@ -138,6 +138,7 @@ data NfTerm = NfTerm
     suite_substStats :: [Simple.SubstStat]
   }
 
+
 readLams :: String -> IO [LC IdInt]
 readLams fname = do
   contents <- readFile $ "lams/" ++ fname ++ ".lam"
@@ -146,11 +147,13 @@ readLams fname = do
     parse :: String -> LC IdInt
     parse s = toIdInt (read s :: LC Id)
 
-nfTerms :: [LC IdInt] -> IO [NfTerm]
-nfTerms tms = do
+type Reducer = Int -> LC IdInt -> Maybe (LC IdInt, Simple.St)
+
+nfTerms :: Reducer -> [LC IdInt] -> IO [NfTerm]
+nfTerms reduce tms = do
   forM tms $ \tm -> do
     let stm = Scoped.toDB tm
-    case Simple.iNf 2000 tm of
+    case reduce 2000 tm of
       Just (tm', ss) ->
         if not (tm `Util.Syntax.Lambda.aeq` tm')
           then do
@@ -205,17 +208,17 @@ arbitraryNfTerms sz = do
 median :: (Ord a, Num a) => [a] -> a
 median xs = List.sort xs !! (n `div` 2) where n = length xs
 
-printNfTerms :: String -> [NfTerm] -> IO ()
-printNfTerms fname xs = do
+printNfTerms :: String -> String -> [NfTerm] -> IO ()
+printNfTerms fname ext xs = do
   f <- openFile ("lams/" ++ fname ++ ".lam") WriteMode
-  fnf <- openFile ("lams/" ++ fname ++ ".nf.lam") WriteMode
-  forM_ xs $ \x -> do
-    hPutStrLn f ("-- numSubsts:  " ++ show (suite_numSubsts x))
-    hPutStrLn f ("-- bind depth: " ++ show (suite_bindDepth x))
-    hPutStrLn f ("-- depth:      " ++ show (suite_depth x))
-    hPutStrLn f ("-- substs:     " ++ Simple.show_stats (suite_substStats x))
+  fnf <- openFile ("lams/" ++ fname ++ ext ++ ".lam") WriteMode
+  forM_ xs $ \x -> do  
     hPrint f (suite_before x)
-  forM_ xs $ \x ->
+  forM_ xs $ \x -> do
+    hPutStrLn fnf ("-- numSubsts:  " ++ show (suite_numSubsts x))
+    hPutStrLn fnf ("-- bind depth: " ++ show (suite_bindDepth x))
+    hPutStrLn fnf ("-- depth:      " ++ show (suite_depth x))
+    hPutStrLn fnf ("-- substs:     " ++ Simple.show_stats (suite_substStats x))
     hPrint fnf (suite_after x)
 
 readNfTerms :: String -> IO [NfTerm]
@@ -243,14 +246,27 @@ readNfTerms fname =
 
 -- | Add stats to the source
 -- and create the nf file
+addNfs :: String -> IO ()
+addNfs str = do
+  lams <- readLams str
+  nfs <- nfTerms Simple.iEval lams
+  printNfTerms str ".nf" nfs
+
 addNf :: String -> IO ()
 addNf str = do
-  lams2 <- readLams str
-  nfs <- nfTerms lams2
-  printNfTerms str nfs
+  lam <- getTerm str
+  nfs <- nfTerms Simple.iEval [lam]
+  printNfTerms str ".nf" nfs
 
-readNfPrint :: String -> IO ()
-readNfPrint str = do
+addEvals :: String -> IO ()
+addEvals str = do
   lams <- readLams str
-  nfs <- nfTerms lams
-  printNfTerms str nfs
+  evs <- nfTerms Simple.iEval lams
+  printNfTerms str ".eval" evs
+
+
+addEval :: String -> IO ()
+addEval str = do
+  lams <- getTerm ("lams/" ++ str ++ ".lam")
+  evs <- nfTerms Simple.iEval [lams]
+  printNfTerms str ".eval" evs
