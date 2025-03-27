@@ -1,0 +1,17 @@
+let False = \f.\t.f;
+    True = \f.\t.t;
+    if = \b.\t.\f.b f t;
+    Zero = \z.\s.z
+    Succ = \n.\z.\s.s n;
+    n1 = Succ Zero;
+    n2 = Succ n1;
+    n3 = Succ n2
+    isZero = \n.n True (\m.False);
+    const = \x.\y.x;
+    fix = \ g. (\ x. g (x x)) (\ x. g (x x));
+    add = fix (\radd.\x.\y. x y (\ n. Succ (radd n y)));
+    mul = fix (\rmul.\x.\y. x Zero (\ n. add y (rmul n y)));
+    fac = fix (\rfac.\x. x one (\ n. mul x (rfac n)));
+    n4 = add n2 n2;
+    n5 = add n2 n3
+in fac n5

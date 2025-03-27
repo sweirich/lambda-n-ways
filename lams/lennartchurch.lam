@@ -1,0 +1,27 @@
+-- paramorphism encoded lennart term
+let False = \f.\t.f;
+    True = \f.\t.t;
+    if = \b.\t.\f.b f t;
+    Zero = \z.\s.z;
+    Succ = \n.\z.\s.s (n z s);
+    one = Succ Zero;
+    two = Succ one;
+    three = Succ two;
+    isZero = \n.n True (\m\z\s.False);
+    const = \x.\y.x;
+    Pair = \a.\b.\p.p a b;
+    fst = \ab.ab (\a.\b.a);
+    snd = \ab.ab (\a.\b.b);
+    add = \x.\y. x y (\ p. Succ p);
+    mul = \x.\y. x Zero (\ p. add y p);
+    fac = \x. x one (\ p. mul x p);
+    eqnat = \x. x (\y. isZero y)
+                  (\r1. \y. y False (\s1. r1 s1));
+    sumto = fix (\rsumto.\x. x Zero (\n.add x (rsumto n)));
+    n5 = add two three;
+    n6 = add three three;
+    n17 = add n6 (add n6 n5);
+    n37 = Succ (mul n6 n6);
+    n703 = sumto n37;
+    n720 = fac n6
+in  eqnat n720 (add n703 n17)
