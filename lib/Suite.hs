@@ -7,8 +7,11 @@ import qualified Auto.Env
 import qualified Auto.Scoped
 import qualified Auto.Lazy.Env
 import qualified Auto.Lazy.EnvFelgenhauer
+import qualified Auto.Lazy.Eval
 import qualified Auto.Lazy.Scoped
 import qualified Auto.Lazy.Subst
+import qualified Auto.Manual.Bind
+import qualified Auto.Manual.Subst
 import qualified Core.Nf
 import qualified DeBruijn.Bound
 import qualified DeBruijn.CPDT
@@ -65,6 +68,7 @@ import qualified LocallyNameless.TypedOpt
 import qualified LocallyNameless.TypedOtt
 import qualified NBE.Aelig
 import qualified NBE.Boesflug
+import qualified NBE.Contextual
 import qualified NBE.Felgenhauer
 import qualified NBE.Kovacs
 import qualified NBE.KovacsNamed
@@ -118,12 +122,25 @@ all_locallyNameless = locallyNameless ++ locallyNameless_lazy
 all_named :: [LambdaImpl]
 all_named = named ++ lennart ++ [Lennart.Simple.impl]
 
+-- Well-scoped implmentations
+all_scoped :: [LambdaImpl]
+all_scoped = [ Auto.Lazy.Scoped.impl, 
+               NBE.Contextual.impl,
+               DeBruijn.CPDT.impl,
+               DeBruijn.Nested.impl,
+               DeBruijn.Bound.impl,
+               DeBruijn.Kit.impl,
+              DeBruijn.Par.Scoped.impl]
 --------------------------------------------------------------------------
 --------------------------------------------------------------------------
 -- divided by lib subdirectory
 
 autoenv :: [LambdaImpl]
-autoenv = [ Auto.Lazy.Env.impl , Auto.Lazy.Scoped.impl , Auto.Lazy.Subst.impl ] 
+autoenv = [ Auto.Lazy.Eval.impl, 
+            Auto.Lazy.Env.impl , 
+            Auto.Lazy.Scoped.impl ,
+            Auto.Lazy.Subst.impl,
+            Auto.Manual.Subst.impl ] 
   -- needs laziness to work for lennart term
   -- Auto.Lazy.EnvFelgenhauer.impl, Auto.Scoped.impl  ]
 

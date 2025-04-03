@@ -38,7 +38,8 @@ impl =
       impl_toLC = fromDB,
       impl_nf = nf,
       impl_nfi = nfi,
-      impl_aeq = (==)
+      impl_aeq = (==), 
+      impl_eval = eval
     }
 
 -- NOTE: making the Idx strict, significantly degrades performance, hmmm....
@@ -46,7 +47,8 @@ data DB n where
   DVar :: !(Fin n) -> DB n
   DLam :: !(Bind DB DB n) -> DB n
   DApp :: !(DB n) -> !(DB n) -> DB n
-
+  DBool :: !Bool -> DB n
+  DIf :: !(DB n) -> !(DB n) -> !(DB n) -> DB n
 -- standalone b/c GADT
 -- alpha equivalence is (==)
 deriving instance Eq (DB n)
@@ -58,7 +60,8 @@ instance NFData (DB a) where
   rnf (DVar i) = rnf i
   rnf (DLam d) = rnf d
   rnf (DApp a b) = rnf a `seq` rnf b
-
+  rnf (DBool b) = rnf b
+  rnf (DIf a b c) = rnf a `seq` rnf b `seq` rnf c
 instance NFData (Fin n) where
   rnf FZ = ()
   rnf (FS x) = rnf x
@@ -78,6 +81,8 @@ instance Subst DB DB where
   applyE s (DVar i) = applyEnv s i
   applyE s (DLam b) = DLam (applyE s b)
   applyE s (DApp f a) = DApp (applyE s f) (applyE s a)
+  applyE s (DIf a b c) = DIf (applyE s a) (applyE s b) (applyE s c)
+  applyE s (DBool b) = DBool b
   {-# INLINEABLE applyE #-}
 
 {-# SPECIALIZE applyEnv :: Env DB n m -> Fin n -> DB m #-}
@@ -107,6 +112,12 @@ nf (DApp f a) =
   case whnf f of
     DLam b -> nf (instantiate b a)
     f' -> DApp (nf f') (nf a)
+nf e@(DBool _) = e
+nf (DIf a b c) = 
+  case whnf a of 
+    DBool True -> nf a
+    DBool False -> nf b
+    a' -> DIf (nf a) (nf b) (nf c)
 
 whnf :: DB n -> DB n
 whnf e@(DVar _) = e
@@ -115,7 +126,26 @@ whnf (DApp f a) =
   case whnf f of
     DLam b -> whnf (instantiate b a)
     f' -> DApp f' a
+whnf e@(DBool b) = DBool b
+whnf (DIf a b c) = 
+  case whnf a of 
+    DBool True -> whnf b
+    DBool False -> whnf c
+    a' -> DIf a' b c
 
+eval :: DB n -> DB n
+eval e@(DVar _) = e
+eval e@(DLam _) = e
+eval (DApp f a) =
+  case eval f of
+    DLam b -> eval (instantiate b a) 
+    f' -> f' 
+eval (DBool b) = DBool b
+eval (DIf a b c) = 
+  case eval a of 
+    DBool True -> eval b
+    DBool False -> eval c
+    a' -> DIf a' b c
 ---------------------------------------------------------------
 
 nfi :: Int -> DB n -> Stats.M (DB n)

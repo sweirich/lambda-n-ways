@@ -49,6 +49,8 @@ toIdInt e = evalState (conv e) (0, fvmap)
     conv (Var v) = Var <$> convVar v
     conv (Lam v e0) = Lam <$> convVar v <*> conv e0
     conv (App f a) = App <$> conv f <*> conv a
+    conv (Bool b) = return (Bool b)
+    conv (If a b c) = If <$> conv a <*> conv b <*> conv c
 
 -- | Read a single term from a file
 getTerm :: String -> IO (LC IdInt)

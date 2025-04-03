@@ -7,15 +7,18 @@ import Util.Imports
 newtype Id = Id String
   deriving (Eq, Ord, NFData, Generic)
 
+reserved = ["true", "false","if","then","else","let"]
+
 -- Identifiers print and parse without any adornment.
 instance Show Id where
   show (Id i) = i
 
 instance Read Id where
-  readsPrec _ s =
+  readsPrec _ s | s `notElem` reserved =
     case span isAlphaNum s of
       ("", _) -> []
       (i, s') -> [(Id i, s')]
+                | otherwise = []
 
 instance Arbitrary Id where
   arbitrary = Id <$> genSafeString

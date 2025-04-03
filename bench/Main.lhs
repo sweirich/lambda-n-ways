@@ -7,7 +7,7 @@
 > module Main where
 > import qualified Data.List as List
 > import Util.Misc ()
-> import Util.Syntax.Lambda ( LC )
+> import Util.Syntax.Lambda ( LC(..) )
 > import Util.IdInt ( IdInt )
 > import Util.Impl ( LambdaImpl(..), toIdInt, getTerm, getTerms, lambdaFalse )
 > import Suite ( impls )
@@ -39,6 +39,16 @@
 >     let !tms = force (map impl_fromLC lcs) in
 >     let !nftms = force (map impl_fromLC nflcs) in
 >     Bench (impl_name <> "/") (rnf . (map (\(t,r) -> impl_aeq (impl_nf t) r))) (zip tms nftms)
+
+
+> -- | Benchmarks for timing evaluation (multiple terms)
+> eval_bss :: [LC IdInt] -> [LC IdInt] -> [Bench]
+> eval_bss lcs nflcs = map impl2nf impls where
+>   impl2nf LambdaImpl {..} =
+>     let !tms = force (map impl_fromLC lcs) in
+>     let !nftms = force (map impl_fromLC nflcs) in
+>     Bench (impl_name <> "/") (rnf . (map (\(t,r) -> impl_aeq (impl_eval t) r))) (zip tms nftms)
+
 
 > -- | Benchmarks for timing normal form calculation (multiple groups of multiple terms)
 > constructed_bss :: String ->[LC IdInt] -> [Bench]
@@ -72,6 +82,7 @@
 > main :: IO ()
 > main = do
 >   lennart <- toIdInt <$> getTerm "lams/lennart.lam"
+>   lennartb <- toIdInt <$> getTerm "lams/lennartb.lam"
 >   random15_terms <- getTerms "lams/random15.lam"
 >   random15_nfterms <- getTerms "lams/random15.nf.lam"
 >   random20_terms <- getTerms "lams/random20.lam"
@@ -99,7 +110,8 @@
 >    , bgroup "conv" $ map runBench (conv_bs lennart)  
 >    , bgroup "nf"   $ map runBench (nf_bss [lennart] [lambdaFalse]) 
 >    , bgroup "aeq"  $ map runBench (aeq_fresh_bs lennart)
->    , bgroup "aeqs" $ map runBench (aeq_bs lennart lennart)  
+>    , bgroup "aeqs" $ map runBench (aeq_bs lennart lennart) 
+>    , bgroup "eval" $ map runBench (eval_bss [lennartb] [Bool False])
 >    {-  bgroup "ids" $ map runBench (constructed_bss "ids" id_terms)
 >    , bgroup "con"  $ map runBench (constructed_bss "con" con_terms)
 >    , bgroup "capt" $ map runBench (constructed_bss "capt" capt_terms) 

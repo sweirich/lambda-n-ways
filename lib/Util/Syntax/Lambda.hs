@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use <$>" #-}
 -- | The Lambda module implements a simple abstract syntax for
 -- \lambda-calculus together with a parser and a printer for it.
 -- It also exports a simple type of identifiers that parse and
@@ -20,6 +22,7 @@ module Util.Syntax.Lambda
     applyPerm,
     extendPerm,
     emptyPerm,
+    readLam,
   )
 where
 
@@ -111,17 +114,17 @@ aeq = aeqd
 -- The Read instance for the LC type reads $\lambda$ term with the normal
 -- syntax.
 
+readLam :: Read v => String -> LC v
+readLam = read
+
 instance (Read v) => Read (LC v) where
   readsPrec _ = RP.readP_to_S pLC
 
 -- A ReadP parser for $\lambda$-expressions.
 
 pLC, pLCAtom, pLCVar, pLCLam, pLCApp, pLCIf, pLCtrue, pLCfalse :: (Read v) => ReadP (LC v)
-pLC = pLCLam RP.+++ pLCApp RP.+++ pLCLet RP.+++
-  pLCtrue RP.+++ pLCfalse RP.+++ pLCIf
-pLCVar = do
-  v <- pVar
-  return $ Var v
+pLC = pLCLam RP.+++ pLCApp RP.+++ pLCLet RP.+++ pLCIf
+
 pLCLam = do
   _ <- schar '\\'
   v <- pVar
@@ -131,12 +134,6 @@ pLCLam = do
 pLCApp = do
   es <- RP.many1 pLCAtom
   return $ foldl1 App es
-pLCAtom = pLCVar RP.+++ (do _ <- schar '('; e <- pLC; _ <- schar ')'; return e)
-
-pLCtrue =
-  sstring "true" >> return (Bool True)
-pLCfalse =
-  sstring "false" >> return (Bool False)
 pLCIf = do
   sstring "if"
   e1 <- pLC
@@ -144,6 +141,21 @@ pLCIf = do
   e2 <- pLC
   sstring "else"
   If e1 e2 <$> pLC
+pLCAtom = 
+  pLCtrue RP.<++ 
+  pLCfalse RP.<++
+  pLCVar RP.+++ 
+  RP.between (schar '(') (schar ')') pLC 
+
+pLCVar = Var <$> pVar
+pLCtrue =
+  sstring "true" >> return (Bool True)
+pLCfalse =
+  sstring "false" >> return (Bool False)
+
+pVar :: (Read v) => ReadP v
+pVar = do RP.skipSpaces; RP.readS_to_P (readsPrec 9)
+
 
 -- To make expressions a little easier to read we also allow let expression
 -- as a syntactic sugar for $\lambda$ and application.
@@ -168,8 +180,6 @@ schar c = do RP.skipSpaces; RP.char c
 sstring :: String -> ReadP String
 sstring c = do RP.skipSpaces; RP.string c
 
-pVar :: (Read v) => ReadP v
-pVar = do RP.skipSpaces; RP.readS_to_P (readsPrec 9)
 
 -- Pretty print $\lambda$-expressions when shown.
 

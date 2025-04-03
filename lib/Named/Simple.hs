@@ -50,6 +50,8 @@ subst x s b = sub (M.singleton x s) vs0 b
         v' = S.newIdInt vs
         e'' = subst v (Var v') e'
     sub ss vs (App f g) = App (sub ss vs f) (sub ss vs g)
+    sub ss vs (Bool b) = Bool b
+    sub ss vs (If a b c) = If (sub ss vs a) (sub ss vs b) (sub ss vs c)
 
     fvs = freeVars s
     vs0 = fvs `S.union` allVars b `S.union` (S.singleton x)
@@ -75,6 +77,11 @@ nf (App f a) =
   case whnf f of
     Lam x b -> nf (subst x a b)
     f' -> App (nf f') (nf a)
+nf (Bool b) = Bool b
+nf (If a b c) = case whnf a of 
+    Bool True -> nf b
+    Bool False -> nf c
+    a' -> If (nf a) (nf b) (nf c)
 
 -- Compute the weak head normal form.  It is similar to computing the normal form,
 -- but it does not reduce under $\lambda$, nor does it touch an application
@@ -87,6 +94,12 @@ whnf (App f a) =
   case whnf f of
     Lam x b -> whnf (subst x a b)
     f' -> App f' a
+whnf e@(Bool _) = e
+whnf (If a b c) = 
+  case whnf a of 
+    Bool True -> nf b
+    Bool False -> nf c
+    a' -> If a' b c
 
 -- For testing, we can add a "fueled" version that also counts the number of substitutions
 
@@ -99,6 +112,14 @@ nfi n (App f a) = do
   case f' of
     Lam x b -> Stats.count >> nfi (n -1) (subst x a b)
     _ -> App <$> nfi (n -1) f' <*> nfi (n -1) a
+nfi n (Bool b) = return $ Bool b
+nfi n (If a b c) = do
+    a' <- whnfi (n - 1) a 
+    case a' of 
+      Bool True -> nfi (n-1) b
+      Bool False -> nfi (n-1) c
+      a' -> If <$> nfi (n-1) a <*> nfi (n-1) b <*> nfi (n-1) c
+
 
 whnfi :: Int -> Term -> Stats.M Term
 whnfi 0 _e = Stats.done
@@ -109,3 +130,10 @@ whnfi n (App f a) = do
   case f' of
     Lam x b -> Stats.count >> whnfi (n - 1) (subst x a b)
     _ -> return $ App f' a
+whnfi n (Bool b) = return $ Bool b
+whnfi n (If a b c) = do
+    a' <- whnfi (n - 1) a 
+    case a' of 
+      Bool True -> nfi (n-1) b
+      Bool False -> nfi (n-1) c
+      a' -> pure (If a' b c)

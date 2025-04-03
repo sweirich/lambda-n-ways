@@ -21,6 +21,8 @@ import Util.Impl
 import Util.Misc
 import Util.Syntax.Lambda
 
+import Control.Exception
+
 -- Stats for random.lam
 -- sz: 100000
 --   num substs: 26 26 26 26 28 28 29 29 29 29 30 32 32 33 33 34 35 36 38 39 40 43 44 59 177
@@ -127,8 +129,7 @@ factStats fname = do
 
 -- calculate stats for a file of terms
 
--- | Use quickcheck to generate random lambda terms. Save the ones that actually do something
--- under normalization
+-- | Statistics about normalization procedure for terms
 data NfTerm = NfTerm
   { suite_before :: LC IdInt,
     suite_after :: LC IdInt,
@@ -149,11 +150,14 @@ readLams fname = do
 
 type Reducer = Int -> LC IdInt -> Maybe (LC IdInt, Simple.St)
 
+-- Apply a reduction function to a list of lambda calculus terms, 
+-- producing a normal form. Only return results if there is a difference
+-- after reduction
 nfTerms :: Reducer -> [LC IdInt] -> IO [NfTerm]
 nfTerms reduce tms = do
   forM tms $ \tm -> do
     let stm = Scoped.toDB tm
-    case reduce 2000 tm of
+    case reduce 200000 tm of
       Just (tm', ss) ->
         if not (tm `Util.Syntax.Lambda.aeq` tm')
           then do
@@ -210,10 +214,10 @@ median xs = List.sort xs !! (n `div` 2) where n = length xs
 
 printNfTerms :: String -> String -> [NfTerm] -> IO ()
 printNfTerms fname ext xs = do
-  f <- openFile ("lams/" ++ fname ++ ".lam") WriteMode
+  -- f <- openFile ("lams/" ++ fname ++ ".lam") WriteMode
   fnf <- openFile ("lams/" ++ fname ++ ext ++ ".lam") WriteMode
-  forM_ xs $ \x -> do  
-    hPrint f (suite_before x)
+  -- forM_ xs $ \x -> do  
+  --  hPrint f (suite_before x)
   forM_ xs $ \x -> do
     hPutStrLn fnf ("-- numSubsts:  " ++ show (suite_numSubsts x))
     hPutStrLn fnf ("-- bind depth: " ++ show (suite_bindDepth x))
@@ -249,13 +253,13 @@ readNfTerms fname =
 addNfs :: String -> IO ()
 addNfs str = do
   lams <- readLams str
-  nfs <- nfTerms Simple.iEval lams
+  nfs <- nfTerms Simple.iNf lams
   printNfTerms str ".nf" nfs
 
 addNf :: String -> IO ()
 addNf str = do
   lam <- getTerm str
-  nfs <- nfTerms Simple.iEval [lam]
+  nfs <- nfTerms Simple.iNf [lam]
   printNfTerms str ".nf" nfs
 
 addEvals :: String -> IO ()
@@ -264,9 +268,30 @@ addEvals str = do
   evs <- nfTerms Simple.iEval lams
   printNfTerms str ".eval" evs
 
-
 addEval :: String -> IO ()
 addEval str = do
   lams <- getTerm ("lams/" ++ str ++ ".lam")
   evs <- nfTerms Simple.iEval [lams]
   printNfTerms str ".eval" evs
+
+-- >>> :t try
+-- try :: Exception e => IO a -> IO (Either e a)
+
+-- >>> :t filterM
+-- filterM :: Applicative m => (a -> m Bool) -> [a] -> m [a]
+
+addAllEvals :: IO ()
+addAllEvals = do
+  let files = ["t4","random17",
+        "capture10","full.eval","random25-19","random16","t5","constructed20","regression1.nf","t7","t4.nf","fact5b.eval","random15","t6","id.nf","random25-20.nf","random25.nf","twosubst.nf","fact5","lennartb.eval","t6.nf","t2","regression1","onesubst.nf","t3","lazy.nf","foursubst.nf","random35.nf","t1","adjustb.nf","random25-20","random2.nf","fact5b","tests","random15.nf","random19.nf","t2.nf","random2","lennart.nf","lennart","constructed10.eval","foursubst","random17.nf","random.nf","lennartb","onesubst","t5.nf","lams100","threesubst.nf","lams100.nf","full-2","threesubst","simple","random","id","lennart.eval","constructed10.nf","tests.nf","constructed20.eval","t7.nf","full.nf","random25-19.nf","adjust.nf","lazy","full","constructed","lennartchurch","t3.nf","random35","random18.nf","adjustb","random20","constructed10","t1.nf","random18","random16.nf","lazy.eval","random25","random20.nf","random19","adjust","capture10.nf","twosubst","full-2.nf","id.eval","constructed20.nf"]
+  let f s = do 
+              x <- try @SomeException (addEvals s)
+              putStr (s ++ ": ")
+              case x of 
+                Left _ -> do x <- try @SomeException (addEval s)
+                             case x of 
+                              Left _ -> return False
+                              Right _ -> return True
+                Right () -> return True
+  _ <- filterM f files
+  return ()
