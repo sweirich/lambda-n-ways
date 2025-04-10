@@ -90,6 +90,7 @@ library
     Named.Lazy.SimpleGH
     Named.Lazy.SimpleH
     Named.Lazy.SimpleM
+    Named.FreeFoil
     Named.Lennart
     Named.NominalG
     Named.Simple
@@ -157,11 +158,12 @@ library
     , tasty-hunit       >=0.10.0.2
     , tasty-quickcheck  >=0.10.1.1
     , unbound-generics  ==0.4.4
+    , free-foil       
 
   --                , RepLib >= 0.5.4.2
   --                , nom
   --                , unbound >= 0.5.1.3
-  default-language:   Haskell2010
+  default-language:   GHC2021
   default-extensions:
     DataKinds
     DeriveGeneric
@@ -183,6 +185,7 @@ library
     TypeFamilies
     TypeOperators
     UndecidableInstances
+    LambdaCase
 
 executable LC
   hs-source-dirs:     bench

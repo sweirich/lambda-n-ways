@@ -116,7 +116,10 @@ nilSub = go 0
 -- increment everything by 1
 weakSub :: Sub
 {-# INLINE weakSub #-}
-weakSub = tail nilSub
+weakSub = go 1
+  where
+    go i = DVar i : go (i + 1)
+
 
 -- singleton, replace 0 with t, leave everything
 -- else alone

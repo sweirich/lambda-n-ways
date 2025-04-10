@@ -1,7 +1,10 @@
-resolver: lts-22.36
+resolver: nightly-2025-04-10 #ghc 9.10.1
+# resolver: lts-23.18  #ghc 9.8.4
+# resolver: lts-22.43  #ghc 9.6.6
+# resolver: lts-22.36 
 # resolver: lts-18.22
 # resolver: lts-15.14
-allow-newer: false
+allow-newer: true
 
 packages:
 - .
@@ -19,6 +22,7 @@ extra-deps:
 #  commit: dcb9d9f4a180a3669806ef738bf73f0b22a08064
 #  defunctionalized representation of environment
   commit: 3b95da6c7acfa5eaa2e39a1a1cd7c168a53feff2
+- free-foil-0.2.0@sha256:7f99c518a63ff314c7c8ca9776625e22ef56c5170593b52c82fea6f461ac753b,3300
 
 flags: {}
 extra-package-dbs: []

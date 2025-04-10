@@ -130,6 +130,9 @@ t .: r = \x -> case x of
                  FS m -> r m
 
 --------------------------------------------------------------
+-- contextual interface to scoped debruijn?
+
+--------------------------------------------------------------
 
 data Exp :: Nat -> Type where
     CVar :: Var n -> Exp n

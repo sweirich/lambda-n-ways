@@ -30,7 +30,8 @@ impl =
       impl_toLC = toLC,
       impl_nf = nfd,
       impl_nfi = nfi,
-      impl_aeq = (==)
+      impl_aeq = (==), 
+      impl_eval = eval
     }
 
 type Con = Nat
@@ -43,11 +44,15 @@ data Term :: Nat -> Type where
   DVar :: (Idx g) -> Term g
   DLam :: (Term ('S g)) -> Term g
   DApp :: (Term g) -> (Term g) -> Term g
+  DBool :: Bool -> Term g
+  DIf :: Term a -> Term a -> Term a -> Term a
 
 instance NFData (Term a) where
   rnf (DVar i) = rnf i
   rnf (DLam d) = rnf d
   rnf (DApp a b) = rnf a `seq` rnf b
+  rnf (DBool b) = rnf b
+  rnf (DIf a b c) = rnf a `seq` rnf b `seq` rnf c
 
 deriving instance Eq (Term n)
 
@@ -77,7 +82,9 @@ data Semantics (e :: Con -> Type) (m :: Con -> Type) = Semantics
     embed :: forall g. Idx g -> e g,
     var :: forall g. e g -> m g,
     app :: forall g. m g -> m g -> m g,
-    lam :: forall g. (forall d. Included g d -> e d -> m d) -> m g
+    lam :: forall g. (forall d. Included g d -> e d -> m d) -> m g,
+    bool :: forall g. Bool -> m g,
+    if_ :: forall g. m g -> m g -> m g -> m g
   }
 
 wkEnv ::
@@ -100,6 +107,8 @@ semanticsTerm sem@Semantics {..} = go
     go (DVar v) env = var $ env v
     go (DLam t) env = lam $ \inc v -> go t (envCons (wkEnv sem inc env) v)
     go (DApp f t) env = app (go f env) (go t env)
+    go (DIf a b c) env = if_ (go a env) (go b env) (go c env)
+    go (DBool b) _ = bool b
 
 evalTerm :: forall e m g. Semantics e m -> SCon g -> Term g -> m g
 evalTerm sem@Semantics {..} g t = semanticsTerm sem t (env g)
@@ -119,7 +128,9 @@ renaming =
       embed = id,
       var = DVar,
       app = DApp,
-      lam = \t -> DLam $ t (top refl) FZ
+      lam = \t -> DLam $ t (top refl) FZ,
+      bool = DBool,
+      if_ = DIf
     }
 
 weakTe :: Included g d -> Term g -> Term d
@@ -134,7 +145,9 @@ substitution =
       embed = DVar,
       var = id,
       app = DApp,
-      lam = \t -> DLam $ t (top refl) (DVar FZ)
+      lam = \t -> DLam $ t (top refl) (DVar FZ),
+      bool = DBool,
+      if_ = DIf 
     }
 
 substTe :: Subst g d -> Term g -> Term d
@@ -166,7 +179,14 @@ prettyPrinting =
         let (x : xs) = ys
         () <- put xs
         body <- runConstant $ mbody (top refl) (Constant x)
-        return $ '\\' : x ++ ". " ++ body
+        return $ '\\' : x ++ ". " ++ body, 
+      bool = \b -> Constant $ do
+        return $ show b,
+      if_ = \ma mb mc -> Constant $ do 
+               a <- runConstant ma
+               b <- runConstant mb
+               c <- runConstant mc 
+               return $ "if " ++ a ++ " then " ++ b ++ " else " ++ c
     }
 
 prettyPrint :: forall g. SCon g -> Term g -> String
@@ -214,6 +234,8 @@ fromLC = toT []
       where
         b' = toT ((v, FZ) : mapSnd FS vs) b
     toT vs (App f a) = DApp (toT vs f) (toT vs a)
+    toT vs (Bool b) = DBool b
+    toT vs (If a b c) = DIf (toT vs a) (toT vs b) (toT vs c)
 
 mapSnd :: (a -> b) -> [(c, a)] -> [(c, b)]
 mapSnd f = map (second f)
@@ -260,3 +282,18 @@ whnfi n (DApp f a) = do
   case f' of
     DLam b -> Stats.count >> whnfi (n -1) (instantiate b a)
     _ -> return $ DApp f' a
+
+
+eval :: Term n -> Term n
+eval e@(DVar _) = e
+eval e@(DLam _) = e
+eval (DApp f a) =
+  case eval f of
+    DLam b -> eval (instantiate b a)
+    f' -> DApp f' a
+eval e@(DBool _) = e
+eval (DIf a b c) = 
+  case eval a of 
+    DBool True -> eval b
+    DBool False -> eval c
+    a' -> DIf a' b c
