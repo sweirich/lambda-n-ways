@@ -24,13 +24,16 @@ impl =
       impl_toLC = fromDB,
       impl_nf = nfd,
       impl_nfi = nfi,
-      impl_aeq = (==)
+      impl_aeq = (==),
+      impl_eval = whnf
     }
 
 data DB a
   = DVar !a
   | DLam !(Scope () DB a)
   | DApp !(DB a) !(DB a)
+  | DIf !(DB a) !(DB a) !(DB a)
+  | DBool {-# unpack #-} !Bool
   deriving (Functor, Foldable, Traversable)
 
 deriving instance Eq a => (Eq (DB a))
@@ -39,13 +42,17 @@ instance Eq1 DB where
   liftEq f (DVar x) (DVar y) = f x y
   liftEq f (DLam s1) (DLam s2) = liftEq f s1 s2
   liftEq f (DApp a1 b1) (DApp a2 b2) = liftEq f a1 a2 && liftEq f b1 b2
+  liftEq f (DBool b1) (DBool b2) = b1 == b2
+  liftEq f (DIf t1 t2 t3) (DIf u1 u2 u3) = 
+    liftEq f t1 u1 && liftEq f t2 u2 && liftEq f t3 u3
   liftEq _ _ _ = False
 
 instance NFData a => NFData (DB a) where
   rnf (DVar i) = rnf i
   rnf (DLam d) = rnf d
   rnf (DApp a b) = rnf a `seq` rnf b
-
+  rnf (DBool b) = rnf b
+  rnf (DIf a b c) = rnf a `seq` rnf b `seq` rnf c
 ----------------------------------------------------------
 
 instance Applicative DB where
@@ -57,7 +64,8 @@ instance Monad DB where
   DVar a >>= f = f a
   DApp x y >>= f = DApp (x >>= f) (y >>= f)
   DLam x >>= f = DLam (x >>>= f)
-
+  DBool b >>= f = DBool b
+  DIf a b c >>= f = DIf (a >>= f) (b >>= f) (c >>= f) 
 ----------------------------------------------------------
 
 nfd :: DB a -> DB a
@@ -67,6 +75,12 @@ nfd (DApp f a) =
   case whnf f of
     DLam b -> nfd (instantiate1 a b)
     f' -> DApp (nfd f') (nfd a)
+nfd e@(DBool _) = e
+nfd (DIf a b c) = 
+  case whnf a of 
+    DBool True -> nfd b
+    DBool False -> nfd c
+    a' -> DIf (nfd a') (nfd b) (nfd c)
 
 whnf :: DB a -> DB a
 whnf e@(DVar _) = e
@@ -75,6 +89,12 @@ whnf (DApp f a) =
   case whnf f of
     DLam b -> whnf (instantiate1 a b)
     f' -> DApp f' a
+whnf e@(DBool _) = e
+whnf (DIf a b c) = 
+  case whnf a of 
+    DBool True -> whnf b
+    DBool False -> whnf c
+    a' -> DIf a' b c
 
 nfi :: Int -> DB a -> Stats.M (DB a)
 nfi 0 _e = Stats.done
@@ -105,6 +125,8 @@ toDB = to
     to (Var v) = DVar v
     to (Lam v b) = DLam (abstract1 v (to b))
     to (App f a) = DApp (to f) (to a)
+    to (Bool b)  = DBool b
+    to (If a b c) = DIf (to a) (to b) (to c)
 
 fromDB :: DB IdInt -> LC IdInt
 fromDB = from firstBoundId
@@ -113,3 +135,5 @@ fromDB = from firstBoundId
     from _ (DVar v) = Var v
     from n (DLam b) = Lam n (from (succ n) (instantiate1 (DVar n) b))
     from n (DApp f a) = App (from n f) (from n a)
+    from n (DBool b) = Bool b
+    from n (DIf a b c) = If (from n a) (from n b) (from n c)

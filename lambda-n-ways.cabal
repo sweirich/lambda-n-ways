@@ -90,7 +90,7 @@ library
     Named.Lazy.SimpleGH
     Named.Lazy.SimpleH
     Named.Lazy.SimpleM
-    Named.FreeFoil
+    Named.Foil
     Named.Lennart
     Named.NominalG
     Named.Simple
@@ -128,6 +128,7 @@ library
     Util.Syntax.Lambda
     Util.Syntax.Named
     Util.Syntax.ScopedDeBruijn
+    Util.Syntax.Lazy.ScopedDeBruijn
     Util.Vec
 
   -- DeBruijn.Par.FB

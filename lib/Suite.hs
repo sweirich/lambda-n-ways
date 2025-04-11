@@ -79,6 +79,7 @@ import qualified Named.Lazy.Simple
 import qualified Named.Lazy.SimpleGH
 import qualified Named.Lazy.SimpleH
 import qualified Named.Lazy.SimpleM
+import qualified Named.Foil
 import qualified Named.Lennart
 import qualified Named.NominalG
 import qualified Named.Simple
@@ -95,7 +96,7 @@ import Util.Impl (LambdaImpl)
 -- | Implementations used in the benchmarking/test suite
 -- RHS must be a single variable name for Makefile
 impls :: [LambdaImpl]
-impls = autoenv
+impls = all_scoped
 
 interleave :: [a] -> [a] -> [a]
 interleave (a1 : a1s) (a2 : a2s) = a1 : a2 : interleave a1s a2s
@@ -126,11 +127,14 @@ all_named = named ++ lennart ++ [Lennart.Simple.impl]
 all_scoped :: [LambdaImpl]
 all_scoped = [ Auto.Lazy.Scoped.impl, 
                NBE.Contextual.impl,
+               Named.Foil.impl,
                DeBruijn.CPDT.impl,
                DeBruijn.Nested.impl,
                DeBruijn.Bound.impl,
-               DeBruijn.Kit.impl,
-              DeBruijn.Par.Scoped.impl]
+               DeBruijn.Kit.impl
+               -- DeBruijn.Par.Scoped.impl
+               -- still need to update
+               ]
 --------------------------------------------------------------------------
 --------------------------------------------------------------------------
 -- divided by lib subdirectory
@@ -237,7 +241,8 @@ named =
     Named.SimpleM.impl,
     Named.Lennart.impl,
     Named.Simple.impl,
-    Named.Unique.impl
+    Named.Unique.impl,
+    Named.Foil.impl
     -- Named.Nom -- too slow
     -- Named.NominalG -- too slow
   ]
@@ -286,7 +291,8 @@ hackage =
     -- Unbound.UnboundRep.impl, -- unbound
     Unbound.UnboundGenerics.impl, -- unbound-generics
     DeBruijn.Bound.impl, -- bound
-    DeBruijn.Lazy.Bound.impl -- bound
+    DeBruijn.Lazy.Bound.impl, -- bound
+    Named.Foil.impl -- free-foil
   ]
 
 ---------------------------------------------------
@@ -326,7 +332,9 @@ fast =
     Named.SimpleH.impl,
     Named.Lazy.SimpleH.impl,
     Named.SimpleGH.impl,
-    Named.Lazy.SimpleGH.impl
+    Named.Lazy.SimpleGH.impl,
+    Named.Foil.impl,
+    Auto.Lazy.Scoped.impl
   ]
 
 -- fastest implementation in each category in the NF benchmark

@@ -1,12 +1,16 @@
 {-# LANGUAGE LambdaCase #-}
-module Named.FreeFoil where
+module Named.Foil where
 -- adapted from https://hackage.haskell.org/package/free-foil-0.1.0/docs/src/Control.Monad.Foil.Example.html#Expr
-
+-- and https://github.com/fizruk/free-foil/blob/main/haskell/lambda-pi/src/Language/LambdaPi/Impl/Foil.hs
 
 import           Util.Impl (LambdaImpl(..))
+import           Util.IdInt
+import qualified Util.Syntax.Lambda as LC
 import           Control.DeepSeq
 import           Control.Monad.Foil
 import           Control.Monad.Foil.Relative
+import           Data.Map (Map)
+import qualified Data.Map as Map
 
 -- $setup
 -- >>> import Control.Monad.Foil
@@ -127,6 +131,11 @@ nf scope expr = case expr of
         let subst = addSubst identitySubst binder arg
         in nf scope (substitute scope subst body)
       fun' -> AppE (nf scope fun') (nf scope arg)
+  IfE scrut tru fls ->
+    case whnf scope scrut of
+      BoolE True -> whnf scope tru
+      BoolE False -> whnf scope fls
+      sc' -> IfE sc' tru fls   
   t -> t
 
 -- | Compute normal form (NF) of a __closed__ \(\lambda\)-term.
@@ -136,18 +145,101 @@ nf scope expr = case expr of
 nf' :: Expr VoidS -> Expr VoidS
 nf' = nf emptyScope
 
+aeq :: Expr VoidS -> Expr VoidS -> Bool
+aeq = alphaEquiv emptyScope
+
+-- alpha-equivalence
+alphaEquiv :: Distinct n => Scope n -> Expr n -> Expr n -> Bool
+alphaEquiv scope e1 e2 = case (e1, e2) of
+  (VarE x, VarE x') -> x == x'
+  (AppE t1 t2, AppE t1' t2') -> alphaEquiv scope t1 t1' && alphaEquiv scope t2 t2'
+  (BoolE b1, BoolE b2) -> b1 == b2
+  (IfE t1 t2 t3, IfE t1' t2' t3') -> alphaEquiv scope t1 t1' && alphaEquiv scope t2 t2'
+                                  && alphaEquiv scope t3 t3'
+  (LamE x body, LamE x' body') -> case unifyPatterns x x' of
+    SameNameBinders z    -> case assertDistinct z of
+      Distinct -> alphaEquiv (extendScopePattern z scope) body body'
+    RenameLeftNameBinder z renameL -> case assertDistinct z of
+      Distinct ->
+        let scope' = extendScopePattern z scope
+        in alphaEquiv scope' (liftRM scope' (fromNameBinderRenaming renameL) body) body'
+    RenameRightNameBinder z renameR -> case assertDistinct z of
+      Distinct ->
+        let scope' = extendScopePattern z scope
+        in alphaEquiv scope' body (liftRM scope' (fromNameBinderRenaming renameR) body')
+    RenameBothBinders z renameL renameR -> case assertDistinct z of
+      Distinct ->
+        let scope' = extendScopePattern z scope
+        in alphaEquiv scope' (liftRM scope' (fromNameBinderRenaming renameL) body) (liftRM scope' (fromNameBinderRenaming renameR) body')
+    NotUnifiable -> False
+  _ -> False
+
+
+-- | Convert a raw term into a scope-safe \(\lambda\Pi\)-term.
+toFoilTerm
+  :: Distinct n
+  => Scope n                    -- ^ Target scope.
+  -> Map IdInt (Name n)  -- ^ Mapping for variable names (to be extended with pattern).
+  -> LC.LC IdInt                   -- ^ A raw term.
+  -> Expr n
+toFoilTerm scope env = \case
+  LC.Var x ->
+    case Map.lookup x env of
+      Just name -> VarE name
+      Nothing   -> error $ "unknown free variable: " <> show x
+
+  LC.App t1 t2 ->
+    AppE (toFoilTerm scope env t1) (toFoilTerm scope env t2)
+
+  LC.Lam x body  ->
+    withFresh scope $ \x' ->
+      let env' = Map.insert x (nameOf x') (sink <$> env) 
+          scope' = extendScope x' scope
+      in LamE x' (toFoilTerm scope' env' body)
+  LC.Bool b      -> BoolE b
+  LC.If t1 t2 t3 -> IfE (toFoilTerm scope env t1) (toFoilTerm scope env t2) (toFoilTerm scope env t3)
+
+fromLC :: LC.LC IdInt -> Expr VoidS
+fromLC = toFoilTerm emptyScope Map.empty
+
+
+fromFoilTerm
+  :: [IdInt]         -- ^ A stream of fresh variable identifiers.
+  -> NameMap n IdInt -- ^ A /total/ mapping for names in scope @n@.
+  -> Expr n                 -- ^ A scope safe term in scope @n@.
+  -> LC.LC IdInt
+fromFoilTerm freshVars env = \case
+  VarE name -> LC.Var (lookupName name env)
+  AppE t1 t2 -> LC.App  (fromFoilTerm freshVars env t1) (fromFoilTerm freshVars env t2)
+  LamE x body ->
+    case freshVars of
+        []   -> error "not enough fresh variables!"
+        x':xs -> 
+          let freshVars' = xs 
+              env' = addNameBinder x x' env 
+          in
+             LC.Lam x' (fromFoilTerm freshVars' env' body)
+
+toLC
+  :: Expr VoidS       -- ^ A scope safe term in scope @n@.
+  -> LC.LC IdInt
+toLC = fromFoilTerm freshVars emptyNameMap
+   where freshVars = [ fromInteger 0 ..]
+
+
+
+
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "Named.FreeFoil",
+    { impl_name = "Named.Foil",
       impl_fromLC = fromLC,
       impl_toLC = toLC,
       impl_nf = nf',
       impl_nfi = nfi,
-      impl_aeq = aeq
+      impl_aeq = aeq,
+      impl_eval = whnf'
     }
 
-fromLC = undefined
-toLC = undefined
 nfi = undefined
-aeq = undefined
+

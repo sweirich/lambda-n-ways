@@ -10,6 +10,7 @@ import Util.Impl
 import Util.Imports
 import Util.Syntax.Lambda
 
+
 data DB
   = DVar {-# UNPACK #-} !Int
   | DLam !DB
