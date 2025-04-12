@@ -106,15 +106,6 @@ up s = \case
 instantiate :: Bind n -> Exp n -> Exp n
 instantiate (Bind r b) v = apply (v .: r) b
 
-
--- evaluation with env argument
-evalE :: Env m Z -> Exp m -> Exp Z
-evalE r (DVar x) = r x
-evalE r (DLam (Bind r' b)) = DLam (Bind (r .>> r') b)
-evalE r (DApp f a) = case evalE r f of 
-   DLam (Bind r' b) -> evalE (evalE r a .: r') b
-   _ -> error ""
-
 ----------------------------------------------------
 
 nf :: Exp n -> Exp n
