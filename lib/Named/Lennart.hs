@@ -27,10 +27,12 @@ impl =
       impl_toLC = toLC,
       impl_nf = nf,
       impl_nfi = nfi,
-      impl_aeq = aeq
+      impl_aeq = aeq,
+      impl_eval = whnf
     }
 
 data Exp = Var {-# UNPACK #-} !IdInt | Lam {-# UNPACK #-} !IdInt !Exp | App !Exp !Exp
+   | Bool {-# UNPACK #-} !Bool | If !Exp !Exp !Exp 
   deriving (Eq, Generic)
 
 instance NFData Exp
@@ -49,20 +51,29 @@ freeVars :: Exp -> [IdInt]
 freeVars (Var v) = [v]
 freeVars (Lam v e) = freeVars e \\ [v]
 freeVars (App f a) = freeVars f `union` freeVars a
-
+freeVars (Bool b) = mempty
+freeVars (If a b1 b2) =
+  freeVars a <> freeVars b1 <>
+  freeVars b2
 -- Compute all variables in an expression.
 
 allVars :: Exp -> [IdInt]
 allVars (Var v) = [v]
 allVars (Lam _ e) = allVars e
 allVars (App f a) = allVars f `union` allVars a
-
+allVars (Bool b) = mempty
+allVars (If a b1 b2) =
+  allVars a <> allVars b1 <>
+  allVars b2
 ----------------------------------------------------------------------------------
 
 applyPermLC :: LC.Perm IdInt -> Exp -> Exp
 applyPermLC m (Var x) = Var (LC.applyPerm m x)
 applyPermLC m (Lam x e) = Lam (LC.applyPerm m x) (applyPermLC m e)
 applyPermLC m (App t u) = App (applyPermLC m t) (applyPermLC m u)
+applyPermLC m (Bool b)  = Bool b
+applyPermLC m (If a b1 b2) = If (applyPermLC m a) (applyPermLC m b1)
+   (applyPermLC m b2)
 
 aeq :: Exp -> Exp -> Bool
 aeq = aeqd
@@ -76,6 +87,9 @@ aeq = aeqd
         p = (LC.extendPerm LC.emptyPerm v1 v2)
     aeqd (App a1 a2) (App b1 b2) =
       aeqd a1 b1 && aeqd a2 b2
+    aeqd (Bool b1) (Bool b2) = b1 == b2
+    aeqd (If a1 a2 a3) (If b1 b2 b3) = 
+      aeqd a1 b1 && aeqd a2 b2 && aeqd a3 b3
     aeqd _ _ = False
 
 ----------------------------------------------------------------------------------
@@ -109,7 +123,8 @@ subst x s b = sub b
         v' = newId (vs `union` allVars e')
         e'' = subst v (Var v') e'
     sub (App f a) = App (sub f) (sub a)
-
+    sub (Bool b) = Bool b
+    sub (If a b c) = If (sub a) (sub b) (sub c)
     fvs = freeVars s
     vs = x : fvs
 
@@ -133,6 +148,11 @@ nf (App f a) =
   case whnf f of
     Lam x b -> nf (subst x a b)
     f' -> App (nf f') (nf a)
+nf (Bool b) = Bool b
+nf (If a b c) = case whnf a of 
+    Bool True -> nf b
+    Bool False -> nf c
+    a' -> If (nf a') (nf b) (nf c)
 
 -- Compute the weak head normal form.  It is similar to computing the normal form,
 -- but it does not reduce under $\lambda$, nor does it touch an application
@@ -145,6 +165,12 @@ whnf (App f a) =
   case whnf f of
     Lam x b -> whnf (subst x a b)
     f' -> App f' a
+whnf e@(Bool _) = e
+whnf (If a b c) = 
+  case whnf a of 
+    Bool True -> whnf b
+    Bool False -> whnf c
+    a' -> If a' b c
 
 -- For testing, we can add a "fueled" version that also counts the number of substitutions
 
@@ -157,6 +183,13 @@ nfi n (App f a) = do
   case f' of
     Lam x b -> Stats.count >> nfi (n -1) (subst x a b)
     _ -> App <$> nfi (n -1) f' <*> nfi (n -1) a
+nfi n (Bool b) = return $ Bool b
+nfi n (If a b c) = do
+    a' <- whnfi (n - 1) a 
+    case a' of 
+      Bool True -> nfi (n-1) b
+      Bool False -> nfi (n-1) c
+      a' -> If <$> nfi (n-1) a <*> nfi (n-1) b <*> nfi (n-1) c
 
 whnfi :: Int -> Exp -> Stats.M Exp
 whnfi 0 _e = Stats.done
@@ -167,3 +200,10 @@ whnfi n (App f a) = do
   case f' of
     Lam x b -> Stats.count >> whnfi (n - 1) (subst x a b)
     _ -> return $ App f' a
+whnfi n (Bool b) = return $ Bool b
+whnfi n (If a b c) = do
+    a' <- whnfi (n - 1) a 
+    case a' of 
+      Bool True -> nfi (n-1) b
+      Bool False -> nfi (n-1) c
+      a' -> pure (If a' b c)

@@ -1,12 +1,11 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE QuantifiedConstraints #-}
 
--- | Well-scoped de Bruijn indices 
--- with naive substitution
+-- | Well-scoped de Bruijn indices (lazy)
+-- with naive substitution, using substitution from 
 module Auto.Lazy.Subst (toDB, impl) where
 
 import AutoEnv
-import AutoEnv.Bind.Single
 import Data.Fin
 import Control.DeepSeq (NFData (..))
 import Data.Maybe (fromJust)
@@ -57,8 +56,6 @@ instance NFData (Fin n) where
   rnf FZ = ()
   rnf (FS x) = rnf x
 
-instance (Subst v e, Subst v v, forall n. NFData (e n)) => NFData (Bind v e n) where
-  rnf b = rnf (unbind b)
 
 ----------------------------------------------------------
 -- uses the SubstScoped library
@@ -83,11 +80,6 @@ instance Subst DB DB where
 
 {-# SPECIALIZE up :: Env DB n m -> Env DB ('S n) ('S m) #-}
 
-{-# SPECIALIZE unbind :: Bind DB DB n -> DB ('S n) #-}
-
-{-# SPECIALIZE instantiate :: Bind DB DB n -> DB n -> DB n #-}
-
-{-# SPECIALIZE bind :: DB (S n) -> Bind DB DB n #-}
 
 ----------------------------------------------------------
 

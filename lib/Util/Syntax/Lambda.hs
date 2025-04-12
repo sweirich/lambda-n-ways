@@ -190,7 +190,8 @@ ppLC :: (Show v) => Int -> LC v -> Doc
 ppLC _ (Var v) = PP.text $ show v
 ppLC p (Lam v e) = pparens (p > 0) $ PP.text ("\\" ++ show v ++ ".") PP.<> ppLC 0 e
 ppLC p (App f a) = pparens (p > 1) $ ppLC 1 f PP.<+> ppLC 2 a
-ppLC p (Bool b)  = PP.text $ show b
+ppLC p (Bool True)  = PP.text $ show "true"
+ppLC p (Bool False)  = PP.text $ show "false"
 ppLC p (If a b c) = PP.text "if" PP.<> ppLC 1 a
     PP.<> PP.text "then" PP.<> ppLC 1 b
     PP.<> PP.text "else" PP.<> ppLC 1 c
@@ -232,6 +233,10 @@ instance Arbitrary v => Arbitrary (LC v) where
 
 -- Generate an arbitrary *well-scoped* lambda calculus term
 
+next :: [v] -> v
+next (x : _) = x
+next [] = error "BUG! needs infinite number of variables"
+
 genScoped :: forall v. (Enum v, Arbitrary v) => Gen (LC v)
 genScoped = lams <$> sized (gen vars)
   where
@@ -249,7 +254,7 @@ genScoped = lams <$> sized (gen vars)
       where
         n' = n `div` 2
         lam = do
-          let x = succ (head xs)
+          let x = succ (next xs)
           Lam x <$> gen (x : xs) n'
         app = App <$> gen xs n' <*> gen xs n'
         var = Var <$> elements xs
@@ -284,16 +289,18 @@ genScopedLam = lams <$> sized (gen vars)
 
     gen :: [v] -> Int -> Gen (LC v)
     gen xs n
-      | not (null xs) && n <= 1 = var
-      | null xs = oneof [lam, app]
-      | otherwise = oneof [var, lam, lam, lam, app]
+      | not (null xs) && n <= 1 = oneof [var, bool]
+      | null xs = oneof [lam, app, bool, if_]
+      | otherwise = oneof [var, lam, lam,  app, bool, if_]
       where
         n' = n `div` 2
         lam = do
-          let x = succ (head xs)
+          let x = succ (next xs)
           Lam x <$> gen (x : xs) n
         app = App <$> gen xs n' <*> gen xs n'
         var = Var <$> elements xs
+        bool = Bool <$> arbitrary
+        if_ = If <$> gen xs n' <*> gen xs n' <*> gen xs n'
 
 -- | This version produces explicit beta reductions but does not
 -- overly favor lambda expressions
@@ -319,10 +326,10 @@ genScopedRed = lams <$> sized (gen vars)
         app' 0 a = App <$> a <*> gen xs n'
         app' m a = App <$> app' (m - 1) a <*> gen xs n'
         lam' (0 :: Int) ys = do
-          let y = succ (head ys)
+          let y = succ (next ys)
           Lam y <$> gen (y : ys) n
         lam' m ys = do
-          let y = succ (head ys)
+          let y = succ (next ys)
           Lam y <$> lam' (m - 1) (y : ys)
 
 ---------------------------------------------------------------------

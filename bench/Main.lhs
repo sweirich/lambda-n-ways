@@ -82,7 +82,7 @@
 > main :: IO ()
 > main = do
 >   lennart <- toIdInt <$> getTerm "lams/lennart.lam"
->   lennartb <- toIdInt <$> getTerm "lams/lennartb.lam"
+>   lennartb <- toIdInt <$> getTerm "lambs/lennartb.lam"
 >   random15_terms <- getTerms "lams/random15.lam"
 >   random15_nfterms <- getTerms "lams/random15.nf.lam"
 >   random20_terms <- getTerms "lams/random20.lam"

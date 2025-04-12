@@ -1,6 +1,6 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE QuantifiedConstraints #-}
--- Use the autoenv library
+-- Use the autoenv library, with a lazy datatype
 -- environment argument for whnf function
 module Auto.Lazy.Env (toDB, impl) where
 

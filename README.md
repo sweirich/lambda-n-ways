@@ -16,8 +16,7 @@ talk is also available:
 
 ## Compiling the library
 
-This library can be compiled using the stack tool, using resolver: https://www.stackage.org/lts-15.14.
-This LTS pins the implementation to GHC version 8.8.3, which is the most recent implementation of GHC supported by the RepLib and Unbound libraries. More recent versions of GHC can be used for benchmarking if Unbound is removed from the test suite. 
+This library can be compiled using the stack tool.
 
 The command:
 
@@ -135,6 +134,14 @@ forms), for testing, each implementation also should support a "fueled"
 version of the `nf` and `whnf` functions (called `nfi` and `whnfi`,
 respectively). However, benchmarking uses the unfueled version.
 
+# Evaluation with booleans
+
+Optionally, *some* implementations have been extended with two additional 
+constructs: boolean constants and an if expression. This addition of an 
+observable base type allow the benchmarking with evaluation instead of 
+normalization. The lambda calculus terms in the `lambs` subdirectory include 
+boolean constants, with `eval` marking their final answer.
+
 # Anatomy of an implementation:
 
 Every implementation in this suite matches the following interface:
@@ -147,7 +154,8 @@ Every implementation in this suite matches the following interface:
            impl_toLC :: a -> LC IdInt,
            impl_nf :: a -> a,
            impl_nfi :: Int -> a -> Maybe a,
-           impl_aeq :: a -> a -> Bool
+           impl_aeq :: a -> a -> Bool,
+           impl_eval :: a -> a  (optional)
          }
 
 Given some type for the implementation `a`, we need to be able to convert 

@@ -1,14 +1,8 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE QuantifiedConstraints #-}
 
--- | Well-scoped de Bruijn indices + parallel (explicit) substitutions
--- hidden in library (analogous to DeBruijn.Par.Scoped)
-
--- On the nf benchmark:
--- with specialization, 4.76 ms
--- some specialization 4.84 ms
--- without specialization, 4.97 ms
--- all specialization back on 5.02 ms -- this is all 
+-- | Uses the Autoenv library, with a strict datatype
+-- The whnf function does not include an explicit environment argument
 module Auto.Scoped (toDB, impl) where
 
 import AutoEnv
@@ -91,8 +85,6 @@ instance Subst DB DB where
 
 {-# SPECIALIZE (.>>) :: Env DB m n -> Env DB n p -> Env DB m p #-}
 
-
-
 {-# SPECIALIZE up :: Env DB n m -> Env DB ('S n) ('S m) #-}
 
 {-# SPECIALIZE unbind :: Bind DB DB n -> DB ('S n) #-}
@@ -157,6 +149,13 @@ nfi n (DApp f a) = do
   case f' of
     DLam b -> Stats.count >> nfi (n - 1) (instantiate b a)
     _ -> DApp <$> nfi n f' <*> nfi n a
+nfi n (DBool b) = return (DBool b)
+nfi n (DIf a b c) = do
+  a' <- whnfi (n - 1) a
+  case a' of 
+    DBool True -> nfi (n -1) b
+    DBool False -> nfi (n -1) c
+    _ -> DIf <$> nfi (n-1) a' <*> nfi (n-1) b <*> nfi (n -1) c 
 
 whnfi :: Int -> DB n -> Stats.M (DB n)
 whnfi 0 _ = Stats.done
@@ -167,7 +166,13 @@ whnfi n (DApp f a) = do
   case whnf f' of
     DLam b -> Stats.count >> whnfi (n - 1) (instantiate b a)
     _ -> return $ DApp f' a
-
+whnfi n (DBool b) = return (DBool b)
+whnfi n (DIf a b c) = do
+  a' <- whnfi (n - 1) a
+  case a' of 
+    DBool True -> whnfi (n -1) b
+    DBool False -> whnfi (n -1) c
+    _ -> DIf <$> whnfi (n-1) a' <*> whnfi (n-1) b <*> whnfi (n -1) c 
 ---------------------------------------------------------
 {-
 Convert to deBruijn indicies.  Do this by keeping a list of the bound
@@ -184,7 +189,8 @@ toDB = to []
       where
         b' = to ((v, FZ) : mapSnd FS vs) b
     to vs (App f a) = DApp (to vs f) (to vs a)
-
+    to vs (Bool b)  = DBool b
+    to vs (If a b c) = DIf (to vs a) (to vs b) (to vs c)
 -- Convert back from deBruijn to the LC type.
 
 fromDB :: DB n -> LC IdInt
@@ -197,6 +203,8 @@ fromDB = from firstBoundId
       | otherwise = Var (IdInt (n - toInt i - 1))
     from n (DLam b) = Lam n (from (succ n) (unbind b))
     from n (DApp f a) = App (from n f) (from n a)
+    from n (DBool b) = Bool b
+    from n (DIf a b c) = If (from n a) (from n b) (from n c)
 
 mapSnd :: (a -> b) -> [(c, a)] -> [(c, b)]
 mapSnd f = map (\(v, i) -> (v, f i))

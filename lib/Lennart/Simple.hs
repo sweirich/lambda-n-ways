@@ -29,13 +29,17 @@ impl =
       impl_toLC = id,
       impl_nf = nf,
       impl_nfi = nfi,
-      impl_aeq = Util.Syntax.Lambda.aeq
+      impl_aeq = Util.Syntax.Lambda.aeq,
+      impl_eval = whnf
     }
 
 freeVars :: (Eq v) => LC v -> [v]
 freeVars (Var v) = [v]
 freeVars (Lam v e) = freeVars e \\ [v]
-freeVars (App f a) = freeVars f `union` freeVars a
+freeVars (App f a) = freeVars f <> freeVars a
+freeVars (Bool b) = []
+freeVars (If a b1 b2) =
+  freeVars a <> freeVars b1 <> freeVars b2
 
 -- Compute all variables in an expression.
 
@@ -43,6 +47,9 @@ allVars :: (Eq v) => LC v -> [v]
 allVars (Var v) = [v]
 allVars (Lam _ e) = allVars e
 allVars (App f a) = allVars f `union` allVars a
+allVars (Bool b) = []
+allVars (If a b1 b2) =
+  allVars a <> allVars b1 <> allVars b2
 
 -- NOTE: Lennart's original version had a bug.
 -- it chose the new variable avoiding free variables of s + all of the variables
@@ -54,7 +61,9 @@ allVars (App f a) = allVars f `union` allVars a
 -- is faster to collect all of the variables and not remove the bound ones.)
 
 newId :: [IdInt] -> IdInt
-newId vs = head ([firstBoundId ..] \\ vs)
+newId vs = case ([firstBoundId ..] \\ vs) of
+             (x:_) -> x
+             [] -> error "BUG!"
 
 subst :: IdInt -> LC IdInt -> LC IdInt -> LC IdInt
 subst x s b = sub b
@@ -73,6 +82,8 @@ subst x s b = sub b
         v' = newId (vs `union` allVars e')
         e'' = subst v (Var v') e'
     sub (App f a) = App (sub f) (sub a)
+    sub (Bool b) = Bool b
+    sub (If a b c) = If (sub a) (sub b) (sub c)
 
     fvs = freeVars s
     vs = x : fvs
@@ -97,7 +108,11 @@ nf (App f a) =
   case whnf f of
     Lam x b -> nf (subst x a b)
     f' -> App (nf f') (nf a)
-
+nf (Bool b) = Bool b
+nf (If a b c) = case whnf a of 
+    Bool True -> nf b
+    Bool False -> nf c
+    a' -> If (nf a') (nf b) (nf c)
 -- Compute the weak head normal form.  It is similar to computing the normal form,
 -- but it does not reduce under $\lambda$, nor does it touch an application
 -- that is not a $\beta$-redex.
@@ -109,6 +124,12 @@ whnf (App f a) =
   case whnf f of
     Lam x b -> whnf (subst x a b)
     f' -> App f' a
+whnf e@(Bool _) = e
+whnf (If a b c) = 
+  case whnf a of 
+    Bool True -> whnf b
+    Bool False -> whnf c
+    a' -> If a' b c
 
 -- For testing, we can add a "fueled" version that also counts the number of substitutions
 
@@ -121,6 +142,11 @@ nfi n (App f a) = do
   case f' of
     Lam x b -> Stats.count >> nfi (n -1) (subst x a b)
     _ -> App <$> nfi (n -1) f' <*> nfi (n -1) a
+nfi _ (Bool b) = return $ Bool b
+nfi n (If a b c) = case whnf a of 
+    Bool True -> nfi (n - 1) b
+    Bool False -> nfi (n - 1) c
+    a' -> If <$> (nfi (n-1) a') <*> (nfi (n-1) b) <*> (nfi (n-1) c)
 
 whnfi :: Int -> LC IdInt -> Stats.M (LC IdInt)
 whnfi 0 _e = Stats.done
@@ -131,3 +157,9 @@ whnfi n (App f a) = do
   case f' of
     Lam x b -> Stats.count >> whnfi (n - 1) (subst x a b)
     _ -> return $ App f' a
+whnfi _ e@(Bool _) = return e
+whnfi n (If a b c) = 
+  case whnf a of 
+    Bool True -> whnfi (n - 1) b
+    Bool False -> whnfi (n - 1) c
+    a' -> return $ If a' b c

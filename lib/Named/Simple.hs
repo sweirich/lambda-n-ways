@@ -32,7 +32,8 @@ impl =
       impl_toLC = toLC,
       impl_nf = nf,
       impl_nfi = nfi,
-      impl_aeq = aeq
+      impl_aeq = aeq,
+      impl_eval = whnf
     }
 
 subst :: IdInt -> Term -> Term -> Term
@@ -81,7 +82,7 @@ nf (Bool b) = Bool b
 nf (If a b c) = case whnf a of 
     Bool True -> nf b
     Bool False -> nf c
-    a' -> If (nf a) (nf b) (nf c)
+    a' -> If (nf a') (nf b) (nf c)
 
 -- Compute the weak head normal form.  It is similar to computing the normal form,
 -- but it does not reduce under $\lambda$, nor does it touch an application
@@ -97,8 +98,8 @@ whnf (App f a) =
 whnf e@(Bool _) = e
 whnf (If a b c) = 
   case whnf a of 
-    Bool True -> nf b
-    Bool False -> nf c
+    Bool True -> whnf b
+    Bool False -> whnf c
     a' -> If a' b c
 
 -- For testing, we can add a "fueled" version that also counts the number of substitutions

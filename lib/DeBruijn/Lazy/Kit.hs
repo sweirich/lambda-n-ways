@@ -19,7 +19,7 @@ import Util.IdInt
 import Util.Impl
 import Util.Imports
 import Util.Nat
-import qualified Util.Stats as Stats
+
 import Util.Syntax.Lambda
 
 impl :: LambdaImpl
@@ -29,7 +29,7 @@ impl =
       impl_fromLC = fromLC,
       impl_toLC = toLC,
       impl_nf = nfd,
-      impl_nfi = nfi,
+      impl_nfi = error "unimplemented: impl_nfi",
       impl_aeq = (==), 
       impl_eval = eval
     }
@@ -176,10 +176,13 @@ prettyPrinting =
           return $ f ++ " (" ++ t ++ ")",
       lam = \mbody -> Constant $ do
         ys <- get
-        let (x : xs) = ys
-        () <- put xs
-        body <- runConstant $ mbody (top refl) (Constant x)
-        return $ '\\' : x ++ ". " ++ body, 
+        case ys of 
+          (x : xs) -> do
+              () <- put xs
+              body <- runConstant $ mbody (top refl) (Constant x)
+              return $ '\\' : x ++ ". " ++ body
+          [] -> error "should have infinite supply of variables"
+              , 
       bool = \b -> Constant $ do
         return $ show b,
       if_ = \ma mb mc -> Constant $ do 
@@ -213,10 +216,18 @@ toLCsem =
           return $ App f t,
       lam = \mbody -> Constant $ do
         ys <- get
-        let (x : xs) = (ys :: [IdInt])
-        () <- put xs
-        body <- runConstant $ mbody (top refl) (Constant (Var x))
-        return $ Lam x body
+        case (ys :: [IdInt]) of
+           (x : xs) -> do
+              () <- put xs
+              body <- runConstant $ mbody (top refl) (Constant (Var x))
+              return $ Lam x body
+           [] -> error "not enough vars", 
+      bool = \b -> Constant (return (Bool b)),
+      if_ = \ma mb mc -> Constant $ do 
+              a <- runConstant ma
+              b <- runConstant mb
+              c <- runConstant mc
+              return $ If a b c
     }
 
 toLC :: Term Z -> LC IdInt
@@ -234,7 +245,7 @@ fromLC = toT []
       where
         b' = toT ((v, FZ) : mapSnd FS vs) b
     toT vs (App f a) = DApp (toT vs f) (toT vs a)
-    toT vs (Bool b) = DBool b
+    toT _vs (Bool b) = DBool b
     toT vs (If a b c) = DIf (toT vs a) (toT vs b) (toT vs c)
 
 mapSnd :: (a -> b) -> [(c, a)] -> [(c, b)]
@@ -251,6 +262,12 @@ nfd (DApp f a) =
   case whnf f of
     DLam b -> nfd (instantiate b a)
     f' -> DApp (nfd f') (nfd a)
+nfd e@(DBool _b) = e
+nfd (DIf sc tr fa) = 
+  case whnf sc of 
+    DBool True -> nfd tr
+    DBool False -> nfd fa
+    sc' -> DIf (nfd sc') (nfd tr) (nfd fa)
 
 whnf :: Term n -> Term n
 whnf e@(DVar _) = e
@@ -259,30 +276,15 @@ whnf (DApp f a) =
   case whnf f of
     DLam b -> whnf (instantiate b a)
     f' -> DApp f' a
+whnf e@(DBool _b) = e
+whnf (DIf sc tr fa) = 
+  case whnf sc of 
+    DBool True -> whnf tr
+    DBool False -> whnf fa
+    sc' -> DIf sc' tr fa
 
 instantiate :: Term ('S n) -> Term n -> Term n
 instantiate t u = substTe (singleSub u) t
-
-nfi :: Int -> Term a -> Stats.M (Term a)
-nfi 0 _e = Stats.done
-nfi _n e@(DVar _) = return e
-nfi n (DLam b) = DLam <$> nfi (n -1) b
-nfi n (DApp f a) = do
-  f' <- whnfi (n -1) f
-  case f' of
-    DLam b -> Stats.count >> nfi (n -1) (instantiate b a)
-    _ -> DApp <$> nfi n f' <*> nfi n a
-
-whnfi :: Int -> Term a -> Stats.M (Term a)
-whnfi 0 _e = Stats.done
-whnfi _n e@(DVar _) = return e
-whnfi _n e@(DLam _) = return e
-whnfi n (DApp f a) = do
-  f' <- whnfi (n -1) f
-  case f' of
-    DLam b -> Stats.count >> whnfi (n -1) (instantiate b a)
-    _ -> return $ DApp f' a
-
 
 eval :: Term n -> Term n
 eval e@(DVar _) = e

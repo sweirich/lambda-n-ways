@@ -13,6 +13,11 @@ LC:	lib/*.hs lib/*/*.lhs bench/*.lhs
 
 charts: timing random
 
+eval: LC 
+	mkdir -p $(OUT)
+	uname -a > $(OUT)output.txt
+	stack run -- --output $(OUT)eval_bench.html --match prefix "eval/" --csv $(OUT)eval_bench.csv  >> $(OUT)output.txt
+	
 timing:	LC
 	mkdir -p $(OUT)
 	uname -a > $(OUT)output.txt

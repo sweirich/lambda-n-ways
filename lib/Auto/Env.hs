@@ -1,5 +1,7 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE QuantifiedConstraints #-}
+-- | Uses the Autoenv library, with a strict datatype
+-- The whnf function explicitly passes the environment 
 module Auto.Env (toDB, impl) where
 
 import AutoEnv
@@ -29,7 +31,8 @@ impl =
       impl_toLC = fromDB,
       impl_nf = nf,
       impl_nfi = error "NFI unimplemented",
-      impl_aeq = (==)
+      impl_aeq = (==),
+      impl_eval = whnf idE
     }
 
 
@@ -37,7 +40,7 @@ data DB n where
   DVar :: !(Fin n) -> DB n
   DLam :: !(Bind DB DB n) -> DB n
   DApp :: !(DB n) -> !(DB n) -> DB n
-  DBool :: !Bool -> DB n
+  DBool :: {-# unpack #-} !Bool -> DB n
   DIf :: !(DB n) -> !(DB n) -> !(DB n) -> DB n
 -- standalone b/c GADT
 -- alpha equivalence is (==)
@@ -155,6 +158,8 @@ toDB = to []
       where
         b' = to ((v, FZ) : mapSnd FS vs) b
     to vs (App f a) = DApp (to vs f) (to vs a)
+    to vs (If a b c) = DIf (to vs a) (to vs b) (to vs c)
+    to vs (Bool b) = DBool b
 
 -- Convert back from deBruijn to the LC type.
 
@@ -168,6 +173,8 @@ fromDB = from firstBoundId
       | otherwise = Var (IdInt (n - toInt i - 1))
     from n (DLam b) = Lam n (from (succ n) (unbind b))
     from n (DApp f a) = App (from n f) (from n a)
+    from n (DIf a b c) = If (from n a) (from n b) (from n c)
+    from n (DBool b) = Bool b
 
 mapSnd :: (a -> b) -> [(c, a)] -> [(c, b)]
 mapSnd f = map (\(v, i) -> (v, f i))

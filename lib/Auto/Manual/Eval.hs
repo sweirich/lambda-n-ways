@@ -1,9 +1,11 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE QuantifiedConstraints #-}
--- No substitions, only environments, only evaluation
--- well scoped terms, environment represented as a function
-module Auto.Lazy.Eval (toDB, impl) where
-
+-- Uses well-scoped debruijn syntax 
+-- Doesn't use autoenv library (or bind type)
+-- Only evaluation for closed terms
+-- environment-based interpreter
+-- environment represented by a function
+module Auto.Manual.Eval (toDB, impl) where
 
 import Control.DeepSeq (NFData (..))
 import Data.Maybe (fromJust)
@@ -20,12 +22,12 @@ import Util.IdInt (IdInt (..), firstBoundId)
 import Util.Impl (LambdaImpl (..))
 import qualified Util.Stats as Stats
 import Util.Nat
-import Util.Syntax.ScopedDeBruijn
+import Util.Syntax.Lazy.ScopedDeBruijn
 
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "Auto.Lazy.Eval",
+    { impl_name = "Auto.Manual.Eval",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
       impl_nf = error "NF unimpelemented",
@@ -45,13 +47,15 @@ nil x = case x of {}
 (.:):: Val -> Env n  -> Env (S n)
 v .: r = \x -> case x of { FZ -> v; FS y -> r y }
 
+---------------------------------------------------------
+
 fromVal :: Val -> Term Z
 fromVal (VBool b) = DBool b
 fromVal (VClos env b) = error "not a ground type"
 
+-- evaluate closed terms with an environment
 eval :: Term Z -> Term Z
 eval = fromVal . evalr nil 
-
 
 evalr :: Env m -> Term m -> Val
 evalr r e@(DVar x) = r x

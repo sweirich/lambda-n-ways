@@ -1,0 +1,24 @@
+let 
+    Zero = \z.\s.z;
+    Succ = \n.\z.\s.s n;
+    one = Succ Zero;
+    two = Succ one;
+    three = Succ two;
+    isZero = \n.n true (\m.false);
+    const = \x.\y.x;
+    Pair = \a.\b.\p.p a b;
+    fst = \ab.ab (\a.\b.a);
+    snd = \ab.ab (\a.\b.b);
+    fix = \ g. (\ x. g (x x)) (\ x. g (x x));
+    add = fix (\radd.\x.\y. x y (\ n. Succ (radd n y)));
+    mul = fix (\rmul.\x.\y. x Zero (\ n. add y (rmul n y)));
+    fac = fix (\rfac.\x. x one (\ n. mul x (rfac n)));
+    eqnat = fix (\reqnat.\x.\y. x (y true (const false)) (\x1.y false (\y1.reqnat x1 y1)));
+    sumto = fix (\rsumto.\x. x Zero (\n.add x (rsumto n)));
+    n5 = add two three;
+    n6 = add three three;
+    n14 = add n6 (add n6 two);
+    n105 = sumto n14;
+    n119 = add n105 n14;
+    n120 = fac n5
+in  eqnat n120 n119

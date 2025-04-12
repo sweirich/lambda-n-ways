@@ -280,10 +280,15 @@ addEval str = do
 -- >>> :t filterM
 -- filterM :: Applicative m => (a -> m Bool) -> [a] -> m [a]
 
-addAllEvals :: IO ()
-addAllEvals = do
-  let files = ["t4","random17",
-        "capture10","full.eval","random25-19","random16","t5","constructed20","regression1.nf","t7","t4.nf","fact5b.eval","random15","t6","id.nf","random25-20.nf","random25.nf","twosubst.nf","fact5","lennartb.eval","t6.nf","t2","regression1","onesubst.nf","t3","lazy.nf","foursubst.nf","random35.nf","t1","adjustb.nf","random25-20","random2.nf","fact5b","tests","random15.nf","random19.nf","t2.nf","random2","lennart.nf","lennart","constructed10.eval","foursubst","random17.nf","random.nf","lennartb","onesubst","t5.nf","lams100","threesubst.nf","lams100.nf","full-2","threesubst","simple","random","id","lennart.eval","constructed10.nf","tests.nf","constructed20.eval","t7.nf","full.nf","random25-19.nf","adjust.nf","lazy","full","constructed","lennartchurch","t3.nf","random35","random18.nf","adjustb","random20","constructed10","t1.nf","random18","random16.nf","lazy.eval","random25","random20.nf","random19","adjust","capture10.nf","twosubst","full-2.nf","id.eval","constructed20.nf"]
+lam_files = ["adjust","capture10","constructed","constructed10","constructed20","fact5",
+  "foursubst","full","full-2","id","lams100","lazy","lennart","lennartchurch","onesubst",
+  "random","random15","random16","random17","random18","random19","random2","random20",
+  "random25","random25-19","random25-20","random35","regression1","simple",
+  "t1","t2","t3","t4","t5","t6","t7","tests","threesubst","twosubst"]
+
+
+addAllEvals :: [String] -> IO ()
+addAllEvals files = do
   let f s = do 
               x <- try @SomeException (addEvals s)
               putStr (s ++ ": ")

@@ -75,7 +75,7 @@ import GHC.Types.Unique ( Uniquable(..), Unique, getKey )
 import GHC.Utils.Outputable
 -}
 
-import Data.List(foldl')
+
 import Core.Unique
 
 import qualified Data.IntMap as M

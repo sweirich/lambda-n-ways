@@ -5,11 +5,12 @@ module Suite where
 
 import qualified Auto.Env
 import qualified Auto.Scoped
+import qualified Auto.Subst
 import qualified Auto.Lazy.Env
-import qualified Auto.Lazy.EnvFelgenhauer
-import qualified Auto.Lazy.Eval
 import qualified Auto.Lazy.Scoped
 import qualified Auto.Lazy.Subst
+import qualified Auto.Manual.Env
+import qualified Auto.Manual.Eval
 import qualified Auto.Manual.Bind
 import qualified Auto.Manual.Subst
 import qualified Core.Nf
@@ -74,6 +75,7 @@ import qualified NBE.Kovacs
 import qualified NBE.KovacsNamed
 import qualified NBE.KovacsScoped
 import qualified NBE.KovacsScoped2
+import qualified Named.Lazy.Foil
 import qualified Named.Lazy.NominalG
 import qualified Named.Lazy.Simple
 import qualified Named.Lazy.SimpleGH
@@ -96,7 +98,7 @@ import Util.Impl (LambdaImpl)
 -- | Implementations used in the benchmarking/test suite
 -- RHS must be a single variable name for Makefile
 impls :: [LambdaImpl]
-impls = all_scoped
+impls = autoenv_eval
 
 interleave :: [a] -> [a] -> [a]
 interleave (a1 : a1s) (a2 : a2s) = a1 : a2 : interleave a1s a2s
@@ -107,15 +109,27 @@ broken =
   []
 
 --------------------------------------------------------------------------
+-- evaluation only
+
+all_eval = [ Auto.Manual.Subst.impl,
+             Auto.Manual.Bind.impl,
+             Auto.Manual.Eval.impl,
+             Auto.Manual.Env.impl,
+             Auto.Env.impl,
+             Auto.Scoped.impl,
+             Auto.Subst.impl,
+             Auto.Lazy.Env.impl,
+             Auto.Lazy.Scoped.impl,
+             Auto.Lazy.Subst.impl ] 
 --------------------------------------------------------------------------
 -- divided by implementation strategy
 --
-all_impls1 :: [LambdaImpl]
-all_impls1 = 
+all_impls :: [LambdaImpl]
+all_impls = 
   all_debruijn ++ all_locallyNameless ++ all_named ++ nbe ++ [Lennart.HOAS.impl]
 
 all_debruijn :: [LambdaImpl]
-all_debruijn = autoenv ++ debruijn ++ debruijn_lazy ++ [Lennart.DeBruijn.impl]
+all_debruijn = autoenv -- ++ debruijn ++ debruijn_lazy ++ [Lennart.DeBruijn.impl]
 
 all_locallyNameless :: [LambdaImpl]
 all_locallyNameless = locallyNameless ++ locallyNameless_lazy
@@ -126,27 +140,42 @@ all_named = named ++ lennart ++ [Lennart.Simple.impl]
 -- Well-scoped implmentations
 all_scoped :: [LambdaImpl]
 all_scoped = [ Auto.Lazy.Scoped.impl, 
+               Auto.Scoped.impl,
                NBE.Contextual.impl,
                Named.Foil.impl,
+               Named.Lazy.Foil.impl,
                DeBruijn.CPDT.impl,
                DeBruijn.Nested.impl,
                DeBruijn.Bound.impl,
-               DeBruijn.Kit.impl
-               -- DeBruijn.Par.Scoped.impl
-               -- still need to update
+               DeBruijn.Kit.impl,
+               DeBruijn.Lazy.Par.Scoped.impl,
+               DeBruijn.Par.Scoped.impl
                ]
 --------------------------------------------------------------------------
 --------------------------------------------------------------------------
--- divided by lib subdirectory
+
+
+autoenv_eval :: [LambdaImpl]
+autoenv_eval = [Auto.Manual.Eval.impl,  -- environment-based interpreter
+                Auto.Manual.Subst.impl, -- pure substitution-based
+                Auto.Manual.Bind.impl,  -- create bind type,
+                Auto.Manual.Env.impl,   -- bind type + environment passing
+                Auto.Lazy.Env.impl , 
+                Auto.Lazy.Scoped.impl ,
+                Auto.Lazy.Subst.impl,
+                Auto.Env.impl, 
+                Auto.Scoped.impl,
+                Auto.Subst.impl ]
+
 
 autoenv :: [LambdaImpl]
-autoenv = [ Auto.Lazy.Eval.impl, 
-            Auto.Lazy.Env.impl , 
+autoenv = [ Auto.Lazy.Env.impl , 
             Auto.Lazy.Scoped.impl ,
-            Auto.Lazy.Subst.impl,
-            Auto.Manual.Subst.impl ] 
+            Auto.Lazy.Subst.impl] 
   -- needs laziness to work for lennart term
   -- Auto.Lazy.EnvFelgenhauer.impl, Auto.Scoped.impl  ]
+
+-- divided by lib subdirectory
 
 -- | deBruijn index-based implementations
 debruijn :: [LambdaImpl]
@@ -251,7 +280,8 @@ named_lazy :: [LambdaImpl]
 named_lazy =
   [ Named.Lazy.SimpleH.impl,
     Named.Lazy.SimpleGH.impl,
-    Named.Lazy.SimpleM.impl
+    Named.Lazy.SimpleM.impl,
+    Named.Lazy.Foil.impl
     -- Named.Lazy.NominalG -- too slow
   ]
 
@@ -292,7 +322,8 @@ hackage =
     Unbound.UnboundGenerics.impl, -- unbound-generics
     DeBruijn.Bound.impl, -- bound
     DeBruijn.Lazy.Bound.impl, -- bound
-    Named.Foil.impl -- free-foil
+    Named.Foil.impl,
+    Named.Lazy.Foil.impl -- free-foil
   ]
 
 ---------------------------------------------------

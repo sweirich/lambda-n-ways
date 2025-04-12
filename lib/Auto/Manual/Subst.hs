@@ -3,9 +3,9 @@
 {-# LANGUAGE LambdaCase #-}
 
 -- | Well-scoped de Bruijn indices 
--- Doesn't use autoenv library, or a bind type
--- but otherwise uses ideas from it
--- with naive substitution, closed terms only
+-- Doesn't use autoenv library (or bind type)
+-- no bind type. evaluation based on substitution only
+
 module Auto.Manual.Subst (toDB, impl) where
 
 import Control.DeepSeq (NFData (..))
@@ -24,7 +24,7 @@ import Util.Impl (LambdaImpl (..))
 import qualified Util.Stats as Stats
 import Util.Syntax.Lambda (LC (..))
 import Util.Nat
-import Util.Syntax.ScopedDeBruijn
+import Util.Syntax.Lazy.ScopedDeBruijn
 
 impl :: LambdaImpl
 impl =
@@ -32,7 +32,7 @@ impl =
     { impl_name = "Auto.Manual.Subst",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
-      impl_nf = error "nf unimplemented",
+      impl_nf = nf,
       impl_nfi = error "nfi unimplemented",
       impl_aeq = (==),
       impl_eval = eval
@@ -42,20 +42,14 @@ impl =
 
 type Sub m n = Idx m -> Term n                   
 
-(.:) :: a -> (Idx m -> a) -> Idx (S m) -> a               -- extension
+(.:) :: a -> (Idx m -> a) -> Idx (S m) -> a            -- extension
 v .: r = \case { FZ -> v ; FS y -> r y } 
 
-up :: Sub m n -> Sub (S m) (S n)                      -- shift
+up :: Sub m n -> Sub (S m) (S n)                       -- shift
 up s = \case
           FZ -> DVar  FZ                               -- leave index 0 alone
           FS f -> apply (DVar . FS) (s f)              -- shift other indices
       
-upZ :: Sub m Z -> Sub (S m) (S Z)                      -- shift
-upZ s = \case
-          FZ -> DVar FZ                               -- leave index 0 alone
-          FS f -> apply (DVar . FS) (s f)              -- shift other indices
-
-
 apply :: Sub m n -> Term m -> Term n                    -- multi substitutions
 apply r (DVar x)      = r x
 apply r (DLam b)      = DLam (apply (up r) b)
@@ -63,66 +57,17 @@ apply r (DApp a1 a2)  = DApp (apply r a1) (apply r a2)
 apply r (DIf a b c )  = DIf (apply r a) (apply r b) (apply r c)
 apply r (DBool b)     = DBool b
 
-subst :: Term n -> Term (S n) -> Term n                  -- single substitution
-subst v = apply (v .: DVar)
+instantiate :: Term (S n) -> Term n -> Term n                  -- single substitution
+instantiate b v = apply (v .: DVar) b
 
 ----------------------------------------------------------
 
-type NEnv n = Idx n -> NThunk 
-
-data NThunk where 
-  Suspend :: NEnv m -> Term m -> NThunk
-
-force :: NThunk -> NVal
-force (Suspend r a) = cbn r a
-
-data NVal where
-  NVLam :: NEnv m -> Term (S m) -> NVal
-
-cbn :: NEnv m -> Term m -> NVal
-cbn r (DVar x) = force (r x)
-cbn r (DLam b) = NVLam r b
-cbn r (DApp f a) = 
-  case cbn r f of 
-     NVLam r' b -> 
-       cbn (Suspend r a .: r') b
-
-
-----------------------------------------------------------
-
-type Env n = Idx n -> Val
-
-data Val where
-  VLam :: Env m -> Term (S m) -> Val
-  VBool :: Bool -> Val
-
-evalE :: (Idx n -> Val) -> Term n -> Val
-evalE r (DVar x) = r x
-evalE r (DLam b) = VLam r b
-evalE r (DApp f a) = case evalE r f of 
-   VLam r' b -> evalE (evalE r a .: r') b
-evalE r (DIf a b c) = case evalE r a of
-   VBool True -> evalE r b
-   VBool False -> evalE r c
-evalE r (DBool b) = VBool b
-
-toTerm :: Val -> Term Z
-toTerm (VLam r e) = DLam (applyE (up (toTerm . r)) e)
-toTerm (VBool b) = DBool b
--- 
-applyE :: (Idx n -> Term m) -> Term n -> Term m
-applyE r (DVar x) = r x
-applyE r (DLam b) = 
-  DLam (applyE (up r) b)
-applyE r (DApp f a) = 
-  DApp (applyE r f) (applyE r a)
-
--- Evaluate closed Termressions (call-by-name)
+-- Evaluate closed terms with substitution
 eval :: Term Z -> Term Z
 eval e@(DLam b) = e
 eval (DApp f a) =
   case eval f of
-    DLam b -> eval (subst a b)
+    DLam b -> eval (instantiate b a)
     f' -> error "stuck"
 eval (DBool b) = DBool b
 eval (DIf a b c) = 
@@ -130,3 +75,33 @@ eval (DIf a b c) =
     DBool True -> eval a
     DBool False -> eval b
     _ -> error "stuck"
+
+----------------------------------------------------------
+
+nf :: Term n -> Term n
+nf e@(DVar _) = e
+nf (DLam b) = DLam (nf b)
+nf (DApp f a) =
+  case whnf f of
+    DLam b -> nf (instantiate b a)
+    f' -> DApp (nf f') (nf a)
+nf e@(DBool _) = e
+nf (DIf a b c) = 
+  case whnf a of 
+    DBool True -> nf a
+    DBool False -> nf b
+    a' -> DIf (nf a) (nf b) (nf c)
+
+whnf :: Term n -> Term n
+whnf e@(DVar _) = e
+whnf e@(DLam _) = e
+whnf (DApp f a) =
+  case whnf f of
+    DLam b -> whnf (instantiate b a)
+    f' -> DApp f' a
+whnf e@(DBool b) = DBool b
+whnf (DIf a b c) = 
+  case whnf a of 
+    DBool True -> whnf b
+    DBool False -> whnf c
+    a' -> DIf a' b c

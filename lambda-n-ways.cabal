@@ -14,11 +14,12 @@ library
   exposed-modules:
     Auto.Env
     Auto.Scoped
+    Auto.Subst
     Auto.Lazy.Env
-    Auto.Lazy.EnvFelgenhauer    
-    Auto.Lazy.Eval
     Auto.Lazy.Scoped
     Auto.Lazy.Subst
+    Auto.Manual.Eval
+    Auto.Manual.Env
     Auto.Manual.Bind
     Auto.Manual.Subst
     Core.Core
@@ -85,6 +86,7 @@ library
     LocallyNameless.SupportOpt
     LocallyNameless.TypedOpt
     LocallyNameless.TypedOtt
+    Named.Lazy.Foil
     Named.Lazy.NominalG
     Named.Lazy.Simple
     Named.Lazy.SimpleGH

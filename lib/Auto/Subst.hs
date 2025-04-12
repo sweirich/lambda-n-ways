@@ -1,9 +1,12 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE QuantifiedConstraints #-}
-module Auto.Lazy.EnvFelgenhauer (toDB, impl) where
+
+-- | Well-scoped de Bruijn indices (strict)
+-- with substitution from autoenv library, but doesn't 
+-- use bind type
+module Auto.Subst (toDB, impl) where
 
 import AutoEnv
-import AutoEnv.Bind.Single
 import Data.Fin
 import Control.DeepSeq (NFData (..))
 import Data.Maybe (fromJust)
@@ -24,51 +27,48 @@ import Util.Syntax.Lambda (LC (..))
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "Auto.Lazy.EnvFelgenhauer",
+    { impl_name = "Auto.Subst",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
-      impl_nf = nf zeroE,
-      impl_nfi = error "NFI unimplemented",
-      impl_aeq = (==)
+      impl_nf = nf,
+      impl_nfi = error "nfi unimplemented",
+      impl_aeq = (==), 
+      impl_eval = eval
     }
 
 data DB n where
-  DFree :: IdInt -> DB n  -- free variable
-  DBound  :: (Fin n) -> DB n  -- bound variable, uses de Bruijn index
-  DLam  :: (Bind DB DB n) -> DB n -- lambda abstraction (includes suspended environment)
-  DApp  :: (DB n) -> (DB n) -> DB n -- application
+  DVar :: !(Fin n) -> DB n
+  DLam :: !(DB (S n)) -> DB n
+  DApp :: !(DB n) -> !(DB n) -> DB n
+  DBool :: !Bool -> DB n
+  DIf :: !(DB n) -> !(DB n) -> !(DB n) -> DB n
 
 -- standalone b/c GADT
 -- alpha equivalence is (==)
 deriving instance Eq (DB n)
 
-instance Eq (Bind DB DB n) where
-  b1 == b2 = getBody b1 == getBody b2
-
 instance NFData (DB a) where
-  rnf (DFree x) = rnf x
-  rnf (DBound i) = rnf i
+  rnf (DVar i) = rnf i
   rnf (DLam d) = rnf d
   rnf (DApp a b) = rnf a `seq` rnf b
-
+  rnf (DBool b) = rnf b
+  rnf (DIf a b c) = rnf a `seq` rnf b `seq` rnf c
 instance NFData (Fin n) where
   rnf FZ = ()
   rnf (FS x) = rnf x
 
-instance (Subst v e, Subst v v, forall n. NFData (e n)) => NFData (Bind v e n) where
-  rnf b = rnf (unbind b)
-
 ----------------------------------------------------------
-
+-- uses the SubstScoped library
 instance SubstVar DB where
-  var = DBound
+  var = DVar
   {-# INLINEABLE var #-}
 
 instance Subst DB DB where
-  applyE s (DBound i) = applyEnv s i
-  applyE s (DFree x) = DFree x
-  applyE s (DLam b) = DLam (applyE s b)
+  applyE s (DVar i) = applyEnv s i
+  applyE s (DLam b) = DLam (applyE (up s) b)
   applyE s (DApp f a) = DApp (applyE s f) (applyE s a)
+  applyE s (DIf a b c) = DIf (applyE s a) (applyE s b) (applyE s c)
+  applyE s (DBool b) = DBool b
   {-# INLINEABLE applyE #-}
 
 {-# SPECIALIZE applyEnv :: Env DB n m -> Fin n -> DB m #-}
@@ -78,31 +78,56 @@ instance Subst DB DB where
 {-# SPECIALIZE (.>>) :: Env DB m n -> Env DB n p -> Env DB m p #-}
 
 
-
 {-# SPECIALIZE up :: Env DB n m -> Env DB ('S n) ('S m) #-}
 
-{-# SPECIALIZE unbind :: Bind DB DB n -> DB ('S n) #-}
-
-{-# SPECIALIZE instantiate :: Bind DB DB n -> DB n -> DB n #-}
-
-{-# SPECIALIZE bind :: DB (S n) -> Bind DB DB n #-}
-
-{-# SPECIALIZE applyUnder :: (forall m n. Env DB m n -> DB m -> DB n)-> Env DB n1 n2 -> Bind DB DB n1 -> Bind DB DB n2 #-}
 
 ----------------------------------------------------------
--- NOTE: don't normalize the body of lambda expressions yet.
--- wait until conversion back to LC terms
 
-nf :: Env DB m n -> DB m -> DB n
-nf r (DFree x)  = DFree x
-nf r (DBound x) = applyEnv r x
-nf r (DLam b) = DLam (applyE r b)
-nf r (DApp f a) =
-  let f' = nf r f
-      a' = nf r a 
-  in case f' of
-    DLam b -> instantiateWith b a' nf
-    f' -> DApp f' a'
+-- Computing the normal form proceeds as usual.
+
+nf :: DB n -> DB n
+nf e@(DVar _) = e
+nf (DLam b) = DLam (nf b)
+nf (DApp f a) =
+  case whnf f of
+    DLam b -> nf (applyE (a .: idE) b)
+    f' -> DApp (nf f') (nf a)
+nf e@(DBool _) = e
+nf (DIf a b c) = 
+  case whnf a of 
+    DBool True -> nf a
+    DBool False -> nf b
+    a' -> DIf (nf a) (nf b) (nf c)
+
+whnf :: DB n -> DB n
+whnf e@(DVar _) = e
+whnf e@(DLam _) = e
+whnf (DApp f a) =
+  case whnf f of
+    DLam b -> whnf (applyE (a .: idE) b)
+    f' -> DApp f' a
+whnf e@(DBool b) = DBool b
+whnf (DIf a b c) = 
+  case whnf a of 
+    DBool True -> whnf b
+    DBool False -> whnf c
+    a' -> DIf a' b c
+
+
+
+eval :: DB n -> DB n
+eval e@(DVar _) = e
+eval e@(DLam _) = e
+eval (DApp f a) =
+  case eval f of
+    DLam b -> eval (applyE (a .: idE) b)
+    f' -> f' 
+eval (DBool b) = DBool b
+eval (DIf a b c) = 
+  case eval a of 
+    DBool True -> eval b
+    DBool False -> eval c
+    a' -> DIf a' b c
 
 ---------------------------------------------------------
 {-
@@ -115,29 +140,28 @@ toDB :: LC IdInt -> DB 'Z
 toDB = to []
   where
     to :: [(IdInt, Fin n)] -> LC IdInt -> DB n
-    to vs (Var v) = DBound (fromJust (lookup v vs))
-    to vs (Lam v b) = DLam (bind b')
+    to vs (Var v) = DVar (fromJust (lookup v vs))
+    to vs (Lam v b) = DLam b'
       where
         b' = to ((v, FZ) : mapSnd FS vs) b
     to vs (App f a) = DApp (to vs f) (to vs a)
-
+    to vs (Bool b)  = DBool b
+    to vs (If a b c) = DIf (to vs a) (to vs b) (to vs c)
 -- Convert back from deBruijn to the LC type.
--- can normalize in the process
+
 fromDB :: DB n -> LC IdInt
 fromDB = from firstBoundId
   where
     from :: IdInt -> DB n -> LC IdInt
-    from (IdInt n) (DBound i)
+    from (IdInt n) (DVar i)
       | toInt i < 0 = Var (IdInt $ toInt i)
       | toInt i >= n = Var (IdInt $ toInt i)
       | otherwise = Var (IdInt (n - toInt i - 1))
-    from n (DFree x) = Var x
-    from n (DLam b) = 
-      unbindWith b (\r' b' -> 
-        Lam n (from (succ n) 
-           (nf (DFree n .: r') b')))
+    from n (DLam b) = Lam n (from (succ n)  b)
     from n (DApp f a) = App (from n f) (from n a)
-
+    from n (DBool b) = Bool b
+    from n (DIf a b c) = If (from n a) (from n b) (from n c)
+    
 mapSnd :: (a -> b) -> [(c, a)] -> [(c, b)]
 mapSnd f = map (\(v, i) -> (v, f i))
 
@@ -147,9 +171,8 @@ instance Show (DB n) where
   show = renderStyle style . ppLC 0
 
 ppLC :: Int -> DB n -> Doc
-ppLC _ (DBound v) = text $ "x" ++ show v
-ppLC _ (DFree x) = text (show x)
-ppLC p (DLam b) = pparens (p > 0) $ text "\\." PP.<> ppLC 0 (unbind b)
+ppLC _ (DVar v) = text $ "x" ++ show v
+ppLC p (DLam b) = pparens (p > 0) $ text "\\." PP.<> ppLC 0 b
 ppLC p (DApp f a) = pparens (p > 1) $ ppLC 1 f <+> ppLC 2 a
 
 pparens :: Bool -> Doc -> Doc

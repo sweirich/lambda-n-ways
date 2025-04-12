@@ -1,14 +1,9 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE QuantifiedConstraints #-}
 
--- | Well-scoped de Bruijn indices + parallel (explicit) substitutions
--- hidden in library (analogous to DeBruijn.Par.Scoped)
 
--- On the nf benchmark:
--- with specialization, 4.76 ms
--- some specialization 4.84 ms
--- without specialization, 4.97 ms
--- all specialization back on 5.02 ms -- this is all 
+-- | Uses the Autoenv library, with a lazy datatype
+-- The whnf function does not include an explicit environment argument
 module Auto.Lazy.Scoped (toDB, impl) where
 
 import AutoEnv
@@ -156,7 +151,13 @@ nfi n (DApp f a) = do
   case f' of
     DLam b -> Stats.count >> nfi (n - 1) (instantiate b a)
     _ -> DApp <$> nfi n f' <*> nfi n a
-
+nfi n (DBool b) = return (DBool b)
+nfi n (DIf a b c) = do
+  a' <- whnfi (n - 1) a
+  case a' of 
+    DBool True -> nfi (n -1) b
+    DBool False -> nfi (n -1) c
+    _ -> DIf <$> nfi (n-1) a' <*> nfi (n-1) b <*> nfi (n -1) c 
 whnfi :: Int -> DB n -> Stats.M (DB n)
 whnfi 0 _ = Stats.done
 whnfi _ e@(DVar _) = return e
@@ -166,7 +167,14 @@ whnfi n (DApp f a) = do
   case whnf f' of
     DLam b -> Stats.count >> whnfi (n - 1) (instantiate b a)
     _ -> return $ DApp f' a
-
+whnfi n (DBool b) = return (DBool b)
+whnfi n (DIf a b c) = do
+  a' <- whnfi (n - 1) a
+  case a' of 
+    DBool True -> whnfi (n -1) b
+    DBool False -> whnfi (n -1) c
+    _ -> DIf <$> whnfi (n-1) a' <*> whnfi (n-1) b <*> whnfi (n -1) c 
+    
 ---------------------------------------------------------
 {-
 Convert to deBruijn indicies.  Do this by keeping a list of the bound

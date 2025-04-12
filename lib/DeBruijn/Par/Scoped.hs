@@ -2,6 +2,7 @@
 
 -- | Well-scoped de Bruijn indices + parallel (explicit) substitutions
 -- hidden in library (see Support.Par.SubstScoped)
+-- strict version
 module DeBruijn.Par.Scoped (toDB, impl) where
 
 import Control.DeepSeq (NFData (..))
@@ -30,7 +31,8 @@ impl =
       impl_toLC = fromDB,
       impl_nf = nf,
       impl_nfi = nfi,
-      impl_aeq = (==)
+      impl_aeq = (==), 
+      impl_eval = whnf
     }
 
 -- NOTE: making the Idx strict, significantly degrades performance, hmmm....
@@ -38,6 +40,8 @@ data DB n where
   DVar :: !(Idx n) -> DB n
   DLam :: !(Bind DB n) -> DB n
   DApp :: !(DB n) -> !(DB n) -> DB n
+  DBool :: {-# UNPACK #-} !Bool -> DB n
+  DIf :: !(DB n) -> !(DB n) -> !(DB n) -> DB n
 
 -- standalone b/c GADT
 -- alpha equivalence is (==)
