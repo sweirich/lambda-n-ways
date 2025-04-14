@@ -109,7 +109,7 @@ nf (DIf a b c) =
   case whnf a of 
     DBool True -> nf a
     DBool False -> nf b
-    a' -> DIf (nf a) (nf b) (nf c)
+    a' -> DIf (nf a') (nf b) (nf c)
 
 whnf :: DB n -> DB n
 whnf e@(DVar _) = e

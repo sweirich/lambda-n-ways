@@ -38,6 +38,8 @@ data DB n where
   DVar :: (Idx n) -> DB n
   DLam :: (Bind DB n) -> DB n
   DApp :: (DB n) -> (DB n) -> DB n
+  DBool :: Bool -> DB n
+  DIf :: DB n -> DB n -> DB n -> DB n
 
 -- standalone b/c GADT
 -- alpha equivalence is (==)
@@ -47,6 +49,9 @@ instance NFData (DB a) where
   rnf (DVar i) = rnf i
   rnf (DLam d) = rnf d
   rnf (DApp a b) = rnf a `seq` rnf b
+  rnf (DBool b) = rnf b
+  rnf (DIf a b c) = rnf a `seq` rnf b `seq` rnf c
+
 
 ----------------------------------------------------------
 -- uses the SubstScoped library
@@ -57,6 +62,8 @@ instance SubstC DB where
   subst s (DVar i) = applyS s i
   subst s (DLam b) = DLam (substBind s b)
   subst s (DApp f a) = DApp (subst s f) (subst s a)
+  subst s (DBool b) = DBool b
+  subst s (DIf a b c) = DIf (subst s a) (subst s b) (subst s c)
   {-# INLINEABLE subst #-}
 
 {-# SPECIALIZE applyS :: Sub DB n m -> Idx n -> DB m #-}
@@ -85,6 +92,12 @@ nf (DApp f a) =
   case whnf f of
     DLam b -> nf (instantiate b a)
     f' -> DApp (nf f') (nf a)
+nf e@(DBool _) = e
+nf (DIf a b c) = 
+  case whnf a of 
+    DBool True -> nf a
+    DBool False -> nf b
+    a' -> DIf (nf a') (nf b) (nf c)
 
 whnf :: DB n -> DB n
 whnf e@(DVar _) = e
@@ -93,6 +106,12 @@ whnf (DApp f a) =
   case whnf f of
     DLam b -> whnf (instantiate b a)
     f' -> DApp f' a
+whnf e@(DBool b) = DBool b
+whnf (DIf a b c) = 
+  case whnf a of 
+    DBool True -> whnf b
+    DBool False -> whnf c
+    a' -> DIf a' b c
 
 ---------------------------------------------------------------
 
@@ -132,6 +151,8 @@ toDB = to []
       where
         b' = to ((v, FZ) : mapSnd FS vs) b
     to vs (App f a) = DApp (to vs f) (to vs a)
+    to vs (Bool b)  = DBool b
+    to vs (If a b c) = DIf (to vs a) (to vs b) (to vs c)
 
 -- Convert back from deBruijn to the LC type.
 
@@ -145,6 +166,8 @@ fromDB = from firstBoundId
       | otherwise = Var (IdInt (n - (toInt i) -1))
     from n (DLam b) = Lam n (from (succ n) (unbind b))
     from n (DApp f a) = App (from n f) (from n a)
+    from n (DBool b) = Bool b
+    from n (DIf a b c) = If (from n a) (from n b) (from n c)
 
 mapSnd :: (a -> b) -> [(c, a)] -> [(c, b)]
 mapSnd f = map (\(v, i) -> (v, f i))
