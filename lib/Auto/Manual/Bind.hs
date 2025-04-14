@@ -2,7 +2,7 @@
 {-# LANGUAGE QuantifiedConstraints #-}
 {-# LANGUAGE LambdaCase #-}
 -- doesn't use autoenv library, but creates 
--- a Bind type. (lazy representation)
+-- a Bind type. (strict representation)
 -- delays substitution using Bind but doesn't 
 -- pass it explicitly
 module Auto.Manual.Bind (toDB, impl) where
@@ -39,11 +39,11 @@ impl =
 
 
 data Exp n where
-  DVar :: (Fin n) -> Exp n
-  DLam :: (Bind n) -> Exp n
-  DApp :: (Exp n) -> (Exp n) -> Exp n
-  DBool :: Bool -> Exp n
-  DIf :: Exp n -> Exp n -> Exp n -> Exp n
+  DVar :: !(Fin n) -> Exp n
+  DLam :: !(Bind n) -> Exp n
+  DApp :: !(Exp n) -> (Exp n) -> Exp n
+  DBool :: {-# UNPACK #-} !Bool -> Exp n
+  DIf :: !(Exp n) -> !(Exp n) -> !(Exp n) -> Exp n
 
 deriving instance Eq (Exp n)
 

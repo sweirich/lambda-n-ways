@@ -4,15 +4,19 @@
 module Suite where
 
 import qualified Auto.Env
-import qualified Auto.Scoped
+import qualified Auto.Bind
 import qualified Auto.Subst
 import qualified Auto.Lazy.Env
-import qualified Auto.Lazy.Scoped
+import qualified Auto.Lazy.Bind
 import qualified Auto.Lazy.Subst
 import qualified Auto.Manual.Env
-import qualified Auto.Manual.Eval
 import qualified Auto.Manual.Bind
 import qualified Auto.Manual.Subst
+import qualified Auto.Manual.Eval
+import qualified Auto.Manual.Lazy.Env
+import qualified Auto.Manual.Lazy.Bind
+import qualified Auto.Manual.Lazy.Subst
+import qualified Auto.Manual.Lazy.Eval
 import qualified Core.Nf
 import qualified DeBruijn.Bound
 import qualified DeBruijn.CPDT
@@ -98,7 +102,7 @@ import Util.Impl (LambdaImpl)
 -- | Implementations used in the benchmarking/test suite
 -- RHS must be a single variable name for Makefile
 impls :: [LambdaImpl]
-impls = autoenv_eval
+impls = all_eval
 
 interleave :: [a] -> [a] -> [a]
 interleave (a1 : a1s) (a2 : a2s) = a1 : a2 : interleave a1s a2s
@@ -113,13 +117,17 @@ broken =
 
 all_eval = [ Auto.Manual.Subst.impl,
              Auto.Manual.Bind.impl,
-             Auto.Manual.Eval.impl,
              Auto.Manual.Env.impl,
+             Auto.Manual.Eval.impl,
+             Auto.Manual.Lazy.Subst.impl,
+             Auto.Manual.Lazy.Bind.impl,
+             Auto.Manual.Lazy.Eval.impl,
+             Auto.Manual.Lazy.Env.impl,
              Auto.Env.impl,
-             Auto.Scoped.impl,
+             Auto.Bind.impl,
              Auto.Subst.impl,
              Auto.Lazy.Env.impl,
-             Auto.Lazy.Scoped.impl,
+             Auto.Lazy.Bind.impl,
              Auto.Lazy.Subst.impl ] 
 --------------------------------------------------------------------------
 -- divided by implementation strategy
@@ -139,8 +147,8 @@ all_named = named ++ lennart ++ [Lennart.Simple.impl]
 
 -- Well-scoped implmentations
 all_scoped :: [LambdaImpl]
-all_scoped = [ Auto.Lazy.Scoped.impl, 
-               Auto.Scoped.impl,
+all_scoped = [ Auto.Lazy.Bind.impl, 
+               Auto.Bind.impl,
                NBE.Contextual.impl,
                Named.Foil.impl,
                Named.Lazy.Foil.impl,
@@ -161,19 +169,19 @@ autoenv_eval = [Auto.Manual.Eval.impl,  -- environment-based interpreter
                 Auto.Manual.Bind.impl,  -- create bind type,
                 Auto.Manual.Env.impl,   -- bind type + environment passing
                 Auto.Lazy.Env.impl , 
-                Auto.Lazy.Scoped.impl ,
+                Auto.Lazy.Bind.impl ,
                 Auto.Lazy.Subst.impl,
                 Auto.Env.impl, 
-                Auto.Scoped.impl,
+                Auto.Bind.impl,
                 Auto.Subst.impl ]
 
 
 autoenv :: [LambdaImpl]
 autoenv = [ Auto.Lazy.Env.impl , 
-            Auto.Lazy.Scoped.impl ,
+            Auto.Lazy.Bind.impl ,
             Auto.Lazy.Subst.impl] 
   -- needs laziness to work for lennart term
-  -- Auto.Lazy.EnvFelgenhauer.impl, Auto.Scoped.impl  ]
+  -- Auto.Lazy.EnvFelgenhauer.impl, Auto.Bind.impl  ]
 
 -- divided by lib subdirectory
 
@@ -365,7 +373,7 @@ fast =
     Named.SimpleGH.impl,
     Named.Lazy.SimpleGH.impl,
     Named.Foil.impl,
-    Auto.Lazy.Scoped.impl
+    Auto.Lazy.Bind.impl
   ]
 
 -- fastest implementation in each category in the NF benchmark

@@ -13,15 +13,19 @@ library
   hs-source-dirs:     lib
   exposed-modules:
     Auto.Env
-    Auto.Scoped
+    Auto.Bind
     Auto.Subst
     Auto.Lazy.Env
-    Auto.Lazy.Scoped
+    Auto.Lazy.Bind
     Auto.Lazy.Subst
     Auto.Manual.Eval
     Auto.Manual.Env
     Auto.Manual.Bind
     Auto.Manual.Subst
+    Auto.Manual.Lazy.Eval
+    Auto.Manual.Lazy.Env
+    Auto.Manual.Lazy.Bind
+    Auto.Manual.Lazy.Subst
     Core.Core
     Core.CoreFVs
     Core.FV

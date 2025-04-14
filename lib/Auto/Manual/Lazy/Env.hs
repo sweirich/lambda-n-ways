@@ -5,7 +5,7 @@
 -- a Bind type. (lazy)
 -- passes environment argument explicitly and 
 -- delays it using Bind
-module Auto.Manual.Env (toDB, impl) where
+module Auto.Manual.Lazy.Env (toDB, impl) where
 
 import Data.Nat
 import Data.Fin
@@ -28,7 +28,7 @@ import Util.Syntax.Lambda (LC (..))
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "Auto.Manual.Env",
+    { impl_name = "Auto.Manual.Lazy.Env",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
       impl_nf = nf,
@@ -37,13 +37,13 @@ impl =
       impl_eval = whnf idE
     }
 
-data Exp n where
-  DVar :: !(Fin n) -> Exp n
-  DLam :: !(Bind n) -> Exp n
-  DApp :: !(Exp n) -> (Exp n) -> Exp n
-  DBool :: {-# UNPACK #-} !Bool -> Exp n
-  DIf :: !(Exp n) -> !(Exp n) -> !(Exp n) -> Exp n
 
+data Exp n where
+  DVar :: (Fin n) -> Exp n
+  DLam :: (Bind n) -> Exp n
+  DApp :: (Exp n) -> (Exp n) -> Exp n
+  DBool :: Bool -> Exp n
+  DIf :: Exp n -> Exp n -> Exp n -> Exp n
 
 deriving instance Eq (Exp n)
 

@@ -3,7 +3,7 @@
 
 -- | Uses the Autoenv library, with a strict datatype
 -- The whnf function does not include an explicit environment argument
-module Auto.Scoped (toDB, impl) where
+module Auto.Bind (toDB, impl) where
 
 import AutoEnv
 import AutoEnv.Bind.Single
@@ -27,7 +27,7 @@ import Util.Syntax.Lambda (LC (..))
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "Auto.Scoped",
+    { impl_name = "Auto.Bind",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
       impl_nf = nf,

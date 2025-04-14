@@ -6,7 +6,7 @@
 -- Doesn't use autoenv library (or bind type)
 -- no bind type. evaluation based on substitution only
 
-module Auto.Manual.Subst (toDB, impl) where
+module Auto.Manual.Lazy.Subst (toDB, impl) where
 
 import Control.DeepSeq (NFData (..))
 import Data.Maybe (fromJust)
@@ -24,13 +24,12 @@ import Util.Impl (LambdaImpl (..))
 import qualified Util.Stats as Stats
 import Util.Syntax.Lambda (LC (..))
 import Util.Nat
--- uses standard, scoped syntax
-import Util.Syntax.ScopedDeBruijn
+import Util.Syntax.Lazy.ScopedDeBruijn
 
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "Auto.Manual.Subst",
+    { impl_name = "Auto.Manual.Lazy.Subst",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
       impl_nf = nf,

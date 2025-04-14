@@ -2,10 +2,10 @@
 {-# LANGUAGE QuantifiedConstraints #-}
 {-# LANGUAGE LambdaCase #-}
 -- doesn't use autoenv library, but creates 
--- a Bind type. (lazy)
--- passes environment argument explicitly and 
--- delays it using Bind
-module Auto.Manual.Env (toDB, impl) where
+-- a Bind type. (lazy representation)
+-- delays substitution using Bind but doesn't 
+-- pass it explicitly
+module Auto.Manual.Lazy.Bind (toDB, impl) where
 
 import Data.Nat
 import Data.Fin
@@ -28,22 +28,22 @@ import Util.Syntax.Lambda (LC (..))
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "Auto.Manual.Env",
+    { impl_name = "Auto.Manual.Lazy.Bind",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
       impl_nf = nf,
       impl_nfi = error "NFI unimplemented",
       impl_aeq = (==),
-      impl_eval = whnf idE
+      impl_eval = eval
     }
 
-data Exp n where
-  DVar :: !(Fin n) -> Exp n
-  DLam :: !(Bind n) -> Exp n
-  DApp :: !(Exp n) -> (Exp n) -> Exp n
-  DBool :: {-# UNPACK #-} !Bool -> Exp n
-  DIf :: !(Exp n) -> !(Exp n) -> !(Exp n) -> Exp n
 
+data Exp n where
+  DVar :: (Fin n) -> Exp n
+  DLam :: (Bind n) -> Exp n
+  DApp :: (Exp n) -> (Exp n) -> Exp n
+  DBool :: Bool -> Exp n
+  DIf :: Exp n -> Exp n -> Exp n -> Exp n
 
 deriving instance Eq (Exp n)
 
@@ -106,36 +106,49 @@ up s = \case
 instantiate :: Bind n -> Exp n -> Exp n
 instantiate (Bind r b) v = apply (v .: r) b
 
+----------------------------------------------------------
+-- evaluation without env argument
+
+eval :: Exp Z -> Exp Z
+eval (DVar x) = case x of {}
+eval (DLam b) = DLam b
+eval (DApp f a) = case eval f of 
+   DLam b ->
+      eval (instantiate b (eval a))
+eval (DBool b) = DBool b
+eval (DIf a b c) = case eval a of 
+  DBool True -> eval b
+  DBool False -> eval c
+
 ----------------------------------------------------
 
 nf :: Exp n -> Exp n
 nf e@(DVar _) = e
 nf (DLam b) = DLam (bind (nf (unbind b)))
 nf (DApp f a) =
-  case whnf idE f of
+  case whnf f of
     DLam b -> nf (instantiate b a)
     f' -> DApp (nf f') (nf a)
 nf (DIf a b c) =
-  case whnf idE a of 
+  case whnf a of 
     DBool True -> nf b
     DBool False -> nf c
     a' -> DIf (nf a') (nf b) (nf c)
 nf (DBool b) = DBool b
 
 
-whnf :: Env m n -> Exp m -> Exp n
-whnf r e@(DVar _) = apply r e
-whnf r e@(DLam _) = apply r e
-whnf r (DApp f a) =
-  case whnf r f of
-    DLam (Bind r' b') -> 
-        whnf (apply r a .: r') b'
-    f' -> DApp f' (apply r a)
-whnf r (DBool b) = DBool b
-whnf r (DIf a b c) = case whnf r a of 
-  DBool True -> whnf r b
-  DBool False -> whnf r c
-  a' -> DIf a' (apply r b) (apply r c)
+whnf :: Exp n -> Exp n
+whnf e@(DVar _) = e
+whnf e@(DLam _) = e
+whnf (DApp f a) =
+  case whnf f of
+    DLam b -> instantiate b a
+    f' -> DApp f' a
+whnf (DBool b) = DBool b
+whnf (DIf a b c) = case whnf a of 
+  DBool True -> whnf b
+  DBool False -> whnf c
+  a' -> DIf a' b c
 
 ---------------------------------------------------------
 {-
