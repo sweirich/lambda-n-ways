@@ -215,7 +215,7 @@ median xs = List.sort xs !! (n `div` 2) where n = length xs
 printNfTerms :: String -> String -> [NfTerm] -> IO ()
 printNfTerms fname ext xs = do
   -- f <- openFile ("lams/" ++ fname ++ ".lam") WriteMode
-  fnf <- openFile ("lams/" ++ fname ++ ext ++ ".lam") WriteMode
+  fnf <- openFile (fname ++ ext ++ ".lam") WriteMode
   -- forM_ xs $ \x -> do  
   --  hPrint f (suite_before x)
   forM_ xs $ \x -> do
@@ -270,9 +270,9 @@ addEvals str = do
 
 addEval :: String -> IO ()
 addEval str = do
-  lams <- getTerm ("lams/" ++ str ++ ".lam")
+  lams <- getTerm ("lambs/" ++ str ++ ".lam")
   evs <- nfTerms Simple.iEval [lams]
-  printNfTerms str ".eval" evs
+  printNfTerms ("lambs/" ++ str) ".eval" evs
 
 -- >>> :t try
 -- try :: Exception e => IO a -> IO (Either e a)
