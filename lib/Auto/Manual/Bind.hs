@@ -7,8 +7,8 @@
 -- pass it explicitly
 module Auto.Manual.Bind (toDB, impl) where
 
-import Data.Nat
-import Data.Fin
+import Data.SNat as Nat
+import Data.FinAux as Fin
 import Control.DeepSeq (NFData (..))
 import Data.Maybe (fromJust)
 import Text.PrettyPrint.HughesPJ
@@ -54,9 +54,9 @@ instance NFData (Exp a) where
   rnf (DIf a b c) = rnf a `seq` rnf b `seq` rnf c
   rnf (DBool b) = rnf b
 
-instance NFData (Fin n) where
-  rnf FZ = ()
-  rnf (FS x) = rnf x
+-- instance NFData (Fin n) where
+--  rnf FZ = ()
+--  rnf (FS x) = rnf x
 
 instance NFData (Bind n) where
   rnf b = rnf (unbind b)
@@ -80,7 +80,7 @@ unbind (Bind r a) = apply (up r) a
 apply :: Env n m -> Exp n -> Exp m
 apply s (DVar i) = s i
 apply s (DLam (Bind r b)) = 
-  DLam (Bind (s .>> r) b)
+  DLam (Bind (r .>> s) b)
 apply s (DApp f a) = 
   DApp (apply s f) (apply s a)
 apply s (DIf a b c) = DIf (apply s a) (apply s b) (apply s c)
@@ -89,19 +89,20 @@ apply s (DBool b) = DBool b
 idE :: Env m m
 idE = DVar
 
+shift :: Env m (S m)
+shift = \x -> DVar (Fin.shiftN s1 x)
+
 nil :: Fin Z -> a
 nil = \case
 
 (.:) :: a -> (Fin m -> a) -> Fin (S m) -> a               -- extension
 v .: r = \case { FZ -> v ; FS y -> r y } 
 
-(.>>) :: Env m n -> Env p m -> Env p n
-r .>> s = apply r . s
+(.>>) :: Env m n -> Env n p -> Env m p
+r .>> s = apply s . r
 
 up :: Env m n -> Env (S m) (S n)             -- shift
-up s = \case
-          FZ -> DVar  FZ                     -- leave index 0 alone
-          FS f -> apply (DVar . FS) (s f)    -- shift other indices
+up s = DVar FZ .: (s .>> shift)
 
 instantiate :: Bind n -> Exp n -> Exp n
 instantiate (Bind r b) v = apply (v .: r) b
@@ -110,7 +111,6 @@ instantiate (Bind r b) v = apply (v .: r) b
 -- evaluation without env argument
 
 eval :: Exp Z -> Exp Z
-eval (DVar x) = case x of {}
 eval (DLam b) = DLam b
 eval (DApp f a) = case eval f of 
    DLam b ->
@@ -179,7 +179,7 @@ fromDB = from firstBoundId
       | toInt i < 0 = Var (IdInt $ toInt i)
       | toInt i >= n = Var (IdInt $ toInt i)
       | otherwise = Var (IdInt (n - toInt i - 1))
-    from n (DLam b) = Lam n (from (succ n) (unbind b))
+    from n (DLam b) = Lam n (from (Prelude.succ n) (unbind b))
     from n (DApp f a) = App (from n f) (from n a)
     from n (DIf a b c) = If (from n a) (from n b) (from n c)
     from n (DBool b) = Bool b

@@ -7,7 +7,7 @@ module Auto.Bind (toDB, impl) where
 
 import AutoEnv
 import AutoEnv.Bind.Single
-import Data.Fin
+import Data.FinAux
 import Control.DeepSeq (NFData (..))
 import Data.Maybe (fromJust)
 import Text.PrettyPrint.HughesPJ
@@ -56,14 +56,11 @@ instance NFData (DB a) where
   rnf (DApp a b) = rnf a `seq` rnf b
   rnf (DBool b) = rnf b
   rnf (DIf a b c) = rnf a `seq` rnf b `seq` rnf c
-instance NFData (Fin n) where
-  rnf FZ = ()
-  rnf (FS x) = rnf x
 
 -- TODO: this is a hack here. But I'm not sure 
 -- what we want to do about this 
 instance (Subst v e, Subst v v, forall n. NFData (e n)) => NFData (Bind v e n) where
-  rnf b = rnf (unbind b)
+  rnf b = rnf (getBody b)
 
 ----------------------------------------------------------
 -- uses the SubstScoped library
@@ -87,7 +84,7 @@ instance Subst DB DB where
 
 {-# SPECIALIZE up :: Env DB n m -> Env DB ('S n) ('S m) #-}
 
-{-# SPECIALIZE unbind :: Bind DB DB n -> DB ('S n) #-}
+{-# SPECIALIZE getBody :: Bind DB DB n -> DB ('S n) #-}
 
 {-# SPECIALIZE instantiate :: Bind DB DB n -> DB n -> DB n #-}
 
@@ -99,7 +96,7 @@ instance Subst DB DB where
 
 nf :: DB n -> DB n
 nf e@(DVar _) = e
-nf (DLam b) = DLam (bind (nf (unbind b)))
+nf (DLam b) = DLam (bind (nf (getBody b)))
 nf (DApp f a) =
   case whnf f of
     DLam b -> nf (instantiate b a)
@@ -143,7 +140,7 @@ eval (DIf a b c) =
 nfi :: Int -> DB n -> Stats.M (DB n)
 nfi 0 _ = Stats.done
 nfi _ e@(DVar _) = return e
-nfi n (DLam b) = DLam . bind <$> nfi (n - 1) (unbind b)
+nfi n (DLam b) = DLam . bind <$> nfi (n - 1) (getBody b)
 nfi n (DApp f a) = do
   f' <- whnfi (n - 1) f
   case f' of
@@ -201,7 +198,7 @@ fromDB = from firstBoundId
       | toInt i < 0 = Var (IdInt $ toInt i)
       | toInt i >= n = Var (IdInt $ toInt i)
       | otherwise = Var (IdInt (n - toInt i - 1))
-    from n (DLam b) = Lam n (from (succ n) (unbind b))
+    from n (DLam b) = Lam n (from (Prelude.succ n) (getBody b))
     from n (DApp f a) = App (from n f) (from n a)
     from n (DBool b) = Bool b
     from n (DIf a b c) = If (from n a) (from n b) (from n c)
@@ -216,7 +213,7 @@ instance Show (DB n) where
 
 ppLC :: Int -> DB n -> Doc
 ppLC _ (DVar v) = text $ "x" ++ show v
-ppLC p (DLam b) = pparens (p > 0) $ text "\\." PP.<> ppLC 0 (unbind b)
+ppLC p (DLam b) = pparens (p > 0) $ text "\\." PP.<> ppLC 0 (getBody b)
 ppLC p (DApp f a) = pparens (p > 1) $ ppLC 1 f <+> ppLC 2 a
 
 pparens :: Bool -> Doc -> Doc

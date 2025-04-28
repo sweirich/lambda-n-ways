@@ -52,9 +52,6 @@ instance NFData (DB a) where
   rnf (DApp a b) = rnf a `seq` rnf b
   rnf (DBool b) = rnf b
   rnf (DIf a b c) = rnf a `seq` rnf b `seq` rnf c
-instance NFData (Fin n) where
-  rnf FZ = ()
-  rnf (FS x) = rnf x
 
 
 ----------------------------------------------------------
@@ -157,7 +154,7 @@ fromDB = from firstBoundId
       | toInt i < 0 = Var (IdInt $ toInt i)
       | toInt i >= n = Var (IdInt $ toInt i)
       | otherwise = Var (IdInt (n - toInt i - 1))
-    from n (DLam b) = Lam n (from (succ n)  b)
+    from n (DLam b) = Lam n (from (Prelude.succ n)  b)
     from n (DApp f a) = App (from n f) (from n a)
     from n (DBool b) = Bool b
     from n (DIf a b c) = If (from n a) (from n b) (from n c)

@@ -8,7 +8,7 @@ allow-newer: true
 
 packages:
 - .
-# - ../autoenv
+- ../autoenv
 
 extra-deps: 
 - unbound-generics-0.4.4@sha256:f7fc93641d5043db8938a5e77f463afa7c473edca3ef26097d4b6f98d45e255c,5521
@@ -17,11 +17,11 @@ extra-deps:
 - nom-0.1.0.2@sha256:920c20e386ef12fad6fb3ab95ac8cb140f95150b42ff61aaa57fa07b3fb84e69,4620
 - Unique-0.4.7.8@sha256:9661f45aa31dde119a2114566166ea38b011a45653337045ee4ced75636533c0,2067
 - algebra-4.3.1@sha256:323cf20c508e0b71422b767ff3a89e4188f68aa59b2df9d0fe6e9f9bae7938fb,4129
-- git: https://github.com/sweirich/autoenv.git
+# - git: https://github.com/sweirich/autoenv.git
 # old representation of environment (as fin n -> v m)
 #  commit: dcb9d9f4a180a3669806ef738bf73f0b22a08064
 #  defunctionalized representation of environment
-  commit: 3b95da6c7acfa5eaa2e39a1a1cd7c168a53feff2
+#  commit: 3b95da6c7acfa5eaa2e39a1a1cd7c168a53feff2
 - free-foil-0.2.0@sha256:7f99c518a63ff314c7c8ca9776625e22ef56c5170593b52c82fea6f461ac753b,3300
 
 flags: {}

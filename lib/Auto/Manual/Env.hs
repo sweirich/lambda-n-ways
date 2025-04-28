@@ -7,8 +7,8 @@
 -- delays it using Bind
 module Auto.Manual.Env (toDB, impl) where
 
-import Data.Nat
-import Data.Fin
+import Data.SNat
+import Data.FinAux
 import Control.DeepSeq (NFData (..))
 import Data.Maybe (fromJust)
 import Text.PrettyPrint.HughesPJ
@@ -53,10 +53,6 @@ instance NFData (Exp a) where
   rnf (DApp a b) = rnf a `seq` rnf b
   rnf (DIf a b c) = rnf a `seq` rnf b `seq` rnf c
   rnf (DBool b) = rnf b
-
-instance NFData (Fin n) where
-  rnf FZ = ()
-  rnf (FS x) = rnf x
 
 instance NFData (Bind n) where
   rnf b = rnf (unbind b)
@@ -166,7 +162,7 @@ fromDB = from firstBoundId
       | toInt i < 0 = Var (IdInt $ toInt i)
       | toInt i >= n = Var (IdInt $ toInt i)
       | otherwise = Var (IdInt (n - toInt i - 1))
-    from n (DLam b) = Lam n (from (succ n) (unbind b))
+    from n (DLam b) = Lam n (from (Prelude.succ n) (unbind b))
     from n (DApp f a) = App (from n f) (from n a)
     from n (DIf a b c) = If (from n a) (from n b) (from n c)
     from n (DBool b) = Bool b
