@@ -116,7 +116,7 @@ eval (DVar x) = case x of {}
 eval (DLam b) = DLam b
 eval (DApp f a) = case eval f of 
    DLam b ->
-      eval (instantiate b (eval a))
+      eval (instantiate b a)
 eval (DBool b) = DBool b
 eval (DIf a b c) = case eval a of 
   DBool True -> eval b

@@ -102,7 +102,7 @@ import Util.Impl (LambdaImpl)
 -- | Implementations used in the benchmarking/test suite
 -- RHS must be a single variable name for Makefile
 impls :: [LambdaImpl]
-impls = all_scoped
+impls = all_eval
 
 interleave :: [a] -> [a] -> [a]
 interleave (a1 : a1s) (a2 : a2s) = a1 : a2 : interleave a1s a2s
@@ -128,7 +128,8 @@ all_eval = [ Auto.Manual.Subst.impl,
              Auto.Subst.impl,
              Auto.Lazy.Env.impl,
              Auto.Lazy.Bind.impl,
-             Auto.Lazy.Subst.impl ] 
+             Auto.Lazy.Subst.impl 
+             ] 
 --------------------------------------------------------------------------
 -- divided by implementation strategy
 --
