@@ -166,7 +166,6 @@ library
     , tasty-quickcheck  >=0.10.1.1
     , unbound-generics  ==0.4.4
     , free-foil       
-    , fin
 
   --                , RepLib >= 0.5.4.2
   --                , nom

@@ -8,7 +8,7 @@ module Auto.Lazy.Bind (toDB, impl) where
 
 import AutoEnv
 import AutoEnv.Bind.Single
-import Data.FinAux
+import Data.Fin
 import Control.DeepSeq (NFData (..))
 import Data.Maybe (fromJust)
 import Text.PrettyPrint.HughesPJ

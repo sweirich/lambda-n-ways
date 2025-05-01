@@ -8,7 +8,7 @@
 module Auto.Manual.Lazy.Env (toDB, impl) where
 
 import Data.SNat as Nat
-import Data.FinAux
+import Data.Fin
 import Control.DeepSeq (NFData (..))
 import Data.Maybe (fromJust)
 import Text.PrettyPrint.HughesPJ
