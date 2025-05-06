@@ -83,6 +83,9 @@
 > main = do
 >   lennart <- toIdInt <$> getTerm "lams/lennart.lam"
 >   lennartb <- toIdInt <$> getTerm "lambs/lennartb.lam"
+>   lennartb5 <- toIdInt <$> getTerm "lambs/lennartb5.lam"
+>   lennartb4 <- toIdInt <$> getTerm "lambs/lennartb4.lam"
+>   lennartC <- toIdInt <$> getTerm "lambs/lennartchurch.lam"
 >   random15_terms <- getTerms "lams/random15.lam"
 >   random15_nfterms <- getTerms "lams/random15.nf.lam"
 >   random20_terms <- getTerms "lams/random20.lam"
@@ -112,6 +115,9 @@
 >    , bgroup "aeq"  $ map runBench (aeq_fresh_bs lennart)
 >    , bgroup "aeqs" $ map runBench (aeq_bs lennart lennart) 
 >    , bgroup "eval" $ map runBench (eval_bss [lennartb] [Bool False])
+>    , bgroup "eval5" $ map runBench (eval_bss [lennartb5] [Bool False])
+>    , bgroup "eval4" $ map runBench (eval_bss [lennartb4] [Bool False])
+>    , bgroup "evalC" $ map runBench (eval_bss [lennartC] [Bool False])
 >    {-  bgroup "ids" $ map runBench (constructed_bss "ids" id_terms)
 >    , bgroup "con"  $ map runBench (constructed_bss "con" con_terms)
 >    , bgroup "capt" $ map runBench (constructed_bss "capt" capt_terms) 

@@ -15,17 +15,28 @@ library
     Auto.Env
     Auto.Bind
     Auto.Subst
+    Auto.Lazy.Eval
     Auto.Lazy.Env
+    Auto.Lazy.EnvV
     Auto.Lazy.Bind
+    Auto.Lazy.BindV
+    Auto.Lazy.BindVal
     Auto.Lazy.Subst
+    Auto.Lazy.SubstV
     Auto.Manual.Eval
     Auto.Manual.Env
     Auto.Manual.Bind
+    Auto.Manual.BindV
     Auto.Manual.Subst
+    Auto.Manual.SubstV
     Auto.Manual.Lazy.Eval
-    Auto.Manual.Lazy.Env
+    Auto.Manual.Lazy.EnvV
+    Auto.Manual.Lazy.EnvVal
     Auto.Manual.Lazy.Bind
+    Auto.Manual.Lazy.BindV
+    Auto.Manual.Lazy.BindVal
     Auto.Manual.Lazy.Subst
+    Auto.Manual.Lazy.SubstV
     Core.Core
     Core.CoreFVs
     Core.FV

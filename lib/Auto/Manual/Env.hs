@@ -125,7 +125,7 @@ whnf r e@(DLam _) = apply r e
 whnf r (DApp f a) =
   case whnf r f of
     DLam (Bind r' b') -> 
-        whnf (apply r a .: r') b'
+        whnf (whnf r a .: r') b'
     f' -> DApp f' (apply r a)
 whnf r (DBool b) = DBool b
 whnf r (DIf a b c) = case whnf r a of 

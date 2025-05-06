@@ -2,10 +2,10 @@
 {-# LANGUAGE QuantifiedConstraints #-}
 {-# LANGUAGE LambdaCase #-}
 -- doesn't use autoenv library, but creates 
--- a Bind type. (strict representation)
+-- a Bind type. (lazy representation)
 -- delays substitution using Bind but doesn't 
 -- pass it explicitly
-module Auto.Manual.Bind (toDB, impl) where
+module Auto.Manual.Lazy.BindV (toDB, impl) where
 
 import Data.SNat as Nat
 import Data.Fin as Fin
@@ -28,7 +28,7 @@ import Util.Syntax.Lambda (LC (..))
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "Auto.Manual.Bind",
+    { impl_name = "Auto.Manual.Lazy.BindV",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
       impl_nf = nf,
@@ -39,11 +39,11 @@ impl =
 
 
 data Exp n where
-  DVar :: !(Fin n) -> Exp n
-  DLam :: !(Bind n) -> Exp n
-  DApp :: !(Exp n) -> (Exp n) -> Exp n
-  DBool :: {-# UNPACK #-} !Bool -> Exp n
-  DIf :: !(Exp n) -> !(Exp n) -> !(Exp n) -> Exp n
+  DVar :: (Fin n) -> Exp n
+  DLam :: (Bind n) -> Exp n
+  DApp :: (Exp n) -> (Exp n) -> Exp n
+  DBool :: Bool -> Exp n
+  DIf :: Exp n -> Exp n -> Exp n -> Exp n
 
 deriving instance Eq (Exp n)
 
@@ -53,10 +53,6 @@ instance NFData (Exp a) where
   rnf (DApp a b) = rnf a `seq` rnf b
   rnf (DIf a b c) = rnf a `seq` rnf b `seq` rnf c
   rnf (DBool b) = rnf b
-
--- instance NFData (Fin n) where
---  rnf FZ = ()
---  rnf (FS x) = rnf x
 
 instance NFData (Bind n) where
   rnf b = rnf (unbind b)
@@ -89,20 +85,21 @@ apply s (DBool b) = DBool b
 idE :: Env m m
 idE = DVar
 
-shift :: Env m (S m)
-shift = \x -> DVar (Fin.shiftN s1 x)
-
 nil :: Fin Z -> a
 nil = \case
 
 (.:) :: a -> (Fin m -> a) -> Fin (S m) -> a               -- extension
 v .: r = \case { FZ -> v ; FS y -> r y } 
 
-(.>>) :: Env m n -> Env n p -> Env m p
+(.>>) :: Env p m -> Env m n -> Env p n
 r .>> s = apply s . r
 
+
+shift :: Env m (S m)
+shift = \x -> DVar (Fin.shiftN Nat.s1 x)
+
 up :: Env m n -> Env (S m) (S n)             -- shift
-up s = DVar Fin.f0 .: (s .>> shift)
+up s = DVar FZ .: (s .>> shift)
 
 instantiate :: Bind n -> Exp n -> Exp n
 instantiate (Bind r b) v = apply (v .: r) b
@@ -111,16 +108,17 @@ instantiate (Bind r b) v = apply (v .: r) b
 -- evaluation without env argument
 
 eval :: Exp Z -> Exp Z
+eval (DVar x) = case x of {}
 eval (DLam b) = DLam b
-eval (DApp f a) = case eval f of 
-   DLam b ->
-      eval (instantiate b a)
-   _ -> error "type error"
+eval (DApp f a) = 
+  case eval f of 
+    DLam b ->
+      eval (instantiate b (eval a))
 eval (DBool b) = DBool b
-eval (DIf a b c) = case eval a of 
-  DBool True -> eval b
-  DBool False -> eval c
-  _ -> error "type error"
+eval (DIf a b c) = 
+  case eval a of 
+    DBool True -> eval b
+    DBool False -> eval c
 
 ----------------------------------------------------
 
@@ -129,7 +127,7 @@ nf e@(DVar _) = e
 nf (DLam b) = DLam (bind (nf (unbind b)))
 nf (DApp f a) =
   case whnf f of
-    DLam b -> nf (instantiate b a)
+    DLam b -> nf (instantiate b (whnf a))
     f' -> DApp (nf f') (nf a)
 nf (DIf a b c) =
   case whnf a of 
@@ -144,7 +142,7 @@ whnf e@(DVar _) = e
 whnf e@(DLam _) = e
 whnf (DApp f a) =
   case whnf f of
-    DLam b -> whnf (instantiate b a)
+    DLam b -> whnf (instantiate b (whnf a))
     f' -> DApp f' a
 whnf (DBool b) = DBool b
 whnf (DIf a b c) = case whnf a of 

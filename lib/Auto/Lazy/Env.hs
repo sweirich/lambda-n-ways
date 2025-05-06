@@ -131,7 +131,7 @@ evalr r e@(DVar _) = applyE r e
 evalr r e@(DLam _) = applyE r e
 evalr r (DApp f a) =
   case evalr r f of
-    DLam b -> instantiateWith b (evalr r a) evalr
+    DLam b -> instantiateWith b (applyE r a) evalr
     f' -> f' 
 evalr r (DBool b) = DBool b
 evalr r (DIf a b c) = 

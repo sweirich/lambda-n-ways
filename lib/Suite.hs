@@ -6,16 +6,27 @@ module Suite where
 import qualified Auto.Env
 import qualified Auto.Bind
 import qualified Auto.Subst
+import qualified Auto.Lazy.Eval
 import qualified Auto.Lazy.Env
+import qualified Auto.Lazy.EnvV
 import qualified Auto.Lazy.Bind
+import qualified Auto.Lazy.BindV
+import qualified Auto.Lazy.BindVal
 import qualified Auto.Lazy.Subst
+import qualified Auto.Lazy.SubstV
 import qualified Auto.Manual.Env
 import qualified Auto.Manual.Bind
+import qualified Auto.Manual.BindV
 import qualified Auto.Manual.Subst
+import qualified Auto.Manual.SubstV
 import qualified Auto.Manual.Eval
-import qualified Auto.Manual.Lazy.Env
+import qualified Auto.Manual.Lazy.EnvV
+import qualified Auto.Manual.Lazy.EnvVal
 import qualified Auto.Manual.Lazy.Bind
+import qualified Auto.Manual.Lazy.BindV
+import qualified Auto.Manual.Lazy.BindVal
 import qualified Auto.Manual.Lazy.Subst
+import qualified Auto.Manual.Lazy.SubstV
 import qualified Auto.Manual.Lazy.Eval
 import qualified Core.Nf
 import qualified DeBruijn.Bound
@@ -115,20 +126,34 @@ broken =
 --------------------------------------------------------------------------
 -- evaluation only
 
+eval_subst = [ Auto.Manual.Lazy.BindV.impl, 
+               Auto.Manual.BindV.impl]
+
 all_eval = [ Auto.Manual.Subst.impl,
+             --Auto.Manual.SubstV.impl, -- runs out of memory(!)
              Auto.Manual.Bind.impl,
+             Auto.Manual.BindV.impl,
              Auto.Manual.Env.impl,
              Auto.Manual.Eval.impl,
              Auto.Manual.Lazy.Subst.impl, 
+             Auto.Manual.Lazy.SubstV.impl, 
              Auto.Manual.Lazy.Bind.impl,
+             Auto.Manual.Lazy.BindV.impl,
+             Auto.Manual.Lazy.BindVal.impl,
              Auto.Manual.Lazy.Eval.impl,
-             Auto.Manual.Lazy.Env.impl,
+             Auto.Manual.Lazy.EnvV.impl,
+             Auto.Manual.Lazy.EnvVal.impl,
              Auto.Env.impl,
              Auto.Bind.impl,
              Auto.Subst.impl,
+             Auto.Lazy.Eval.impl,
              Auto.Lazy.Env.impl,
+             Auto.Lazy.EnvV.impl,
              Auto.Lazy.Bind.impl,
-             Auto.Lazy.Subst.impl 
+             Auto.Lazy.BindV.impl,
+             Auto.Lazy.BindVal.impl, 
+             Auto.Lazy.Subst.impl, 
+             Auto.Lazy.SubstV.impl
              ] 
 --------------------------------------------------------------------------
 -- divided by implementation strategy

@@ -144,7 +144,7 @@ whnf e@(DVar _) = e
 whnf e@(DLam _) = e
 whnf (DApp f a) =
   case whnf f of
-    DLam b -> instantiate b a
+    DLam b -> whnf (instantiate b a)
     f' -> DApp f' a
 whnf (DBool b) = DBool b
 whnf (DIf a b c) = case whnf a of 
