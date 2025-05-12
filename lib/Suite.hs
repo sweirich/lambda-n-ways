@@ -20,6 +20,7 @@ import qualified Auto.Manual.BindV
 import qualified Auto.Manual.Subst
 import qualified Auto.Manual.SubstV
 import qualified Auto.Manual.Eval
+import qualified Auto.Manual.Lazy.Env
 import qualified Auto.Manual.Lazy.EnvV
 import qualified Auto.Manual.Lazy.EnvVal
 import qualified Auto.Manual.Lazy.Bind
@@ -28,6 +29,7 @@ import qualified Auto.Manual.Lazy.BindVal
 import qualified Auto.Manual.Lazy.Subst
 import qualified Auto.Manual.Lazy.SubstV
 import qualified Auto.Manual.Lazy.Eval
+import qualified Auto.Manual.Lazy.EvalV
 import qualified Core.Nf
 import qualified DeBruijn.Bound
 import qualified DeBruijn.CPDT
@@ -113,7 +115,7 @@ import Util.Impl (LambdaImpl)
 -- | Implementations used in the benchmarking/test suite
 -- RHS must be a single variable name for Makefile
 impls :: [LambdaImpl]
-impls = all_eval
+impls = eval_manual_lazy
 
 interleave :: [a] -> [a] -> [a]
 interleave (a1 : a1s) (a2 : a2s) = a1 : a2 : interleave a1s a2s
@@ -129,7 +131,19 @@ broken =
 eval_subst = [ Auto.Manual.Lazy.BindV.impl, 
                Auto.Manual.BindV.impl]
 
-all_eval = [ Auto.Manual.Subst.impl,
+eval_manual_lazy = [
+    Auto.Manual.Lazy.Subst.impl, 
+    Auto.Manual.Lazy.SubstV.impl, 
+    Auto.Manual.Lazy.Bind.impl,
+    Auto.Manual.Lazy.BindV.impl,
+    Auto.Manual.Lazy.Eval.impl, 
+    Auto.Manual.Lazy.EvalV.impl,
+    Auto.Manual.Lazy.Env.impl,
+    Auto.Manual.Lazy.EnvV.impl
+  ]
+
+
+all_eval = [  Auto.Manual.Subst.impl,
              --Auto.Manual.SubstV.impl, -- runs out of memory(!)
              Auto.Manual.Bind.impl,
              Auto.Manual.BindV.impl,
@@ -139,22 +153,32 @@ all_eval = [ Auto.Manual.Subst.impl,
              Auto.Manual.Lazy.SubstV.impl, 
              Auto.Manual.Lazy.Bind.impl,
              Auto.Manual.Lazy.BindV.impl,
-             Auto.Manual.Lazy.BindVal.impl,
-             Auto.Manual.Lazy.Eval.impl,
+             --Auto.Manual.Lazy.BindVal.impl,
+             Auto.Manual.Lazy.Eval.impl, 
+             Auto.Manual.Lazy.Env.impl,
              Auto.Manual.Lazy.EnvV.impl,
-             Auto.Manual.Lazy.EnvVal.impl,
+             --Auto.Manual.Lazy.EnvVal.impl,
              Auto.Env.impl,
              Auto.Bind.impl,
              Auto.Subst.impl,
-             Auto.Lazy.Eval.impl,
+             Auto.Lazy.Eval.impl, 
              Auto.Lazy.Env.impl,
              Auto.Lazy.EnvV.impl,
              Auto.Lazy.Bind.impl,
              Auto.Lazy.BindV.impl,
-             Auto.Lazy.BindVal.impl, 
-             Auto.Lazy.Subst.impl, 
-             Auto.Lazy.SubstV.impl
+             --Auto.Lazy.BindVal.impl, 
+             Auto.Lazy.Subst.impl 
+             -- Auto.Lazy.SubstV.impl -- runs out of memory
              ] 
+
+
+autoenv_eval :: [LambdaImpl]
+autoenv_eval = [Auto.Lazy.Env.impl , 
+                Auto.Lazy.Bind.impl ,
+                Auto.Lazy.Subst.impl,
+                Auto.Env.impl, 
+                Auto.Bind.impl,
+                Auto.Subst.impl ]
 --------------------------------------------------------------------------
 -- divided by implementation strategy
 --
@@ -189,23 +213,11 @@ all_scoped = [ Auto.Lazy.Bind.impl,
 --------------------------------------------------------------------------
 
 
-autoenv_eval :: [LambdaImpl]
-autoenv_eval = [Auto.Manual.Eval.impl,  -- environment-based interpreter
-                Auto.Manual.Subst.impl, -- pure substitution-based
-                Auto.Manual.Bind.impl,  -- create bind type,
-                Auto.Manual.Env.impl,   -- bind type + environment passing
-                Auto.Lazy.Env.impl , 
-                Auto.Lazy.Bind.impl ,
-                Auto.Lazy.Subst.impl,
-                Auto.Env.impl, 
-                Auto.Bind.impl,
-                Auto.Subst.impl ]
-
-
 autoenv :: [LambdaImpl]
 autoenv = [ Auto.Lazy.Env.impl , 
-            Auto.Lazy.Bind.impl ,
-            Auto.Lazy.Subst.impl] 
+            Auto.Lazy.Bind.impl 
+            -- Auto.Lazy.Subst.impl
+            ] 
   -- needs laziness to work for lennart term
   -- Auto.Lazy.EnvFelgenhauer.impl, Auto.Bind.impl  ]
 
@@ -324,11 +336,11 @@ nbe :: [LambdaImpl]
 nbe =
   [ NBE.Aelig.impl,
     -- NBE.Boesflug.impl, -- hangs on full
-    NBE.Felgenhauer.impl,
+    -- NBE.Felgenhauer.impl, -- wonky
     NBE.Kovacs.impl,
     NBE.KovacsNamed.impl,
-    NBE.KovacsScoped.impl,
-    NBE.KovacsScoped2.impl
+    NBE.KovacsScoped.impl
+    -- NBE.KovacsScoped2.impl
     --DeBruijn.Krivine.impl,   -- slower than the rest
     --DeBruijn.KrivineScoped.impl -- slower than the rest
   ]
@@ -399,13 +411,15 @@ fast =
     Named.SimpleGH.impl,
     Named.Lazy.SimpleGH.impl,
     Named.Foil.impl,
-    Auto.Lazy.Bind.impl
+    Auto.Lazy.Bind.impl,
+    Auto.Manual.Lazy.Env.impl
   ]
 
 -- fastest implementation in each category in the NF benchmark
 fast_nf :: [LambdaImpl]
-fast_nf = autoenv ++ nbe ++
-  [ LocallyNameless.Opt.impl, -- 2.56
+fast_nf = autoenv ++ nbe 
+   ++ [ Auto.Manual.Lazy.Env.impl, Auto.Manual.Env.impl ]
+{-  [ -- LocallyNameless.Opt.impl, -- 2.56 XXX
     -- LocallyNameless.SupportOpt.impl, -- 2.59  -- new version of GHC degraded performance
     DeBruijn.Par.Scoped.impl, -- 3.00
     -- LocallyNameless.GenericOpt.impl, -- 4.36    -- new version of GHC degraded performance
@@ -423,7 +437,7 @@ fast_nf = autoenv ++ nbe ++
     -- Named.Lazy.SimpleH.impl, -- 166
     -- Named.Lazy.SimpleGH.impl, -- 169
     -- Named.SimpleGH.impl -- 193
-  ]
+  ] -}
 
 fast_random :: [LambdaImpl]
 fast_random =

@@ -114,11 +114,13 @@ eval (DApp f a) =
   case eval f of 
     DLam b ->
       eval (instantiate b (eval a))
+    _ -> error "type error"
 eval (DBool b) = DBool b
 eval (DIf a b c) = 
   case eval a of 
     DBool True -> eval b
     DBool False -> eval c
+    _ -> error "type error"
 
 ----------------------------------------------------
 

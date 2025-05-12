@@ -64,6 +64,7 @@ instantiate b v = apply (v .: DVar) b
 
 -- Evaluate closed terms with substitution
 eval :: Term Z -> Term Z
+eval (DVar x) = case x of {}
 eval e@(DLam b) = e
 eval (DApp f a) =
   case eval f of

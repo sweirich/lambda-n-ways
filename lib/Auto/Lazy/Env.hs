@@ -125,7 +125,6 @@ whnf r (DIf a b c) =
 eval :: DB n -> DB n
 eval = evalr idE 
 
-
 evalr :: Env DB m n -> DB m -> DB n
 evalr r e@(DVar _) = applyE r e
 evalr r e@(DLam _) = applyE r e

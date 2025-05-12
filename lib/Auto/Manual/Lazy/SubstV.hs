@@ -66,15 +66,18 @@ instantiate b v = apply (v .: DVar) b
 
 -- Evaluate closed terms with substitution
 eval :: Term Z -> Term Z
+eval (DVar x) = case x of {}
 eval e@(DLam b) = e
 eval (DApp f a) =
   case eval f of
     DLam b -> eval (instantiate b (eval a))
+    _ -> error "type error"
 eval (DBool b) = DBool b
 eval (DIf a b c) = 
   case eval a of 
     DBool True -> eval a
     DBool False -> eval b
+    _ -> error "type error"
 
 
 ----------------------------------------------------------

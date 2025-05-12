@@ -54,10 +54,6 @@ instance NFData (Exp a) where
   rnf (DIf a b c) = rnf a `seq` rnf b `seq` rnf c
   rnf (DBool b) = rnf b
 
---instance NFData (Fin n) where
---  rnf FZ = ()
---  rnf (FS x) = rnf x
-
 instance NFData (Bind n) where
   rnf b = rnf (unbind b)
   
@@ -114,13 +110,17 @@ instantiate (Bind r b) v = apply (v .: r) b
 eval :: Exp Z -> Exp Z
 eval (DVar x) = case x of {}
 eval (DLam b) = DLam b
-eval (DApp f a) = case eval f of 
-   DLam b ->
+eval (DApp f a) = 
+  case eval f of 
+    DLam b ->
       eval (instantiate b a)
+    _ -> error "type error"
 eval (DBool b) = DBool b
-eval (DIf a b c) = case eval a of 
-  DBool True -> eval b
-  DBool False -> eval c
+eval (DIf a b c) = 
+  case eval a of 
+    DBool True -> eval b
+    DBool False -> eval c
+    _ -> error "type error"
 
 ----------------------------------------------------
 

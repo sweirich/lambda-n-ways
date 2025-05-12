@@ -30,6 +30,8 @@ library
     Auto.Manual.Subst
     Auto.Manual.SubstV
     Auto.Manual.Lazy.Eval
+    Auto.Manual.Lazy.EvalV
+    Auto.Manual.Lazy.Env
     Auto.Manual.Lazy.EnvV
     Auto.Manual.Lazy.EnvVal
     Auto.Manual.Lazy.Bind

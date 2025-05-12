@@ -37,14 +37,17 @@ impl =
     }
 
 ----------------------------------------------------------
-type Env n = Idx n -> Val
+type Env n = Idx n -> Thunk
+
+data Thunk = 
+   forall n. Thunk (Env n) (Term n)
 
 data Val = forall n. VClos (Env n) (Term (S n)) | VBool Bool
 
 nil :: Env Z 
 nil x = case x of {}
 
-(.:):: Val -> Env n  -> Env (S n)
+(.:):: Thunk -> Env n  -> Env (S n)
 v .: r = \x -> case x of { FZ -> v; FS y -> r y }
 
 ---------------------------------------------------------
@@ -53,16 +56,19 @@ fromVal :: Val -> Term Z
 fromVal (VBool b) = DBool b
 fromVal (VClos env b) = error "not a ground type"
 
+evalThunk :: Thunk -> Val
+evalThunk (Thunk r e) = evalr r e
+
 -- evaluate closed terms with an environment
 eval :: Term Z -> Term Z
 eval = fromVal . evalr nil 
 
 evalr :: Env m -> Term m -> Val
-evalr r e@(DVar x) = r x
+evalr r e@(DVar x) = evalThunk (r x)
 evalr r (DLam e) = VClos r e
 evalr r (DApp f a) =
   case evalr r f of
-    VClos r' b -> evalr (evalr r a .: r') b
+    VClos r' b -> evalr (Thunk r a .: r') b
     f' -> error "stuck" 
 evalr r (DBool b) = VBool b
 evalr r (DIf a b c) = 

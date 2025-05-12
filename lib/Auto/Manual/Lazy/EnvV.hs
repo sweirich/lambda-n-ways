@@ -118,10 +118,6 @@ nf (DIf a b c) =
     a' -> DIf (nf a') (nf b) (nf c)
 nf (DBool b) = DBool b
 
--- should we "whnf" or "apply" the 
--- argument when whnfing an application?
--- I think it should be whnf because we 
--- want to ensure that the result is in whnf
 whnf :: Env m n -> Exp m -> Exp n
 whnf r (DVar x) = r x
 whnf r e@(DLam _) = apply r e
@@ -146,7 +142,7 @@ eval r (DApp f a) =
         eval (eval r a .: r') b'
     f' -> error "type error"
 eval r (DBool b) = DBool b
-eval r (DIf a b c) = case whnf r a of 
+eval r (DIf a b c) = case eval r a of 
   DBool True -> eval r b
   DBool False -> eval r c
   a' -> error "type error"
