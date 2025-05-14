@@ -1,10 +1,9 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE QuantifiedConstraints #-}
 
--- | Well-scoped de Bruijn indices (strict)
--- with substitution from autoenv library, but doesn't 
--- use bind type
-module Auto.Subst (toDB, impl) where
+-- | Well-scoped de Bruijn indices (lazy)
+-- with naive substitution, using substitution from 
+module Auto.Env.Lazy.Subst (toDB, impl) where
 
 import AutoEnv
 import Data.Fin
@@ -27,7 +26,7 @@ import Util.Syntax.Lambda (LC (..))
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "Auto.Subst",
+    { impl_name = "Auto.Env.Lazy.Subst",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
       impl_nf = nf,
@@ -37,11 +36,11 @@ impl =
     }
 
 data DB n where
-  DVar :: !(Fin n) -> DB n
-  DLam :: !(DB (S n)) -> DB n
-  DApp :: !(DB n) -> !(DB n) -> DB n
-  DBool :: !Bool -> DB n
-  DIf :: !(DB n) -> !(DB n) -> !(DB n) -> DB n
+  DVar :: Fin n -> DB n
+  DLam :: DB (S n) -> DB n
+  DApp :: (DB n) -> (DB n) -> DB n
+  DBool :: Bool -> DB n
+  DIf :: DB n -> DB n -> DB n -> DB n
 
 -- standalone b/c GADT
 -- alpha equivalence is (==)
@@ -53,6 +52,7 @@ instance NFData (DB a) where
   rnf (DApp a b) = rnf a `seq` rnf b
   rnf (DBool b) = rnf b
   rnf (DIf a b c) = rnf a `seq` rnf b `seq` rnf c
+
 
 ----------------------------------------------------------
 -- uses the SubstScoped library

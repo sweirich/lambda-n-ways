@@ -4,7 +4,7 @@
 -- Uses autoenv library for closures
 -- Only evaluation for closed terms
 -- environment-based interpreter
-module Auto.Lazy.Eval (toDB, impl) where
+module Auto.Env.Lazy.Eval (toDB, impl) where
 
 import AutoEnv
 import AutoEnv.Env
@@ -27,7 +27,7 @@ import Util.Syntax.Lambda (LC (..))
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "Auto.Lazy.Eval",
+    { impl_name = "Auto.Env.Lazy.EvalV",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
       impl_nf = error "NF unimpelemented",

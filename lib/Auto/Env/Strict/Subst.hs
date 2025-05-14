@@ -1,13 +1,12 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE QuantifiedConstraints #-}
 
-
--- | Uses the Autoenv library, with a lazy datatype
--- The whnf function does not include an explicit environment argument
-module Auto.Lazy.Bind (toDB, impl) where
+-- | Well-scoped de Bruijn indices (strict)
+-- with substitution from autoenv library, but doesn't 
+-- use bind type
+module Auto.Env.Strict.Subst (toDB, impl) where
 
 import AutoEnv
-import AutoEnv.Bind.Single
 import Data.Fin
 import Control.DeepSeq (NFData (..))
 import Data.Maybe (fromJust)
@@ -28,27 +27,25 @@ import Util.Syntax.Lambda (LC (..))
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "Auto.Lazy.Bind",
+    { impl_name = "Auto.Env.Strict.Subst",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
       impl_nf = nf,
-      impl_nfi = nfi,
-      impl_aeq = (==),
+      impl_nfi = error "nfi unimplemented",
+      impl_aeq = (==), 
       impl_eval = eval
     }
 
 data DB n where
-  DVar :: (Fin n) -> DB n
-  DLam :: (Bind DB DB n) -> DB n
-  DApp :: (DB n) -> (DB n) -> DB n
-  DBool :: Bool -> DB n
-  DIf :: DB n -> DB n -> DB n -> DB n
+  DVar :: !(Fin n) -> DB n
+  DLam :: !(DB (S n)) -> DB n
+  DApp :: !(DB n) -> !(DB n) -> DB n
+  DBool :: !Bool -> DB n
+  DIf :: !(DB n) -> !(DB n) -> !(DB n) -> DB n
+
 -- standalone b/c GADT
 -- alpha equivalence is (==)
 deriving instance Eq (DB n)
-
-instance Eq (Bind DB DB n) where
-  b1 == b2 = getBody b1 == getBody b2
 
 instance NFData (DB a) where
   rnf (DVar i) = rnf i
@@ -56,9 +53,6 @@ instance NFData (DB a) where
   rnf (DApp a b) = rnf a `seq` rnf b
   rnf (DBool b) = rnf b
   rnf (DIf a b c) = rnf a `seq` rnf b `seq` rnf c
-
-instance (Subst v e, Subst v v, forall n. NFData (e n)) => NFData (Bind v e n) where
-  rnf b = rnf (getBody b)
 
 ----------------------------------------------------------
 -- uses the SubstScoped library
@@ -68,7 +62,7 @@ instance SubstVar DB where
 
 instance Subst DB DB where
   applyE s (DVar i) = applyEnv s i
-  applyE s (DLam b) = DLam (applyE s b)
+  applyE s (DLam b) = DLam (applyE (up s) b)
   applyE s (DApp f a) = DApp (applyE s f) (applyE s a)
   applyE s (DIf a b c) = DIf (applyE s a) (applyE s b) (applyE s c)
   applyE s (DBool b) = DBool b
@@ -83,11 +77,6 @@ instance Subst DB DB where
 
 {-# SPECIALIZE up :: Env DB n m -> Env DB ('S n) ('S m) #-}
 
-{-# SPECIALIZE getBody :: Bind DB DB n -> DB ('S n) #-}
-
-{-# SPECIALIZE instantiate :: Bind DB DB n -> DB n -> DB n #-}
-
-{-# SPECIALIZE bind :: DB (S n) -> Bind DB DB n #-}
 
 ----------------------------------------------------------
 
@@ -95,10 +84,10 @@ instance Subst DB DB where
 
 nf :: DB n -> DB n
 nf e@(DVar _) = e
-nf (DLam b) = DLam (bind (nf (getBody b)))
+nf (DLam b) = DLam (nf b)
 nf (DApp f a) =
   case whnf f of
-    DLam b -> nf (instantiate b a)
+    DLam b -> nf (applyE (a .: idE) b)
     f' -> DApp (nf f') (nf a)
 nf e@(DBool _) = e
 nf (DIf a b c) = 
@@ -112,7 +101,7 @@ whnf e@(DVar _) = e
 whnf e@(DLam _) = e
 whnf (DApp f a) =
   case whnf f of
-    DLam b -> whnf (instantiate b a)
+    DLam b -> whnf (applyE (a .: idE) b)
     f' -> DApp f' a
 whnf e@(DBool b) = DBool b
 whnf (DIf a b c) = 
@@ -120,7 +109,7 @@ whnf (DIf a b c) =
     DBool True -> whnf b
     DBool False -> whnf c
     a' -> DIf a' b c
-    
+
 
 
 eval :: DB n -> DB n
@@ -128,7 +117,7 @@ eval e@(DVar _) = e
 eval e@(DLam _) = e
 eval (DApp f a) =
   case eval f of
-    DLam b -> eval (instantiate b a) 
+    DLam b -> eval (applyE (a .: idE) b)
     f' -> f' 
 eval (DBool b) = DBool b
 eval (DIf a b c) = 
@@ -137,41 +126,6 @@ eval (DIf a b c) =
     DBool False -> eval c
     a' -> DIf a' b c
 
----------------------------------------------------------------
-
-nfi :: Int -> DB n -> Stats.M (DB n)
-nfi 0 _ = Stats.done
-nfi _ e@(DVar _) = return e
-nfi n (DLam b) = DLam . bind <$> nfi (n - 1) (getBody b)
-nfi n (DApp f a) = do
-  f' <- whnfi (n - 1) f
-  case f' of
-    DLam b -> Stats.count >> nfi (n - 1) (instantiate b a)
-    _ -> DApp <$> nfi n f' <*> nfi n a
-nfi n (DBool b) = return (DBool b)
-nfi n (DIf a b c) = do
-  a' <- whnfi (n - 1) a
-  case a' of 
-    DBool True -> nfi (n -1) b
-    DBool False -> nfi (n -1) c
-    _ -> DIf <$> nfi (n-1) a' <*> nfi (n-1) b <*> nfi (n -1) c 
-whnfi :: Int -> DB n -> Stats.M (DB n)
-whnfi 0 _ = Stats.done
-whnfi _ e@(DVar _) = return e
-whnfi _ e@(DLam _) = return e
-whnfi n (DApp f a) = do
-  f' <- whnfi (n - 1) f
-  case whnf f' of
-    DLam b -> Stats.count >> whnfi (n - 1) (instantiate b a)
-    _ -> return $ DApp f' a
-whnfi n (DBool b) = return (DBool b)
-whnfi n (DIf a b c) = do
-  a' <- whnfi (n - 1) a
-  case a' of 
-    DBool True -> whnfi (n -1) b
-    DBool False -> whnfi (n -1) c
-    _ -> DIf <$> whnfi (n-1) a' <*> whnfi (n-1) b <*> whnfi (n -1) c 
-    
 ---------------------------------------------------------
 {-
 Convert to deBruijn indicies.  Do this by keeping a list of the bound
@@ -184,7 +138,7 @@ toDB = to []
   where
     to :: [(IdInt, Fin n)] -> LC IdInt -> DB n
     to vs (Var v) = DVar (fromJust (lookup v vs))
-    to vs (Lam v b) = DLam (bind b')
+    to vs (Lam v b) = DLam b'
       where
         b' = to ((v, FZ) : mapSnd FS vs) b
     to vs (App f a) = DApp (to vs f) (to vs a)
@@ -200,11 +154,11 @@ fromDB = from firstBoundId
       | toInt i < 0 = Var (IdInt $ toInt i)
       | toInt i >= n = Var (IdInt $ toInt i)
       | otherwise = Var (IdInt (n - toInt i - 1))
-    from n (DLam b) = Lam n (from (Prelude.succ n) (getBody b))
+    from n (DLam b) = Lam n (from (Prelude.succ n)  b)
     from n (DApp f a) = App (from n f) (from n a)
     from n (DBool b) = Bool b
     from n (DIf a b c) = If (from n a) (from n b) (from n c)
-
+    
 mapSnd :: (a -> b) -> [(c, a)] -> [(c, b)]
 mapSnd f = map (\(v, i) -> (v, f i))
 
@@ -215,7 +169,7 @@ instance Show (DB n) where
 
 ppLC :: Int -> DB n -> Doc
 ppLC _ (DVar v) = text $ "x" ++ show v
-ppLC p (DLam b) = pparens (p > 0) $ text "\\." PP.<> ppLC 0 (getBody b)
+ppLC p (DLam b) = pparens (p > 0) $ text "\\." PP.<> ppLC 0 b
 ppLC p (DApp f a) = pparens (p > 1) $ ppLC 1 f <+> ppLC 2 a
 
 pparens :: Bool -> Doc -> Doc

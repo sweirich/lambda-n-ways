@@ -1,8 +1,9 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE QuantifiedConstraints #-}
--- Use the autoenv library, with a lazy datatype
--- environment argument for whnf function
-module Auto.Lazy.Env (toDB, impl) where
+
+-- | Uses the Autoenv library, with a strict datatype
+-- The whnf function does not include an explicit environment argument
+module Auto.Env.Strict.Bind (toDB, impl) where
 
 import AutoEnv
 import AutoEnv.Bind.Single
@@ -26,22 +27,22 @@ import Util.Syntax.Lambda (LC (..))
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "Auto.Lazy.Env",
+    { impl_name = "Auto.Env.Strict.Bind",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
       impl_nf = nf,
-      impl_nfi = error "NFI unimplemented",
-      impl_eval = eval,
-      impl_aeq = (==)
+      impl_nfi = nfi,
+      impl_aeq = (==), 
+      impl_eval = eval
     }
 
+-- NOTE: making the Idx strict, significantly degrades performance, hmmm....
 data DB n where
-  DVar :: (Fin n) -> DB n
-  DLam :: (Bind DB DB n) -> DB n
-  DApp :: (DB n) -> (DB n) -> DB n
-  DBool :: Bool -> DB n
-  DIf :: DB n -> DB n -> DB n -> DB n
-
+  DVar :: !(Fin n) -> DB n
+  DLam :: !(Bind DB DB n) -> DB n
+  DApp :: !(DB n) -> !(DB n) -> DB n
+  DBool :: !Bool -> DB n
+  DIf :: !(DB n) -> !(DB n) -> !(DB n) -> DB n
 -- standalone b/c GADT
 -- alpha equivalence is (==)
 deriving instance Eq (DB n)
@@ -56,11 +57,13 @@ instance NFData (DB a) where
   rnf (DBool b) = rnf b
   rnf (DIf a b c) = rnf a `seq` rnf b `seq` rnf c
 
+-- TODO: this is a hack here. But I'm not sure 
+-- what we want to do about this 
 instance (Subst v e, Subst v v, forall n. NFData (e n)) => NFData (Bind v e n) where
   rnf b = rnf (getBody b)
 
 ----------------------------------------------------------
-
+-- uses the SubstScoped library
 instance SubstVar DB where
   var = DVar
   {-# INLINEABLE var #-}
@@ -87,57 +90,86 @@ instance Subst DB DB where
 
 {-# SPECIALIZE bind :: DB (S n) -> Bind DB DB n #-}
 
-{-# SPECIALIZE applyUnder :: (forall m n. Env DB m n -> DB m -> DB n)-> Env DB n1 n2 -> Bind DB DB n1 -> Bind DB DB n2 #-}
-
 ----------------------------------------------------------
+
+-- Computing the normal form proceeds as usual.
 
 nf :: DB n -> DB n
 nf e@(DVar _) = e
 nf (DLam b) = DLam (bind (nf (getBody b)))
 nf (DApp f a) =
-  case whnf idE f of
+  case whnf f of
     DLam b -> nf (instantiate b a)
     f' -> DApp (nf f') (nf a)
 nf e@(DBool _) = e
 nf (DIf a b c) = 
-  case whnf idE a of 
+  case whnf a of 
     DBool True -> nf a
     DBool False -> nf b
-    a' -> DIf (nf a) (nf b) (nf c)
+    a' -> DIf (nf a') (nf b) (nf c)
 
-whnf :: Env DB m n -> DB m -> DB n
-whnf r e@(DVar _) = applyE r e
-whnf r e@(DLam _) = applyE r e
-whnf r (DApp f a) =
-  case whnf r f of
-    DLam b -> 
-      unbindWith b (\r' b' -> 
-         whnf (applyE r a .: r') b')
-    f' -> DApp f' (applyE r a)
-whnf r e@(DBool b) = DBool b
-whnf r (DIf a b c) = 
-  case whnf r a of 
-    DBool True -> whnf r b
-    DBool False -> whnf r c
-    a' -> DIf a' (applyE r b) (applyE r c)
-
+whnf :: DB n -> DB n
+whnf e@(DVar _) = e
+whnf e@(DLam _) = e
+whnf (DApp f a) =
+  case whnf f of
+    DLam b -> whnf (instantiate b a)
+    f' -> DApp f' a
+whnf e@(DBool b) = DBool b
+whnf (DIf a b c) = 
+  case whnf a of 
+    DBool True -> whnf b
+    DBool False -> whnf c
+    a' -> DIf a' b c
 
 eval :: DB n -> DB n
-eval = evalr idE 
-
-evalr :: Env DB m n -> DB m -> DB n
-evalr r e@(DVar _) = applyE r e
-evalr r e@(DLam _) = applyE r e
-evalr r (DApp f a) =
-  case evalr r f of
-    DLam b -> instantiateWith b (applyE r a) evalr
+eval e@(DVar _) = e
+eval e@(DLam _) = e
+eval (DApp f a) =
+  case eval f of
+    DLam b -> eval (instantiate b a) 
     f' -> f' 
-evalr r (DBool b) = DBool b
-evalr r (DIf a b c) = 
-  case evalr r a of 
-    DBool True -> evalr r b
-    DBool False -> evalr r c
-    a' -> DIf a' (applyE r b) (applyE r c)
+eval (DBool b) = DBool b
+eval (DIf a b c) = 
+  case eval a of 
+    DBool True -> eval b
+    DBool False -> eval c
+    a' -> DIf a' b c
+---------------------------------------------------------------
+
+nfi :: Int -> DB n -> Stats.M (DB n)
+nfi 0 _ = Stats.done
+nfi _ e@(DVar _) = return e
+nfi n (DLam b) = DLam . bind <$> nfi (n - 1) (getBody b)
+nfi n (DApp f a) = do
+  f' <- whnfi (n - 1) f
+  case f' of
+    DLam b -> Stats.count >> nfi (n - 1) (instantiate b a)
+    _ -> DApp <$> nfi n f' <*> nfi n a
+nfi n (DBool b) = return (DBool b)
+nfi n (DIf a b c) = do
+  a' <- whnfi (n - 1) a
+  case a' of 
+    DBool True -> nfi (n -1) b
+    DBool False -> nfi (n -1) c
+    _ -> DIf <$> nfi (n-1) a' <*> nfi (n-1) b <*> nfi (n -1) c 
+
+whnfi :: Int -> DB n -> Stats.M (DB n)
+whnfi 0 _ = Stats.done
+whnfi _ e@(DVar _) = return e
+whnfi _ e@(DLam _) = return e
+whnfi n (DApp f a) = do
+  f' <- whnfi (n - 1) f
+  case whnf f' of
+    DLam b -> Stats.count >> whnfi (n - 1) (instantiate b a)
+    _ -> return $ DApp f' a
+whnfi n (DBool b) = return (DBool b)
+whnfi n (DIf a b c) = do
+  a' <- whnfi (n - 1) a
+  case a' of 
+    DBool True -> whnfi (n -1) b
+    DBool False -> whnfi (n -1) c
+    _ -> DIf <$> whnfi (n-1) a' <*> whnfi (n-1) b <*> whnfi (n -1) c 
 ---------------------------------------------------------
 {-
 Convert to deBruijn indicies.  Do this by keeping a list of the bound

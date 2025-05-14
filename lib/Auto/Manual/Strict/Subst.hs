@@ -6,7 +6,7 @@
 -- Doesn't use autoenv library (or bind type)
 -- no bind type. evaluation based on substitution only
 
-module Auto.Manual.Subst (toDB, impl) where
+module Auto.Manual.Strict.Subst (toDB, impl) where
 
 import Control.DeepSeq (NFData (..))
 import Data.Maybe (fromJust)
@@ -30,7 +30,7 @@ import Util.Syntax.ScopedDeBruijn
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "Auto.Manual.Subst",
+    { impl_name = "Auto.Manual.Strict.Subst",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
       impl_nf = nf,

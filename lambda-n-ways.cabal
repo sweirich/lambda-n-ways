@@ -12,27 +12,28 @@ source-repository head
 library
   hs-source-dirs:     lib
   exposed-modules:
-    Auto.Env
-    Auto.Bind
-    Auto.Subst
-    Auto.Lazy.Eval
-    Auto.Lazy.Env
-    Auto.Lazy.EnvV
-    Auto.Lazy.Bind
-    Auto.Lazy.BindV
-    Auto.Lazy.BindVal
-    Auto.Lazy.Subst
-    Auto.Lazy.SubstV
-    Auto.Manual.Eval
-    Auto.Manual.Env
-    Auto.Manual.Bind
-    Auto.Manual.BindV
-    Auto.Manual.Subst
-    Auto.Manual.SubstV
+    Auto.Env.Strict.Env
+    Auto.Env.Strict.Bind
+    Auto.Env.Strict.Subst
+    Auto.Env.Lazy.Eval
+    Auto.Env.Lazy.Env
+    Auto.Env.Lazy.EnvV
+    Auto.Env.Lazy.Bind
+    Auto.Env.Lazy.BindV
+    Auto.Env.Lazy.BindVal
+    Auto.Env.Lazy.Subst
+    Auto.Env.Lazy.SubstV
+    Auto.Manual.Strict.Eval
+    Auto.Manual.Strict.Env
+    Auto.Manual.Strict.Bind
+    Auto.Manual.Strict.BindV
+    Auto.Manual.Strict.Subst
+    Auto.Manual.Strict.SubstV
     Auto.Manual.Lazy.Eval
     Auto.Manual.Lazy.EvalV
     Auto.Manual.Lazy.Env
     Auto.Manual.Lazy.EnvV
+    Auto.Manual.Lazy.EnvOnlyV
     Auto.Manual.Lazy.EnvVal
     Auto.Manual.Lazy.Bind
     Auto.Manual.Lazy.BindV

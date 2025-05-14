@@ -1,12 +1,12 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE QuantifiedConstraints #-}
-
--- | Well-scoped de Bruijn indices (lazy)
--- with naive substitution, using substitution from autoenv
--- evaluates argument before substituting
-module Auto.Lazy.SubstV (toDB, impl) where
+-- Use the autoenv library, with a lazy datatype
+-- environment argument for whnf function
+-- evaluate argument before adding to environment
+module Auto.Env.Lazy.EnvV (toDB, impl) where
 
 import AutoEnv
+import AutoEnv.Bind.Single
 import Data.Fin
 import Control.DeepSeq (NFData (..))
 import Data.Maybe (fromJust)
@@ -27,18 +27,18 @@ import Util.Syntax.Lambda (LC (..))
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "Auto.Lazy.SubstV",
+    { impl_name = "Auto.Env.Lazy.EnvV",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
       impl_nf = nf,
-      impl_nfi = error "nfi unimplemented",
-      impl_aeq = (==), 
-      impl_eval = eval
+      impl_nfi = error "NFI unimplemented",
+      impl_eval = eval,
+      impl_aeq = (==)
     }
 
 data DB n where
-  DVar :: Fin n -> DB n
-  DLam :: DB (S n) -> DB n
+  DVar :: (Fin n) -> DB n
+  DLam :: (Bind DB DB n) -> DB n
   DApp :: (DB n) -> (DB n) -> DB n
   DBool :: Bool -> DB n
   DIf :: DB n -> DB n -> DB n -> DB n
@@ -47,6 +47,9 @@ data DB n where
 -- alpha equivalence is (==)
 deriving instance Eq (DB n)
 
+instance Eq (Bind DB DB n) where
+  b1 == b2 = getBody b1 == getBody b2
+
 instance NFData (DB a) where
   rnf (DVar i) = rnf i
   rnf (DLam d) = rnf d
@@ -54,16 +57,18 @@ instance NFData (DB a) where
   rnf (DBool b) = rnf b
   rnf (DIf a b c) = rnf a `seq` rnf b `seq` rnf c
 
+instance (Subst v e, Subst v v, forall n. NFData (e n)) => NFData (Bind v e n) where
+  rnf b = rnf (getBody b)
 
 ----------------------------------------------------------
--- uses the SubstScoped library
+
 instance SubstVar DB where
   var = DVar
   {-# INLINEABLE var #-}
 
 instance Subst DB DB where
   applyE s (DVar i) = applyEnv s i
-  applyE s (DLam b) = DLam (applyE (up s) b)
+  applyE s (DLam b) = DLam (applyE s b)
   applyE s (DApp f a) = DApp (applyE s f) (applyE s a)
   applyE s (DIf a b c) = DIf (applyE s a) (applyE s b) (applyE s c)
   applyE s (DBool b) = DBool b
@@ -75,58 +80,66 @@ instance Subst DB DB where
 
 {-# SPECIALIZE (.>>) :: Env DB m n -> Env DB n p -> Env DB m p #-}
 
-
 {-# SPECIALIZE up :: Env DB n m -> Env DB ('S n) ('S m) #-}
 
+{-# SPECIALIZE getBody :: Bind DB DB n -> DB ('S n) #-}
+
+{-# SPECIALIZE instantiate :: Bind DB DB n -> DB n -> DB n #-}
+
+{-# SPECIALIZE bind :: DB (S n) -> Bind DB DB n #-}
+
+{-# SPECIALIZE applyUnder :: (forall m n. Env DB m n -> DB m -> DB n)-> Env DB n1 n2 -> Bind DB DB n1 -> Bind DB DB n2 #-}
 
 ----------------------------------------------------------
 
--- Computing the normal form proceeds as usual.
-
 nf :: DB n -> DB n
 nf e@(DVar _) = e
-nf (DLam b) = DLam (nf b)
+nf (DLam b) = DLam (bind (nf (getBody b)))
 nf (DApp f a) =
-  case whnf f of
-    DLam b -> nf (applyE (nf a .: idE) b)
+  case whnf idE f of
+    DLam b -> nf (instantiate b a)
     f' -> DApp (nf f') (nf a)
 nf e@(DBool _) = e
 nf (DIf a b c) = 
-  case whnf a of 
+  case whnf idE a of 
     DBool True -> nf a
     DBool False -> nf b
     a' -> DIf (nf a) (nf b) (nf c)
 
-whnf :: DB n -> DB n
-whnf e@(DVar _) = e
-whnf e@(DLam _) = e
-whnf (DApp f a) =
-  case whnf f of
-    DLam b -> whnf (applyE (whnf a .: idE) b)
-    f' -> DApp f' a
-whnf e@(DBool b) = DBool b
-whnf (DIf a b c) = 
-  case whnf a of 
-    DBool True -> whnf b
-    DBool False -> whnf c
-    a' -> DIf a' b c
-
+whnf :: Env DB m n -> DB m -> DB n
+whnf r e@(DVar _) = applyE r e
+whnf r e@(DLam _) = applyE r e
+whnf r (DApp f a) =
+  case whnf r f of
+    DLam b -> 
+      unbindWith b (\r' b' -> 
+         whnf (whnf r a .: r') b')
+    f' -> DApp f' (applyE r a)
+whnf r e@(DBool b) = DBool b
+whnf r (DIf a b c) = 
+  case whnf r a of 
+    DBool True -> whnf r b
+    DBool False -> whnf r c
+    a' -> DIf a' (applyE r b) (applyE r c)
 
 
 eval :: DB n -> DB n
-eval e@(DVar _) = e
-eval e@(DLam _) = e
-eval (DApp f a) =
-  case eval f of
-    DLam b -> eval (applyE (eval a .: idE) b)
-    f' -> f' 
-eval (DBool b) = DBool b
-eval (DIf a b c) = 
-  case eval a of 
-    DBool True -> eval b
-    DBool False -> eval c
-    a' -> DIf a' b c
+eval = evalr idE 
 
+
+evalr :: Env DB m n -> DB m -> DB n
+evalr r e@(DVar _) = applyE r e
+evalr r e@(DLam _) = applyE r e
+evalr r (DApp f a) =
+  case evalr r f of
+    DLam b -> instantiateWith b (evalr r a) evalr
+    f' -> f' 
+evalr r (DBool b) = DBool b
+evalr r (DIf a b c) = 
+  case evalr r a of 
+    DBool True -> evalr r b
+    DBool False -> evalr r c
+    a' -> DIf a' (applyE r b) (applyE r c)
 ---------------------------------------------------------
 {-
 Convert to deBruijn indicies.  Do this by keeping a list of the bound
@@ -139,7 +152,7 @@ toDB = to []
   where
     to :: [(IdInt, Fin n)] -> LC IdInt -> DB n
     to vs (Var v) = DVar (fromJust (lookup v vs))
-    to vs (Lam v b) = DLam b'
+    to vs (Lam v b) = DLam (bind b')
       where
         b' = to ((v, FZ) : mapSnd FS vs) b
     to vs (App f a) = DApp (to vs f) (to vs a)
@@ -155,11 +168,11 @@ fromDB = from firstBoundId
       | toInt i < 0 = Var (IdInt $ toInt i)
       | toInt i >= n = Var (IdInt $ toInt i)
       | otherwise = Var (IdInt (n - toInt i - 1))
-    from n (DLam b) = Lam n (from (Prelude.succ n)  b)
+    from n (DLam b) = Lam n (from (Prelude.succ n) (getBody b))
     from n (DApp f a) = App (from n f) (from n a)
     from n (DBool b) = Bool b
     from n (DIf a b c) = If (from n a) (from n b) (from n c)
-    
+
 mapSnd :: (a -> b) -> [(c, a)] -> [(c, b)]
 mapSnd f = map (\(v, i) -> (v, f i))
 
@@ -170,7 +183,7 @@ instance Show (DB n) where
 
 ppLC :: Int -> DB n -> Doc
 ppLC _ (DVar v) = text $ "x" ++ show v
-ppLC p (DLam b) = pparens (p > 0) $ text "\\." PP.<> ppLC 0 b
+ppLC p (DLam b) = pparens (p > 0) $ text "\\." PP.<> ppLC 0 (getBody b)
 ppLC p (DApp f a) = pparens (p > 1) $ ppLC 1 f <+> ppLC 2 a
 
 pparens :: Bool -> Doc -> Doc

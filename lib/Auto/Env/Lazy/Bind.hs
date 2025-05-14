@@ -4,7 +4,7 @@
 
 -- | Uses the Autoenv library, with a lazy datatype
 -- The whnf function does not include an explicit environment argument
-module Auto.Lazy.BindVal (toDB, impl) where
+module Auto.Env.Lazy.Bind (toDB, impl) where
 
 import AutoEnv
 import AutoEnv.Bind.Single
@@ -28,79 +28,72 @@ import Util.Syntax.Lambda (LC (..))
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "Auto.Lazy.BindVal",
+    { impl_name = "Auto.Env.Lazy.Bind",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
-      impl_nf = error "unimplemented",
-      impl_nfi = error "unimplemented",
+      impl_nf = nf,
+      impl_nfi = nfi,
       impl_aeq = (==),
-      impl_eval = DVal . eval
+      impl_eval = eval
     }
 
-data Val n where
-  DVar :: Fin n -> Val n
-  DLam :: Bind Val Exp n -> Val n
-  DBool :: Bool -> Val n
-  
-data Exp n where
-  DVal :: (Val n) -> Exp n
-  DApp :: (Exp n) -> (Exp n) -> Exp n
-  DIf :: Exp n -> Exp n -> Exp n -> Exp n
+data DB n where
+  DVar :: (Fin n) -> DB n
+  DLam :: (Bind DB DB n) -> DB n
+  DApp :: (DB n) -> (DB n) -> DB n
+  DBool :: Bool -> DB n
+  DIf :: DB n -> DB n -> DB n -> DB n
 -- standalone b/c GADT
 -- alpha equivalence is (==)
-deriving instance Eq (Exp n)
-deriving instance Eq (Val n)
+deriving instance Eq (DB n)
 
-instance Eq (Bind Val Exp n) where
+instance Eq (Bind DB DB n) where
   b1 == b2 = getBody b1 == getBody b2
 
-instance NFData (Val n) where
+instance NFData (DB a) where
   rnf (DVar i) = rnf i
   rnf (DLam d) = rnf d
-  rnf (DBool b) = rnf b
-instance NFData (Exp a) where
-  rnf (DVal a) = rnf a
   rnf (DApp a b) = rnf a `seq` rnf b
+  rnf (DBool b) = rnf b
   rnf (DIf a b c) = rnf a `seq` rnf b `seq` rnf c
 
-instance (Subst v e, forall n. NFData (e n)) => NFData (Bind v e n) where
+instance (Subst v e, Subst v v, forall n. NFData (e n)) => NFData (Bind v e n) where
   rnf b = rnf (getBody b)
 
 ----------------------------------------------------------
 -- uses the SubstScoped library
-instance SubstVar Val where
+instance SubstVar DB where
   var = DVar
   {-# INLINEABLE var #-}
 
-instance Subst Val Val where
+instance Subst DB DB where
   applyE s (DVar i) = applyEnv s i
   applyE s (DLam b) = DLam (applyE s b)
-  applyE s (DBool b) = DBool b
-instance Subst Val Exp where
-  applyE s (DVal x) = DVal (applyE s x)
   applyE s (DApp f a) = DApp (applyE s f) (applyE s a)
   applyE s (DIf a b c) = DIf (applyE s a) (applyE s b) (applyE s c)
+  applyE s (DBool b) = DBool b
   {-# INLINEABLE applyE #-}
 
-{-# SPECIALIZE applyEnv :: Env Val n m -> Fin n -> Val m #-}
+{-# SPECIALIZE applyEnv :: Env DB n m -> Fin n -> DB m #-}
 
-{-# SPECIALIZE idE :: Env Val n n #-}
+{-# SPECIALIZE idE :: Env DB n n #-}
 
-{-# SPECIALIZE (.>>) :: Env Val m n -> Env Val n p -> Env Val m p #-}
+{-# SPECIALIZE (.>>) :: Env DB m n -> Env DB n p -> Env DB m p #-}
 
-{-# SPECIALIZE up :: Env Val n m -> Env Val ('S n) ('S m) #-}
 
-{-# SPECIALIZE getBody :: Bind Val Exp n -> Exp ('S n) #-}
+{-# SPECIALIZE up :: Env DB n m -> Env DB ('S n) ('S m) #-}
 
-{-# SPECIALIZE instantiate :: Bind Val Exp n -> Val  n -> Exp  n #-}
+{-# SPECIALIZE getBody :: Bind DB DB n -> DB ('S n) #-}
 
-{-# SPECIALIZE bind :: Exp (S n) -> Bind Val Exp n #-}
+{-# SPECIALIZE instantiate :: Bind DB DB n -> DB n -> DB n #-}
+
+{-# SPECIALIZE bind :: DB (S n) -> Bind DB DB n #-}
 
 ----------------------------------------------------------
 
-{-
+-- Computing the normal form proceeds as usual.
 
-nf :: Exp n -> Exp n
+nf :: DB n -> DB n
 nf e@(DVar _) = e
 nf (DLam b) = DLam (bind (nf (getBody b)))
 nf (DApp f a) =
@@ -114,7 +107,7 @@ nf (DIf a b c) =
     DBool False -> nf b
     a' -> DIf (nf a) (nf b) (nf c)
 
-whnf :: Exp n -> Exp n
+whnf :: DB n -> DB n
 whnf e@(DVar _) = e
 whnf e@(DLam _) = e
 whnf (DApp f a) =
@@ -128,26 +121,25 @@ whnf (DIf a b c) =
     DBool False -> whnf c
     a' -> DIf a' b c
     
--}
 
-eval :: Exp Z -> Val Z
-eval e@(DVal v) = v
+
+eval :: DB n -> DB n
+eval e@(DVar _) = e
+eval e@(DLam _) = e
 eval (DApp f a) =
   case eval f of
-    DLam b -> eval (instantiate b (eval a)) 
-    DVar x -> case x of {}
-    DBool b -> error "type error"
+    DLam b -> eval (instantiate b a) 
+    f' -> f' 
+eval (DBool b) = DBool b
 eval (DIf a b c) = 
   case eval a of 
     DBool True -> eval b
     DBool False -> eval c
-    DVar x -> case x of {}
-    DLam b -> error "type error"
+    a' -> DIf a' b c
 
 ---------------------------------------------------------------
 
-{-
-nfi :: Int -> Val  n -> Stats.M (Val  n)
+nfi :: Int -> DB n -> Stats.M (DB n)
 nfi 0 _ = Stats.done
 nfi _ e@(DVar _) = return e
 nfi n (DLam b) = DLam . bind <$> nfi (n - 1) (getBody b)
@@ -163,7 +155,7 @@ nfi n (DIf a b c) = do
     DBool True -> nfi (n -1) b
     DBool False -> nfi (n -1) c
     _ -> DIf <$> nfi (n-1) a' <*> nfi (n-1) b <*> nfi (n -1) c 
-whnfi :: Int -> Val  n -> Stats.M (Val  n)
+whnfi :: Int -> DB n -> Stats.M (DB n)
 whnfi 0 _ = Stats.done
 whnfi _ e@(DVar _) = return e
 whnfi _ e@(DLam _) = return e
@@ -179,8 +171,7 @@ whnfi n (DIf a b c) = do
     DBool True -> whnfi (n -1) b
     DBool False -> whnfi (n -1) c
     _ -> DIf <$> whnfi (n-1) a' <*> whnfi (n-1) b <*> whnfi (n -1) c 
--}
-
+    
 ---------------------------------------------------------
 {-
 Convert to deBruijn indicies.  Do this by keeping a list of the bound
@@ -188,30 +179,30 @@ variable so the depth can be found of all variables. NOTE: input term
 must be closed or 'fromJust' will error.
 -}
 
-toDB :: LC IdInt -> Exp 'Z
+toDB :: LC IdInt -> DB 'Z
 toDB = to []
   where
-    to :: [(IdInt, Fin n)] -> LC IdInt -> Exp n
-    to vs (Var v) = DVal (DVar (fromJust (lookup v vs)))
-    to vs (Lam v b) = DVal (DLam (bind b'))
+    to :: [(IdInt, Fin n)] -> LC IdInt -> DB n
+    to vs (Var v) = DVar (fromJust (lookup v vs))
+    to vs (Lam v b) = DLam (bind b')
       where
         b' = to ((v, FZ) : mapSnd FS vs) b
     to vs (App f a) = DApp (to vs f) (to vs a)
-    to vs (Bool b)  = DVal (DBool b)
+    to vs (Bool b)  = DBool b
     to vs (If a b c) = DIf (to vs a) (to vs b) (to vs c)
 -- Convert back from deBruijn to the LC type.
 
-fromDB :: Exp n -> LC IdInt
+fromDB :: DB n -> LC IdInt
 fromDB = from firstBoundId
   where
-    from :: IdInt -> Exp n -> LC IdInt
-    from (IdInt n) (DVal (DVar i))
+    from :: IdInt -> DB n -> LC IdInt
+    from (IdInt n) (DVar i)
       | toInt i < 0 = Var (IdInt $ toInt i)
       | toInt i >= n = Var (IdInt $ toInt i)
       | otherwise = Var (IdInt (n - toInt i - 1))
-    from n (DVal (DLam b)) = Lam n (from (Prelude.succ n) (getBody b))
+    from n (DLam b) = Lam n (from (Prelude.succ n) (getBody b))
     from n (DApp f a) = App (from n f) (from n a)
-    from n (DVal (DBool b)) = Bool b
+    from n (DBool b) = Bool b
     from n (DIf a b c) = If (from n a) (from n b) (from n c)
 
 mapSnd :: (a -> b) -> [(c, a)] -> [(c, b)]
@@ -219,3 +210,14 @@ mapSnd f = map (\(v, i) -> (v, f i))
 
 ---------------------------------------------------------
 
+instance Show (DB n) where
+  show = renderStyle style . ppLC 0
+
+ppLC :: Int -> DB n -> Doc
+ppLC _ (DVar v) = text $ "x" ++ show v
+ppLC p (DLam b) = pparens (p > 0) $ text "\\." PP.<> ppLC 0 (getBody b)
+ppLC p (DApp f a) = pparens (p > 1) $ ppLC 1 f <+> ppLC 2 a
+
+pparens :: Bool -> Doc -> Doc
+pparens True d = parens d
+pparens False d = d

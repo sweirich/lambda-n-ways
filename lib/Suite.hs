@@ -3,23 +3,23 @@
 {-# HLINT ignore "Use :" #-}
 module Suite where
 
-import qualified Auto.Env
-import qualified Auto.Bind
-import qualified Auto.Subst
-import qualified Auto.Lazy.Eval
-import qualified Auto.Lazy.Env
-import qualified Auto.Lazy.EnvV
-import qualified Auto.Lazy.Bind
-import qualified Auto.Lazy.BindV
-import qualified Auto.Lazy.BindVal
-import qualified Auto.Lazy.Subst
-import qualified Auto.Lazy.SubstV
-import qualified Auto.Manual.Env
-import qualified Auto.Manual.Bind
-import qualified Auto.Manual.BindV
-import qualified Auto.Manual.Subst
-import qualified Auto.Manual.SubstV
-import qualified Auto.Manual.Eval
+import qualified Auto.Env.Strict.Env
+import qualified Auto.Env.Strict.Bind
+import qualified Auto.Env.Strict.Subst
+import qualified Auto.Env.Lazy.Eval
+import qualified Auto.Env.Lazy.Env
+import qualified Auto.Env.Lazy.EnvV
+import qualified Auto.Env.Lazy.Bind
+import qualified Auto.Env.Lazy.BindV
+import qualified Auto.Env.Lazy.BindVal
+import qualified Auto.Env.Lazy.Subst
+import qualified Auto.Env.Lazy.SubstV
+import qualified Auto.Manual.Strict.Env
+import qualified Auto.Manual.Strict.Bind
+import qualified Auto.Manual.Strict.BindV
+import qualified Auto.Manual.Strict.Subst
+import qualified Auto.Manual.Strict.SubstV
+import qualified Auto.Manual.Strict.Eval
 import qualified Auto.Manual.Lazy.Env
 import qualified Auto.Manual.Lazy.EnvV
 import qualified Auto.Manual.Lazy.EnvVal
@@ -30,6 +30,7 @@ import qualified Auto.Manual.Lazy.Subst
 import qualified Auto.Manual.Lazy.SubstV
 import qualified Auto.Manual.Lazy.Eval
 import qualified Auto.Manual.Lazy.EvalV
+import qualified Auto.Manual.Lazy.EnvOnlyV
 import qualified Core.Nf
 import qualified DeBruijn.Bound
 import qualified DeBruijn.CPDT
@@ -129,26 +130,38 @@ broken =
 -- evaluation only
 
 eval_subst = [ Auto.Manual.Lazy.BindV.impl, 
-               Auto.Manual.BindV.impl]
+               Auto.Manual.Strict.BindV.impl]
 
 eval_manual_lazy = [
-    Auto.Manual.Lazy.Subst.impl, 
+    --Auto.Manual.Lazy.Subst.impl, 
     Auto.Manual.Lazy.SubstV.impl, 
-    Auto.Manual.Lazy.Bind.impl,
+    --Auto.Manual.Lazy.Bind.impl,
     Auto.Manual.Lazy.BindV.impl,
-    Auto.Manual.Lazy.Eval.impl, 
+    --Auto.Manual.Lazy.Eval.impl, 
     Auto.Manual.Lazy.EvalV.impl,
-    Auto.Manual.Lazy.Env.impl,
+    Auto.Manual.Lazy.EnvOnlyV.impl, -- loops
+    --Auto.Manual.Lazy.Env.impl,
     Auto.Manual.Lazy.EnvV.impl
   ]
 
+eval_auto_lazy = [
+    --Auto.Lazy.Subst.impl, 
+    --Auto.Lazy.SubstV.impl, 
+    --Auto.Lazy.Bind.impl,
+    Auto.Env.Lazy.BindV.impl,
+    Auto.Env.Lazy.Eval.impl, 
+    -- Auto.Lazy.EvalV.impl,
+    Auto.Env.Lazy.Env.impl,
+    Auto.Env.Lazy.EnvV.impl
+  ]
 
-all_eval = [  Auto.Manual.Subst.impl,
-             --Auto.Manual.SubstV.impl, -- runs out of memory(!)
-             Auto.Manual.Bind.impl,
-             Auto.Manual.BindV.impl,
-             Auto.Manual.Env.impl,
-             Auto.Manual.Eval.impl,
+
+all_eval = [  Auto.Manual.Strict.Subst.impl,
+             --Auto.Manual.Strict.SubstV.impl, -- runs out of memory(!)
+             Auto.Manual.Strict.Bind.impl,
+             Auto.Manual.Strict.BindV.impl,
+             Auto.Manual.Strict.Env.impl,
+             Auto.Manual.Strict.Eval.impl,
              Auto.Manual.Lazy.Subst.impl, 
              Auto.Manual.Lazy.SubstV.impl, 
              Auto.Manual.Lazy.Bind.impl,
@@ -158,27 +171,27 @@ all_eval = [  Auto.Manual.Subst.impl,
              Auto.Manual.Lazy.Env.impl,
              Auto.Manual.Lazy.EnvV.impl,
              --Auto.Manual.Lazy.EnvVal.impl,
-             Auto.Env.impl,
-             Auto.Bind.impl,
-             Auto.Subst.impl,
-             Auto.Lazy.Eval.impl, 
-             Auto.Lazy.Env.impl,
-             Auto.Lazy.EnvV.impl,
-             Auto.Lazy.Bind.impl,
-             Auto.Lazy.BindV.impl,
-             --Auto.Lazy.BindVal.impl, 
-             Auto.Lazy.Subst.impl 
-             -- Auto.Lazy.SubstV.impl -- runs out of memory
+             Auto.Env.Strict.Env.impl,
+             Auto.Env.Strict.Bind.impl,
+             Auto.Env.Strict.Subst.impl,
+             Auto.Env.Lazy.Eval.impl, 
+             Auto.Env.Lazy.Env.impl,
+             Auto.Env.Lazy.EnvV.impl,
+             Auto.Env.Lazy.Bind.impl,
+             Auto.Env.Lazy.BindV.impl,
+             --Auto.Env.Lazy.BindVal.impl, 
+             Auto.Env.Lazy.Subst.impl 
+             -- Auto.Env.Lazy.SubstV.impl -- runs out of memory
              ] 
 
 
 autoenv_eval :: [LambdaImpl]
-autoenv_eval = [Auto.Lazy.Env.impl , 
-                Auto.Lazy.Bind.impl ,
-                Auto.Lazy.Subst.impl,
-                Auto.Env.impl, 
-                Auto.Bind.impl,
-                Auto.Subst.impl ]
+autoenv_eval = [Auto.Env.Lazy.Env.impl , 
+                Auto.Env.Lazy.Bind.impl ,
+                Auto.Env.Lazy.Subst.impl,
+                Auto.Env.Strict.Env.impl, 
+                Auto.Env.Strict.Bind.impl,
+                Auto.Env.Strict.Subst.impl ]
 --------------------------------------------------------------------------
 -- divided by implementation strategy
 --
@@ -197,8 +210,8 @@ all_named = named ++ lennart ++ [Lennart.Simple.impl]
 
 -- Well-scoped implmentations
 all_scoped :: [LambdaImpl]
-all_scoped = [ Auto.Lazy.Bind.impl, 
-               Auto.Bind.impl,
+all_scoped = [ Auto.Env.Lazy.Bind.impl, 
+               Auto.Env.Strict.Bind.impl,
                NBE.Contextual.impl,
                Named.Foil.impl,
                Named.Lazy.Foil.impl,
@@ -214,9 +227,9 @@ all_scoped = [ Auto.Lazy.Bind.impl,
 
 
 autoenv :: [LambdaImpl]
-autoenv = [ Auto.Lazy.Env.impl , 
-            Auto.Lazy.Bind.impl 
-            -- Auto.Lazy.Subst.impl
+autoenv = [ Auto.Env.Lazy.Env.impl , 
+            Auto.Env.Lazy.Bind.impl 
+            -- Auto.Env.Lazy.Subst.impl
             ] 
   -- needs laziness to work for lennart term
   -- Auto.Lazy.EnvFelgenhauer.impl, Auto.Bind.impl  ]
@@ -411,14 +424,14 @@ fast =
     Named.SimpleGH.impl,
     Named.Lazy.SimpleGH.impl,
     Named.Foil.impl,
-    Auto.Lazy.Bind.impl,
+    Auto.Env.Lazy.Bind.impl,
     Auto.Manual.Lazy.Env.impl
   ]
 
 -- fastest implementation in each category in the NF benchmark
 fast_nf :: [LambdaImpl]
 fast_nf = autoenv ++ nbe 
-   ++ [ Auto.Manual.Lazy.Env.impl, Auto.Manual.Env.impl ]
+   ++ [ Auto.Manual.Lazy.Env.impl, Auto.Manual.Strict.Env.impl ]
 {-  [ -- LocallyNameless.Opt.impl, -- 2.56 XXX
     -- LocallyNameless.SupportOpt.impl, -- 2.59  -- new version of GHC degraded performance
     DeBruijn.Par.Scoped.impl, -- 3.00

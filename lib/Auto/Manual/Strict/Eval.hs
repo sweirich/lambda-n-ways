@@ -5,7 +5,7 @@
 -- Only evaluation for closed terms
 -- environment-based interpreter
 -- environment represented by a function
-module Auto.Manual.Eval (toDB, impl) where
+module Auto.Manual.Strict.Eval (toDB, impl) where
 
 import Control.DeepSeq (NFData (..))
 import Data.Maybe (fromJust)
@@ -27,7 +27,7 @@ import Util.Syntax.ScopedDeBruijn
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "Auto.Manual.Eval",
+    { impl_name = "Auto.Manual.Strict.Eval",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
       impl_nf = error "NF unimpelemented",

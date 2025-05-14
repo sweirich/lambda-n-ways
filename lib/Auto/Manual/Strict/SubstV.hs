@@ -7,7 +7,7 @@
 -- no bind type. evaluation based on substitution only
 -- CBV beta-rule (i.e. whnormalizes before instantiate)
 
-module Auto.Manual.SubstV (toDB, impl) where
+module Auto.Manual.Strict.SubstV (toDB, impl) where
 
 import Control.DeepSeq (NFData (..))
 import Data.Maybe (fromJust)
@@ -31,7 +31,7 @@ import Util.Syntax.ScopedDeBruijn
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "Auto.Manual.SubstV",
+    { impl_name = "Auto.Manual.Strict.SubstV",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
       impl_nf = nf,

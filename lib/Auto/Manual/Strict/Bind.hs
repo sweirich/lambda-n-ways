@@ -2,10 +2,10 @@
 {-# LANGUAGE QuantifiedConstraints #-}
 {-# LANGUAGE LambdaCase #-}
 -- doesn't use autoenv library, but creates 
--- a Bind type. (lazy representation)
+-- a Bind type. (strict representation)
 -- delays substitution using Bind but doesn't 
 -- pass it explicitly
-module Auto.Manual.Lazy.Bind (toDB, impl) where
+module Auto.Manual.Strict.Bind (toDB, impl) where
 
 import Data.SNat as Nat
 import Data.Fin as Fin
@@ -28,7 +28,7 @@ import Util.Syntax.Lambda (LC (..))
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "Auto.Manual.Lazy.Bind",
+    { impl_name = "Auto.Manual.Strict.Bind",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
       impl_nf = nf,
@@ -39,11 +39,11 @@ impl =
 
 
 data Exp n where
-  DVar :: (Fin n) -> Exp n
-  DLam :: (Bind n) -> Exp n
-  DApp :: (Exp n) -> (Exp n) -> Exp n
-  DBool :: Bool -> Exp n
-  DIf :: Exp n -> Exp n -> Exp n -> Exp n
+  DVar :: !(Fin n) -> Exp n
+  DLam :: !(Bind n) -> Exp n
+  DApp :: !(Exp n) -> (Exp n) -> Exp n
+  DBool :: {-# UNPACK #-} !Bool -> Exp n
+  DIf :: !(Exp n) -> !(Exp n) -> !(Exp n) -> Exp n
 
 deriving instance Eq (Exp n)
 
@@ -54,6 +54,10 @@ instance NFData (Exp a) where
   rnf (DIf a b c) = rnf a `seq` rnf b `seq` rnf c
   rnf (DBool b) = rnf b
 
+-- instance NFData (Fin n) where
+--  rnf FZ = ()
+--  rnf (FS x) = rnf x
+
 instance NFData (Bind n) where
   rnf b = rnf (unbind b)
   
@@ -61,7 +65,6 @@ instance Eq (Bind n) where
   b1 == b2 = unbind b1 == unbind b2
 
 ----------------------------------------------------------
-
 
 type Env n m = Fin n -> Exp m
 
@@ -86,21 +89,20 @@ apply s (DBool b) = DBool b
 idE :: Env m m
 idE = DVar
 
+shift :: Env m (S m)
+shift = \x -> DVar (Fin.shiftN s1 x)
+
 nil :: Fin Z -> a
 nil = \case
 
 (.:) :: a -> (Fin m -> a) -> Fin (S m) -> a               -- extension
 v .: r = \case { FZ -> v ; FS y -> r y } 
 
-(.>>) :: Env p m -> Env m n -> Env p n
+(.>>) :: Env m n -> Env n p -> Env m p
 r .>> s = apply s . r
 
-
-shift :: Env m (S m)
-shift = \x -> DVar (Fin.shiftN Nat.s1 x)
-
 up :: Env m n -> Env (S m) (S n)             -- shift
-up s = DVar FZ .: (s .>> shift)
+up s = DVar Fin.f0 .: (s .>> shift)
 
 instantiate :: Bind n -> Exp n -> Exp n
 instantiate (Bind r b) v = apply (v .: r) b
@@ -109,19 +111,16 @@ instantiate (Bind r b) v = apply (v .: r) b
 -- evaluation without env argument
 
 eval :: Exp Z -> Exp Z
-eval (DVar x) = case x of {}
 eval (DLam b) = DLam b
-eval (DApp f a) = 
-  case eval f of 
-    DLam b ->
+eval (DApp f a) = case eval f of 
+   DLam b ->
       eval (instantiate b a)
-    _ -> error "type error"
+   _ -> error "type error"
 eval (DBool b) = DBool b
-eval (DIf a b c) = 
-  case eval a of 
-    DBool True -> eval b
-    DBool False -> eval c
-    _ -> error "type error"
+eval (DIf a b c) = case eval a of 
+  DBool True -> eval b
+  DBool False -> eval c
+  _ -> error "type error"
 
 ----------------------------------------------------
 

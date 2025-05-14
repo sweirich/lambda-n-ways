@@ -2,8 +2,9 @@
 {-# LANGUAGE QuantifiedConstraints #-}
 
 -- | Well-scoped de Bruijn indices (lazy)
--- with naive substitution, using substitution from 
-module Auto.Lazy.Subst (toDB, impl) where
+-- with naive substitution, using substitution from autoenv
+-- evaluates argument before substituting
+module Auto.Env.Lazy.SubstV (toDB, impl) where
 
 import AutoEnv
 import Data.Fin
@@ -26,7 +27,7 @@ import Util.Syntax.Lambda (LC (..))
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "Auto.Lazy.Subst",
+    { impl_name = "Auto.Env.Lazy.SubstV",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
       impl_nf = nf,
@@ -87,7 +88,7 @@ nf e@(DVar _) = e
 nf (DLam b) = DLam (nf b)
 nf (DApp f a) =
   case whnf f of
-    DLam b -> nf (applyE (a .: idE) b)
+    DLam b -> nf (applyE (nf a .: idE) b)
     f' -> DApp (nf f') (nf a)
 nf e@(DBool _) = e
 nf (DIf a b c) = 
@@ -101,7 +102,7 @@ whnf e@(DVar _) = e
 whnf e@(DLam _) = e
 whnf (DApp f a) =
   case whnf f of
-    DLam b -> whnf (applyE (a .: idE) b)
+    DLam b -> whnf (applyE (whnf a .: idE) b)
     f' -> DApp f' a
 whnf e@(DBool b) = DBool b
 whnf (DIf a b c) = 
@@ -117,7 +118,7 @@ eval e@(DVar _) = e
 eval e@(DLam _) = e
 eval (DApp f a) =
   case eval f of
-    DLam b -> eval (applyE (a .: idE) b)
+    DLam b -> eval (applyE (eval a .: idE) b)
     f' -> f' 
 eval (DBool b) = DBool b
 eval (DIf a b c) = 

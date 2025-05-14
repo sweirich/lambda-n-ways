@@ -68,8 +68,8 @@ for variable in "${valid_variables[@]}"; do
   echo "'make eval' executed successfully for variable '$variable'."
 
   # Move files.
-  source_dir="results/Stephanie-Weirich-MBP/all_eval"
-  dest_dir="results/all_eval/$variable"
+  source_dir="results/Stephanie-Weirich-MBP/eval_auto_lazy"
+  dest_dir="results/ablate/eval_auto_lazy/$variable"
 
   # Check if the source directory exists.
   if [ ! -d "$source_dir" ]; then
@@ -89,7 +89,8 @@ for variable in "${valid_variables[@]}"; do
   fi
 
   # Move the files and generate CSV.
-  find "$source_dir" -type f -exec sh -c 'mv "$1" "${1%.txt}.csv"' _ {} \;
+  mv $source_dir/* $dest_dir/
+  # find "$source_dir" -type f -exec sh -c 'mv "$1" "${1%.txt}.csv"' _ {} \;
   if [ $? -ne 0 ]; then
     echo "Error: Failed to move files from '$source_dir' to '$dest_dir' and convert to CSV for variable '$variable'."
     # Revert the file even if file moving fails.

@@ -5,7 +5,7 @@
 -- a Bind type. (strict representation)
 -- delays substitution using Bind but doesn't 
 -- pass it explicitly
-module Auto.Manual.Bind (toDB, impl) where
+module Auto.Manual.Strict.BindV (toDB, impl) where
 
 import Data.SNat as Nat
 import Data.Fin as Fin
@@ -28,7 +28,7 @@ import Util.Syntax.Lambda (LC (..))
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "Auto.Manual.Bind",
+    { impl_name = "Auto.Manual.Strict.BindV",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
       impl_nf = nf,
@@ -114,7 +114,7 @@ eval :: Exp Z -> Exp Z
 eval (DLam b) = DLam b
 eval (DApp f a) = case eval f of 
    DLam b ->
-      eval (instantiate b a)
+      eval (instantiate b (eval a))
    _ -> error "type error"
 eval (DBool b) = DBool b
 eval (DIf a b c) = case eval a of 
@@ -129,7 +129,7 @@ nf e@(DVar _) = e
 nf (DLam b) = DLam (bind (nf (unbind b)))
 nf (DApp f a) =
   case whnf f of
-    DLam b -> nf (instantiate b a)
+    DLam b -> nf (instantiate b (whnf a))
     f' -> DApp (nf f') (nf a)
 nf (DIf a b c) =
   case whnf a of 
@@ -144,7 +144,7 @@ whnf e@(DVar _) = e
 whnf e@(DLam _) = e
 whnf (DApp f a) =
   case whnf f of
-    DLam b -> whnf (instantiate b a)
+    DLam b -> whnf (instantiate b (whnf a))
     f' -> DApp f' a
 whnf (DBool b) = DBool b
 whnf (DIf a b c) = case whnf a of 

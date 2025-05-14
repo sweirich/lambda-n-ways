@@ -5,7 +5,7 @@
 -- a Bind type. (lazy)
 -- passes environment argument explicitly and 
 -- delays it using Bind
-module Auto.Manual.Env (toDB, impl) where
+module Auto.Manual.Strict.Env (toDB, impl) where
 
 import Data.SNat
 import Data.Fin
@@ -28,7 +28,7 @@ import Util.Syntax.Lambda (LC (..))
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "Auto.Manual.Env",
+    { impl_name = "Auto.Manual.Strict.Env",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
       impl_nf = nf,

@@ -17,9 +17,9 @@ eval: LC
 	mkdir -p $(OUT)
 	uname -a > $(OUT)output.txt
 	stack run -- --output $(OUT)eval_bench.html --match prefix "eval/" --csv $(OUT)eval_bench.csv  >> $(OUT)output.txt
-	stack run -- --output $(OUT)eval5_bench.html --match prefix "eval5/" --csv $(OUT)eval5_bench.csv  >> $(OUT)output.txt
-	stack run -- --output $(OUT)eval4_bench.html --match prefix "eval4/" --csv $(OUT)eval4_bench.csv  >> $(OUT)output.txt
-	stack run -- --output $(OUT)evalC_bench.html --match prefix "evalC/" --csv $(OUT)evalC_bench.csv  >> $(OUT)output.txt
+#	stack run -- --output $(OUT)eval5_bench.html --match prefix "eval5/" --csv $(OUT)eval5_bench.csv  >> $(OUT)output.txt
+#	stack run -- --output $(OUT)eval4_bench.html --match prefix "eval4/" --csv $(OUT)eval4_bench.csv  >> $(OUT)output.txt
+#	stack run -- --output $(OUT)evalC_bench.html --match prefix "evalC/" --csv $(OUT)evalC_bench.csv  >> $(OUT)output.txt
 
 timing:	LC
 	mkdir -p $(OUT)

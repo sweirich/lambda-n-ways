@@ -24,9 +24,11 @@ import Util.IdInt (IdInt (..), firstBoundId)
 import Util.Impl (LambdaImpl (..))
 import qualified Util.Stats as Stats
 import Util.Syntax.Lambda (LC (..))
-import Util.Nat
+
+import Data.SNat as Nat
+import Data.Fin
 -- uses lazy scoped syntax
-import Util.Syntax.Lazy.ScopedDeBruijn
+-- import Util.Syntax.Lazy.ScopedDeBruijn
 
 impl :: LambdaImpl
 impl =
@@ -40,32 +42,70 @@ impl =
       impl_eval = eval
     }
 
-----------------------------------------------------------
+---------------------------------------------
 
-type Sub m n = Idx m -> Term n                   
+data Exp n where
+  DVar :: (Fin n) -> Exp n
+  DLam :: (Bind n) -> Exp n
+  DApp :: (Exp n) -> (Exp n) -> Exp n
+  DBool :: Bool -> Exp n
+  DIf :: Exp n -> Exp n -> Exp n -> Exp n
 
-(.:) :: a -> (Idx m -> a) -> Idx (S m) -> a            -- extension
+deriving instance Eq (Exp n)
+
+instance NFData (Exp a) where
+  rnf (DVar i) = rnf i
+  rnf (DLam d) = rnf d
+  rnf (DApp a b) = rnf a `seq` rnf b
+  rnf (DIf a b c) = rnf a `seq` rnf b `seq` rnf c
+  rnf (DBool b) = rnf b
+
+data Bind n where
+  Bind :: Exp (S n) -> Bind n
+
+bind :: Exp (S n) -> Bind n
+bind = Bind
+
+unbind :: Bind n -> Exp (S n)
+unbind (Bind a) = a
+
+instance NFData (Bind n) where
+  rnf b = rnf (unbind b)
+  
+instance Eq (Bind n) where
+  b1 == b2 = unbind b1 == unbind b2
+
+--------------------------------------------------
+
+type Sub m n = Fin m -> Exp n                   
+
+(.:) :: a -> (Fin m -> a) -> Fin (S m) -> a            -- extension
 v .: r = \case { FZ -> v ; FS y -> r y } 
+
+(.>>) :: Sub m n -> Sub p m -> Sub p n
+r .>> s = apply r . s
 
 up :: Sub m n -> Sub (S m) (S n)                       -- shift
 up s = \case
           FZ -> DVar  FZ                               -- leave index 0 alone
           FS f -> apply (DVar . FS) (s f)              -- shift other indices
       
-apply :: Sub m n -> Term m -> Term n                    -- multi substitutions
+apply :: Sub m n -> Exp m -> Exp n                    -- multi substitutions
 apply r (DVar x)      = r x
-apply r (DLam b)      = DLam (apply (up r) b)
-apply r (DApp a1 a2)  = DApp (apply r a1) (apply r a2)
-apply r (DIf a b c )  = DIf (apply r a) (apply r b) (apply r c)
+apply r (DLam (Bind b))      = 
+  DLam (Bind (apply (up r) b))
+apply r (DApp a1 a2)  = 
+  DApp (apply r a1) (apply r a2)
+apply r (DIf a b c)  = DIf (apply r a) (apply r b) (apply r c)
 apply r (DBool b)     = DBool b
 
-instantiate :: Term (S n) -> Term n -> Term n                  -- single substitution
-instantiate b v = apply (v .: DVar) b
+instantiate :: Bind n -> Exp n -> Exp n                  -- single substitution
+instantiate (Bind b) v = apply (v .: DVar) b
 
 ----------------------------------------------------------
 
 -- Evaluate closed terms with substitution
-eval :: Term Z -> Term Z
+eval :: Exp Z -> Exp Z
 eval (DVar x) = case x of {}
 eval e@(DLam b) = e
 eval (DApp f a) =
@@ -75,16 +115,16 @@ eval (DApp f a) =
 eval (DBool b) = DBool b
 eval (DIf a b c) = 
   case eval a of 
-    DBool True -> eval a
-    DBool False -> eval b
+    DBool True -> eval b
+    DBool False -> eval c
     _ -> error "type error"
 
 
 ----------------------------------------------------------
 
-nf :: Term n -> Term n
+nf :: Exp n -> Exp n
 nf e@(DVar _) = e
-nf (DLam b) = DLam (nf b)
+nf (DLam b) = DLam (bind (nf (unbind b)))
 nf (DApp f a) =
   case whnf f of
     DLam b -> nf (instantiate b (whnf a))
@@ -94,14 +134,15 @@ nf (DIf a b c) =
   case whnf a of 
     DBool True -> nf b
     DBool False -> nf c
-    a' -> DIf (nf a) (nf b) (nf c)
+    a' -> DIf (nf a') (nf b) (nf c)
 
-whnf :: Term n -> Term n
+whnf :: Exp n -> Exp n
 whnf e@(DVar _) = e
 whnf e@(DLam _) = e
 whnf (DApp f a) =
   case whnf f of
-    DLam b -> whnf (instantiate b (whnf a))
+    DLam b -> 
+      whnf (instantiate b (whnf a))
     f' -> DApp f' a
 whnf e@(DBool b) = DBool b
 whnf (DIf a b c) = 
@@ -111,10 +152,10 @@ whnf (DIf a b c) =
     a' -> DIf a' b c
 
 
-nfi :: Int -> Term n -> Stats.M (Term n)
+nfi :: Int -> Exp n -> Stats.M (Exp n)
 nfi 0 _e = Stats.done
 nfi _n e@(DVar _) = return e
-nfi n (DLam e) = DLam <$> nfi (n -1) e
+nfi n (DLam e) = DLam . bind <$> nfi (n -1) (unbind e)
 nfi n (DApp f a) = do
   f' <- whnfi (n - 1) f
   a' <- whnfi (n - 1) a
@@ -129,7 +170,7 @@ nfi n (DIf a b c) = do
     DBool False -> nfi (n - 1) c
     a' -> DIf <$> (nfi (n-1) a') <*> (nfi (n-1) b) <*> (nfi (n-1) c)
 
-whnfi :: Int -> Term n -> Stats.M (Term n)
+whnfi :: Int -> Exp n -> Stats.M (Exp n)
 whnfi 0 _e = Stats.done
 whnfi _n e@(DVar _) = return e
 whnfi _n e@(DLam _) = return e
@@ -146,3 +187,42 @@ whnfi n (DIf a b c) = do
     DBool True -> whnfi (n - 1) b
     DBool False -> whnfi (n - 1) c
     a' -> return $ DIf a' b c
+
+---------------------------------------------------------
+{-
+Convert to deBruijn indicies.  Do this by keeping a list of the bound
+variable so the depth can be found of all variables. NOTE: input term
+must be closed or 'fromJust' will error.
+-}
+
+toDB :: LC IdInt -> Exp 'Z
+toDB = to []
+  where
+    to :: [(IdInt, Fin n)] -> LC IdInt -> Exp n
+    to vs (Var v) = DVar (fromJust (lookup v vs))
+    to vs (Lam v b) = DLam (bind b')
+      where
+        b' = to ((v, FZ) : mapSnd FS vs) b
+    to vs (App f a) = DApp (to vs f) (to vs a)
+    to vs (If a b c) = DIf (to vs a) (to vs b) (to vs c)
+    to vs (Bool b) = DBool b
+
+-- Convert back from deBruijn to the LC type.
+
+fromDB :: Exp n -> LC IdInt
+fromDB = from firstBoundId
+  where
+    from :: IdInt -> Exp n -> LC IdInt
+    from (IdInt n) (DVar i)
+      | toInt i < 0 = Var (IdInt $ toInt i)
+      | toInt i >= n = Var (IdInt $ toInt i)
+      | otherwise = Var (IdInt (n - toInt i - 1))
+    from n (DLam b) = Lam n (from (Prelude.succ n) (unbind b))
+    from n (DApp f a) = App (from n f) (from n a)
+    from n (DIf a b c) = If (from n a) (from n b) (from n c)
+    from n (DBool b) = Bool b
+
+mapSnd :: (a -> b) -> [(c, a)] -> [(c, b)]
+mapSnd f = map (\(v, i) -> (v, f i))
+
+---------------------------------------------------------

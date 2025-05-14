@@ -1,9 +1,8 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE QuantifiedConstraints #-}
--- Use the autoenv library, with a lazy datatype
--- environment argument for whnf function
--- evaluate argument before adding to environment
-module Auto.Lazy.EnvV (toDB, impl) where
+-- | Uses the Autoenv library, with a strict datatype
+-- The whnf function explicitly passes the environment 
+module Auto.Env.Strict.Env (toDB, impl) where
 
 import AutoEnv
 import AutoEnv.Bind.Single
@@ -27,22 +26,22 @@ import Util.Syntax.Lambda (LC (..))
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "Auto.Lazy.EnvV",
+    { impl_name = "Auto.Env",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
       impl_nf = nf,
       impl_nfi = error "NFI unimplemented",
-      impl_eval = eval,
-      impl_aeq = (==)
+      impl_aeq = (==),
+      impl_eval = whnf idE
     }
 
-data DB n where
-  DVar :: (Fin n) -> DB n
-  DLam :: (Bind DB DB n) -> DB n
-  DApp :: (DB n) -> (DB n) -> DB n
-  DBool :: Bool -> DB n
-  DIf :: DB n -> DB n -> DB n -> DB n
 
+data DB n where
+  DVar :: !(Fin n) -> DB n
+  DLam :: !(Bind DB DB n) -> DB n
+  DApp :: !(DB n) -> !(DB n) -> DB n
+  DBool :: {-# unpack #-} !Bool -> DB n
+  DIf :: !(DB n) -> !(DB n) -> !(DB n) -> DB n
 -- standalone b/c GADT
 -- alpha equivalence is (==)
 deriving instance Eq (DB n)
@@ -61,7 +60,7 @@ instance (Subst v e, Subst v v, forall n. NFData (e n)) => NFData (Bind v e n) w
   rnf b = rnf (getBody b)
 
 ----------------------------------------------------------
-
+-- uses the SubstScoped library
 instance SubstVar DB where
   var = DVar
   {-# INLINEABLE var #-}
@@ -80,6 +79,7 @@ instance Subst DB DB where
 
 {-# SPECIALIZE (.>>) :: Env DB m n -> Env DB n p -> Env DB m p #-}
 
+
 {-# SPECIALIZE up :: Env DB n m -> Env DB ('S n) ('S m) #-}
 
 {-# SPECIALIZE getBody :: Bind DB DB n -> DB ('S n) #-}
@@ -91,7 +91,7 @@ instance Subst DB DB where
 {-# SPECIALIZE applyUnder :: (forall m n. Env DB m n -> DB m -> DB n)-> Env DB n1 n2 -> Bind DB DB n1 -> Bind DB DB n2 #-}
 
 ----------------------------------------------------------
-
+  ----------------------------------------------------------
 nf :: DB n -> DB n
 nf e@(DVar _) = e
 nf (DLam b) = DLam (bind (nf (getBody b)))
@@ -122,10 +122,8 @@ whnf r (DIf a b c) =
     DBool False -> whnf r c
     a' -> DIf a' (applyE r b) (applyE r c)
 
-
 eval :: DB n -> DB n
 eval = evalr idE 
-
 
 evalr :: Env DB m n -> DB m -> DB n
 evalr r e@(DVar _) = applyE r e
@@ -139,7 +137,7 @@ evalr r (DIf a b c) =
   case evalr r a of 
     DBool True -> evalr r b
     DBool False -> evalr r c
-    a' -> DIf a' (applyE r b) (applyE r c)
+    a' -> DIf a' (applyE r b) (applyE r c)    
 ---------------------------------------------------------
 {-
 Convert to deBruijn indicies.  Do this by keeping a list of the bound
@@ -156,8 +154,9 @@ toDB = to []
       where
         b' = to ((v, FZ) : mapSnd FS vs) b
     to vs (App f a) = DApp (to vs f) (to vs a)
-    to vs (Bool b)  = DBool b
     to vs (If a b c) = DIf (to vs a) (to vs b) (to vs c)
+    to vs (Bool b) = DBool b
+
 -- Convert back from deBruijn to the LC type.
 
 fromDB :: DB n -> LC IdInt
@@ -170,8 +169,8 @@ fromDB = from firstBoundId
       | otherwise = Var (IdInt (n - toInt i - 1))
     from n (DLam b) = Lam n (from (Prelude.succ n) (getBody b))
     from n (DApp f a) = App (from n f) (from n a)
-    from n (DBool b) = Bool b
     from n (DIf a b c) = If (from n a) (from n b) (from n c)
+    from n (DBool b) = Bool b
 
 mapSnd :: (a -> b) -> [(c, a)] -> [(c, b)]
 mapSnd f = map (\(v, i) -> (v, f i))
