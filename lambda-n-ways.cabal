@@ -35,6 +35,8 @@ library
     Auto.Manual.Lazy.EnvV
     Auto.Manual.Lazy.EnvOnlyV
     Auto.Manual.Lazy.EnvVal
+    Auto.Manual.Lazy.ExplicitSubstV
+    Auto.Manual.Lazy.ExplicitSubstEnvV
     Auto.Manual.Lazy.Bind
     Auto.Manual.Lazy.BindV
     Auto.Manual.Lazy.BindVal

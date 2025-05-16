@@ -31,6 +31,8 @@ import qualified Auto.Manual.Lazy.SubstV
 import qualified Auto.Manual.Lazy.Eval
 import qualified Auto.Manual.Lazy.EvalV
 import qualified Auto.Manual.Lazy.EnvOnlyV
+import qualified Auto.Manual.Lazy.ExplicitSubstV
+import qualified Auto.Manual.Lazy.ExplicitSubstEnvV
 import qualified Core.Nf
 import qualified DeBruijn.Bound
 import qualified DeBruijn.CPDT
@@ -134,24 +136,26 @@ eval_subst = [ Auto.Manual.Lazy.BindV.impl,
 
 eval_manual_lazy = [
     --Auto.Manual.Lazy.Subst.impl, 
-    Auto.Manual.Lazy.SubstV.impl, 
+    --Auto.Manual.Lazy.SubstV.impl, 
     --Auto.Manual.Lazy.Bind.impl,
     Auto.Manual.Lazy.BindV.impl,
     --Auto.Manual.Lazy.Eval.impl, 
     Auto.Manual.Lazy.EvalV.impl,
-    Auto.Manual.Lazy.EnvOnlyV.impl, -- loops
+    --Auto.Manual.Lazy.EnvOnlyV.impl, -- loops
     --Auto.Manual.Lazy.Env.impl,
-    Auto.Manual.Lazy.EnvV.impl
+    Auto.Manual.Lazy.EnvV.impl,
+    Auto.Manual.Lazy.ExplicitSubstEnvV.impl,
+    Auto.Manual.Lazy.ExplicitSubstV.impl
   ]
 
 eval_auto_lazy = [
     --Auto.Lazy.Subst.impl, 
     --Auto.Lazy.SubstV.impl, 
-    --Auto.Lazy.Bind.impl,
+    -- Auto.Lazy.Bind.impl,
     Auto.Env.Lazy.BindV.impl,
     Auto.Env.Lazy.Eval.impl, 
     -- Auto.Lazy.EvalV.impl,
-    Auto.Env.Lazy.Env.impl,
+    -- Auto.Env.Lazy.Env.impl,
     Auto.Env.Lazy.EnvV.impl
   ]
 
