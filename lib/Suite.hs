@@ -14,6 +14,7 @@ import qualified Auto.Env.Lazy.BindV
 import qualified Auto.Env.Lazy.BindVal
 import qualified Auto.Env.Lazy.Subst
 import qualified Auto.Env.Lazy.SubstV
+import qualified Auto.Env.Lazy.ExplicitSubstEnvV
 import qualified Auto.Manual.Strict.Env
 import qualified Auto.Manual.Strict.Bind
 import qualified Auto.Manual.Strict.BindV
@@ -118,7 +119,7 @@ import Util.Impl (LambdaImpl)
 -- | Implementations used in the benchmarking/test suite
 -- RHS must be a single variable name for Makefile
 impls :: [LambdaImpl]
-impls = eval_manual_lazy
+impls = eval_auto_lazy
 
 interleave :: [a] -> [a] -> [a]
 interleave (a1 : a1s) (a2 : a2s) = a1 : a2 : interleave a1s a2s
@@ -156,7 +157,8 @@ eval_auto_lazy = [
     Auto.Env.Lazy.Eval.impl, 
     -- Auto.Lazy.EvalV.impl,
     -- Auto.Env.Lazy.Env.impl,
-    Auto.Env.Lazy.EnvV.impl
+    Auto.Env.Lazy.EnvV.impl, 
+    Auto.Env.Lazy.ExplicitSubstEnvV.impl
   ]
 
 
