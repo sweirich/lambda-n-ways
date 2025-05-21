@@ -15,6 +15,8 @@ library
     Auto.Env.Strict.Env
     Auto.Env.Strict.Bind
     Auto.Env.Strict.Subst
+    Auto.Env.Strict.EnvV
+    Auto.Env.Strict.BindV
     Auto.Env.Lazy.Eval
     Auto.Env.Lazy.Env
     Auto.Env.Lazy.EnvV
@@ -126,6 +128,7 @@ library
     NBE.Felgenhauer
     NBE.Kovacs
     NBE.KovacsNamed
+    NBE.Lazy.KovacsScoped
     NBE.KovacsScoped
     NBE.KovacsScoped2
     NBE.Contextual
@@ -138,6 +141,8 @@ library
     Support.TypedSubstOpt
     Unbound.UnboundGenerics
     Unbound.UnboundNonGenerics
+    Unbound.Lazy.UnboundGenerics
+    Unbound.Lazy.UnboundNonGenerics
     Util.Id
     Util.IdInt
     Util.IdInt.Map

@@ -75,7 +75,7 @@ idE :: Env m m
 idE = DVar
 
 nil :: Fin Z -> a
-nil = \case
+nil = absurd
 
 (.:) :: a -> (Fin m -> a) -> Fin (S m) -> a               -- extension
 v .: r = \case { FZ -> v ; FS y -> r y } 

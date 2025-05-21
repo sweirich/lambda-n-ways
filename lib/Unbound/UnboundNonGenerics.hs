@@ -8,6 +8,7 @@ import Control.Monad.Trans (lift)
 import GHC.Generics (Generic)
 import qualified Unbound.Generics.LocallyNameless as U
 import qualified Unbound.Generics.LocallyNameless.Bind as U
+import qualified Unbound.Generics.LocallyNameless.Name as U
 import Util.IdInt (IdInt (..))
 import Util.Impl (LambdaImpl (..))
 import qualified Util.Stats as Stats
@@ -29,8 +30,7 @@ type Var = U.Name Exp
 data Exp
   = Var !Var
   | Lam !(U.Bind Var Exp)
-  | -- | LetRec (U.Bind (U.Rebind Var (U.Embed Exp)) Exp)
-    App !Exp !Exp
+  | App !Exp !Exp
   deriving (Show, Generic)
 
 instance DS.NFData Exp
@@ -64,6 +64,15 @@ instance U.Subst Exp Exp where
   subst x b a@(Var y) = if x == y then b else a
   subst x b (Lam bnd) = Lam (U.subst x b bnd)
   subst x b (App a1 a2) = App (U.subst x b a1) (U.subst x b a2)
+
+  substBvs :: U.AlphaCtx -> [Exp] -> Exp -> Exp
+  substBvs ctx bs (Var x@(U.Bn j k)) 
+     | U.ctxLevel ctx == j, fromInteger k < length bs = bs !! fromInteger k
+  substBvs ctx bs (Var x) = Var x 
+  substBvs ctx bs (Lam bnd) = 
+    Lam (U.substBvs ctx bs bnd)
+  substBvs ctx bs (App a1 a2) = 
+    App (U.substBvs ctx bs a1) (U.substBvs ctx bs a2)
   {-# INLINE U.subst #-}
 
 ---------------------------------------------------------------
@@ -84,8 +93,9 @@ nfd (App f a) = do
   f' <- whnf f
   case f' of
     Lam b -> do
-      (x, b') <- U.unbind b
-      nfd (U.subst x a b')
+      nfd (U.instantiate b [a])
+      --(x, b') <- U.unbind b
+      --nfd (U.subst x a b')
     _ -> App <$> nfd f' <*> nfd a
 
 whnf :: Exp -> U.FreshM Exp
@@ -95,8 +105,9 @@ whnf (App f a) = do
   f' <- whnf f
   case f' of
     Lam b -> do
-      (x, b') <- U.unbind b
-      whnf (U.subst x a b')
+      whnf (U.instantiate b [a])
+      --(x, b') <- U.unbind b
+      --whnf (U.subst x a b')
     _ -> return $ App f' a
 
 ---------------------------------------------------------------

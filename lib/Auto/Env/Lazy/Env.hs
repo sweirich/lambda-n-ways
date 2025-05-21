@@ -106,13 +106,12 @@ nf (DIf a b c) =
     a' -> DIf (nf a) (nf b) (nf c)
 
 whnf :: Env DB m n -> DB m -> DB n
-whnf r e@(DVar _) = whnf idE (applyE r e)
+whnf r e@(DVar _) = applyE r e
 whnf r e@(DLam _) = applyE r e
 whnf r (DApp f a) =
   case whnf r f of
     DLam b -> 
-      unbindWith b (\r' b' -> 
-         whnf (applyE r a .: r') b')
+      instantiateWith b (applyE r a) whnf
     f' -> DApp f' (applyE r a)
 whnf r e@(DBool b) = DBool b
 whnf r (DIf a b c) = 
@@ -126,7 +125,7 @@ eval :: DB n -> DB n
 eval = evalr idE 
 
 evalr :: Env DB m n -> DB m -> DB n
-evalr r e@(DVar x) = evalr idE (applyE r e)
+evalr r e@(DVar x) = applyE r e
 evalr r e@(DLam _) = applyE r e
 evalr r (DApp f a) =
   case evalr r f of

@@ -35,6 +35,8 @@ normalize: LC
 	stack run -- --output $(OUT)nf_bench.html --match prefix "nf/" --csv $(OUT)nf_bench.csv  >> $(OUT)output.txt
 	stack run -- --output $(OUT)random15_bench.html --match prefix "random15/"  >> $(OUT)output.txt
 	stack run -- --output $(OUT)random20_bench.html --match prefix "random20/"  >> $(OUT)output.txt
+	stack run -- --output $(OUT)random25_bench.html --match prefix "random25/"  >> $(OUT)output.txt
+	stack run -- --output $(OUT)random35_bench.html --match prefix "random35/"  >> $(OUT)output.txt
 
 ################ Separate CSV files for each benchmark, plus individual charts for the constructed ones
 

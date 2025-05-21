@@ -6,6 +6,8 @@ module Suite where
 import qualified Auto.Env.Strict.Env
 import qualified Auto.Env.Strict.Bind
 import qualified Auto.Env.Strict.Subst
+import qualified Auto.Env.Strict.EnvV
+import qualified Auto.Env.Strict.BindV
 import qualified Auto.Env.Lazy.Eval
 import qualified Auto.Env.Lazy.Env
 import qualified Auto.Env.Lazy.EnvV
@@ -94,6 +96,7 @@ import qualified NBE.Contextual
 import qualified NBE.Felgenhauer
 import qualified NBE.Kovacs
 import qualified NBE.KovacsNamed
+import qualified NBE.Lazy.KovacsScoped
 import qualified NBE.KovacsScoped
 import qualified NBE.KovacsScoped2
 import qualified Named.Lazy.Foil
@@ -112,6 +115,8 @@ import qualified Named.SimpleM
 import qualified Named.Unique
 import qualified Unbound.UnboundGenerics
 import qualified Unbound.UnboundNonGenerics
+import qualified Unbound.Lazy.UnboundGenerics
+import qualified Unbound.Lazy.UnboundNonGenerics
 -- allow newer GHCs
 --import qualified Unbound.UnboundRep
 import Util.Impl (LambdaImpl)
@@ -119,7 +124,7 @@ import Util.Impl (LambdaImpl)
 -- | Implementations used in the benchmarking/test suite
 -- RHS must be a single variable name for Makefile
 impls :: [LambdaImpl]
-impls = eval_auto_lazy
+impls = autoenv_comparison
 
 interleave :: [a] -> [a] -> [a]
 interleave (a1 : a1s) (a2 : a2s) = a1 : a2 : interleave a1s a2s
@@ -128,6 +133,48 @@ interleave _ _ = []
 broken :: [LambdaImpl]
 broken =
   []
+
+
+
+-- Implementations of normal order reduction
+-- using both lazy and strict datatype definitions
+autoenv_comparison :: [LambdaImpl]
+autoenv_comparison = autoenv ++ well_scoped ++ unbound
+
+-- Well-scoped implmentations,
+well_scoped :: [LambdaImpl]
+well_scoped = [ NBE.Lazy.KovacsScoped.impl,
+                NBE.KovacsScoped.impl,
+                Named.Lazy.Foil.impl,
+                Named.Foil.impl,
+                DeBruijn.Lazy.Nested.impl,
+                DeBruijn.Nested.impl,
+                DeBruijn.Lazy.Bound.impl,
+                DeBruijn.Bound.impl
+               ]
+
+
+
+autoenv :: [LambdaImpl]
+autoenv = [ Auto.Env.Lazy.Bind.impl, 
+            Auto.Env.Strict.Bind.impl,
+            Auto.Env.Lazy.Env.impl, 
+            Auto.Env.Strict.Env.impl,
+            Auto.Env.Lazy.BindV.impl, 
+            Auto.Env.Strict.BindV.impl,
+            Auto.Env.Lazy.EnvV.impl, 
+            Auto.Env.Strict.EnvV.impl
+            ] 
+
+-- these versions using "substBind/instantiate" for beta-reduction
+unbound :: [LambdaImpl]
+unbound =
+  [ Unbound.Lazy.UnboundGenerics.impl, -- unbound-generics
+    Unbound.UnboundGenerics.impl, -- unbound-generics
+    Unbound.Lazy.UnboundNonGenerics.impl,
+    Unbound.UnboundNonGenerics.impl -- no generic programming
+  ]
+
 
 --------------------------------------------------------------------------
 -- evaluation only
@@ -150,15 +197,17 @@ eval_manual_lazy = [
   ]
 
 eval_auto_lazy = [
-    --Auto.Lazy.Subst.impl, 
-    --Auto.Lazy.SubstV.impl, 
-    -- Auto.Lazy.Bind.impl,
-    Auto.Env.Lazy.BindV.impl,
-    Auto.Env.Lazy.Eval.impl, 
-    -- Auto.Lazy.EvalV.impl,
+    -- Auto.Env.Lazy.Subst.impl, 
+    -- Auto.Env.Lazy.SubstV.impl, 
+    -- Auto.Env.Lazy.Bind.impl,
+    -- Auto.Env.Lazy.Eval.impl, 
+    -- Auto.Env.Lazy.EvalV.impl,
     -- Auto.Env.Lazy.Env.impl,
+    Auto.Env.Lazy.BindV.impl,
     Auto.Env.Lazy.EnvV.impl, 
-    Auto.Env.Lazy.ExplicitSubstEnvV.impl
+    -- Auto.Env.Lazy.ExplicitSubstEnvV.impl,
+    Auto.Env.Lazy.Bind.impl,
+    Auto.Env.Lazy.Env.impl
   ]
 
 
@@ -214,31 +263,10 @@ all_locallyNameless = locallyNameless ++ locallyNameless_lazy
 all_named :: [LambdaImpl]
 all_named = named ++ lennart ++ [Lennart.Simple.impl]
 
--- Well-scoped implmentations
-all_scoped :: [LambdaImpl]
-all_scoped = [ Auto.Env.Lazy.Bind.impl, 
-               Auto.Env.Strict.Bind.impl,
-               NBE.Contextual.impl,
-               Named.Foil.impl,
-               Named.Lazy.Foil.impl,
-               DeBruijn.CPDT.impl,
-               DeBruijn.Nested.impl,
-               DeBruijn.Bound.impl,
-               DeBruijn.Kit.impl,
-               DeBruijn.Lazy.Par.Scoped.impl,
-               DeBruijn.Par.Scoped.impl
-               ]
 --------------------------------------------------------------------------
 --------------------------------------------------------------------------
 
 
-autoenv :: [LambdaImpl]
-autoenv = [ Auto.Env.Lazy.Env.impl , 
-            Auto.Env.Lazy.Bind.impl 
-            -- Auto.Env.Lazy.Subst.impl
-            ] 
-  -- needs laziness to work for lennart term
-  -- Auto.Lazy.EnvFelgenhauer.impl, Auto.Bind.impl  ]
 
 -- divided by lib subdirectory
 
@@ -362,13 +390,6 @@ nbe =
     -- NBE.KovacsScoped2.impl
     --DeBruijn.Krivine.impl,   -- slower than the rest
     --DeBruijn.KrivineScoped.impl -- slower than the rest
-  ]
-
-
-unbound :: [LambdaImpl]
-unbound =
-  [ Unbound.UnboundGenerics.impl, -- unbound-generics
-    Unbound.UnboundNonGenerics.impl -- no generic programming
   ]
 
 ---------------------------------------------------

@@ -91,7 +91,9 @@
 >   random20_terms <- getTerms "lams/random20.lam"
 >   random20_nfterms <- getTerms "lams/random20.nf.lam"
 >   random25_terms <- getTerms "lams/random25.lam"
+>   random25_nfterms <- getTerms "lams/random25.nf.lam"
 >   random35_terms <- getTerms "lams/random35.lam"
+>   random35_nfterms <- getTerms "lams/random35.nf.lam"
 >   onesubst_terms <- getTerms "lams/onesubst.lam"
 >   twosubst_terms <- getTerms "lams/twosubst.lam"
 >   threesubst_terms <- getTerms "lams/threesubst.lam"
@@ -104,20 +106,20 @@
 >   defaultMain [
 >      bgroup "random15" $ map runBench (nf_bss random15_terms random15_nfterms)
 >    , bgroup "random20" $ map runBench (nf_bss random20_terms random20_nfterms)
->    {- , bgroup "random25" $ map runBench (nf_bss random25_terms)
->    , bgroup "random35" $ map runBench (nf_bss random35_terms)
->    , bgroup "onesubst" $ map runBench (nf_bss onesubst_terms)
+>    , bgroup "random25" $ map runBench (nf_bss random25_terms random25_nfterms)
+>    , bgroup "random35" $ map runBench (nf_bss random35_terms random35_nfterms)
+> {-   , bgroup "onesubst" $ map runBench (nf_bss onesubst_terms)
 >    , bgroup "twosubst" $ map runBench (nf_bss twosubst_terms)
 >    , bgroup "threesubst" $ map runBench (nf_bss threesubst_terms)
 >    , bgroup "foursubst" $ map runBench (nf_bss foursubst_terms) -}
->    , bgroup "conv" $ map runBench (conv_bs lennart)  
+>    --, bgroup "conv" $ map runBench (conv_bs lennart)  
 >    , bgroup "nf"   $ map runBench (nf_bss [lennart] [lambdaFalse]) 
->    , bgroup "aeq"  $ map runBench (aeq_fresh_bs lennart)
->    , bgroup "aeqs" $ map runBench (aeq_bs lennart lennart) 
->    , bgroup "eval" $ map runBench (eval_bss [lennartb] [Bool False])
->    , bgroup "eval5" $ map runBench (eval_bss [lennartb5] [Bool False])
->    , bgroup "eval4" $ map runBench (eval_bss [lennartb4] [Bool False])
->    , bgroup "evalC" $ map runBench (eval_bss [lennartC] [Bool False])
+>    --, bgroup "aeq"  $ map runBench (aeq_fresh_bs lennart)
+>    --, bgroup "aeqs" $ map runBench (aeq_bs lennart lennart) 
+>    --, bgroup "eval" $ map runBench (eval_bss [lennartb] [Bool False])
+>    --, bgroup "eval5" $ map runBench (eval_bss [lennartb5] [Bool False])
+>    --, bgroup "eval4" $ map runBench (eval_bss [lennartb4] [Bool False])
+>    --, bgroup "evalC" $ map runBench (eval_bss [lennartC] [Bool False])
 >    {-  bgroup "ids" $ map runBench (constructed_bss "ids" id_terms)
 >    , bgroup "con"  $ map runBench (constructed_bss "con" con_terms)
 >    , bgroup "capt" $ map runBench (constructed_bss "capt" capt_terms) 

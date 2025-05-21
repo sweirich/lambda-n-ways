@@ -19,6 +19,7 @@ import qualified Util.Misc as Misc
 import qualified Util.Stats as Stats
 import Util.Syntax.Lambda
 import Prelude hiding (abs)
+import GHC.Stack
 
 data LambdaImpl = forall a.
   NFData a =>

@@ -1,21 +1,23 @@
 -- | Simplest use of the unbound-generics library
---   uses generic programming for Alpha/Subst instances
+--   creates Alpha/Subst instances by hand instead of using generic programming
 --   uses bind/subst during normalization
-module Unbound.UnboundGenerics (impl) where
+module Unbound.Lazy.UnboundNonGenerics (impl) where
 
 import qualified Control.DeepSeq as DS
 import Control.Monad.Trans (lift)
 import GHC.Generics (Generic)
 import qualified Unbound.Generics.LocallyNameless as U
+import qualified Unbound.Generics.LocallyNameless.Bind as U
+import qualified Unbound.Generics.LocallyNameless.Name as U
 import Util.IdInt (IdInt (..))
 import Util.Impl (LambdaImpl (..))
 import qualified Util.Stats as Stats
-import qualified Util.Syntax.Lambda as LC
+import qualified Util.Syntax.Lambda as LC hiding (aeq)
 
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "Unbound.UnboundGenerics",
+    { impl_name = "Unbound.Lazy.NonUnboundGenerics",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
       impl_nf = nf,
@@ -26,26 +28,52 @@ impl =
 type Var = U.Name Exp
 
 data Exp
-  = Var !Var
-  | Lam !(U.Bind Var Exp)
-  | App !Exp !Exp
+  = Var Var
+  | Lam (U.Bind Var Exp)
+  | App Exp Exp
   deriving (Show, Generic)
 
 instance DS.NFData Exp
 
--- | With generic programming, the default implementation of Alpha
--- provides alpha-equivalence, open, close, and free variable calculation.
 instance U.Alpha Exp where
   {-# SPECIALIZE instance U.Alpha Exp #-}
+  open c np (Var n) = Var (U.open c np n)
+  open c np (Lam bnd) = Lam (U.open c np bnd)
+  open c np (App a1 a2) =
+    App (U.open c np a1) (U.open c np a2)
+  {-# INLINE U.open #-}
 
--- | The subst class uses generic programming to implement capture
--- avoiding substitution. It just needs to know where the variables
--- are.
+  close c np (Var n) = Var (U.close c np n)
+  close c np (Lam bnd) = Lam (U.close c np bnd)
+  close c np (App a1 a2) =
+    App (U.close c np a1) (U.close c np a2)
+  {-# INLINE U.close #-}
+
+  aeq' :: U.AlphaCtx -> Exp -> Exp -> Bool
+  aeq' c (Var x) (Var y) = U.aeq' c x y
+  aeq' c (Lam bnd1) (Lam bnd2) = U.aeq' c bnd1 bnd2
+  aeq' c (App a1 a2) (App b1 b2) = U.aeq' c a1 b1 && U.aeq' c a2 b2
+  aeq' _ _ _ = False
+  {-# INLINE U.aeq' #-}
+
 instance U.Subst Exp Exp where
   {-# SPECIALIZE instance U.Subst Exp Exp #-}
-  isvar (Var x) = Just (U.SubstName x)
-  isvar _ = Nothing
-  {-# INLINE U.isvar #-}
+
+  -- subst :: Name a -> a -> b -> b
+  subst :: U.Name Exp -> Exp -> Exp -> Exp
+  subst x b a@(Var y) = if x == y then b else a
+  subst x b (Lam bnd) = Lam (U.subst x b bnd)
+  subst x b (App a1 a2) = App (U.subst x b a1) (U.subst x b a2)
+
+  substBvs :: U.AlphaCtx -> [Exp] -> Exp -> Exp
+  substBvs ctx bs (Var x@(U.Bn j k)) 
+     | U.ctxLevel ctx == j, fromInteger k < length bs = bs !! fromInteger k
+  substBvs ctx bs (Var x) = Var x 
+  substBvs ctx bs (Lam bnd) = 
+    Lam (U.substBvs ctx bs bnd)
+  substBvs ctx bs (App a1 a2) = 
+    App (U.substBvs ctx bs a1) (U.substBvs ctx bs a2)
+  {-# INLINE U.subst #-}
 
 ---------------------------------------------------------------
 

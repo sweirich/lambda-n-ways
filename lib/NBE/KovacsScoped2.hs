@@ -29,6 +29,7 @@ import Util.Nat
 import Util.Syntax.Lambda as LC
 import qualified Util.Vec as V
 import Prelude hiding (length)
+import Debug.Trace
 
 impl :: LambdaImpl
 impl =
@@ -224,6 +225,7 @@ toDB = to []
       where
         b' = to ((v, FZ) : mapSnd FS vs) b
     to vs (App f a) = DApp (to vs f) (to vs a)
+    to vs lc = error ("No case for: " ++ show lc) 
 
 -- Convert back from deBruijn to the LC type.
 

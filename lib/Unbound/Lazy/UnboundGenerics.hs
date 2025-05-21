@@ -1,7 +1,7 @@
 -- | Simplest use of the unbound-generics library
 --   uses generic programming for Alpha/Subst instances
 --   uses bind/subst during normalization
-module Unbound.UnboundGenerics (impl) where
+module Unbound.Lazy.UnboundGenerics (impl) where
 
 import qualified Control.DeepSeq as DS
 import Control.Monad.Trans (lift)
@@ -15,7 +15,7 @@ import qualified Util.Syntax.Lambda as LC
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "Unbound.UnboundGenerics",
+    { impl_name = "Unbound.Lazy.UnboundGenerics",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
       impl_nf = nf,
@@ -26,9 +26,9 @@ impl =
 type Var = U.Name Exp
 
 data Exp
-  = Var !Var
-  | Lam !(U.Bind Var Exp)
-  | App !Exp !Exp
+  = Var Var
+  | Lam (U.Bind Var Exp)
+  | App Exp Exp
   deriving (Show, Generic)
 
 instance DS.NFData Exp
@@ -67,7 +67,7 @@ nfd (App f a) = do
     Lam b -> do
       nfd (U.instantiate b [a])
       --(x, b') <- U.unbind b
-      --nfd (U.subst x a b')
+      -- nfd (U.subst x a b')
     _ -> App <$> nfd f' <*> nfd a
 
 whnf :: Exp -> U.FreshM Exp
