@@ -109,7 +109,7 @@ nf e@(DVar _) = e
 nf (DLam b) = DLam (bind (nf (unbind b)))
 nf (DApp f a) =
   case whnf idE f of
-    DLam b -> nf (instantiate b a)
+    DLam b -> nf (instantiate b (nf a))
     f' -> DApp (nf f') (nf a)
 nf (DIf a b c) =
   case whnf idE a of 
