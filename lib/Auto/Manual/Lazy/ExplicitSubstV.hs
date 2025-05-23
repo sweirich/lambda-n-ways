@@ -1,7 +1,7 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE QuantifiedConstraints #-}
 {-# LANGUAGE LambdaCase #-}
--- doesn't use autoenv library
+-- doesn't use Rebound library
 -- explicit substitutions in arbitrary syntax nodes
 module Auto.Manual.Lazy.ExplicitSubstV (toDB, impl) where
 

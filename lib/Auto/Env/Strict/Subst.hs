@@ -2,11 +2,11 @@
 {-# LANGUAGE QuantifiedConstraints #-}
 
 -- | Well-scoped de Bruijn indices (strict)
--- with substitution from autoenv library, but doesn't 
+-- with substitution from Rebound library, but doesn't 
 -- use bind type
 module Auto.Env.Strict.Subst (toDB, impl) where
 
-import AutoEnv
+import Rebound
 import Data.Fin
 import Control.DeepSeq (NFData (..))
 import Data.Maybe (fromJust)

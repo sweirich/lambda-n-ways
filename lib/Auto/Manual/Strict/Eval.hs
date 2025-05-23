@@ -1,7 +1,7 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE QuantifiedConstraints #-}
 -- Uses well-scoped debruijn syntax 
--- Doesn't use autoenv library (or bind type)
+-- Doesn't use Rebound library (or bind type)
 -- Only evaluation for closed terms
 -- environment-based interpreter
 -- environment represented by a function

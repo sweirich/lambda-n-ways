@@ -5,7 +5,7 @@
 -- with naive substitution, using substitution from 
 module Auto.Env.Lazy.Subst (toDB, impl) where
 
-import AutoEnv
+import Rebound
 import Data.Fin
 import Control.DeepSeq (NFData (..))
 import Data.Maybe (fromJust)

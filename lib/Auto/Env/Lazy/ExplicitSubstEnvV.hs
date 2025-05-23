@@ -1,12 +1,12 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE QuantifiedConstraints #-}
 {-# LANGUAGE LambdaCase #-}
--- Uses autoenv library
+-- Uses Rebound library
 -- explicit substitutions in arbitrary syntax nodes
 -- passes environment explicitly while evaluating
 module Auto.Env.Lazy.ExplicitSubstEnvV (toDB, impl) where
 
-import AutoEnv
+import Rebound
 import Data.SNat as Nat
 import Data.Fin
 import Control.DeepSeq (NFData (..))

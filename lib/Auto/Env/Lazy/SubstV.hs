@@ -2,11 +2,11 @@
 {-# LANGUAGE QuantifiedConstraints #-}
 
 -- | Well-scoped de Bruijn indices (lazy)
--- with naive substitution, using substitution from autoenv
+-- with naive substitution, using substitution from Rebound
 -- evaluates argument before substituting
 module Auto.Env.Lazy.SubstV (toDB, impl) where
 
-import AutoEnv
+import Rebound
 import Data.Fin
 import Control.DeepSeq (NFData (..))
 import Data.Maybe (fromJust)

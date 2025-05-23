@@ -1,12 +1,12 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE QuantifiedConstraints #-}
--- Use the autoenv library, with a strict datatype
+-- Use the Rebound library, with a strict datatype
 -- environment argument for whnf function
 -- evaluate argument before adding to environment
 module Auto.Env.Strict.EnvV (toDB, impl) where
 
-import AutoEnv
-import AutoEnv.Bind.Single
+import Rebound
+import Rebound.Bind.Single
 import Data.Fin
 import Control.DeepSeq (NFData (..))
 import Data.Maybe (fromJust)

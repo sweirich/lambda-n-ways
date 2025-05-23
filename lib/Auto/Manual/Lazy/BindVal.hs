@@ -2,7 +2,7 @@
 {-# LANGUAGE QuantifiedConstraints #-}
 
 
--- | Uses the Autoenv library, with a lazy datatype
+-- | Uses the Rebound library, with a lazy datatype
 -- Separate data structure for values and expressions
 -- The whnf function does not include an explicit 
 -- environment argument

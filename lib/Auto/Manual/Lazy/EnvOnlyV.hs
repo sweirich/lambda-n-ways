@@ -1,7 +1,7 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE QuantifiedConstraints #-}
 {-# LANGUAGE LambdaCase #-}
--- doesn't use autoenv library
+-- doesn't use Rebound library
 -- doesn't delay substitutions at bind type
 -- passes environment argument explicitly and 
 module Auto.Manual.Lazy.EnvOnlyV (toDB, impl) where

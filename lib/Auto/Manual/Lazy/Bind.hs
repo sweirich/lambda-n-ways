@@ -1,7 +1,7 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE QuantifiedConstraints #-}
 {-# LANGUAGE LambdaCase #-}
--- doesn't use autoenv library, but creates 
+-- doesn't use Rebound library, but creates 
 -- a Bind type. (lazy representation)
 -- delays substitution using Bind but doesn't 
 -- pass it explicitly

@@ -1,7 +1,7 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE QuantifiedConstraints #-}
 {-# LANGUAGE LambdaCase #-}
--- doesn't use autoenv library
+-- doesn't use Rebound library
 -- explicit substitutions in arbitrary syntax nodes
 -- passes environment explicitly while evaluating
 module Auto.Manual.Lazy.ExplicitSubstEnvV (toDB, impl) where

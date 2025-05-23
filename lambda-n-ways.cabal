@@ -169,7 +169,6 @@ library
 
   build-depends:
       base              >=4.13
-    , autoenv
     , bound
     , constraints       >=0.11
     , containers
@@ -180,6 +179,7 @@ library
     , mtl
     , nominal
     , pretty
+    , rebound  
     , QuickCheck        >=2.13.2
     , some              >=1.0
     , syb               >=0.7
@@ -187,7 +187,8 @@ library
     , tasty-hunit       >=0.10.0.2
     , tasty-quickcheck  >=0.10.1.1
     , unbound-generics  ==0.4.4
-    , free-foil       
+    , free-foil     
+
 
   --                , RepLib >= 0.5.4.2
   --                , nom
@@ -224,9 +225,8 @@ executable LC
     -O2 -funfolding-use-threshold=16
     -fno-warn-unticked-promoted-constructors -fcross-module-specialise
 
-  build-depends:
-      autoenv
-    , base              >=4.13
+  build-depends: 
+      base              >=4.13
     , bound
     , containers
     , criterion
@@ -236,6 +236,7 @@ executable LC
     , mtl
     , pretty
     , QuickCheck        >=2.13.2
+    , rebound
     , tasty             >=1.2.3
     , tasty-hunit       >=0.10.0.2
     , tasty-quickcheck  >=0.10.1.1
@@ -275,7 +276,7 @@ test-suite test-timing
   build-depends:
       base              >=4.13
     , lambda-n-ways
-    , autoenv
+    , rebound
     , QuickCheck        >=2.13.2
     , tasty             >=1.2.3
     , tasty-hunit       >=0.10.0.2

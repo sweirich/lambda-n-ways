@@ -1,11 +1,11 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE QuantifiedConstraints #-}
--- Use the autoenv library, with a lazy datatype
+-- Use the Rebound library, with a lazy datatype
 -- environment argument for eval function
 module Auto.Env.Lazy.Env (toDB, impl) where
 
-import AutoEnv
-import AutoEnv.Bind.Single
+import Rebound
+import Rebound.Bind.Single
 import Data.Fin
 import Control.DeepSeq (NFData (..))
 import Data.Maybe (fromJust)

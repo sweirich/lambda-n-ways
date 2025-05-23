@@ -2,14 +2,14 @@
 {-# LANGUAGE QuantifiedConstraints #-}
 
 
--- | Uses the Autoenv library, with a lazy datatype
+-- | Uses the Rebound library, with a lazy datatype
 -- The whnf function does not include an explicit 
 -- environment argument
 -- "CBV"ish semantics, evaluate before entering environment
 module Auto.Env.Lazy.BindV (toDB, impl) where
 
-import AutoEnv
-import AutoEnv.Bind.Single
+import Rebound
+import Rebound.Bind.Single
 import Data.Fin
 import Control.DeepSeq (NFData (..))
 import Data.Maybe (fromJust)

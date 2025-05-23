@@ -1,12 +1,12 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE QuantifiedConstraints #-}
 
--- | Uses the Autoenv library, with a strict datatype
+-- | Uses the Rebound library, with a strict datatype
 -- The whnf function does not include an explicit environment argument
 module Auto.Env.Strict.Bind (toDB, impl) where
 
-import AutoEnv
-import AutoEnv.Bind.Single
+import Rebound
+import Rebound.Bind.Single
 import Data.Fin
 import Control.DeepSeq (NFData (..))
 import Data.Maybe (fromJust)

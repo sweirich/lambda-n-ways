@@ -3,7 +3,7 @@
 {-# LANGUAGE LambdaCase #-}
 
 -- | Well-scoped de Bruijn indices 
--- Doesn't use autoenv library (or bind type)
+-- Doesn't use Rebound library (or bind type)
 -- no bind type. evaluation based on substitution only
 -- CBV beta-rule (i.e. whnormalizes before instantiate)
 

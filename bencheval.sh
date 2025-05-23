@@ -10,7 +10,7 @@ usage() {
   echo "  -h, --help      Display this help message."
   echo ""
   echo "  This script will iterate through predefined variables, changing the line"
-  echo "  'import AutoEnv.Env.Internal' in ../autoenv/src/AutoEnv/Env.hs,"
+  echo "  'import Rebound.Env.Internal' in ../Rebound/src/Rebound/Env.hs,"
   echo "  executing 'make eval', moving files accordingly, generating CSV files,"
   echo "  combining them into an XLSX, and finally reverting the Haskell file."
   exit 1
@@ -31,7 +31,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Define the file to modify.
-file="../autoenv/src/AutoEnv/Env.hs"
+file="../Rebound/src/Rebound/Env.hs"
 
 # Check if the file exists.
 if [ ! -f "$file" ]; then
@@ -45,8 +45,8 @@ valid_variables=("Internal" "InternalA" "Functional" "InternalB" "InternalLazy")
 # Iterate through the variables.
 for variable in "${valid_variables[@]}"; do
   # Use sed to change the line.  Use a different sed syntax.
-  new_string="import AutoEnv.Env.$variable"
-  sed -i -e "s/import AutoEnv.Env.Internal/$new_string/" "$file"
+  new_string="import Rebound.Env.$variable"
+  sed -i -e "s/import Rebound.Env.Internal/$new_string/" "$file"
 
   # Check the exit status of sed.
   if [ $? -ne 0 ]; then
@@ -61,7 +61,7 @@ for variable in "${valid_variables[@]}"; do
   if [ $? -ne 0 ]; then
     echo "Error: 'make eval' failed for variable '$variable'."
     # Revert the file even if make eval fails
-    sed -i -e "s/import AutoEnv.Env.$variable/import AutoEnv.Env.Internal/" "$file"
+    sed -i -e "s/import Rebound.Env.$variable/import Rebound.Env.Internal/" "$file"
     exit 1
   fi
 
@@ -75,7 +75,7 @@ for variable in "${valid_variables[@]}"; do
   if [ ! -d "$source_dir" ]; then
     echo "Error: Source directory '$source_dir' not found for variable '$variable'."
     # Revert the file even if the directory is not found
-    sed -i -e "s/import AutoEnv.Env.$variable/import AutoEnv.Env.Internal/" "$file"
+    sed -i -e "s/import Rebound.Env.$variable/import Rebound.Env.Internal/" "$file"
     exit 1
   fi
 
@@ -84,7 +84,7 @@ for variable in "${valid_variables[@]}"; do
   if [ $? -ne 0 ]; then
     echo "Error: Failed to create destination directory '$dest_dir' for variable '$variable'."
     # Revert the file even if directory creation fails
-    sed -i -e "s/import AutoEnv.Env.$variable/import AutoEnv.Env.Internal/" "$file"
+    sed -i -e "s/import Rebound.Env.$variable/import Rebound.Env.Internal/" "$file"
     exit 1
   fi
 
@@ -94,13 +94,13 @@ for variable in "${valid_variables[@]}"; do
   if [ $? -ne 0 ]; then
     echo "Error: Failed to move files from '$source_dir' to '$dest_dir' and convert to CSV for variable '$variable'."
     # Revert the file even if file moving fails.
-    sed -i -e "s/import AutoEnv.Env.$variable/import AutoEnv.Env.Internal/" "$file"
+    sed -i -e "s/import Rebound.Env.$variable/import Rebound.Env.Internal/" "$file"
     exit 1
   fi
   echo "Successfully moved and converted files to CSV in '$dest_dir' for variable '$variable'."
 
   # Revert the Haskell file to its original state.
-  sed -i -e "s/import AutoEnv.Env.$variable/import AutoEnv.Env.Internal/" "$file"
+  sed -i -e "s/import Rebound.Env.$variable/import Rebound.Env.Internal/" "$file"
   if [ $? -ne 0 ]; then
     echo "Error: Failed to revert the Haskell file '$file' after processing variable '$variable'."
     exit 1

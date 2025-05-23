@@ -1,13 +1,13 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE QuantifiedConstraints #-}
 -- Uses well-scoped debruijn syntax 
--- Uses autoenv library for closures
+-- Uses Rebound library for closures
 -- Only evaluation for closed terms
 -- environment-based interpreter
 module Auto.Env.Lazy.EvalV (toDB, impl) where
 
-import AutoEnv
-import AutoEnv.Env
+import Rebound
+import Rebound.Env
 import Control.DeepSeq (NFData (..))
 import Data.Maybe (fromJust)
 import Text.PrettyPrint.HughesPJ
