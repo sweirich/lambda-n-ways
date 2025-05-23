@@ -17,7 +17,7 @@ library
     Auto.Env.Strict.Subst
     Auto.Env.Strict.EnvV
     Auto.Env.Strict.BindV
-    Auto.Env.Lazy.Eval
+    Auto.Env.Lazy.EvalV
     Auto.Env.Lazy.Env
     Auto.Env.Lazy.EnvV
     Auto.Env.Lazy.Bind

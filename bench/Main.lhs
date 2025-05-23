@@ -32,13 +32,18 @@
 >   impl2nf LambdaImpl {..} =
 >     Bench impl_name (rnf . impl_fromLC) lc
 
+> assertAll :: [Bool] -> Bool
+> assertAll (True : xs) = assertAll xs
+> assertAll [] = True
+> assertAll (False : xs) = assertAll xs -- error "error: assertAll FAILED!!!!" 
+
 > -- | Benchmarks for timing normal form calculation (multiple terms)
 > nf_bss :: [LC IdInt] -> [LC IdInt] -> [Bench]
 > nf_bss lcs nflcs = map impl2nf impls where
 >   impl2nf LambdaImpl {..} =
 >     let !tms = force (map impl_fromLC lcs) in
 >     let !nftms = force (map impl_fromLC nflcs) in
->     Bench (impl_name <> "/") (rnf . (map (\(t,r) -> impl_aeq (impl_nf t) r))) (zip tms nftms)
+>     Bench (impl_name <> "/") (rnf . assertAll . ((map (\(t,r) -> impl_aeq (impl_nf t) r)))) (zip tms nftms)
 
 
 > -- | Benchmarks for timing evaluation (multiple terms)

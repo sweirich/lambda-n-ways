@@ -1,7 +1,7 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE QuantifiedConstraints #-}
 -- Use the autoenv library, with a lazy datatype
--- environment argument for whnf function
+-- environment argument for eval function
 module Auto.Env.Lazy.Env (toDB, impl) where
 
 import AutoEnv
@@ -22,6 +22,8 @@ import Util.IdInt (IdInt (..), firstBoundId)
 import Util.Impl (LambdaImpl (..))
 import qualified Util.Stats as Stats
 import Util.Syntax.Lambda (LC (..))
+
+import Debug.Trace
 
 impl :: LambdaImpl
 impl =
@@ -93,11 +95,14 @@ instance Subst DB DB where
 
 nf :: DB n -> DB n
 nf e@(DVar _) = e
-nf (DLam b) = DLam (bind (nf (getBody b)))
-nf (DApp f a) =
+nf e@(DLam b) = 
+  DLam (bind (nf (getBody b)))
+nf e@(DApp f a) =
   case whnf idE f of
-    DLam b -> nf (instantiate b a)
-    f' -> DApp (nf f') (nf a)
+    DLam b ->
+      nf (instantiate b a)
+    f' ->
+      DApp (nf f') (nf a)
 nf e@(DBool _) = e
 nf (DIf a b c) = 
   case whnf idE a of 
@@ -105,10 +110,29 @@ nf (DIf a b c) =
     DBool False -> nf b
     a' -> DIf (nf a) (nf b) (nf c)
 
+isNeu :: DB m -> Bool
+isNeu (DVar _) = True
+isNeu (DApp f _) = isNeu f
+isNeu (DLam _) = False
+isNeu (DBool _) = False
+isNeu (DIf a _ _) = isNeu a
+
+isWhnf :: DB m -> Bool
+isWhnf (DVar _) = True
+isWhnf (DApp f _) = isNeu f
+isWhnf (DLam _) = True
+isWhnf (DBool _) = True
+isWhnf (DIf a _ _) = isNeu a
+
 whnf :: Env DB m n -> DB m -> DB n
-whnf r e@(DVar _) = applyE r e
-whnf r e@(DLam _) = applyE r e
-whnf r (DApp f a) =
+whnf r e@(DVar _) = 
+  -- only whnf the result of substitution 
+  -- if it is not already in whnf
+  if isWhnf e' then e' else whnf idE e' where
+    e' = (applyE r e) 
+whnf r e@(DLam _) = 
+  applyE r e
+whnf r e@(DApp f a) =
   case whnf r f of
     DLam b -> 
       instantiateWith b (applyE r a) whnf
@@ -125,7 +149,8 @@ eval :: DB n -> DB n
 eval = evalr idE 
 
 evalr :: Env DB m n -> DB m -> DB n
-evalr r e@(DVar x) = applyE r e
+evalr r e@(DVar x) = 
+  evalr idE (applyE r e)
 evalr r e@(DLam _) = applyE r e
 evalr r (DApp f a) =
   case evalr r f of

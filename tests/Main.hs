@@ -166,13 +166,16 @@ nfLennartUnitTests = do
 main :: IO ()
 main = do
   strictness <- mapM nfRandomTests ["full", "full-2"] -- "random25-20"]
-  nfRandoms <- mapM nfRandomTests ["random", "random2", "random35", "lams100"] -- random25
+  nfRandoms <- mapM nfRandomTests ["random", "random2", 
+                 "random15", "random20", "random25", "random35", "lams100"] -- random25
   nfLamTests <- mapM nfRandomTests ["t1", "t2", "t3", "t4", "t5", "t6", "t7"]
   nfFull <- mapM nfRandomTests ["full"]
   nfSimple <- mapM nfRandomTests ["capture10", "constructed10"]
   nfMoreTests <- mapM nfRandomTests ["tests", "onesubst", "twosubst", "threesubst", "foursubst"]
   lt <- nfLennartUnitTests
 
-  defaultMain $ testGroup "tests" $ strictness ++ nfLamTests ++ nfSimple ++ nfMoreTests -- ++ nfRandoms -- ++ [lt]
+  defaultMain $ testGroup "tests" $ 
+      strictness ++ nfLamTests ++ nfSimple ++ nfMoreTests ++ nfRandoms ++ [lt]
+                 ++ nfFull
 
 -- defaultMain $ testGroup "tests" ([rtQCs, aeqQCs, nfQCs] ++ nfRandoms ++ nfLamTests ++ nfSimple ++ nfMoreTests ++ [lt])

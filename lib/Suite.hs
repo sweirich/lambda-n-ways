@@ -8,7 +8,7 @@ import qualified Auto.Env.Strict.Bind
 import qualified Auto.Env.Strict.Subst
 import qualified Auto.Env.Strict.EnvV
 import qualified Auto.Env.Strict.BindV
-import qualified Auto.Env.Lazy.Eval
+import qualified Auto.Env.Lazy.EvalV
 import qualified Auto.Env.Lazy.Env
 import qualified Auto.Env.Lazy.EnvV
 import qualified Auto.Env.Lazy.Bind
@@ -124,7 +124,7 @@ import Util.Impl (LambdaImpl)
 -- | Implementations used in the benchmarking/test suite
 -- RHS must be a single variable name for Makefile
 impls :: [LambdaImpl]
-impls = autoenv_comparison
+impls = rebound_comparison
 
 interleave :: [a] -> [a] -> [a]
 interleave (a1 : a1s) (a2 : a2s) = a1 : a2 : interleave a1s a2s
@@ -138,8 +138,8 @@ broken =
 
 -- Implementations of normal order reduction
 -- using both lazy and strict datatype definitions
-autoenv_comparison :: [LambdaImpl]
-autoenv_comparison = autoenv ++ well_scoped ++ unbound
+rebound_comparison :: [LambdaImpl]
+rebound_comparison = rebound ++ well_scoped ++ unbound
 
 -- Well-scoped implmentations,
 well_scoped :: [LambdaImpl]
@@ -155,15 +155,16 @@ well_scoped = [ NBE.Lazy.KovacsScoped.impl,
 
 
 
-autoenv :: [LambdaImpl]
-autoenv = [ Auto.Env.Lazy.Bind.impl, 
-            Auto.Env.Strict.Bind.impl,
-            Auto.Env.Lazy.Env.impl, 
-            Auto.Env.Strict.Env.impl,
-            Auto.Env.Lazy.BindV.impl, 
+rebound :: [LambdaImpl]
+rebound = [ Auto.Env.Lazy.BindV.impl, 
             Auto.Env.Strict.BindV.impl,
             Auto.Env.Lazy.EnvV.impl, 
-            Auto.Env.Strict.EnvV.impl
+            Auto.Env.Strict.EnvV.impl, 
+            Auto.Env.Lazy.Bind.impl,
+            Auto.Env.Strict.Bind.impl,
+            Auto.Env.Lazy.Env.impl, 
+            Auto.Env.Strict.Env.impl 
+            
             ] 
 
 -- these versions using "substBind/instantiate" for beta-reduction
@@ -187,7 +188,7 @@ eval_manual_lazy = [
     --Auto.Manual.Lazy.SubstV.impl, 
     --Auto.Manual.Lazy.Bind.impl,
     Auto.Manual.Lazy.BindV.impl,
-    --Auto.Manual.Lazy.Eval.impl, 
+    --Auto.Manual.Lazy.EvalV.impl, 
     Auto.Manual.Lazy.EvalV.impl,
     --Auto.Manual.Lazy.EnvOnlyV.impl, -- loops
     --Auto.Manual.Lazy.Env.impl,
@@ -198,16 +199,15 @@ eval_manual_lazy = [
 
 eval_auto_lazy = [
     -- Auto.Env.Lazy.Subst.impl, 
-    -- Auto.Env.Lazy.SubstV.impl, 
+    -- Auto.Env.Lazy.SubstV.impl, -- much too slow
     -- Auto.Env.Lazy.Bind.impl,
     -- Auto.Env.Lazy.Eval.impl, 
     -- Auto.Env.Lazy.EvalV.impl,
-    -- Auto.Env.Lazy.Env.impl,
+    Auto.Env.Lazy.Env.impl, -- doesn't make sense
     Auto.Env.Lazy.BindV.impl,
-    Auto.Env.Lazy.EnvV.impl, 
-    -- Auto.Env.Lazy.ExplicitSubstEnvV.impl,
-    Auto.Env.Lazy.Bind.impl,
-    Auto.Env.Lazy.Env.impl
+    -- Auto.Env.Lazy.EnvV.impl, -- much too slow 
+    --Auto.Env.Lazy.ExplicitSubstEnvV.impl,
+    Auto.Env.Lazy.Bind.impl
   ]
 
 
@@ -229,7 +229,7 @@ all_eval = [  Auto.Manual.Strict.Subst.impl,
              Auto.Env.Strict.Env.impl,
              Auto.Env.Strict.Bind.impl,
              Auto.Env.Strict.Subst.impl,
-             Auto.Env.Lazy.Eval.impl, 
+             Auto.Env.Lazy.EvalV.impl, 
              Auto.Env.Lazy.Env.impl,
              Auto.Env.Lazy.EnvV.impl,
              Auto.Env.Lazy.Bind.impl,
@@ -240,8 +240,8 @@ all_eval = [  Auto.Manual.Strict.Subst.impl,
              ] 
 
 
-autoenv_eval :: [LambdaImpl]
-autoenv_eval = [Auto.Env.Lazy.Env.impl , 
+rebound_eval :: [LambdaImpl]
+rebound_eval = [Auto.Env.Lazy.Env.impl , 
                 Auto.Env.Lazy.Bind.impl ,
                 Auto.Env.Lazy.Subst.impl,
                 Auto.Env.Strict.Env.impl, 
@@ -255,7 +255,7 @@ all_impls =
   all_debruijn ++ all_locallyNameless ++ all_named ++ nbe ++ [Lennart.HOAS.impl]
 
 all_debruijn :: [LambdaImpl]
-all_debruijn = autoenv -- ++ debruijn ++ debruijn_lazy ++ [Lennart.DeBruijn.impl]
+all_debruijn = rebound -- ++ debruijn ++ debruijn_lazy ++ [Lennart.DeBruijn.impl]
 
 all_locallyNameless :: [LambdaImpl]
 all_locallyNameless = locallyNameless ++ locallyNameless_lazy
@@ -457,7 +457,7 @@ fast =
 
 -- fastest implementation in each category in the NF benchmark
 fast_nf :: [LambdaImpl]
-fast_nf = autoenv ++ nbe 
+fast_nf = rebound ++ nbe 
    ++ [ Auto.Manual.Lazy.Env.impl, Auto.Manual.Strict.Env.impl ]
 {-  [ -- LocallyNameless.Opt.impl, -- 2.56 XXX
     -- LocallyNameless.SupportOpt.impl, -- 2.59  -- new version of GHC degraded performance

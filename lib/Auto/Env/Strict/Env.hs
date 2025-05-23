@@ -106,8 +106,25 @@ nf (DIf a b c) =
     DBool False -> nf b
     a' -> DIf (nf a) (nf b) (nf c)
 
+
+isNeu :: DB m -> Bool
+isNeu (DVar _) = True
+isNeu (DApp f _) = isNeu f
+isNeu (DLam _) = False
+isNeu (DBool _) = False
+isNeu (DIf a _ _) = isNeu a
+
+isWhnf :: DB m -> Bool
+isWhnf (DVar _) = True
+isWhnf (DApp f _) = isNeu f
+isWhnf (DLam _) = True
+isWhnf (DBool _) = True
+isWhnf (DIf a _ _) = isNeu a
+
 whnf :: Env DB m n -> DB m -> DB n
-whnf r e@(DVar _) = applyE r e
+whnf r e@(DVar _) = 
+  if isWhnf e' then e' else whnf idE e' where
+    e' = (applyE r e) 
 whnf r e@(DLam _) = applyE r e
 whnf r (DApp f a) =
   case whnf r f of

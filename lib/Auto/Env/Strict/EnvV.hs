@@ -97,7 +97,7 @@ nf e@(DVar _) = e
 nf (DLam b) = DLam (bind (nf (getBody b)))
 nf (DApp f a) =
   case whnf idE f of
-    DLam b -> nf (instantiate b a)
+    DLam b -> nf (instantiate b (whnf idE a))
     f' -> DApp (nf f') (nf a)
 nf e@(DBool _) = e
 nf (DIf a b c) = 
@@ -106,6 +106,7 @@ nf (DIf a b c) =
     DBool False -> nf b
     a' -> DIf (nf a) (nf b) (nf c)
 
+-- invariant: all expressions in the environment are in whnf
 whnf :: Env DB m n -> DB m -> DB n
 whnf r e@(DVar _) = applyE r e
 whnf r e@(DLam _) = applyE r e
