@@ -32,7 +32,7 @@ impl =
       impl_toLC = fromDB,
       impl_nf = nf,
       impl_nfi = error "NFI unimplemented",
-      impl_eval = eval,
+      impl_eval = whnf idE,
       impl_aeq = (==)
     }
 
@@ -73,8 +73,6 @@ instance Subst DB DB where
   applyE s (DIf a b c) = DIf (applyE s a) (applyE s b) (applyE s c)
   applyE s (DBool b) = DBool b
   {-# INLINEABLE applyE #-}
-
-{-# SPECIALIZE applyEnv :: Env DB n m -> Fin n -> DB m #-}
 
 {-# SPECIALIZE idE :: Env DB n n #-}
 

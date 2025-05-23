@@ -16,6 +16,7 @@ import qualified Auto.Env.Lazy.BindV
 import qualified Auto.Env.Lazy.BindVal
 import qualified Auto.Env.Lazy.Subst
 import qualified Auto.Env.Lazy.SubstV
+import qualified Auto.Env.Lazy.ExplicitSubstV
 import qualified Auto.Env.Lazy.ExplicitSubstEnvV
 import qualified Auto.Manual.Strict.Env
 import qualified Auto.Manual.Strict.Bind
@@ -124,7 +125,7 @@ import Util.Impl (LambdaImpl)
 -- | Implementations used in the benchmarking/test suite
 -- RHS must be a single variable name for Makefile
 impls :: [LambdaImpl]
-impls = rebound_comparison
+impls = eval_lazy
 
 interleave :: [a] -> [a] -> [a]
 interleave (a1 : a1s) (a2 : a2s) = a1 : a2 : interleave a1s a2s
@@ -183,18 +184,20 @@ unbound =
 eval_subst = [ Auto.Manual.Lazy.BindV.impl, 
                Auto.Manual.Strict.BindV.impl]
 
+eval_lazy = eval_manual_lazy ++ eval_auto_lazy
+
 eval_manual_lazy = [
     --Auto.Manual.Lazy.Subst.impl, 
     --Auto.Manual.Lazy.SubstV.impl, 
-    --Auto.Manual.Lazy.Bind.impl,
+    Auto.Manual.Lazy.Bind.impl,
     Auto.Manual.Lazy.BindV.impl,
     --Auto.Manual.Lazy.EvalV.impl, 
-    Auto.Manual.Lazy.EvalV.impl,
+    --Auto.Manual.Lazy.EvalV.impl,
     --Auto.Manual.Lazy.EnvOnlyV.impl, -- loops
-    --Auto.Manual.Lazy.Env.impl,
+    Auto.Manual.Lazy.Env.impl,
     Auto.Manual.Lazy.EnvV.impl,
-    Auto.Manual.Lazy.ExplicitSubstEnvV.impl,
-    Auto.Manual.Lazy.ExplicitSubstV.impl
+    Auto.Manual.Lazy.ExplicitSubstV.impl,
+    Auto.Manual.Lazy.ExplicitSubstEnvV.impl
   ]
 
 eval_auto_lazy = [
@@ -203,11 +206,12 @@ eval_auto_lazy = [
     -- Auto.Env.Lazy.Bind.impl,
     -- Auto.Env.Lazy.Eval.impl, 
     -- Auto.Env.Lazy.EvalV.impl,
-    Auto.Env.Lazy.Env.impl, -- doesn't make sense
+    Auto.Env.Lazy.Bind.impl,
     Auto.Env.Lazy.BindV.impl,
-    -- Auto.Env.Lazy.EnvV.impl, -- much too slow 
-    --Auto.Env.Lazy.ExplicitSubstEnvV.impl,
-    Auto.Env.Lazy.Bind.impl
+    Auto.Env.Lazy.Env.impl, 
+    Auto.Env.Lazy.EnvV.impl,
+    Auto.Env.Lazy.ExplicitSubstV.impl,
+    Auto.Env.Lazy.ExplicitSubstEnvV.impl
   ]
 
 

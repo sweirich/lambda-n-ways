@@ -3,8 +3,8 @@
 {-# LANGUAGE LambdaCase #-}
 -- Uses Rebound library
 -- explicit substitutions in arbitrary syntax nodes
--- passes environment explicitly while evaluating
-module Auto.Env.Lazy.ExplicitSubstEnvV (toDB, impl) where
+
+module Auto.Env.Lazy.ExplicitSubstV (toDB, impl) where
 
 import Rebound
 import Data.SNat as Nat
@@ -18,13 +18,13 @@ import Util.Syntax.Lambda (LC (..))
 impl :: LambdaImpl
 impl =
   LambdaImpl
-    { impl_name = "Auto.Env.Lazy.ExplicitSubstEnvV",
+    { impl_name = "Auto.Env.Lazy.ExplicitSubstV",
       impl_fromLC = toDB,
       impl_toLC = fromDB,
       impl_nf = nf,
       impl_nfi = error "NFI unimplemented",
       impl_aeq = (==),
-      impl_eval = whnf' idE 
+      impl_eval = whnf 
     }
 
 
@@ -55,9 +55,6 @@ instance NFData (Exp a) where
   rnf (Sub r t) = rnf (applyE r t)
 ----------------------------------------------------------
 
-{-
-type Env n m = Fin n -> Exp m
--}
 -- Apply a substitution to a term; composing 
 -- with any explicit substitutions and pushing 
 -- them one level down the syntax tree
@@ -87,11 +84,11 @@ nf :: Exp n -> Exp n
 nf e@(DVar _) = e
 nf (DLam b) = DLam (nf b)
 nf (DApp f a) =
-  case whnf' idE f of
-    DLam b -> nf (applyE (singletonE (whnf' idE a)) b)
+  case whnf f of
+    DLam b -> nf (applyE (singletonE (whnf a)) b)
     f' -> DApp (nf f') (nf a)
 nf (DIf a b c) =
-  case whnf' idE a of 
+  case whnf a of 
     DBool True -> nf b
     DBool False -> nf c
     a' -> DIf (nf a') (nf b) (nf c)
@@ -99,22 +96,22 @@ nf (DBool b) = DBool b
 nf (Sub r t) = nf (applyE r t)
 
 
-whnf' :: Env Exp m n -> Exp m -> Exp n
-whnf' r e@(DVar x) = applyE r e
-whnf' r e@(DLam _) = applyE r e
-whnf' r (DApp f a) =
-  case whnf' r f of
-    DLam b' -> 
-        whnf' (singletonE (whnf' r a)) b'
+whnf :: Exp n -> Exp n
+whnf e@(DVar x) = e
+whnf e@(DLam _) = e
+whnf (DApp f a) =
+  case whnf f of
+    DLam b -> 
+        whnf (applyE (singletonE (whnf a)) b)
     f' -> 
       -- ok to leave Sub around a as top-level is App
-      DApp f' (Sub r a)
-whnf' r (DBool b) = DBool b
-whnf' r (DIf a b c) = case whnf' r a of 
-  DBool True -> whnf' r b
-  DBool False -> whnf' r c
-  a' -> DIf a' (Sub r b) (Sub r c)
-whnf' r (Sub s t) = whnf' (s .>> r) t
+      DApp f' a
+whnf (DBool b) = DBool b
+whnf (DIf a b c) = case whnf a of 
+  DBool True -> whnf b
+  DBool False -> whnf c
+  a' -> DIf a' b c
+whnf (Sub s t) = whnf (applyE s t)
 
 
 

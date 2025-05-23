@@ -98,7 +98,7 @@ nf e@(DVar _) = e
 nf (DLam b) = DLam (nf b)
 nf (DApp f a) =
   case whnf' idE f of
-    DLam b -> nf (apply (singleton (nf a)) b)
+    DLam b -> nf (apply (singleton (whnf' idE a)) b)
     f' -> DApp (nf f') (nf a)
 nf (DIf a b c) =
   case whnf' idE a of 

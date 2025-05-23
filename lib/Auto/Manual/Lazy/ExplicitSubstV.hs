@@ -72,10 +72,8 @@ type Env n m = Fin n -> Exp m
 -- Invariant: result of apply is *not* a Sub.
 apply :: Env n m -> Exp n -> Exp m
 apply s (DVar i) = s i
-apply s (DLam b) = 
-  DLam (Sub (up s) b)
-apply s (DApp f a) = 
-  DApp (Sub s f) (Sub s a)
+apply s (DLam b) = DLam (Sub (up s) b)
+apply s (DApp f a) = DApp (Sub s f) (Sub s a)
 apply s (DIf a b c) = DIf (Sub s a) (Sub s b) (Sub s c)
 apply s (DBool b) = DBool b
 apply s (Sub r t) = apply (s .>> r) t
@@ -107,7 +105,7 @@ nf e@(DVar _) = e
 nf (DLam b) = DLam (nf b)
 nf (DApp f a) =
   case whnf f of
-    DLam b -> nf (apply (singleton (nf a)) b)
+    DLam b -> nf (apply (singleton (whnf a)) b)
     f' -> DApp (nf f') (nf a)
 nf (DIf a b c) =
   case whnf a of 
@@ -132,25 +130,6 @@ whnf (DIf a b c) = case whnf a of
   DBool False -> whnf c
   a' -> DIf a' b c
 whnf (Sub s t) = whnf (apply s t)
-
-
-whnf' :: Env m n -> Exp m -> Exp n
-whnf' r e@(DVar x) = apply r e
-whnf' r e@(DLam _) = apply r e
-whnf' r (DApp f a) =
-  case whnf' r f of
-    DLam b' -> 
-        whnf' (singleton (whnf' r a)) b'
-    f' -> 
-      -- ok to leave Sub around a as top-level is App
-      DApp f' (Sub r a)
-whnf' r (DBool b) = DBool b
-whnf' r (DIf a b c) = case whnf' r a of 
-  DBool True -> whnf' r b
-  DBool False -> whnf' r c
-  a' -> DIf a' (Sub r b) (Sub r c)
-whnf' r (Sub s t) = whnf' (r .>> s) t
-
 
 
 ---------------------------------------------------------

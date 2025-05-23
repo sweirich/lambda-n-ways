@@ -121,7 +121,7 @@
 >    , bgroup "nf"   $ map runBench (nf_bss [lennart] [lambdaFalse]) 
 >    --, bgroup "aeq"  $ map runBench (aeq_fresh_bs lennart)
 >    --, bgroup "aeqs" $ map runBench (aeq_bs lennart lennart) 
->    --, bgroup "eval" $ map runBench (eval_bss [lennartb] [Bool False])
+>    , bgroup "eval" $ map runBench (eval_bss [lennartb] [Bool False])
 >    --, bgroup "eval5" $ map runBench (eval_bss [lennartb5] [Bool False])
 >    --, bgroup "eval4" $ map runBench (eval_bss [lennartb4] [Bool False])
 >    --, bgroup "evalC" $ map runBench (eval_bss [lennartC] [Bool False])

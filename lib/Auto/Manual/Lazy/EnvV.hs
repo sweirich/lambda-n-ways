@@ -109,7 +109,7 @@ nf e@(DVar _) = e
 nf (DLam b) = DLam (bind (nf (unbind b)))
 nf (DApp f a) =
   case whnf idE f of
-    DLam b -> nf (instantiate b (nf a))
+    DLam b -> nf (instantiate b (whnf idE a))
     f' -> DApp (nf f') (nf a)
 nf (DIf a b c) =
   case whnf idE a of 
@@ -119,7 +119,7 @@ nf (DIf a b c) =
 nf (DBool b) = DBool b
 
 whnf :: Env m n -> Exp m -> Exp n
-whnf r (DVar x) = r x
+whnf r e@(DVar x) = apply r e
 whnf r e@(DLam _) = apply r e
 whnf r (DApp f a) =
   case whnf r f of

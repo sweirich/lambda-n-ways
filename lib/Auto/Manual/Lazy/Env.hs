@@ -119,8 +119,25 @@ nf (DIf a b c) =
     a' -> DIf (nf a') (nf b) (nf c)
 nf (DBool b) = DBool b
 
+
+isNeu :: Exp m -> Bool
+isNeu (DVar _) = True
+isNeu (DApp f _) = isNeu f
+isNeu (DLam _) = False
+isNeu (DBool _) = False
+isNeu (DIf a _ _) = isNeu a
+
+isWhnf :: Exp m -> Bool
+isWhnf (DVar _) = True
+isWhnf (DApp f _) = isNeu f
+isWhnf (DLam _) = True
+isWhnf (DBool _) = True
+isWhnf (DIf a _ _) = isNeu a
+
 whnf :: Env m n -> Exp m -> Exp n
-whnf r (DVar x) = whnf idE (r x)
+whnf r e@(DVar x) = 
+  if isWhnf e' then e' else whnf idE e' where
+    e' = apply r e
 whnf r e@(DLam _) = apply r e
 whnf r (DApp f a) =
   case whnf r f of
