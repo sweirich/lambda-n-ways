@@ -46,7 +46,7 @@ instance Eq (Exp n) where
   Sub s t == Sub r u = applyE s t == applyE r u
   _ == _ = False
 
-instance NFData (Exp a) where
+instance SNatI a => NFData (Exp a) where
   rnf (DVar i) = rnf i
   rnf (DLam d) = rnf d
   rnf (DApp a b) = rnf a `seq` rnf b
@@ -65,22 +65,22 @@ instance SubstVar Exp where
 instance Subst Exp Exp where
   applyE :: Env Exp n m -> Exp n -> Exp m
   applyE s (DVar i) = applyEnv s i
-  applyE s (DLam b) = 
+  applyE s (DLam b) = withScope s $
     DLam (Sub (up s) b)
   applyE s (DApp f a) = 
     DApp (Sub s f) (Sub s a)
   applyE s (DIf a b c) = DIf (Sub s a) (Sub s b) (Sub s c)
   applyE s (DBool b) = DBool b
-  applyE s (Sub r t) = applyE (r .>> s) t
+  applyE s (Sub r t) = withScope s $ applyE (r .>> s) t
   {-# INLINEABLE applyE #-}
 
-{-# SPECIALIZE idE :: Env Exp n n #-}
+{-# SPECIALIZE idE :: SNatI n => Env Exp n n #-}
 
-{-# SPECIALIZE (.>>) :: Env Exp m n -> Env Exp n p -> Env Exp m p #-}
+{-# SPECIALIZE (.>>) :: SNatI p => Env Exp m n -> Env Exp n p -> Env Exp m p #-}
 ----------------------------------------------------
 
 -- result of nf is not a Sub
-nf :: Exp n -> Exp n
+nf :: SNatI n => Exp n -> Exp n
 nf e@(DVar _) = e
 nf (DLam b) = DLam (nf b)
 nf (DApp f a) =
@@ -96,7 +96,7 @@ nf (DBool b) = DBool b
 nf (Sub r t) = nf (applyE r t)
 
 
-whnf :: Exp n -> Exp n
+whnf :: SNatI n => Exp n -> Exp n
 whnf e@(DVar x) = e
 whnf e@(DLam _) = e
 whnf (DApp f a) =
@@ -125,7 +125,7 @@ must be closed or 'fromJust' will error.
 toDB :: LC IdInt -> Exp 'Z
 toDB = to []
   where
-    to :: [(IdInt, Fin n)] -> LC IdInt -> Exp n
+    to :: SNatI n => [(IdInt, Fin n)] -> LC IdInt -> Exp n
     to vs (Var v) = DVar (fromJust (lookup v vs))
     to vs (Lam v b) = DLam b'
       where
@@ -136,10 +136,10 @@ toDB = to []
 
 -- Convert back from deBruijn to the LC type.
 
-fromDB :: Exp n -> LC IdInt
+fromDB :: Exp Z -> LC IdInt
 fromDB = from firstBoundId
   where
-    from :: IdInt -> Exp n -> LC IdInt
+    from :: SNatI n => IdInt -> Exp n -> LC IdInt
     from (IdInt n) (DVar i)
       | toInt i < 0 = Var (IdInt $ toInt i)
       | toInt i >= n = Var (IdInt $ toInt i)

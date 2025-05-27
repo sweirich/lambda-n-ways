@@ -25,7 +25,6 @@ library
     Auto.Env.Lazy.EnvV
     Auto.Env.Lazy.Bind
     Auto.Env.Lazy.BindV
-    Auto.Env.Lazy.BindVal
     Auto.Env.Lazy.Subst
     Auto.Env.Lazy.SubstV
     Auto.Env.Lazy.ExplicitSubstV

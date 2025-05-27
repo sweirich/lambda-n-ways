@@ -16,7 +16,6 @@ import qualified Auto.Env.Lazy.EnvV
 import qualified Auto.Env.Lazy.EnvGenV
 import qualified Auto.Env.Lazy.Bind
 import qualified Auto.Env.Lazy.BindV
-import qualified Auto.Env.Lazy.BindVal
 import qualified Auto.Env.Lazy.Subst
 import qualified Auto.Env.Lazy.SubstV
 import qualified Auto.Env.Lazy.ExplicitSubstV

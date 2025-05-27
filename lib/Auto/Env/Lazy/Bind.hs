@@ -45,19 +45,19 @@ data DB n where
   DIf :: DB n -> DB n -> DB n -> DB n
 -- standalone b/c GADT
 -- alpha equivalence is (==)
-deriving instance Eq (DB n)
+deriving instance SNatI n =>  Eq (DB n)
 
-instance Eq (Bind DB DB n) where
+instance SNatI n => Eq (Bind DB DB n) where
   b1 == b2 = getBody b1 == getBody b2
 
-instance NFData (DB a) where
+instance SNatI a => NFData (DB a) where
   rnf (DVar i) = rnf i
   rnf (DLam d) = rnf d
   rnf (DApp a b) = rnf a `seq` rnf b
   rnf (DBool b) = rnf b
   rnf (DIf a b c) = rnf a `seq` rnf b `seq` rnf c
 
-instance (Subst v e, Subst v v, forall n. NFData (e n)) => NFData (Bind v e n) where
+instance (Subst v e, Subst v v, forall n. SNatI n => NFData (e n), SNatI n) => NFData (Bind v e n) where
   rnf b = rnf (getBody b)
 
 ----------------------------------------------------------
@@ -74,26 +74,23 @@ instance Subst DB DB where
   applyE s (DBool b) = DBool b
   {-# INLINEABLE applyE #-}
 
-{-# SPECIALIZE applyEnv :: Env DB n m -> Fin n -> DB m #-}
+{-# SPECIALIZE idE :: SNatI n => Env DB n n #-}
 
-{-# SPECIALIZE idE :: Env DB n n #-}
+{-# SPECIALIZE (.>>) :: SNatI p => Env DB m n -> Env DB n p -> Env DB m p #-}
 
-{-# SPECIALIZE (.>>) :: Env DB m n -> Env DB n p -> Env DB m p #-}
+{-# SPECIALIZE up :: SNatI m => Env DB n m -> Env DB ('S n) ('S m) #-}
 
+{-# SPECIALIZE getBody :: SNatI n => Bind DB DB n -> DB ('S n) #-}
 
-{-# SPECIALIZE up :: Env DB n m -> Env DB ('S n) ('S m) #-}
+{-# SPECIALIZE instantiate :: SNatI n => Bind DB DB n -> DB n -> DB n #-}
 
-{-# SPECIALIZE getBody :: Bind DB DB n -> DB ('S n) #-}
-
-{-# SPECIALIZE instantiate :: Bind DB DB n -> DB n -> DB n #-}
-
-{-# SPECIALIZE bind :: DB (S n) -> Bind DB DB n #-}
+{-# SPECIALIZE bind :: SNatI n => DB (S n) -> Bind DB DB n #-}
 
 ----------------------------------------------------------
 
 -- Computing the normal form proceeds as usual.
 
-nf :: DB n -> DB n
+nf :: SNatI n => DB n -> DB n
 nf e@(DVar _) = e
 nf (DLam b) = DLam (bind (nf (getBody b)))
 nf (DApp f a) =
@@ -107,7 +104,7 @@ nf (DIf a b c) =
     DBool False -> nf b
     a' -> DIf (nf a) (nf b) (nf c)
 
-whnf :: DB n -> DB n
+whnf :: SNatI n => DB n -> DB n
 whnf e@(DVar _) = e
 whnf e@(DLam _) = e
 whnf (DApp f a) =
@@ -123,7 +120,7 @@ whnf (DIf a b c) =
     
 
 
-eval :: DB n -> DB n
+eval :: SNatI n => DB n -> DB n
 eval e@(DVar _) = e
 eval e@(DLam _) = e
 eval (DApp f a) =
@@ -139,7 +136,7 @@ eval (DIf a b c) =
 
 ---------------------------------------------------------------
 
-nfi :: Int -> DB n -> Stats.M (DB n)
+nfi :: SNatI n => Int -> DB n -> Stats.M (DB n)
 nfi 0 _ = Stats.done
 nfi _ e@(DVar _) = return e
 nfi n (DLam b) = DLam . bind <$> nfi (n - 1) (getBody b)
@@ -155,7 +152,7 @@ nfi n (DIf a b c) = do
     DBool True -> nfi (n -1) b
     DBool False -> nfi (n -1) c
     _ -> DIf <$> nfi (n-1) a' <*> nfi (n-1) b <*> nfi (n -1) c 
-whnfi :: Int -> DB n -> Stats.M (DB n)
+whnfi :: SNatI n => Int -> DB n -> Stats.M (DB n)
 whnfi 0 _ = Stats.done
 whnfi _ e@(DVar _) = return e
 whnfi _ e@(DLam _) = return e
@@ -182,7 +179,7 @@ must be closed or 'fromJust' will error.
 toDB :: LC IdInt -> DB 'Z
 toDB = to []
   where
-    to :: [(IdInt, Fin n)] -> LC IdInt -> DB n
+    to :: SNatI n => [(IdInt, Fin n)] -> LC IdInt -> DB n
     to vs (Var v) = DVar (fromJust (lookup v vs))
     to vs (Lam v b) = DLam (bind b')
       where
@@ -192,10 +189,10 @@ toDB = to []
     to vs (If a b c) = DIf (to vs a) (to vs b) (to vs c)
 -- Convert back from deBruijn to the LC type.
 
-fromDB :: DB n -> LC IdInt
+fromDB :: SNatI n => DB n -> LC IdInt
 fromDB = from firstBoundId
   where
-    from :: IdInt -> DB n -> LC IdInt
+    from :: SNatI n => IdInt -> DB n -> LC IdInt
     from (IdInt n) (DVar i)
       | toInt i < 0 = Var (IdInt $ toInt i)
       | toInt i >= n = Var (IdInt $ toInt i)
@@ -210,10 +207,10 @@ mapSnd f = map (\(v, i) -> (v, f i))
 
 ---------------------------------------------------------
 
-instance Show (DB n) where
+instance SNatI n => Show (DB n) where
   show = renderStyle style . ppLC 0
 
-ppLC :: Int -> DB n -> Doc
+ppLC :: SNatI n => Int -> DB n -> Doc
 ppLC _ (DVar v) = text $ "x" ++ show v
 ppLC p (DLam b) = pparens (p > 0) $ text "\\." PP.<> ppLC 0 (getBody b)
 ppLC p (DApp f a) = pparens (p > 1) $ ppLC 1 f <+> ppLC 2 a

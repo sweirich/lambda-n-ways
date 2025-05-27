@@ -45,9 +45,9 @@ data DB n where
 
 -- standalone b/c GADT
 -- alpha equivalence is (==)
-deriving instance Eq (DB n)
+deriving instance SNatI n => Eq (DB n)
 
-instance NFData (DB a) where
+instance SNatI a => NFData (DB a) where
   rnf (DVar i) = rnf i
   rnf (DLam d) = rnf d
   rnf (DApp a b) = rnf a `seq` rnf b
@@ -63,27 +63,26 @@ instance SubstVar DB where
 
 instance Subst DB DB where
   applyE s (DVar i) = applyEnv s i
-  applyE s (DLam b) = DLam (applyE (up s) b)
+  applyE s (DLam b) = withScope s $ DLam (applyE (up s) b)
   applyE s (DApp f a) = DApp (applyE s f) (applyE s a)
   applyE s (DIf a b c) = DIf (applyE s a) (applyE s b) (applyE s c)
   applyE s (DBool b) = DBool b
   {-# INLINEABLE applyE #-}
 
-{-# SPECIALIZE applyEnv :: Env DB n m -> Fin n -> DB m #-}
 
-{-# SPECIALIZE idE :: Env DB n n #-}
+{-# SPECIALIZE idE :: SNatI n => Env DB n n #-}
 
-{-# SPECIALIZE (.>>) :: Env DB m n -> Env DB n p -> Env DB m p #-}
+{-# SPECIALIZE (.>>) :: SNatI p => Env DB m n -> Env DB n p -> Env DB m p #-}
 
 
-{-# SPECIALIZE up :: Env DB n m -> Env DB ('S n) ('S m) #-}
+{-# SPECIALIZE up :: SNatI m => Env DB n m -> Env DB ('S n) ('S m) #-}
 
 
 ----------------------------------------------------------
 
 -- Computing the normal form proceeds as usual.
 
-nf :: DB n -> DB n
+nf :: SNatI n => DB n -> DB n
 nf e@(DVar _) = e
 nf (DLam b) = DLam (nf b)
 nf (DApp f a) =
@@ -97,7 +96,7 @@ nf (DIf a b c) =
     DBool False -> nf b
     a' -> DIf (nf a) (nf b) (nf c)
 
-whnf :: DB n -> DB n
+whnf :: SNatI n => DB n -> DB n
 whnf e@(DVar _) = e
 whnf e@(DLam _) = e
 whnf (DApp f a) =
@@ -113,7 +112,7 @@ whnf (DIf a b c) =
 
 
 
-eval :: DB n -> DB n
+eval :: SNatI n => DB n -> DB n
 eval e@(DVar _) = e
 eval e@(DLam _) = e
 eval (DApp f a) =
@@ -137,7 +136,7 @@ must be closed or 'fromJust' will error.
 toDB :: LC IdInt -> DB 'Z
 toDB = to []
   where
-    to :: [(IdInt, Fin n)] -> LC IdInt -> DB n
+    to :: SNatI n => [(IdInt, Fin n)] -> LC IdInt -> DB n
     to vs (Var v) = DVar (fromJust (lookup v vs))
     to vs (Lam v b) = DLam b'
       where
@@ -147,10 +146,10 @@ toDB = to []
     to vs (If a b c) = DIf (to vs a) (to vs b) (to vs c)
 -- Convert back from deBruijn to the LC type.
 
-fromDB :: DB n -> LC IdInt
+fromDB :: SNatI n => DB n -> LC IdInt
 fromDB = from firstBoundId
   where
-    from :: IdInt -> DB n -> LC IdInt
+    from :: SNatI n => IdInt -> DB n -> LC IdInt
     from (IdInt n) (DVar i)
       | toInt i < 0 = Var (IdInt $ toInt i)
       | toInt i >= n = Var (IdInt $ toInt i)
@@ -162,17 +161,3 @@ fromDB = from firstBoundId
     
 mapSnd :: (a -> b) -> [(c, a)] -> [(c, b)]
 mapSnd f = map (\(v, i) -> (v, f i))
-
----------------------------------------------------------
-
-instance Show (DB n) where
-  show = renderStyle style . ppLC 0
-
-ppLC :: Int -> DB n -> Doc
-ppLC _ (DVar v) = text $ "x" ++ show v
-ppLC p (DLam b) = pparens (p > 0) $ text "\\." PP.<> ppLC 0 b
-ppLC p (DApp f a) = pparens (p > 1) $ ppLC 1 f <+> ppLC 2 a
-
-pparens :: Bool -> Doc -> Doc
-pparens True d = parens d
-pparens False d = d

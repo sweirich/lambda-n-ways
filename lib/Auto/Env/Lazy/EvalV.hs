@@ -45,9 +45,9 @@ data Term n where
   DIf :: Term n -> Term n -> Term n -> Term n
 -- standalone b/c GADT
 -- alpha equivalence is (==)
-deriving instance Eq (Term n)
+deriving instance SNatI n => Eq (Term n)
 
-instance NFData (Term a) where
+instance SNatI a => NFData (Term a) where
   rnf (DVar i) = rnf i
   rnf (DLam d) = rnf d
   rnf (DApp a b) = rnf a `seq` rnf b
@@ -57,12 +57,12 @@ instance NFData (Term a) where
 instance SubstVar Val where
   var = error "xx"
 instance Subst Val Val where
-  applyE r (VClos r' x) = VClos (r' .>> r) x
+  applyE r (VClos r' x) = withScope r $ VClos (r' .>> r) x
   applyE r (VBool x) = VBool x
 
 ----------------------------------------------------------
 
-data Val m = forall n. VClos (Env Val n m) (Term (S n)) 
+data Val m = forall n. SNatI n => VClos (Env Val n m) (Term (S n)) 
            | VBool Bool
 
 ---------------------------------------------------------
@@ -75,7 +75,7 @@ fromVal (VClos env b) = error "not a ground type"
 eval :: Term Z -> Term Z
 eval = fromVal . evalr zeroE
 
-evalr :: Env Val m Z -> Term m -> Val Z
+evalr :: SNatI m => Env Val m Z -> Term m -> Val Z
 evalr r e@(DVar x) = applyEnv r x
 evalr r (DLam e) = VClos r e
 evalr r (DApp f a) =
@@ -94,7 +94,7 @@ evalr r (DIf a b c) =
 toDB :: LC IdInt -> Term 'Z
 toDB = to []
   where
-    to :: [(IdInt, Fin n)] -> LC IdInt -> Term n
+    to :: SNatI n => [(IdInt, Fin n)] -> LC IdInt -> Term n
     to vs (Var v) = (DVar (fromJust (lookup v vs)))
     to vs (Lam v b) = (DLam b')
       where
@@ -104,10 +104,10 @@ toDB = to []
     to vs (If a b c) = DIf (to vs a) (to vs b) (to vs c)
 -- Convert back from deBruijn to the LC type.
 
-fromDB :: Term n -> LC IdInt
+fromDB :: SNatI n => Term n -> LC IdInt
 fromDB = from firstBoundId
   where
-    from :: IdInt -> Term n -> LC IdInt
+    from :: SNatI n => IdInt -> Term n -> LC IdInt
     from (IdInt n) (DVar i)
       | toInt i < 0 = Var (IdInt $ toInt i)
       | toInt i >= n = Var (IdInt $ toInt i)
