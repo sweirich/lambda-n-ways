@@ -15,10 +15,13 @@ library
     Auto.Env.Strict.Env
     Auto.Env.Strict.Bind
     Auto.Env.Strict.Subst
+    Auto.Env.Strict.EnvGen
+    Auto.Env.Strict.EnvGenV
     Auto.Env.Strict.EnvV
     Auto.Env.Strict.BindV
     Auto.Env.Lazy.EvalV
     Auto.Env.Lazy.Env
+    Auto.Env.Lazy.EnvGenV
     Auto.Env.Lazy.EnvV
     Auto.Env.Lazy.Bind
     Auto.Env.Lazy.BindV
@@ -58,6 +61,7 @@ library
     Core.VarEnv
     Core.VarSet
     DeBruijn.Bound
+    DeBruijn.BoundV
     DeBruijn.Cornell
     DeBruijn.CPDT
     DeBruijn.Kit
@@ -80,6 +84,7 @@ library
     DeBruijn.Lennart
     DeBruijn.Lift
     DeBruijn.Nested
+    DeBruijn.NestedV
     DeBruijn.Par.B
     DeBruijn.Par.Fun
     DeBruijn.Par.GB
@@ -117,6 +122,7 @@ library
     Named.Lazy.SimpleH
     Named.Lazy.SimpleM
     Named.Foil
+    Named.FoilV
     Named.Lennart
     Named.NominalG
     Named.Simple
@@ -142,6 +148,8 @@ library
     Support.TypedSubstOpt
     Unbound.UnboundGenerics
     Unbound.UnboundNonGenerics
+    Unbound.UnboundGenericsV
+    Unbound.UnboundNonGenericsV
     Unbound.Lazy.UnboundGenerics
     Unbound.Lazy.UnboundNonGenerics
     Util.Id

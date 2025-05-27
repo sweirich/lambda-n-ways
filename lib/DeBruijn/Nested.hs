@@ -23,7 +23,7 @@ impl =
       impl_fromLC = toDB,
       impl_toLC = fromDB,
       impl_nf = nfd,
-      impl_nfi = nfi,
+      impl_nfi = error "nfi unimplemented",
       impl_aeq = (==),
       impl_eval = whnf
     }
@@ -42,7 +42,8 @@ mapTr f (x, y, z) = (f x, f y, f z)
 
 -- Section 3.  de Bruijn notation
 
-data DB v = DVar !v | DLam !(DB (Incr v)) | DApp !(Pair (DB v)) | DBool {-# unpack #-} !Bool 
+data DB v = DVar !v | DLam !(DB (Incr v)) | DApp !(Pair (DB v)) 
+  | DBool {-# unpack #-} !Bool 
   | DIf !(Triple (DB v))
 
 deriving instance (Eq v) => (Eq (DB v))
@@ -85,15 +86,20 @@ foldT v a l (DLam t) = (l . foldT v a l) t
 -}
 
 gfoldT ::
-  (forall a. m a -> n a) ->
-  (forall a. Pair (n a) -> n a) ->
-  (forall a. n (Incr a) -> n a) ->
-  (forall a. Incr (m a) -> m (Incr a)) ->
+  (forall a. m a -> n a) ->                      -- var
+  (forall a. Pair (n a) -> n a) ->               -- app
+  (forall a. n (Incr a) -> n a) ->               -- lam
+  (forall a. Bool -> n a) ->                     -- bool
+  (forall a. Triple (n a) -> n a) ->             -- if
+  (forall a. Incr (m a) -> m (Incr a)) ->        -- ???
   DB (m b) ->
   n b
-gfoldT v _a _l _k (DVar x) = v x
-gfoldT v a l k (DApp p) = (a . mapP (gfoldT v a l k)) p
-gfoldT v a l k (DLam t) = (l . gfoldT v a l k . mapT k) t
+gfoldT v _a _l _b _i _k (DVar x) = v x
+gfoldT v a l b i k (DApp p) = (a . mapP (gfoldT v a l b i k)) p
+gfoldT v a l b i k (DLam t) = (l . gfoldT v a l b i k . mapT k) t
+gfoldT v a l b i k (DBool x) = b x
+gfoldT v a l b i k (DIf t) = (i . mapTr (gfoldT v a l b i k)) t
+
 
 
 {-
@@ -122,7 +128,7 @@ showTC = showT . mapT wrap
 -}
 
 joinT :: DB (DB a) -> DB a
-joinT = gfoldT id DApp DLam distT
+joinT = gfoldT id DApp DLam DBool DIf distT
 
 distT :: Incr (DB a) -> DB (Incr a)
 distT Zero = DVar Zero

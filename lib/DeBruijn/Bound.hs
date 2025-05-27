@@ -23,7 +23,7 @@ impl =
       impl_fromLC = toDB,
       impl_toLC = fromDB,
       impl_nf = nfd,
-      impl_nfi = nfi,
+      impl_nfi = error "nfi unimplemented",
       impl_aeq = (==),
       impl_eval = whnf
     }
@@ -95,27 +95,7 @@ whnf (DIf a b c) =
     DBool True -> whnf b
     DBool False -> whnf c
     a' -> DIf a' b c
-
-nfi :: Int -> DB a -> Stats.M (DB a)
-nfi 0 _e = Stats.done
-nfi _n e@(DVar _) = return e
-nfi n (DLam e) = DLam <$> toScope <$> nfi n (fromScope e)
-nfi n (DApp f a) = do
-  f' <- whnfi (n -1) f
-  case f' of
-    DLam b -> Stats.count >> nfi (n -1) (instantiate1 a b)
-    _ -> DApp <$> nfi n f' <*> nfi n a
-
-whnfi :: Int -> DB a -> Stats.M (DB a)
-whnfi 0 _e = Stats.done
-whnfi _n e@(DVar _) = return e
-whnfi _n e@(DLam _) = return e
-whnfi n (DApp f a) = do
-  f' <- whnfi (n -1) f
-  case f' of
-    DLam b -> Stats.count >> whnfi (n -1) (instantiate1 a b)
-    _ -> return $ DApp f' a
-
+    
 ----------------------------------------------------------
 
 toDB :: LC IdInt -> DB IdInt

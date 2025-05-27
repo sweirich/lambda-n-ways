@@ -8,13 +8,18 @@
 usage() {
   echo "Usage: $0 [-h]"
   echo "  -h, --help      Display this help message."
+  echo "  -b, --branch X  Branch in Rebound repo."
   echo ""
   echo "  This script will iterate through predefined variables, changing the line"
   echo "  'import Rebound.Env.Internal' in ../Rebound/src/Rebound/Env.hs,"
-  echo "  executing 'make eval', moving files accordingly, generating CSV files,"
-  echo "  combining them into an XLSX, and finally reverting the Haskell file."
+  echo "  executing 'make normalize', moving files accordingly, generating txt files"
   exit 1
 }
+
+# Define the file to modify.
+file="../rebound/src/Rebound/Env.hs"
+# define the branch to use
+branch="wip/phantom-snat-fin-vec"
 
 # Parse command-line options.
 while [[ $# -gt 0 ]]; do
@@ -30,8 +35,6 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# Define the file to modify.
-file="../Rebound/src/Rebound/Env.hs"
 
 # Check if the file exists.
 if [ ! -f "$file" ]; then
@@ -39,8 +42,11 @@ if [ ! -f "$file" ]; then
   exit 1
 fi
 
+
+pushd "../rebound"; git checkout "$branch"; popd
+
 # Define the list of variables.
-valid_variables=("Internal" "InternalA" "Functional" "InternalB" "InternalLazy")
+valid_variables=("Internal" "InternalA" "Functional" "InternalB" "InternalLazy" "Vector")
 
 # Iterate through the variables.
 for variable in "${valid_variables[@]}"; do
@@ -57,9 +63,9 @@ for variable in "${valid_variables[@]}"; do
   echo "Successfully changed line in '$file' to '$new_string'."
 
   # Execute 'make eval'.
-  make eval
+  make normalize
   if [ $? -ne 0 ]; then
-    echo "Error: 'make eval' failed for variable '$variable'."
+    echo "Error: 'make normalize' failed for variable '$variable'."
     # Revert the file even if make eval fails
     sed -i -e "s/import Rebound.Env.$variable/import Rebound.Env.Internal/" "$file"
     exit 1
@@ -68,8 +74,8 @@ for variable in "${valid_variables[@]}"; do
   echo "'make eval' executed successfully for variable '$variable'."
 
   # Move files.
-  source_dir="results/Stephanie-Weirich-MBP/eval_auto_lazy"
-  dest_dir="results/ablate/eval_auto_lazy/$variable"
+  source_dir="results/Stephanie-Weirich-MBP/rebound_strict_envV"
+  dest_dir="results/ablate/rebound_strict_envV/$branch/$variable"
 
   # Check if the source directory exists.
   if [ ! -d "$source_dir" ]; then
@@ -88,7 +94,7 @@ for variable in "${valid_variables[@]}"; do
     exit 1
   fi
 
-  # Move the files and generate CSV.
+  # Move the files 
   mv $source_dir/* $dest_dir/
   # find "$source_dir" -type f -exec sh -c 'mv "$1" "${1%.txt}.csv"' _ {} \;
   if [ $? -ne 0 ]; then

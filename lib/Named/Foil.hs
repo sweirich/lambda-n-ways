@@ -86,10 +86,10 @@ member (UnsafeName name) (UnsafeScope s) = rawMember name s
 
 data Expr n where
   VarE :: {-# UNPACK #-} !(Name n) -> Expr n
-  AppE :: (Expr n) -> (Expr n) -> Expr n
-  LamE :: !(NameBinder n l) -> (Expr l) -> Expr n
-  BoolE :: Bool -> Expr n
-  IfE :: Expr n -> Expr n -> Expr n -> Expr n
+  AppE :: !(Expr n) -> !(Expr n) -> Expr n
+  LamE :: !(NameBinder n l) -> !(Expr l) -> Expr n
+  BoolE :: {-# UNPACK #-} !Bool -> Expr n
+  IfE :: !(Expr n) -> !(Expr n) -> !(Expr n) -> Expr n
 instance Eq (Expr n) where
   VarE x == VarE y = x == y
   AppE f1 x1 == AppE f2 x2 = (f1 == f2) && (x1 == x2)

@@ -4,13 +4,16 @@
 module Suite where
 
 import qualified Auto.Env.Strict.Env
+import qualified Auto.Env.Strict.EnvGen
 import qualified Auto.Env.Strict.Bind
 import qualified Auto.Env.Strict.Subst
 import qualified Auto.Env.Strict.EnvV
+import qualified Auto.Env.Strict.EnvGenV
 import qualified Auto.Env.Strict.BindV
 import qualified Auto.Env.Lazy.EvalV
 import qualified Auto.Env.Lazy.Env
 import qualified Auto.Env.Lazy.EnvV
+import qualified Auto.Env.Lazy.EnvGenV
 import qualified Auto.Env.Lazy.Bind
 import qualified Auto.Env.Lazy.BindV
 import qualified Auto.Env.Lazy.BindVal
@@ -39,6 +42,7 @@ import qualified Auto.Manual.Lazy.ExplicitSubstV
 import qualified Auto.Manual.Lazy.ExplicitSubstEnvV
 import qualified Core.Nf
 import qualified DeBruijn.Bound
+import qualified DeBruijn.BoundV
 import qualified DeBruijn.CPDT
 import qualified DeBruijn.Cornell
 import qualified DeBruijn.Kit
@@ -61,6 +65,7 @@ import qualified DeBruijn.Lazy.TAPL
 import qualified DeBruijn.Lennart
 import qualified DeBruijn.Lift
 import qualified DeBruijn.Nested
+import qualified DeBruijn.NestedV
 import qualified DeBruijn.Par.B
 import qualified DeBruijn.Par.Fun
 import qualified DeBruijn.Par.GB
@@ -107,6 +112,7 @@ import qualified Named.Lazy.SimpleGH
 import qualified Named.Lazy.SimpleH
 import qualified Named.Lazy.SimpleM
 import qualified Named.Foil
+import qualified Named.FoilV
 import qualified Named.Lennart
 import qualified Named.NominalG
 import qualified Named.Simple
@@ -116,6 +122,8 @@ import qualified Named.SimpleM
 import qualified Named.Unique
 import qualified Unbound.UnboundGenerics
 import qualified Unbound.UnboundNonGenerics
+import qualified Unbound.UnboundGenericsV
+import qualified Unbound.UnboundNonGenericsV
 import qualified Unbound.Lazy.UnboundGenerics
 import qualified Unbound.Lazy.UnboundNonGenerics
 -- allow newer GHCs
@@ -125,7 +133,7 @@ import Util.Impl (LambdaImpl)
 -- | Implementations used in the benchmarking/test suite
 -- RHS must be a single variable name for Makefile
 impls :: [LambdaImpl]
-impls = eval_lazy
+impls = rebound_strict_envV
 
 interleave :: [a] -> [a] -> [a]
 interleave (a1 : a1s) (a2 : a2s) = a1 : a2 : interleave a1s a2s
@@ -140,43 +148,72 @@ broken =
 -- Implementations of normal order reduction
 -- using both lazy and strict datatype definitions
 rebound_comparison :: [LambdaImpl]
-rebound_comparison = rebound ++ well_scoped ++ unbound
+rebound_comparison = 
+  rebound_strict ++ well_scoped_strict ++ unbound_strict
 
--- Well-scoped implmentations,
-well_scoped :: [LambdaImpl]
-well_scoped = [ NBE.Lazy.KovacsScoped.impl,
+-- Well-scoped implmentations, libraries plus baseline
+well_scoped_strict :: [LambdaImpl]
+well_scoped_strict = [ 
                 NBE.KovacsScoped.impl,
-                Named.Lazy.Foil.impl,
                 Named.Foil.impl,
-                DeBruijn.Lazy.Nested.impl,
-                DeBruijn.Nested.impl,
-                DeBruijn.Lazy.Bound.impl,
+                --DeBruijn.Nested.impl,
+                DeBruijn.BoundV.impl,
                 DeBruijn.Bound.impl
+                --Named.FoilV.impl, -- too slow
+                --DeBruijn.NestedV.impl, -- too slow
+
+               ]
+-- Well-scoped implmentations,
+well_scoped_lazy :: [LambdaImpl]
+well_scoped_lazy = [ NBE.Lazy.KovacsScoped.impl,
+                Named.Lazy.Foil.impl,
+                DeBruijn.Lazy.Nested.impl,
+                DeBruijn.Lazy.Bound.impl
                ]
 
+unbound = unbound_strict ++ unbound_lazy
+rebound = rebound_strict ++ rebound_lazy
 
-
-rebound :: [LambdaImpl]
-rebound = [ Auto.Env.Lazy.BindV.impl, 
+rebound_strict :: [LambdaImpl]
+rebound_strict = [ 
             Auto.Env.Strict.BindV.impl,
-            Auto.Env.Lazy.EnvV.impl, 
-            Auto.Env.Strict.EnvV.impl, 
-            Auto.Env.Lazy.Bind.impl,
+            Auto.Env.Strict.EnvV.impl,
+            Auto.Env.Strict.EnvGenV.impl, 
             Auto.Env.Strict.Bind.impl,
-            Auto.Env.Lazy.Env.impl, 
-            Auto.Env.Strict.Env.impl 
-            
+            Auto.Env.Strict.Env.impl,
+            Auto.Env.Strict.EnvGen.impl
             ] 
 
+
+
+rebound_lazy :: [LambdaImpl]
+rebound_lazy = [ 
+            Auto.Env.Lazy.BindV.impl, 
+            Auto.Env.Lazy.EnvV.impl, 
+            Auto.Env.Lazy.EnvGenV.impl,
+            Auto.Env.Lazy.Bind.impl,
+            Auto.Env.Lazy.Env.impl
+            ] 
+
+
 -- these versions using "substBind/instantiate" for beta-reduction
-unbound :: [LambdaImpl]
-unbound =
-  [ Unbound.Lazy.UnboundGenerics.impl, -- unbound-generics
+unbound_strict :: [LambdaImpl]
+unbound_strict =
+  [ 
+    -- Unbound.UnboundGenericsV.impl, -- applicative order, not normal order
     Unbound.UnboundGenerics.impl, -- unbound-generics
-    Unbound.Lazy.UnboundNonGenerics.impl,
     Unbound.UnboundNonGenerics.impl -- no generic programming
   ]
 
+  -- these versions using "substBind/instantiate" for beta-reduction
+unbound_lazy :: [LambdaImpl]
+unbound_lazy =
+  [ 
+    Unbound.Lazy.UnboundGenerics.impl, -- unbound-generics
+    Unbound.Lazy.UnboundNonGenerics.impl -- no generic programming
+  ]
+
+rebound_strict_envV = [Auto.Env.Strict.EnvV.impl]
 
 --------------------------------------------------------------------------
 -- evaluation only

@@ -43,7 +43,7 @@ data DB n where
   DVar :: !(Fin n) -> DB n
   DLam :: !(Bind DB DB n) -> DB n
   DApp :: !(DB n) -> !(DB n) -> DB n
-  DBool :: !Bool ->DB n
+  DBool :: {-# unpack #-}Bool ->DB n
   DIf :: !(DB n) -> !(DB n) -> !(DB n) -> DB n
 -- standalone b/c GADT
 -- alpha equivalence is (==)

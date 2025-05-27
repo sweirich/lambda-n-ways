@@ -23,8 +23,9 @@ impl =
       impl_fromLC = toDB,
       impl_toLC = fromDB,
       impl_nf = nfd,
-      impl_nfi = nfi,
-      impl_aeq = (==)
+      impl_nfi = error "nfi unimplemented",
+      impl_aeq = (==),
+      impl_eval = whnf
     }
 
 -- Section 2.  Preliminaries
@@ -34,9 +35,16 @@ type Pair a = (a, a)
 mapP :: (a -> b) -> Pair a -> Pair b
 mapP f (x, y) = (f x, f y)
 
+type Triple a = (a,a,a)
+
+mapTr :: (a -> b) -> Triple a -> Triple b
+mapTr f (x, y, z) = (f x, f y, f z)
+
 -- Section 3.  de Bruijn notation
 
-data DB v = DVar v | DLam (DB (Incr v)) | DApp (Pair (DB v))
+data DB v = DVar v | DLam (DB (Incr v)) | DApp (Pair (DB v)) 
+  | DBool Bool 
+  | DIf (Triple (DB v))
 
 deriving instance (Eq v) => (Eq (DB v))
 
@@ -46,6 +54,8 @@ instance (NFData v) => NFData (DB v) where
   rnf (DVar i) = rnf i
   rnf (DLam d) = rnf d
   rnf (DApp (a, b)) = rnf a `seq` rnf b
+  rnf (DBool b) = rnf b
+  rnf (DIf (a, b, c)) = rnf a `seq` rnf b `seq` rnf c
 
 data Incr v = Zero | Succ v deriving (Eq, Functor)
 
@@ -61,7 +71,8 @@ mapT :: (a -> b) -> DB a -> DB b
 mapT f (DVar x) = (DVar . f) x
 mapT f (DApp p) = (DApp . mapP (mapT f)) p
 mapT f (DLam t) = (DLam . mapT (mapI f)) t
-
+mapT f (DBool x) = DBool x
+mapT f (DIf t) = (DIf . mapTr (mapT f)) t 
 {-
 foldT ::
   (forall a. a -> n a) ->
@@ -75,15 +86,21 @@ foldT v a l (DLam t) = (l . foldT v a l) t
 -}
 
 gfoldT ::
-  (forall a. m a -> n a) ->
-  (forall a. Pair (n a) -> n a) ->
-  (forall a. n (Incr a) -> n a) ->
-  (forall a. Incr (m a) -> m (Incr a)) ->
+  (forall a. m a -> n a) ->                      -- var
+  (forall a. Pair (n a) -> n a) ->               -- app
+  (forall a. n (Incr a) -> n a) ->               -- lam
+  (forall a. Bool -> n a) ->                     -- bool
+  (forall a. Triple (n a) -> n a) ->             -- if
+  (forall a. Incr (m a) -> m (Incr a)) ->        -- ???
   DB (m b) ->
   n b
-gfoldT v _a _l _k (DVar x) = v x
-gfoldT v a l k (DApp p) = (a . mapP (gfoldT v a l k)) p
-gfoldT v a l k (DLam t) = (l . gfoldT v a l k . mapT k) t
+gfoldT v _a _l _b _i _k (DVar x) = v x
+gfoldT v a l b i k (DApp p) = (a . mapP (gfoldT v a l b i k)) p
+gfoldT v a l b i k (DLam t) = (l . gfoldT v a l b i k . mapT k) t
+gfoldT v a l b i k (DBool x) = b x
+gfoldT v a l b i k (DIf t) = (i . mapTr (gfoldT v a l b i k)) t
+
+
 
 {-
 kfoldT ::
@@ -111,7 +128,7 @@ showTC = showT . mapT wrap
 -}
 
 joinT :: DB (DB a) -> DB a
-joinT = gfoldT id DApp DLam distT
+joinT = gfoldT id DApp DLam DBool DIf distT
 
 distT :: Incr (DB a) -> DB (Incr a)
 distT Zero = DVar Zero
@@ -143,6 +160,12 @@ nfd (DApp (f, a)) =
   case whnf f of
     DLam b -> nfd (apply a b)
     f' -> DApp (nfd f', nfd a)
+nfd e@(DBool _) = e
+nfd (DIf (a,b,c)) = 
+  case whnf a of 
+    DBool True -> nfd b
+    DBool False -> nfd c
+    a' -> DIf (nfd a', nfd b, nfd c)
 
 -- Compute the weak head normal form.
 
@@ -153,26 +176,12 @@ whnf (DApp (f, a)) =
   case whnf f of
     DLam b -> whnf (apply a b)
     f' -> DApp (f', a)
-
--- Convert from LC type to DB type
-
-toDB :: LC IdInt -> DB IdInt
-toDB = to
-  where
-    to :: LC IdInt -> DB IdInt
-    to (Var v) = DVar v
-    to (Lam v b) = abstract v (to b)
-    to (App f a) = DApp (to f, to a)
-
---- Convert back from deBruijn to the LC type.
-
-fromDB :: DB IdInt -> LC IdInt
-fromDB = from firstBoundId
-  where
-    from :: IdInt -> DB IdInt -> LC IdInt
-    from _ (DVar v) = Var v
-    from n (DLam b) = Lam n (from (succ n) (apply (DVar n) b))
-    from n (DApp (f, a)) = App (from n f) (from n a)
+whnf e@(DBool _) = e
+whnf (DIf (a,b,c)) = 
+  case whnf a of 
+    DBool True -> whnf b
+    DBool False -> whnf c
+    a' -> DIf (a', b, c)
 
 nfi :: Int -> DB a -> Stats.M (DB a)
 nfi 0 _e = Stats.done
@@ -193,3 +202,27 @@ whnfi n (DApp (f, a)) = do
   case f' of
     DLam b -> Stats.count >> whnfi (n -1) (apply a b)
     _ -> return $ DApp (f', a)
+
+-- Convert from LC type to DB type
+
+toDB :: LC IdInt -> DB IdInt
+toDB = to
+  where
+    to :: LC IdInt -> DB IdInt
+    to (Var v) = DVar v
+    to (Lam v b) = abstract v (to b)
+    to (App f a) = DApp (to f, to a)
+    to (Bool b)  = DBool b
+    to (If a b c) = DIf (to a, to b, to c)
+
+--- Convert back from deBruijn to the LC type.
+
+fromDB :: DB IdInt -> LC IdInt
+fromDB = from firstBoundId
+  where
+    from :: IdInt -> DB IdInt -> LC IdInt
+    from _ (DVar v) = Var v
+    from n (DLam b) = Lam n (from (succ n) (apply (DVar n) b))
+    from n (DApp (f, a)) = App (from n f) (from n a)
+    from n (DBool b) = Bool b
+    from n (DIf (a,b,c)) = If (from n a) (from n b) (from n c)

@@ -51,11 +51,6 @@ data Env (n :: Nat) where
   -- | Lazy RHS is essential for cbn evaluation
   Define :: Env n -> Val -> Env ('S n)
 
--- | A closure is a term + delayed substitution
--- We don't actually use this definition
-data Closure
-  = forall n. Closure (Env n) (Term ('S n))
-
 -- | Representation of terms using de bruijn levels
 -- and closures (i.e. delayed substitutions) for
 -- abstractions
@@ -71,7 +66,8 @@ data Val
     -- Lambdas are "locally closed" all external bound variables
     -- in the term must have been substituted with values
     forall n. VLam (Env n) (Term ('S n))
-
+  | VBool {-# UNPACK #-} !Bool
+  | forall n. VIf Val (Env n) (Term n) (Term n)
 -- | Count bindings in the environment
 -- recovers the runtime value from the compiletime only version
 -- original version was tail recursive. But that is more difficult
@@ -80,14 +76,6 @@ length :: Env n -> SNat n
 length Nil = SZ
 length (Define e _) = SS (length e)
 
-{-
-length' :: Env n -> SNat n
-length' = go SZ
-  where
-    go :: SNat m -> Env (Plus m n) -> SNat n
-    go acc Nil = acc
-    go acc (Define env _) = go (SS acc) env
--}
 
 -- | lookup a value in the environment, based on an *index*
 lookupIx :: Ix n -> Env n -> Val
@@ -105,7 +93,11 @@ eval env = \case
     (VLam e0 t0) -> eval (Define e0 (eval env u)) t0
     t0 -> VApp t0 (eval env u)
   DLam t -> VLam env t
-
+  DBool b -> VBool b
+  DIf t u v -> case (eval env t) of
+    VBool True -> eval env u
+    VBool False -> eval env v
+    t0 -> VIf t0 env u v
 -- | Convert a value to to a term by translating
 -- all level-based vars to index-based vars
 quote :: forall l. SNat l -> Val -> Term l
@@ -116,6 +108,9 @@ quote l = \case
     where
       vl :: Lvl
       vl = sNat2Int l
+  VBool b -> DBool b
+  VIf t env u v -> 
+    DIf (quote l t) (quote l (eval env u)) (quote l (eval env v))
 
 -- Normalization
 --------------------------------------------------------------------------------
