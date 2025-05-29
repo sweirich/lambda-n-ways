@@ -147,25 +147,24 @@ broken =
 
 -- Implementations of normal order reduction
 -- using both lazy and strict datatype definitions
+-- This set generates Figure 1 of the rebound paper
 rebound_comparison :: [LambdaImpl]
 rebound_comparison = 
   rebound_strict ++ well_scoped_strict ++ unbound_strict
 
--- Well-scoped implmentations, libraries plus baseline
+-- Well-scoped implmentations, libraries plus baseline (Kovacs)
 well_scoped_strict :: [LambdaImpl]
 well_scoped_strict = [ 
                 NBE.KovacsScoped.impl,
+                --Named.FoilV.impl, -- too slow
                 Named.Foil.impl,
-                --DeBruijn.Nested.impl,
                 DeBruijn.BoundV.impl,
                 DeBruijn.Bound.impl
-                --Named.FoilV.impl, -- too slow
-                --DeBruijn.NestedV.impl, -- too slow
-
                ]
--- Well-scoped implmentations,
+-- Well-scoped implmentations (unused)
 well_scoped_lazy :: [LambdaImpl]
-well_scoped_lazy = [ NBE.Lazy.KovacsScoped.impl,
+well_scoped_lazy = [ 
+                NBE.Lazy.KovacsScoped.impl,
                 Named.Lazy.Foil.impl,
                 DeBruijn.Lazy.Nested.impl,
                 DeBruijn.Lazy.Bound.impl
@@ -213,6 +212,7 @@ unbound_lazy =
     Unbound.Lazy.UnboundNonGenerics.impl -- no generic programming
   ]
 
+-- this is for the "environment representation benchmark"
 rebound_strict_envV = [Auto.Env.Strict.EnvV.impl]
 
 --------------------------------------------------------------------------

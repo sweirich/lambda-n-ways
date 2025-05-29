@@ -19,7 +19,8 @@ usage() {
 # Define the file to modify.
 file="../rebound/src/Rebound/Env.hs"
 # define the branch to use
-branch="wip/phantom-snat-fin-vec"
+# branch="wip/phantom-snat-fin-vec"
+branch="main"
 
 # Parse command-line options.
 while [[ $# -gt 0 ]]; do
@@ -42,11 +43,12 @@ if [ ! -f "$file" ]; then
   exit 1
 fi
 
-
+# checkout the corresponding branch on both repos
+git checkout "$branch"
 pushd "../rebound"; git checkout "$branch"; popd
 
 # Define the list of variables.
-valid_variables=("Internal" "InternalA" "Functional" "InternalB" "InternalLazy" "Vector")
+valid_variables=("Internal" "InternalA" "Functional" "InternalB" "InternalLazy")
 
 # Iterate through the variables.
 for variable in "${valid_variables[@]}"; do
